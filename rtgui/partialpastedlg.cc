@@ -55,6 +55,7 @@ PartialPasteDlg::PartialPasteDlg (Glib::ustring title)
     pcvignette  = Gtk::manage (new Gtk::CheckButton (M("PARTIALPASTE_PCVIGNETTE")));
     gradient    = Gtk::manage (new Gtk::CheckButton (M("PARTIALPASTE_GRADIENT")));
     labcurve    = Gtk::manage (new Gtk::CheckButton (M("PARTIALPASTE_LABCURVE")));
+    locallab  = Gtk::manage (new Gtk::CheckButton (M("PARTIALPASTE_LOCALLAB")));
     colorappearance = Gtk::manage (new Gtk::CheckButton (M("PARTIALPASTE_COLORAPP")));
 
     // options in detail:
@@ -144,6 +145,7 @@ PartialPasteDlg::PartialPasteDlg (Glib::ustring title)
     vboxes[0]->pack_start (*pcvignette, Gtk::PACK_SHRINK, 2);
     vboxes[0]->pack_start (*gradient, Gtk::PACK_SHRINK, 2);
     vboxes[0]->pack_start (*labcurve, Gtk::PACK_SHRINK, 2);
+    vboxes[0]->pack_start (*locallab, Gtk::PACK_SHRINK, 2);
     vboxes[0]->pack_start (*colorappearance, Gtk::PACK_SHRINK, 2);
 
     //DETAIL
@@ -297,6 +299,7 @@ PartialPasteDlg::PartialPasteDlg (Glib::ustring title)
     pcvignetteConn  = pcvignette->signal_toggled().connect (sigc::bind (sigc::mem_fun(*basic, &Gtk::CheckButton::set_inconsistent), true));
     gradientConn    = gradient->signal_toggled().connect (sigc::bind (sigc::mem_fun(*basic, &Gtk::CheckButton::set_inconsistent), true));
     labcurveConn    = labcurve->signal_toggled().connect (sigc::bind (sigc::mem_fun(*basic, &Gtk::CheckButton::set_inconsistent), true));
+    locallabConn     = locallab->signal_toggled().connect (sigc::bind (sigc::mem_fun(*basic, &Gtk::CheckButton::set_inconsistent), true));
     colorappearanceConn = colorappearance->signal_toggled().connect (sigc::bind (sigc::mem_fun(*basic, &Gtk::CheckButton::set_inconsistent), true));
 
     sharpenConn     = sharpen->signal_toggled().connect (sigc::bind (sigc::mem_fun(*detail, &Gtk::CheckButton::set_inconsistent), true));
@@ -499,6 +502,7 @@ void PartialPasteDlg::basicToggled ()
     gradientConn.block (true);
     labcurveConn.block (true);
     colorappearanceConn.block (true);
+    locallabConn.block (true);
 
     basic->set_inconsistent (false);
 
@@ -510,6 +514,7 @@ void PartialPasteDlg::basicToggled ()
     gradient->set_active (basic->get_active ());
     labcurve->set_active (basic->get_active ());
     colorappearance->set_active (basic->get_active ());
+    locallab->set_active (basic->get_active ());
 
     wbConn.block (false);
     exposureConn.block (false);
@@ -518,6 +523,7 @@ void PartialPasteDlg::basicToggled ()
     pcvignetteConn.block (false);
     gradientConn.block (false);
     labcurveConn.block (false);
+    locallabConn.block (false);
     colorappearanceConn.block (false);
 }
 
@@ -701,6 +707,10 @@ void PartialPasteDlg::applyPaste (rtengine::procparams::ProcParams* dstPP, Param
 
     if (!gradient->get_active ()) {
         filterPE.gradient   = falsePE.gradient;
+    }
+
+    if (!locallab->get_active ()) {
+        filterPE.locallab   = falsePE.locallab;
     }
 
     if (!labcurve->get_active ()) {

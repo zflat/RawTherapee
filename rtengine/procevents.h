@@ -432,6 +432,25 @@ enum ProcEvent {
     EvWavedgeampli = 403,
     EvWavlev3nois = 404,
     EvWavNPmet = 405,
+    EvlocallabEnabled = 406,
+    EvlocallablocY = 407,
+    EvlocallablocX = 408,
+    EvlocallabCenter = 409,
+    EvlocallabDegree = 410,
+    Evlocallablightness = 411,
+    Evlocallabcontrast = 412,
+    Evlocallabchroma = 413,
+    Evlocallabtransit = 414,
+    Evlocallabavoid = 415,
+    EvlocallablocYT = 416,
+    EvlocallablocXL = 417,
+    EvlocallabSmet = 418,
+    Evlocallabinvers = 419,
+    Evlocallabradius = 420,
+    Evlocallabinversrad = 421,
+    Evlocallabstrength = 422,
+    Evlocallabsensi = 423,
+
     NUMOFEVENTS
 };
 }

@@ -371,6 +371,30 @@ class DistortionParamsEdited
 public:
     bool amount;
 };
+class LocallabParamsEdited
+{
+
+public:
+    bool enabled;
+    bool degree;
+    bool locY;
+    bool locX;
+    bool locYT;
+    bool locXL;
+    bool centerX;
+    bool centerY;
+    bool lightness;
+    bool contrast;
+    bool chroma;
+    bool sensi;
+    bool radius;
+    bool strength;
+    bool transit;
+    bool avoid;
+    bool Smethod;
+    bool invers;
+    bool inversrad;
+};
 
 class LensProfParamsEdited
 {
@@ -723,6 +747,7 @@ public:
     LensProfParamsEdited          lensProf;
     PerspectiveParamsEdited       perspective;
     GradientParamsEdited          gradient;
+    LocallabParamsEdited          locallab;
     PCVignetteParamsEdited        pcvignette;
     CACorrParamsEdited            cacorrection;
     VignettingParamsEdited        vignetting;

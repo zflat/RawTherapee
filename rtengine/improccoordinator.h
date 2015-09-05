@@ -82,6 +82,7 @@ protected:
     // Precomputed values used by DetailedCrop ----------------------------------------------
 
     float bwAutoR, bwAutoG, bwAutoB;
+    int coordX, coordY, localX, localY;
     float CAMMean;
     LUTf hltonecurve;
     LUTf shtonecurve;
@@ -89,6 +90,7 @@ protected:
     float chaut, redaut, blueaut, maxredaut, maxblueaut,  minredaut, minblueaut, nresi, highresi, chromina, sigma, lumema;
 
     LUTf lumacurve;
+    LUTf localcurve;
     LUTf chroma_acurve;
     LUTf chroma_bcurve;
     LUTf satcurve;
@@ -180,6 +182,7 @@ protected:
     ProcParams nextParams;
     bool destroying;
     bool utili;
+    bool locutili;
     bool autili;
     bool butili;
     bool ccutili;

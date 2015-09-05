@@ -737,6 +737,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     LUTf satcurve (65536, 0);
     LUTf lhskcurve (65536, 0);
     LUTf lumacurve(65536, 0);
+    LUTf localcurve(65536, 0);
     LUTf clcurve (65536, 0);
     LUTf clToningcurve (65536, 0);
     LUTf cl2Toningcurve (65536, 0);
@@ -901,6 +902,16 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                                    params.labCurve.acurve, params.labCurve.bcurve, params.labCurve.cccurve, params.labCurve.lccurve, curve1, curve2, satcurve, lhskcurve,
                                    hist16C, hist16C, dummy, dummy,
                                    1);
+
+    bool locutili = false;
+    CurveFactory::localLCurve (params.locallab.lightness, 0, /*params.locallab.contrast, params.labCurve.lcurve,*/ hist16,
+                               localcurve, 1, locutili);
+
+    if(params.locallab.enabled) {
+        ipf.Lab_Local(labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1);
+    }
+
+
 
     ipf.chromiLuminanceCurve (NULL, 1, labView, labView, curve1, curve2, satcurve, lhskcurve, clcurve, lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy, dummy, dummy);
 

@@ -32,7 +32,7 @@ extern const Settings* settings;
 
 Crop::Crop (ImProcCoordinator* parent, EditDataProvider *editDataProvider, bool isDetailWindow)
     : EditBuffer(editDataProvider), origCrop(NULL), laboCrop(NULL), labnCrop(NULL),
-      cropImg(NULL), cbuf_real(NULL), cshmap(NULL), transCrop(NULL), cieCrop(NULL), cbuffer(NULL),
+      cropImg(NULL), cbuf_real(NULL), cshmap(NULL), transCrop(NULL),/* translabCrop(NULL),*/ cieCrop(NULL), cbuffer(NULL),
       updating(false), newUpdatePending(false), skip(10),
       cropx(0), cropy(0), cropw(-1), croph(-1),
       trafx(0), trafy(0), trafw(-1), trafh(-1),
@@ -807,6 +807,14 @@ void Crop::update (int todo)
         bool wavcontlutili = parent->wavcontlutili;
 
         LUTu dummy;
+        bool needslocal = params.locallab.enabled;
+        bool locutili = parent->locutili;
+
+        if(needslocal) {
+            parent->ipf.Lab_Local (labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, parent->localcurve, locutili, skip);
+        }
+
+
         parent->ipf.chromiLuminanceCurve (this, 1, labnCrop, labnCrop, parent->chroma_acurve, parent->chroma_bcurve, parent->satcurve, parent->lhskcurve,  parent->clcurve, parent->lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy, dummy, dummy);
         parent->ipf.vibrance (labnCrop);
 
@@ -1212,6 +1220,7 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
         }
 
         laboCrop = new LabImage (cropw, croph);
+        //     if (translabCrop) translabCrop->reallocLab();
 
         if (labnCrop) {
             delete labnCrop;    // labnCrop can't be resized

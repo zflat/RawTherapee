@@ -294,6 +294,8 @@ public:
     static void complexLCurve (double br, double contr, const std::vector<double>& curvePoints, LUTu & histogram, LUTu & histogramCropped,
                                LUTf & outCurve, LUTu & outBeforeCCurveHistogram, int skip, bool & utili);
 
+    static void localLCurve (double br, double contr,/* const std::vector<double>& curvePoints,*/ LUTu & histogram, LUTf & outCurve, int skip, bool & utili);
+
     static void updatechroma (
         const std::vector<double>& cccurvePoints,
         LUTu & histogramC, LUTu & outBeforeCCurveHistogramC,//for chroma

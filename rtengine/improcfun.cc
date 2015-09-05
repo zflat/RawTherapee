@@ -296,6 +296,7 @@ void ImProcFunctions::firstAnalysis (Imagefloat* original, const ProcParams* par
     delete [] hist;
 }
 
+
 // Copyright (c) 2012 Jacques Desmis <jdesmis@gmail.com>
 void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh, int pW, int pwb, LabImage* lab, const ProcParams* params ,
                                  const ColorAppearance & customColCurve1, const ColorAppearance & customColCurve2, const ColorAppearance & customColCurve3,

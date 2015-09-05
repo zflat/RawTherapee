@@ -256,6 +256,26 @@ void ParamsEdited::set (bool v)
     gradient.strength = v;
     gradient.centerX = v;
     gradient.centerY = v;
+    locallab.enabled = v;
+    locallab.degree = v;
+    locallab.locY = v;
+    locallab.locX = v;
+    locallab.locYT = v;
+    locallab.locXL = v;
+    locallab.centerX = v;
+    locallab.centerY = v;
+    locallab.lightness = v;
+    locallab.contrast = v;
+    locallab.chroma = v;
+    locallab.sensi = v;
+    locallab.radius = v;
+    locallab.strength = v;
+    locallab.transit = v;
+    locallab.avoid = v;
+    locallab.Smethod = v;
+    locallab.invers = v;
+    locallab.inversrad = v;
+
     pcvignette.enabled = v;
     pcvignette.strength = v;
     pcvignette.feather = v;
@@ -714,6 +734,25 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         gradient.strength = gradient.strength && p.gradient.strength == other.gradient.strength;
         gradient.centerX = gradient.centerX && p.gradient.centerX == other.gradient.centerX;
         gradient.centerY = gradient.centerY && p.gradient.centerY == other.gradient.centerY;
+        locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
+        locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
+        locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
+        locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
+        locallab.degree = locallab.degree && p.locallab.degree == other.locallab.degree;
+        locallab.locY = locallab.locY && p.locallab.locY == other.locallab.locY;
+        locallab.locX = locallab.locX && p.locallab.locX == other.locallab.locX;
+        locallab.locYT = locallab.locYT && p.locallab.locYT == other.locallab.locYT;
+        locallab.locXL = locallab.locXL && p.locallab.locXL == other.locallab.locXL;
+        locallab.Smethod = locallab.Smethod && p.locallab.Smethod == other.locallab.Smethod;
+        locallab.centerX = locallab.centerX && p.locallab.centerX == other.locallab.centerX;
+        locallab.centerY = locallab.centerY && p.locallab.centerY == other.locallab.centerY;
+        locallab.lightness = locallab.lightness && p.locallab.lightness == other.locallab.lightness;
+        locallab.contrast = locallab.contrast && p.locallab.contrast == other.locallab.contrast;
+        locallab.chroma = locallab.chroma && p.locallab.chroma == other.locallab.chroma;
+        locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
+        locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
+        locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
+        locallab.transit = locallab.transit && p.locallab.transit == other.locallab.transit;
         pcvignette.enabled = pcvignette.enabled && p.pcvignette.enabled == other.pcvignette.enabled;
         pcvignette.strength = pcvignette.strength && p.pcvignette.strength == other.pcvignette.strength;
         pcvignette.feather = pcvignette.feather && p.pcvignette.feather == other.pcvignette.feather;
@@ -1776,6 +1815,82 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (gradient.centerY) {
         toEdit.gradient.centerY   = mods.gradient.centerY;
+    }
+
+    if (locallab.enabled) {
+        toEdit.locallab.enabled   = mods.locallab.enabled;
+    }
+
+    if (locallab.avoid) {
+        toEdit.locallab.avoid     = mods.locallab.avoid;
+    }
+
+    if (locallab.invers) {
+        toEdit.locallab.invers    = mods.locallab.invers;
+    }
+
+    if (locallab.inversrad) {
+        toEdit.locallab.inversrad     = mods.locallab.inversrad;
+    }
+
+    if (locallab.degree) {
+        toEdit.locallab.degree        = dontforceSet && options.baBehav[ADDSET_LOCALLAB_DEGREE] ? toEdit.locallab.degree + mods.locallab.degree : mods.locallab.degree;
+    }
+
+    if (locallab.locY) {
+        toEdit.locallab.locY  = mods.locallab.locY;
+    }
+
+    if (locallab.locX) {
+        toEdit.locallab.locX  = mods.locallab.locX;
+    }
+
+    if (locallab.locYT) {
+        toEdit.locallab.locYT     = mods.locallab.locYT;
+    }
+
+    if (locallab.locXL) {
+        toEdit.locallab.locXL     = mods.locallab.locXL;
+    }
+
+    if (locallab.Smethod) {
+        toEdit.locallab.Smethod   = mods.locallab.Smethod;
+    }
+
+    if (locallab.centerX) {
+        toEdit.locallab.centerX   = mods.locallab.centerX;
+    }
+
+    if (locallab.centerY) {
+        toEdit.locallab.centerY   = mods.locallab.centerY;
+    }
+
+    if (locallab.lightness) {
+        toEdit.locallab.lightness     = mods.locallab.lightness;
+    }
+
+    if (locallab.contrast) {
+        toEdit.locallab.contrast  = mods.locallab.contrast;
+    }
+
+    if (locallab.chroma) {
+        toEdit.locallab.chroma    = mods.locallab.chroma;
+    }
+
+    if (locallab.sensi) {
+        toEdit.locallab.sensi     = mods.locallab.sensi;
+    }
+
+    if (locallab.radius) {
+        toEdit.locallab.radius    = mods.locallab.radius;
+    }
+
+    if (locallab.strength) {
+        toEdit.locallab.strength  = mods.locallab.strength;
+    }
+
+    if (locallab.transit) {
+        toEdit.locallab.transit   = mods.locallab.transit;
     }
 
     if (pcvignette.enabled) {

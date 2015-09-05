@@ -427,7 +427,25 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     DIRPYREQUALIZER,     // EvWavedgesensi
     DIRPYREQUALIZER,     // EvWavedgeampli
     DIRPYREQUALIZER,      //EvWavlev3nois
-    DIRPYREQUALIZER       //EvWavNPmet
+    DIRPYREQUALIZER,       //EvWavNPmet
+    LUMINANCECURVE, //EvlocallabEnabled
+    LUMINANCECURVE, //EvlocallablocY
+    LUMINANCECURVE, //EvlocallablocX
+    LUMINANCECURVE,//   EvlocallabCenter
+    LUMINANCECURVE, //EvlocallabDegree
+    LUMINANCECURVE, //Evlocallablightness
+    LUMINANCECURVE, //Evlocallabcontrast
+    LUMINANCECURVE, //Evlocallabchroma
+    LUMINANCECURVE, //Evlocallabtransit
+    LUMINANCECURVE, //Evlocallabavoid
+    LUMINANCECURVE, //EvlocallablocYT
+    LUMINANCECURVE, //EvlocallablocXL
+    LUMINANCECURVE, //EvlocallabSmet
+    LUMINANCECURVE, //Evlocallabinvers
+    LUMINANCECURVE, //Evlocallabradius
+    LUMINANCECURVE, //Evlocallabinversrad
+    LUMINANCECURVE, //Evlocallabstrength
+    LUMINANCECURVE  //Evlocallabsensi
 
 };
 

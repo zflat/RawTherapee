@@ -789,6 +789,32 @@ void CoarseTransformParams::setDefaults()
     vflip = false;
 }
 
+void LocallabParams::setDefaults()
+{
+    enabled = false;
+    degree = 0;
+    locY = 25;
+    locX = 25;
+    locYT = 25;
+    locXL = 25;
+    centerX = 0;
+    centerY = 0;
+    lightness = 0;
+    contrast = 0;
+    chroma = 0;
+    sensi = 20;
+    transit = 60;
+    avoid = false;
+    Smethod = "SYM";
+    invers = false;
+    radius = 0.;
+    inversrad = false;
+    strength = 0.;
+}
+
+
+
+
 void RAWParams::setDefaults()
 {
     bayersensor.method = RAWParams::BayerSensor::methodstring[RAWParams::BayerSensor::amaze];
@@ -1082,6 +1108,7 @@ void ProcParams::setDefaults ()
     gradient.strength = 0.60;
     gradient.centerX = 0;
     gradient.centerY = 0;
+
 
     pcvignette.enabled = false;
     pcvignette.strength = 0.60;
@@ -2228,6 +2255,85 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
     if (!pedited || pedited->gradient.centerY) {
         keyFile.set_integer ("Gradient", "CenterY", gradient.centerY);
     }
+
+    // save Local lab
+    if (!pedited || pedited->locallab.enabled) {
+        keyFile.set_boolean ("Locallab", "Enabled", locallab.enabled);
+    }
+
+    if (!pedited || pedited->locallab.avoid) {
+        keyFile.set_boolean ("Locallab", "Avoid", locallab.avoid);
+    }
+
+    if (!pedited || pedited->locallab.invers) {
+        keyFile.set_boolean ("Locallab", "Invers", locallab.invers);
+    }
+
+    if (!pedited || pedited->locallab.inversrad) {
+        keyFile.set_boolean ("Locallab", "Inversrad", locallab.inversrad);
+    }
+
+    if (!pedited || pedited->locallab.degree) {
+        keyFile.set_double  ("Locallab", "Degree", locallab.degree);
+    }
+
+    if (!pedited || pedited->locallab.Smethod) {
+        keyFile.set_string ("Locallab", "Smethod", locallab.Smethod);
+    }
+
+    if (!pedited || pedited->locallab.locY) {
+        keyFile.set_integer ("Locallab", "LocY", locallab.locY);
+    }
+
+    if (!pedited || pedited->locallab.locX) {
+        keyFile.set_integer ("Locallab", "LocX", locallab.locX);
+    }
+
+    if (!pedited || pedited->locallab.locYT) {
+        keyFile.set_integer ("Locallab", "LocYT", locallab.locYT);
+    }
+
+    if (!pedited || pedited->locallab.locXL) {
+        keyFile.set_integer ("Locallab", "LocXL", locallab.locXL);
+    }
+
+    if (!pedited || pedited->locallab.centerX) {
+        keyFile.set_integer ("Locallab", "CenterX", locallab.centerX);
+    }
+
+    if (!pedited || pedited->locallab.centerY) {
+        keyFile.set_integer ("Locallab", "CenterY", locallab.centerY);
+    }
+
+    if (!pedited || pedited->locallab.lightness) {
+        keyFile.set_integer ("Locallab", "Lightness", locallab.lightness);
+    }
+
+    if (!pedited || pedited->locallab.contrast) {
+        keyFile.set_integer ("Locallab", "Contrast", locallab.contrast);
+    }
+
+    if (!pedited || pedited->locallab.chroma) {
+        keyFile.set_integer ("Locallab", "Chroma", locallab.chroma);
+    }
+
+    if (!pedited || pedited->locallab.sensi) {
+        keyFile.set_integer ("Locallab", "Sensi", locallab.sensi);
+    }
+
+    if (!pedited || pedited->locallab.transit) {
+        keyFile.set_integer ("Locallab", "Transit", locallab.transit);
+    }
+
+    if (!pedited || pedited->locallab.radius) {
+        keyFile.set_double ("Locallab", "Radius", locallab.radius);
+    }
+
+    if (!pedited || pedited->locallab.strength) {
+        keyFile.set_double ("Locallab", "Strength", locallab.strength);
+    }
+
+
 
     // save post-crop vignette
     if (!pedited || pedited->pcvignette.enabled) {
@@ -3393,6 +3499,161 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                     if (pedited) {
                         pedited->toneCurve.curve2 = true;
                     }
+                }
+            }
+        }
+
+        // load Local Lab
+        if (keyFile.has_group ("Locallab")) {
+            if (keyFile.has_key ("Locallab", "Enabled"))  {
+                locallab.enabled  = keyFile.get_boolean ("Locallab", "Enabled");
+
+                if (pedited) {
+                    pedited->locallab.enabled = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Avoid"))  {
+                locallab.avoid  = keyFile.get_boolean ("Locallab", "Avoid");
+
+                if (pedited) {
+                    pedited->locallab.avoid = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Invers"))  {
+                locallab.invers  = keyFile.get_boolean ("Locallab", "Invers");
+
+                if (pedited) {
+                    pedited->locallab.invers = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Inversrad"))  {
+                locallab.inversrad  = keyFile.get_boolean ("Locallab", "Inversrad");
+
+                if (pedited) {
+                    pedited->locallab.inversrad = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Degree"))   {
+                locallab.degree   = keyFile.get_double ("Locallab", "Degree");
+
+                if (pedited) {
+                    pedited->locallab.degree = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Smethod"))  {
+                locallab.Smethod  = keyFile.get_string ("Locallab", "Smethod");
+
+                if (pedited) {
+                    pedited->locallab.Smethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "LocY"))  {
+                locallab.locY  = keyFile.get_integer ("Locallab", "LocY");
+
+                if (pedited) {
+                    pedited->locallab.locY = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "LocX")) {
+                locallab.locX = keyFile.get_integer  ("Locallab", "LocX");
+
+                if (pedited) {
+                    pedited->locallab.locX = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "LocYT"))  {
+                locallab.locYT  = keyFile.get_integer ("Locallab", "LocYT");
+
+                if (pedited) {
+                    pedited->locallab.locYT = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "LocXL")) {
+                locallab.locXL = keyFile.get_integer  ("Locallab", "LocXL");
+
+                if (pedited) {
+                    pedited->locallab.locXL = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "CenterX"))  {
+                locallab.centerX  = keyFile.get_integer ("Locallab", "CenterX");
+
+                if (pedited) {
+                    pedited->locallab.centerX = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "CenterY"))  {
+                locallab.centerY  = keyFile.get_integer ("Locallab", "CenterY");
+
+                if (pedited) {
+                    pedited->locallab.centerY = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Chroma"))  {
+                locallab.chroma  = keyFile.get_integer ("Locallab", "Chroma");
+
+                if (pedited) {
+                    pedited->locallab.chroma = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Sensi"))  {
+                locallab.sensi  = keyFile.get_integer ("Locallab", "Sensi");
+
+                if (pedited) {
+                    pedited->locallab.sensi = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Transit"))  {
+                locallab.transit  = keyFile.get_integer ("Locallab", "Transit");
+
+                if (pedited) {
+                    pedited->locallab.transit = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Lightness"))  {
+                locallab.lightness  = keyFile.get_integer ("Locallab", "Lightness");
+
+                if (pedited) {
+                    pedited->locallab.lightness = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Contrast"))  {
+                locallab.contrast  = keyFile.get_integer ("Locallab", "Contrast");
+
+                if (pedited) {
+                    pedited->locallab.contrast = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Radius"))  {
+                locallab.radius  = keyFile.get_double ("Locallab", "Radius");
+
+                if (pedited) {
+                    pedited->locallab.radius = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Strength"))  {
+                locallab.strength  = keyFile.get_double ("Locallab", "Strength");
+
+                if (pedited) {
+                    pedited->locallab.strength = true;
                 }
             }
         }
@@ -7162,6 +7423,25 @@ bool ProcParams::operator== (const ProcParams& other)
         && gradient.strength == other.gradient.strength
         && gradient.centerX == other.gradient.centerX
         && gradient.centerY == other.gradient.centerY
+        && locallab.enabled == other.locallab.enabled
+        && locallab.avoid == other.locallab.avoid
+        && locallab.invers == other.locallab.invers
+        && locallab.inversrad == other.locallab.inversrad
+        && locallab.degree == other.locallab.degree
+        && locallab.Smethod == other.locallab.Smethod
+        && locallab.locY == other.locallab.locY
+        && locallab.locX == other.locallab.locX
+        && locallab.locYT == other.locallab.locYT
+        && locallab.locXL == other.locallab.locXL
+        && locallab.centerX == other.locallab.centerX
+        && locallab.centerY == other.locallab.centerY
+        && locallab.lightness == other.locallab.lightness
+        && locallab.contrast == other.locallab.contrast
+        && locallab.chroma == other.locallab.chroma
+        && locallab.sensi == other.locallab.sensi
+        && locallab.radius == other.locallab.radius
+        && locallab.strength == other.locallab.strength
+        && locallab.transit == other.locallab.transit
         && pcvignette.enabled == other.pcvignette.enabled
         && pcvignette.strength == other.pcvignette.strength
         && pcvignette.feather == other.pcvignette.feather

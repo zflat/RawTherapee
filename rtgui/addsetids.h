@@ -107,8 +107,22 @@
 #define ADDSET_WA_EDGEDETECTTHR2        99
 #define ADDSET_WA_TMRS                  100
 #define ADDSET_WA_GAMMA                 101
+#define ADDSET_LOCALLAB_DEGREE          102
+#define ADDSET_LOCALLAB_LOCY            103
+#define ADDSET_LOCALLAB_LOCX            104
+#define ADDSET_LOCALLAB_LOCYT           105
+#define ADDSET_LOCALLAB_LOCXL           106
+#define ADDSET_LOCALLAB_CENTER          107
+#define ADDSET_LOCALLAB_LIGHTNESS       108
+#define ADDSET_LOCALLAB_CONTRAST        109
+#define ADDSET_LOCALLAB_CHROMA          110
+#define ADDSET_LOCALLAB_RADIUS          111
+#define ADDSET_LOCALLAB_TRANSIT         112
+#define ADDSET_LOCALLAB_STRENGTH        113
+#define ADDSET_LOCALLAB_SENSI           114
+
 
 // When adding items, make sure to update ADDSET_PARAM_NUM
-#define ADDSET_PARAM_NUM                102 // THIS IS USED AS A DELIMITER!!
+#define ADDSET_PARAM_NUM                115 // THIS IS USED AS A DELIMITER!!
 
 #endif

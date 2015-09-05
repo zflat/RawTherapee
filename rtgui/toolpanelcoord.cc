@@ -60,6 +60,7 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
     whitebalance        = Gtk::manage (new WhiteBalance ());
     vignetting          = Gtk::manage (new Vignetting ());
     gradient            = Gtk::manage (new Gradient ());
+    locallab            = Gtk::manage (new Locallab ());
     pcvignette          = Gtk::manage (new PCVignette ());
     perspective         = Gtk::manage (new PerspCorrection ());
     cacorrection        = Gtk::manage (new CACorrection ());
@@ -131,6 +132,9 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
     toolPanels.push_back (gradient);
     addPanel (exposurePanel, lcurve);
     toolPanels.push_back (lcurve); // << TODO: Add "Enabled" ???
+    addPanel (exposurePanel, locallab);
+    toolPanels.push_back (locallab);
+
     addPanel (exposurePanel, colorappearance);
     toolPanels.push_back (colorappearance);
     addPanel (detailsPanel, impulsedenoise);

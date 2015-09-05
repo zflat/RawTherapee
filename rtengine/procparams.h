@@ -775,6 +775,41 @@ public:
     int    centerX;
     int    centerY;
 };
+/**
+  * Parameters of the Local Lab
+  */
+class LocallabParams
+{
+
+public:
+    bool    enabled;
+    double  degree;
+    int     locY;
+    int     locX;
+    int     locYT;
+    int     locXL;
+    int     centerX;
+    int     centerY;
+    int     lightness;
+    int     contrast;
+    int     chroma;
+    int     sensi;
+    double  radius;
+    double  strength;
+    int     transit;
+    bool    avoid;
+    Glib::ustring Smethod;
+    bool    invers;
+    bool    inversrad;
+
+    LocallabParams ()
+    {
+        setDefaults();
+    }
+    void setDefaults();
+
+
+};
 
 /**
   * Parameters of the post-crop vignette filter
@@ -1214,6 +1249,7 @@ public:
     LensProfParams          lensProf;        ///< Lens correction profile parameters
     PerspectiveParams       perspective;     ///< Perspective correction parameters
     GradientParams          gradient;        ///< Gradient filter parameters
+    LocallabParams          locallab;        ///< Local lab parameters
     PCVignetteParams        pcvignette;      ///< Post-crop vignette filter parameters
     CACorrParams            cacorrection;    ///< Lens c/a correction parameters
     VignettingParams        vignetting;      ///< Lens vignetting correction parameters

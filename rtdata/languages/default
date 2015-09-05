@@ -636,6 +636,23 @@ HISTORY_MSG_403;W - ES - Edge sensitivity
 HISTORY_MSG_404;W - ES - Base amplification
 HISTORY_MSG_405;W - Denoise - Level 4
 HISTORY_MSG_406;W - ES - Neighboring pixels
+HISTORY_MSG_407;Local L*a*b*
+HISTORY_MSG_408;Local - Bottom
+HISTORY_MSG_409;Local - Right
+HISTORY_MSG_410;Local - Center
+HISTORY_MSG_411;Local - Lightness
+HISTORY_MSG_412;Local - Contrast
+HISTORY_MSG_413;Local - Chrominance
+HISTORY_MSG_414;Local - Transition
+HISTORY_MSG_415;Local - Avoid color shift
+HISTORY_MSG_416;Local - Top
+HISTORY_MSG_417;Local - Left
+HISTORY_MSG_418;Local - Shape
+HISTORY_MSG_419;Local - Inverse
+HISTORY_MSG_420;Local - Radius
+HISTORY_MSG_421;Local - Inverse Blur Noise
+HISTORY_MSG_422;Local - Noise
+HISTORY_MSG_423;Local - Scope
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOTS;Snapshots
@@ -805,6 +822,7 @@ PARTIALPASTE_IPTCINFO;IPTC
 PARTIALPASTE_LABCURVE;L*a*b* adjustments
 PARTIALPASTE_LENSGROUP;Lens Related Settings
 PARTIALPASTE_LENSPROFILE;Lens correction profile
+PARTIALPASTE_LOCALLAB;Local L*a*b*
 PARTIALPASTE_METAGROUP;Metadata
 PARTIALPASTE_PCVIGNETTE;Vignette filter
 PARTIALPASTE_PERSPECTIVE;Perspective
@@ -1543,6 +1561,33 @@ TP_LENSPROFILE_LABEL;Lens Correction Profile
 TP_LENSPROFILE_USECA;Chromatic aberration correction
 TP_LENSPROFILE_USEDIST;Distortion correction
 TP_LENSPROFILE_USEVIGN;Vignetting correction
+TP_LOCALLAB_AVOID;Avoid color shift
+TP_LOCALLAB_BLUFR;Blur & Noise
+TP_LOCALLAB_CENTER_X;Center X
+TP_LOCALLAB_CENTER_Y;Center Y
+TP_LOCALLAB_CHROMA;Chrominance
+TP_LOCALLAB_COFR;Color & Light
+TP_LOCALLAB_CONTRAST;Contrast
+TP_LOCALLAB_INDSL;Independent (mouse + sliders)
+TP_LOCALLAB_IND;Independent (mouse)
+TP_LOCALLAB_INVERS;Inverse
+TP_LOCALLAB_LABEL;Local L*a*b*
+TP_LOCALLAB_LIGHTNESS;Lightness
+TP_LOCALLAB_RADIUS;Radius
+TP_LOCALLAB_SENSI;Scope
+TP_LOCALLAB_SENSI_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.
+TP_LOCALLAB_SHFR;Shape
+TP_LOCALLAB_STRENGTH;Noise
+TP_LOCALLAB_STYPE;Shape method
+TP_LOCALLAB_STYPE_TOOLTIP;You can choose between:\nSymmetrical - left handle linked to right, top handle linked to bottom.\nIndependent - all handles are independent.
+TP_LOCALLAB_SYMSL;Symmetrical (mouse + sliders)
+TP_LOCALLAB_SYM;Symmetrical (mouse)
+TP_LOCALLAB_TRANSIT;Transition
+TP_LOCALLAB_TRANSIT_TOOLTIP;Adjust smoothness of transition between affected and unaffected areas.
+TP_LOCAL_HEIGHT;Bottom
+TP_LOCAL_HEIGHT_T;Top
+TP_LOCAL_WIDTH;Right
+TP_LOCAL_WIDTH_L;Left
 TP_NEUTRAL;Neutral
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.
 TP_PCVIGNETTE_FEATHER;Feather

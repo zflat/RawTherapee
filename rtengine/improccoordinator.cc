@@ -33,7 +33,7 @@ ImProcCoordinator::ImProcCoordinator ()
     : orig_prev(NULL), oprevi(NULL), oprevl(NULL), nprevl(NULL), previmg(NULL), workimg(NULL),
       ncie(NULL), imgsrc(NULL), shmap(NULL), lastAwbEqual(0.), ipf(&params, true), scale(10),
       highDetailPreprocessComputed(false), highDetailRawComputed(false), allocated(false),
-      bwAutoR(-9000.f), bwAutoG(-9000.f), bwAutoB(-9000.f), CAMMean(0.),
+      bwAutoR(-9000.f), bwAutoG(-9000.f), bwAutoB(-9000.f), CAMMean(0.f), coordX(0), coordY(0), localX(0), localY(0),
 
       hltonecurve(65536),
       shtonecurve(65536),
@@ -41,6 +41,7 @@ ImProcCoordinator::ImProcCoordinator ()
       chaut(0.f), redaut(0.f), blueaut(0.f), maxredaut(0.f), maxblueaut(0.f), minredaut(0.f), minblueaut(0.f), nresi(0.f),
       chromina(0.f), sigma(0.f), lumema(0.f),
       lumacurve(65536, 0),
+      localcurve(65536, 0),
       chroma_acurve(65536, 0),
       chroma_bcurve(65536, 0),
       satcurve(65536, 0),
@@ -520,6 +521,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             // correct GUI black and white with value
         }
 
+        //  ipf.Lab_Tile(oprevl, oprevl, scale);
+
         // compute L channel histogram
         int x1, y1, x2, y2, pos;
         params.crop.mapToResized(pW, pH, scale, x1, x2,  y1, y2);
@@ -576,6 +579,14 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         nprevl->CopyFrom(oprevl);
 
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
+        locutili = false;
+        CurveFactory::localLCurve (params.locallab.lightness, 0, /*params.locallab.contrast, params.labCurve.lcurve,*/ lhist16,
+                                   localcurve,  scale == 1 ? 1 : 16, locutili);
+
+        if(params.locallab.enabled) {
+            ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale );
+        }
+
 
         ipf.chromiLuminanceCurve (NULL, pW, nprevl, nprevl, chroma_acurve, chroma_bcurve, satcurve, lhskcurve, clcurve, lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, histCCurve, histCLurve, histLLCurve, histLCurve);
         ipf.vibrance(nprevl);

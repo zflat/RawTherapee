@@ -300,6 +300,20 @@ public:
                            int pitch, int scale, const int luma, int chroma );
     void idirpyr          (LabImage* data_coarse, LabImage* data_fine, int level, LUTf &rangefn_L, LUTf & nrwt_l, LUTf & nrwt_ab,
                            int pitch, int scale, const int luma, const int chroma/*, LUTf & Lcurve, LUTf & abcurve*/ );
+    //locallab
+    void Tile_calc2 (int tilesize, int overlap, int kall, int imwidth, int imheight, int &numtiles_W, int &numtiles_H, int &tilewidth, int &tileheight, int &tileWskip, int &tileHskip);
+    void Lab_Tile         (LabImage* lab, LabImage* dst, int ska);
+    void Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+    void addGaNoise (LabImage *lab, LabImage *dst, double mean, double variance, int chroma, int sk);
+    void BlurNoise_Local(struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+    void InverseBlurNoise_Local(struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+
+    void Contrast_Local(float pm, bool locL, struct local_contra& lco, float hueref, float dhue, float lumaref, float av, struct local_params& lp, LabImage* original, LabImage* transformed, SHMap* shmap, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+    //  void InverseContrast_Local(float ah, float bh, float al, float bl, float ave,  float hueref, float dhue, const struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+    void InverseContrast_Local(float ave, float pm, bool locL, struct local_contra& lco, float hueref, float dhue, float lumaref, float av, struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+
+    void ColorLight_Local(float hueplus, float huemoins, float hueplusred, float huemoinsred, float hueref, float dhue, float chromaref, float lumaref, struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
+    void InverseColorLight_Local(float hueplus, float huemoins, float hueplusred, float huemoinsred, float hueref, float dhue, float chromaref, float lumaref, struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
 
     // FT denoise
     //void RGB_InputTransf(Imagefloat * src, LabImage * dst, const procparams::DirPyrDenoiseParams & dnparams, const procparams::DefringeParams & defringe);

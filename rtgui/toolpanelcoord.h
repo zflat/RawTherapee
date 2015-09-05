@@ -52,6 +52,7 @@
 #include "rotate.h"
 #include "vignetting.h"
 #include "gradient.h"
+#include "locallab.h"
 #include "pcvignette.h"
 #include "toolbar.h"
 #include "lensgeom.h"
@@ -101,6 +102,7 @@ protected:
     WhiteBalance* whitebalance;
     Vignetting* vignetting;
     Gradient* gradient;
+    Locallab* locallab;
     PCVignette* pcvignette;
     LensGeometry* lensgeom;
     LensProfilePanel* lensProf;
