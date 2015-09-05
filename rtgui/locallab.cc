@@ -1161,6 +1161,8 @@ bool Locallab::button1Pressed(int modifierKey)
                 }
             }
             */
+                EditSubscriber::dragging = true;
+
         return false;
     } else {
         // this will let this class ignore further drag events
@@ -1186,10 +1188,11 @@ bool Locallab::button1Pressed(int modifierKey)
 bool Locallab::button1Released()
 {
     draggedPointOldAngle = -1000.;
+    EditSubscriber::dragging = false;
     return true;
 }
 
-bool Locallab::drag(int modifierKey)
+bool Locallab::drag1(int modifierKey)
 {
     // compute the polar coordinate of the mouse position
     EditDataProvider *provider = getEditProvider();

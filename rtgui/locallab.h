@@ -8,6 +8,7 @@
 #include "adjuster.h"
 #include "toolpanel.h"
 #include "edit.h"
+#include "../rtengine/coord.h"
 
 class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public EditSubscriber
 {
@@ -47,7 +48,7 @@ protected:
     double draggedlocXOffset;
     double draggedlocYTOffset;
     double draggedlocXLOffset;
-    Coord draggedCenter;
+    rtengine::Coord draggedCenter;
     bool lastavoid, lastinvers, lastinversrad;
     sigc::connection  editConn, avoidConn, inversConn, inversradConn;
 
@@ -81,7 +82,7 @@ public:
     bool mouseOver(int modifierKey);
     bool button1Pressed(int modifierKey);
     bool button1Released();
-    bool drag(int modifierKey);
+    bool drag1(int modifierKey);
     void switchOffEditMode ();
 };
 
