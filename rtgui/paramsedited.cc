@@ -21,459 +21,1331 @@
 #include "options.h"
 #include "addsetids.h"
 
+using namespace rtengine;
+using namespace rtengine::procparams;
+
+
+void GeneralParamsEdited::set (bool v)
+{
+    rank         = v;
+    colorlabel   = v;
+    intrash      = v;
+}
+
+void ToneCurveParamsEdited::set (bool v)
+{
+    curve      = v;
+    curve2     = v;
+    curveMode  = v;
+    curveMode2 = v;
+    brightness = v;
+    black      = v;
+    contrast   = v;
+    saturation = v;
+    shcompr    = v;
+    hlcompr    = v;
+    hlcomprthresh = v;
+    autoexp    = v;
+    clip       = v;
+    expcomp    = v;
+    hrenabled   = v;
+    method    = v;
+}
+
+void LCurveParamsEdited::set (bool v)
+{
+    lcurve      = v;
+    acurve      = v;
+    bcurve      = v;
+    cccurve     = v;
+    chcurve     = v;
+    lhcurve     = v;
+    hhcurve     = v;
+    lccurve    = v;
+    clcurve    = v;
+    brightness  = v;
+    contrast    = v;
+    chromaticity    = v;
+    avoidcolorshift = v;
+    rstprotection   = v;
+    lcredsk         = v;
+    enabled         = v;
+    method          = v;
+}
+
+void RGBCurvesParamsEdited::set (bool v)
+{
+    lumamode       = v;
+    rcurve         = v;
+    gcurve         = v;
+    bcurve         = v;
+}
+
+void ColorToningEdited::set (bool v)
+{
+    enabled      = v;
+    autosat      = v;
+    opacityCurve = v;
+    colorCurve   = v;
+    satprotectionthreshold = v;
+    saturatedopacity       = v;
+    strength               = v;
+    shadowsColSat          = v;
+    hlColSat   = v;
+    balance    = v;
+    clcurve    = v;
+    method     = v;
+    twocolor   = v;
+    cl2curve   = v;
+    redlow     = v;
+    greenlow   = v;
+    bluelow    = v;
+    satlow     = v;
+    sathigh    = v;
+    redmed     = v;
+    greenmed   = v;
+    bluemed    = v;
+    redhigh    = v;
+    greenhigh  = v;
+    bluehigh   = v;
+    lumamode   = v;
+}
+
+void SharpeningParamsEdited::set (bool v)
+{
+    enabled            = v;
+    radius             = v;
+    amount             = v;
+    threshold          = v;
+    edgesonly          = v;
+    edges_radius       = v;
+    edges_tolerance    = v;
+    halocontrol        = v;
+    halocontrol_amount = v;
+    method         = v;
+    deconvamount   = v;
+    deconvradius   = v;
+    deconviter     = v;
+    deconvdamping  = v;
+}
+
+void SharpenEdgeParamsEdited::set (bool v)
+{
+    enabled       = v;
+    passes        = v;
+    amount        = v;
+    threechannels = v;
+}
+
+void SharpenMicroParamsEdited::set (bool v)
+{
+    enabled      = v;
+    matrix       = v;
+    amount       = v;
+    uniformity   = v;
+}
+
+void VibranceParamsEdited::set (bool v)
+{
+    enabled          = v;
+    pastels          = v;
+    saturated        = v;
+    psthreshold      = v;
+    protectskins     = v;
+    avoidcolorshift  = v;
+    pastsattog       = v;
+    skintonescurve   = v;
+}
+
+void ColorAppearanceParamsEdited::set (bool v)
+{
+    enabled    = v;
+    degree     = v;
+    autodegree = v;
+    surround     = v;
+    adapscen    = v;
+    autoadapscen = v;
+    adaplum    = v;
+    badpixsl    = v;
+    wbmodel    = v;
+    algo    = v;
+    jlight     = v;
+    qbright     = v;
+    chroma     = v;
+    schroma     = v;
+    mchroma     = v;
+    contrast     = v;
+    qcontrast     = v;
+    colorh     = v;
+    rstprotection     = v;
+    surrsource = v;
+    gamut = v;
+    //badpix = v;
+    datacie = v;
+    tonecie = v;
+    //sharpcie = v;
+    curve      = v;
+    curve2     = v;
+    curve3     = v;
+    curveMode  = v;
+    curveMode2 = v;
+    curveMode3 = v;
+}
+
+void WBParamsEdited::set (bool v)
+{
+    method                  = v;
+    green                   = v;
+    temperature             = v;
+    equal                   = v;
+}
+
+void DefringeParamsEdited::set (bool v)
+{
+    enabled           = v;
+    radius            = v;
+    threshold         = v;
+    huecurve          = v;
+}
+
+void DirPyrDenoiseParamsEdited::set (bool v)
+{
+    enabled      = v;
+    enhance      = v;
+    //perform      = v;
+    lcurve      = v;
+    cccurve      = v;
+    median      = v;
+    autochroma      = v;
+    luma         = v;
+    Ldetail      = v;
+    chroma       = v;
+    redchro      = v;
+    bluechro     = v;
+    gamma        = v;
+    passes        = v;
+    dmethod      = v;
+    Lmethod      = v;
+    Cmethod      = v;
+    C2method      = v;
+    smethod      = v;
+    medmethod      = v;
+    methodmed      = v;
+    rgbmethod      = v;
+}
+
+void EPDParamsEdited::set (bool v)
+{
+    enabled                = v;
+    strength            = v;
+    gamma            = v;
+    edgeStopping        = v;
+    scale               = v;
+    reweightingIterates = v;
+}
+
+void ImpulseDenoiseParamsEdited::set (bool v)
+{
+    enabled     = v;
+    thresh      = v;
+}
+
+void SHParamsEdited::set (bool v)
+{
+    enabled       = v;
+    hq            = v;
+    highlights    = v;
+    htonalwidth   = v;
+    shadows       = v;
+    stonalwidth   = v;
+    localcontrast = v;
+    radius        = v;
+}
+
+void CropParamsEdited::set (bool v)
+{
+    enabled = v;
+    x       = v;
+    y       = v;
+    w       = v;
+    h       = v;
+    fixratio = v;
+    ratio   = v;
+    orientation = v;
+    guide   = v;
+}
+
+void CoarseTransformParamsEdited::set (bool v)
+{
+    rotate = v;
+    hflip = v;
+    vflip = v;
+}
+
+void CommonTransformParamsEdited::set (bool v)
+{
+    autofill = v;
+}
+
+void RotateParamsEdited::set (bool v)
+{
+    degree = v;
+}
+
+void DistortionParamsEdited::set (bool v)
+{
+    amount = v;
+}
+
+void LensProfParamsEdited::set (bool v)
+{
+    lcpFile = v;
+    useDist = v;
+    useVign = v;
+    useCA = v;
+}
+
+void PerspectiveParamsEdited::set (bool v)
+{
+    horizontal = v;
+    vertical = v;
+}
+
+void GradientParamsEdited::set (bool v)
+{
+    enabled = v;
+    degree = v;
+    feather = v;
+    strength = v;
+    centerX = v;
+    centerY = v;
+}
+
+void PCVignetteParamsEdited::set (bool v)
+{
+    enabled = v;
+    strength = v;
+    feather = v;
+    roundness = v;
+}
+
+void CACorrParamsEdited::set (bool v)
+{
+    red = v;
+    blue = v;
+}
+
+void VignettingParamsEdited::set (bool v)
+{
+    amount = v;
+    radius = v;
+    strength = v;
+    centerX = v;
+    centerY = v;
+}
+
+void ChannelMixerParamsEdited::set (bool v)
+{
+    red[0] = v;
+    red[1] = v;
+    red[2] = v;
+    green[0] = v;
+    green[1] = v;
+    green[2] = v;
+    blue[0] = v;
+    blue[1] = v;
+    blue[2] = v;
+}
+
+void BlackWhiteParamsEdited::set (bool v)
+{
+    enabled   = v;
+    enabledcc   = v;
+    mixerRed   = v;
+    mixerOrange   = v;
+    mixerYellow   = v;
+    mixerGreen   = v;
+    mixerCyan   = v;
+    mixerBlue   = v;
+    mixerMagenta   = v;
+    mixerPurple   = v;
+    gammaRed   = v;
+    gammaGreen   = v;
+    gammaBlue   = v;
+    filter   = v;
+    setting   = v;
+    method   = v;
+    luminanceCurve = v;
+    beforeCurve      = v;
+    beforeCurveMode  = v;
+    afterCurve      = v;
+    afterCurveMode  = v;
+    autoc    = v;
+    algo    = v;
+}
+
+void ResizeParamsEdited::set (bool v)
+{
+    scale     = v;
+    appliesTo = v;
+    method    = v;
+    dataspec  = v;
+    width     = v;
+    height    = v;
+    enabled   = v;
+}
+
+void ColorManagementParamsEdited::set (bool v)
+{
+    input          = v;
+    toneCurve      = v;
+    applyLookTable = v;
+    applyBaselineExposureOffset = v;
+    applyHueSatMap = v;
+    blendCMSMatrix = v;
+    dcpIlluminant  = v;
+    working        = v;
+    output         = v;
+    gamma          = v;
+    gamfree        = v;
+    freegamma      = v;
+    gampos         = v;
+    slpos          = v;
+}
+
+void RAWParamsEdited::set (bool v)
+{
+    bayersensor.method = v;
+    bayersensor.ccSteps = v;
+    bayersensor.exBlack0 = v;
+    bayersensor.exBlack1 = v;
+    bayersensor.exBlack2 = v;
+    bayersensor.exBlack3 = v;
+    bayersensor.exTwoGreen = v;
+    bayersensor.dcbIterations = v;
+    bayersensor.dcbEnhance = v;
+    //bayersensor.allEnhance = v;
+    bayersensor.lmmseIterations = v;
+    bayersensor.greenEq = v;
+    bayersensor.linenoise = v;
+    xtranssensor.method = v;
+    xtranssensor.ccSteps = v;
+    xtranssensor.exBlackRed = v;
+    xtranssensor.exBlackGreen = v;
+    xtranssensor.exBlackBlue = v;
+    caCorrection = v;
+    caBlue  = v;
+    caRed   = v;
+    hotPixelFilter = v;
+    deadPixelFilter = v;
+    hotDeadPixelThresh = v;
+    darkFrame = v;
+    dfAuto = v;
+    ff_file = v;
+    ff_AutoSelect = v;
+    ff_BlurRadius = v;
+    ff_BlurType = v;
+    ff_AutoClipControl = v;
+    ff_clipControl = v;
+    exPos = v;
+    exPreser = v;
+}
+
+void DirPyrEqualizerParamsEdited::set (bool v)
+{
+    enabled = v;
+    gamutlab = v;
+
+    for(int i = 0; i < 6; i++) {
+        mult[i] = v;
+    }
+
+    threshold = v;
+    skinprotect = v;
+    hueskin = v;
+    //algo = v;
+}
+
+void WaveletParamsEdited::set (bool v)
+{
+    enabled = v;
+    strength = v;
+    balance = v;
+    iter = v;
+    median = v;
+    medianlev = v;
+    linkedg = v;
+    cbenab = v;
+    enacont = v;
+    greenhigh = v;
+    greenmed = v;
+    greenlow = v;
+    bluehigh = v;
+    bluemed = v;
+    bluelow = v;
+    lipst = v;
+    Medgreinf = v;
+    avoid = v;
+    tmr = v;
+    Lmethod = v;
+    CLmethod = v;
+    Backmethod = v;
+    Tilesmethod = v;
+    daubcoeffmethod = v;
+    CHmethod = v;
+    CHSLmethod = v;
+    EDmethod = v;
+    NPmethod = v;
+    BAmethod = v;
+    TMmethod = v;
+    HSmethod = v;
+    Dirmethod = v;
+    rescon = v;
+    resconH = v;
+    reschro = v;
+    tmrs = v;
+    gamma = v;
+    sup = v;
+    sky = v;
+    thres = v;
+    threshold = v;
+    threshold2 = v;
+    edgedetect = v;
+    edgedetectthr = v;
+    edgedetectthr2 = v;
+    edgesensi = v;
+    edgeampli = v;
+    chroma = v;
+    chro = v;
+    contrast = v;
+    edgrad = v;
+    edgval = v;
+    edgthresh = v;
+    thr = v;
+    thrH = v;
+    skinprotect = v;
+    hueskin = v;
+    hueskin2 = v;
+    hllev = v;
+    bllev = v;
+    edgcont = v;
+    level0noise = v;
+    level1noise = v;
+    level2noise = v;
+    level3noise = v;
+    ccwcurve = v;
+    opacityCurveRG   = v;
+    opacityCurveBY   = v;
+    opacityCurveW   = v;
+    opacityCurveWL   = v;
+    hhcurve     = v;
+    Chcurve     = v;
+    wavclCurve     = v;
+    pastlev = v;
+    satlev = v;
+
+    //enacont = v;
+    //enachrom = v;
+    //enaedge = v;
+    //enares = v;
+
+    expfinal = v;
+    expcontrast = v;
+    expchroma = v;
+    expedge = v;
+    expresid = v;
+    exptoning = v;
+    expnoise = v;
+
+    for(int i = 0; i < 9; i++) {
+        c[i] = v;
+    }
+
+    for(int i = 0; i < 9; i++) {
+        ch[i] = v;
+    }
+}
+
+void HSVEqualizerParamsEdited::set (bool v)
+{
+    hcurve = v;
+    scurve = v;
+    vcurve = v;
+}
+
+void FilmSimulationParamsEdited::set (bool v)
+{
+    enabled = v;
+    clutFilename = v;
+    strength = v;
+}
+
 ParamsEdited::ParamsEdited (bool value)
 {
-
     set (value);
 }
 
-void ParamsEdited::set (bool v)
+// By default set all subparts to 'v'
+void ParamsEdited::set (bool v, int subPart)
 {
-
-    general.rank         = v;
-    general.colorlabel   = v;
-    general.intrash      = v;
-    toneCurve.curve      = v;
-    toneCurve.curve2     = v;
-    toneCurve.curveMode  = v;
-    toneCurve.curveMode2 = v;
-    toneCurve.brightness = v;
-    toneCurve.black      = v;
-    toneCurve.contrast   = v;
-    toneCurve.saturation = v;
-    toneCurve.shcompr    = v;
-    toneCurve.hlcompr    = v;
-    toneCurve.hlcomprthresh = v;
-    toneCurve.autoexp    = v;
-    toneCurve.clip       = v;
-    toneCurve.expcomp    = v;
-    toneCurve.hrenabled   = v;
-    toneCurve.method    = v;
-    labCurve.lcurve      = v;
-    labCurve.acurve      = v;
-    labCurve.bcurve      = v;
-    labCurve.cccurve     = v;
-    labCurve.chcurve     = v;
-    labCurve.lhcurve     = v;
-    labCurve.hhcurve     = v;
-    labCurve.lccurve    = v;
-    labCurve.clcurve    = v;
-    labCurve.brightness  = v;
-    labCurve.contrast    = v;
-    labCurve.chromaticity    = v;
-    labCurve.avoidcolorshift = v;
-    labCurve.rstprotection   = v;
-    labCurve.lcredsk         = v;
-    rgbCurves.lumamode       = v;
-    rgbCurves.rcurve         = v;
-    rgbCurves.gcurve         = v;
-    rgbCurves.bcurve         = v;
-    colorToning.enabled      = v;
-    colorToning.autosat      = v;
-    colorToning.opacityCurve = v;
-    colorToning.colorCurve   = v;
-    colorToning.satprotectionthreshold = v;
-    colorToning.saturatedopacity       = v;
-    colorToning.strength               = v;
-    colorToning.shadowsColSat          = v;
-    colorToning.hlColSat   = v;
-    colorToning.balance    = v;
-    colorToning.clcurve    = v;
-    colorToning.method     = v;
-    colorToning.twocolor   = v;
-    colorToning.cl2curve   = v;
-    colorToning.redlow     = v;
-    colorToning.greenlow   = v;
-    colorToning.bluelow    = v;
-    colorToning.satlow     = v;
-    colorToning.sathigh    = v;
-    colorToning.redmed     = v;
-    colorToning.greenmed   = v;
-    colorToning.bluemed    = v;
-    colorToning.redhigh    = v;
-    colorToning.greenhigh  = v;
-    colorToning.bluehigh   = v;
-    colorToning.lumamode   = v;
-
-    sharpening.enabled            = v;
-    sharpening.radius             = v;
-    sharpening.amount             = v;
-    sharpening.threshold          = v;
-    sharpening.edgesonly          = v;
-    sharpening.edges_radius       = v;
-    sharpening.edges_tolerance    = v;
-    sharpening.halocontrol        = v;
-    sharpening.halocontrol_amount = v;
-    sharpening.method         = v;
-    sharpening.deconvamount   = v;
-    sharpening.deconvradius   = v;
-    sharpening.deconviter     = v;
-    sharpening.deconvdamping  = v;
-    prsharpening.enabled            = v;
-    prsharpening.radius             = v;
-    prsharpening.amount             = v;
-    prsharpening.threshold          = v;
-    prsharpening.edgesonly          = v;
-    prsharpening.edges_radius       = v;
-    prsharpening.edges_tolerance    = v;
-    prsharpening.halocontrol        = v;
-    prsharpening.halocontrol_amount = v;
-    prsharpening.method         = v;
-    prsharpening.deconvamount   = v;
-    prsharpening.deconvradius   = v;
-    prsharpening.deconviter     = v;
-    prsharpening.deconvdamping  = v;
-    sharpenEdge.enabled       = v;
-    sharpenEdge.passes        = v;
-    sharpenEdge.amount        = v;
-    sharpenEdge.threechannels = v;
-    sharpenMicro.enabled      = v;
-    sharpenMicro.matrix       = v;
-    sharpenMicro.amount       = v;
-    sharpenMicro.uniformity   = v;
-    vibrance.enabled          = v;
-    vibrance.pastels          = v;
-    vibrance.saturated        = v;
-    vibrance.psthreshold      = v;
-    vibrance.protectskins     = v;
-    vibrance.avoidcolorshift  = v;
-    vibrance.pastsattog       = v;
-    vibrance.skintonescurve   = v;
-    colorappearance.enabled    = v;
-    colorappearance.degree     = v;
-    colorappearance.autodegree = v;
-    colorappearance.surround     = v;
-    colorappearance.adapscen    = v;
-    colorappearance.autoadapscen = v;
-    colorappearance.adaplum    = v;
-    colorappearance.badpixsl    = v;
-    colorappearance.wbmodel    = v;
-    colorappearance.algo    = v;
-
-    colorappearance.jlight     = v;
-    colorappearance.qbright     = v;
-    colorappearance.chroma     = v;
-    colorappearance.schroma     = v;
-    colorappearance.mchroma     = v;
-    colorappearance.contrast     = v;
-    colorappearance.qcontrast     = v;
-    colorappearance.colorh     = v;
-    colorappearance.rstprotection     = v;
-    colorappearance.surrsource = v;
-    colorappearance.gamut = v;
-//  colorappearance.badpix = v;
-    colorappearance.datacie = v;
-    colorappearance.tonecie = v;
-//  colorappearance.sharpcie = v;
-    colorappearance.curve      = v;
-    colorappearance.curve2     = v;
-    colorappearance.curve3     = v;
-    colorappearance.curveMode  = v;
-    colorappearance.curveMode2 = v;
-    colorappearance.curveMode3 = v;
-
-    //colorBoost.amount         = v;
-    //colorBoost.avoidclip      = v;
-    //colorBoost.enable_saturationlimiter = v;
-    //colorBoost.saturationlimit = v;
-    wb.method                  = v;
-    wb.green                   = v;
-    wb.temperature             = v;
-    wb.equal                   = v;
-    //colorShift.a               = v;
-    //colorShift.b               = v;
-    //lumaDenoise.enabled        = v;
-    //lumaDenoise.radius         = v;
-    //lumaDenoise.edgetolerance  = v;
-    //colorDenoise.enabled       = v;
-    //colorDenoise.amount        = v;
-    defringe.enabled           = v;
-    defringe.radius            = v;
-    defringe.threshold         = v;
-    defringe.huecurve          = v;
-    impulseDenoise.enabled     = v;
-    impulseDenoise.thresh      = v;
-    dirpyrDenoise.enabled      = v;
-    dirpyrDenoise.enhance      = v;
-//  dirpyrDenoise.perform      = v;
-    dirpyrDenoise.lcurve      = v;
-    dirpyrDenoise.cccurve      = v;
-    dirpyrDenoise.median      = v;
-    dirpyrDenoise.autochroma      = v;
-    dirpyrDenoise.luma         = v;
-    dirpyrDenoise.Ldetail      = v;
-    dirpyrDenoise.chroma       = v;
-    dirpyrDenoise.redchro      = v;
-    dirpyrDenoise.bluechro     = v;
-    dirpyrDenoise.gamma        = v;
-    dirpyrDenoise.passes        = v;
-    dirpyrDenoise.dmethod      = v;
-    dirpyrDenoise.Lmethod      = v;
-    dirpyrDenoise.Cmethod      = v;
-    dirpyrDenoise.C2method      = v;
-    dirpyrDenoise.smethod      = v;
-    dirpyrDenoise.medmethod      = v;
-    dirpyrDenoise.methodmed      = v;
-    dirpyrDenoise.rgbmethod      = v;
-    epd.enabled                = v;
-    epd.strength            = v;
-    epd.gamma            = v;
-    epd.edgeStopping        = v;
-    epd.scale               = v;
-    epd.reweightingIterates = v;
-    sh.enabled       = v;
-    sh.hq            = v;
-    sh.highlights    = v;
-    sh.htonalwidth   = v;
-    sh.shadows       = v;
-    sh.stonalwidth   = v;
-    sh.localcontrast = v;
-    sh.radius        = v;
-    crop.enabled = v;
-    crop.x       = v;
-    crop.y       = v;
-    crop.w       = v;
-    crop.h       = v;
-    crop.fixratio = v;
-    crop.ratio   = v;
-    crop.orientation = v;
-    crop.guide   = v;
-    coarse.rotate = v;
-    coarse.hflip = v;
-    coarse.vflip = v;
-    commonTrans.autofill = v;
-    rotate.degree = v;
-    distortion.amount = v;
-    lensProf.lcpFile = v;
-    lensProf.useDist = v;
-    lensProf.useVign = v;
-    lensProf.useCA = v;
-    perspective.horizontal = v;
-    perspective.vertical = v;
-    gradient.enabled = v;
-    gradient.degree = v;
-    gradient.feather = v;
-    gradient.strength = v;
-    gradient.centerX = v;
-    gradient.centerY = v;
-    pcvignette.enabled = v;
-    pcvignette.strength = v;
-    pcvignette.feather = v;
-    pcvignette.roundness = v;
-    cacorrection.red = v;
-    cacorrection.blue = v;
-    vignetting.amount = v;
-    vignetting.radius = v;
-    vignetting.strength = v;
-    vignetting.centerX = v;
-    vignetting.centerY = v;
-    chmixer.red[0] = v;
-    chmixer.red[1] = v;
-    chmixer.red[2] = v;
-    chmixer.green[0] = v;
-    chmixer.green[1] = v;
-    chmixer.green[2] = v;
-    chmixer.blue[0] = v;
-    chmixer.blue[1] = v;
-    chmixer.blue[2] = v;
-    blackwhite.enabled   = v;
-    blackwhite.enabledcc   = v;
-    blackwhite.mixerRed   = v;
-    blackwhite.mixerOrange   = v;
-    blackwhite.mixerYellow   = v;
-    blackwhite.mixerGreen   = v;
-    blackwhite.mixerCyan   = v;
-    blackwhite.mixerBlue   = v;
-    blackwhite.mixerMagenta   = v;
-    blackwhite.mixerPurple   = v;
-    blackwhite.gammaRed   = v;
-    blackwhite.gammaGreen   = v;
-    blackwhite.gammaBlue   = v;
-    blackwhite.filter   = v;
-    blackwhite.setting   = v;
-    blackwhite.method   = v;
-    blackwhite.luminanceCurve = v;
-    blackwhite.beforeCurve      = v;
-    blackwhite.beforeCurveMode  = v;
-    blackwhite.afterCurve      = v;
-    blackwhite.afterCurveMode  = v;
-    blackwhite.autoc    = v;
-    blackwhite.algo    = v;
-
-
-    resize.scale     = v;
-    resize.appliesTo = v;
-    resize.method    = v;
-    resize.dataspec  = v;
-    resize.width     = v;
-    resize.height    = v;
-    resize.enabled   = v;
-    icm.input        = v;
-    icm.toneCurve = v;
-    icm.applyLookTable = v;
-    icm.applyBaselineExposureOffset = v;
-    icm.applyHueSatMap = v;
-    icm.blendCMSMatrix = v;
-    icm.dcpIlluminant = v;
-    icm.working      = v;
-    icm.output       = v;
-    icm.gamma       = v;
-    icm.freegamma       = v;
-    icm.gampos      = v;
-    icm.slpos       = v;
-    raw.bayersensor.method = v;
-    raw.bayersensor.ccSteps = v;
-    raw.bayersensor.exBlack0 = v;
-    raw.bayersensor.exBlack1 = v;
-    raw.bayersensor.exBlack2 = v;
-    raw.bayersensor.exBlack3 = v;
-    raw.bayersensor.exTwoGreen = v;
-    raw.bayersensor.dcbIterations = v;
-    raw.bayersensor.dcbEnhance = v;
-    //raw.bayersensor.allEnhance = v;
-    raw.bayersensor.lmmseIterations = v;
-    raw.bayersensor.greenEq = v;
-    raw.bayersensor.linenoise = v;
-    raw.xtranssensor.method = v;
-    raw.xtranssensor.ccSteps = v;
-    raw.xtranssensor.exBlackRed = v;
-    raw.xtranssensor.exBlackGreen = v;
-    raw.xtranssensor.exBlackBlue = v;
-    raw.caCorrection = v;
-    raw.caBlue  = v;
-    raw.caRed   = v;
-    raw.hotPixelFilter = v;
-    raw.deadPixelFilter = v;
-    raw.hotDeadPixelThresh = v;
-    raw.darkFrame = v;
-    raw.dfAuto = v;
-    raw.ff_file = v;
-    raw.ff_AutoSelect = v;
-    raw.ff_BlurRadius = v;
-    raw.ff_BlurType = v;
-    raw.ff_AutoClipControl = v;
-    raw.ff_clipControl = v;
-    raw.exPos = v;
-    raw.exPreser = v;
-    wavelet.enabled = v;
-    wavelet.strength = v;
-    wavelet.balance = v;
-    wavelet.iter = v;
-    wavelet.median = v;
-    wavelet.medianlev = v;
-    wavelet.linkedg = v;
-    wavelet.cbenab = v;
-    wavelet.greenhigh = v;
-    wavelet.greenmed = v;
-    wavelet.greenlow = v;
-    wavelet.bluehigh = v;
-    wavelet.bluemed = v;
-    wavelet.bluelow = v;
-    wavelet.lipst = v;
-    wavelet.Medgreinf = v;
-    wavelet.avoid = v;
-    wavelet.tmr = v;
-    wavelet.Lmethod = v;
-    wavelet.CLmethod = v;
-    wavelet.Backmethod = v;
-    wavelet.Tilesmethod = v;
-    wavelet.daubcoeffmethod = v;
-    wavelet.CHmethod = v;
-    wavelet.CHSLmethod = v;
-    wavelet.EDmethod = v;
-    wavelet.NPmethod = v;
-    wavelet.BAmethod = v;
-    wavelet.TMmethod = v;
-    wavelet.HSmethod = v;
-    wavelet.Dirmethod = v;
-    wavelet.rescon = v;
-    wavelet.resconH = v;
-    wavelet.reschro = v;
-    wavelet.tmrs = v;
-    wavelet.gamma = v;
-    wavelet.sup = v;
-    wavelet.sky = v;
-    wavelet.thres = v;
-    wavelet.threshold = v;
-    wavelet.threshold2 = v;
-    wavelet.edgedetect = v;
-    wavelet.edgedetectthr = v;
-    wavelet.edgedetectthr2 = v;
-    wavelet.edgesensi = v;
-    wavelet.edgeampli = v;
-    wavelet.chroma = v;
-    wavelet.chro = v;
-    wavelet.contrast = v;
-    wavelet.edgrad = v;
-    wavelet.edgval = v;
-    wavelet.edgthresh = v;
-    wavelet.thr = v;
-    wavelet.thrH = v;
-    wavelet.skinprotect = v;
-    wavelet.hueskin = v;
-    wavelet.hueskin2 = v;
-    wavelet.hllev = v;
-    wavelet.bllev = v;
-    wavelet.edgcont = v;
-    wavelet.level0noise = v;
-    wavelet.level1noise = v;
-    wavelet.level2noise = v;
-    wavelet.level3noise = v;
-    wavelet.ccwcurve = v;
-    wavelet.opacityCurveRG   = v;
-    wavelet.opacityCurveBY   = v;
-    wavelet.opacityCurveW   = v;
-    wavelet.opacityCurveWL   = v;
-    wavelet.hhcurve     = v;
-    wavelet.Chcurve     = v;
-    wavelet.wavclCurve     = v;
-
-    wavelet.pastlev = v;
-    wavelet.satlev = v;
-//  wavelet.enacont = v;
-//  wavelet.enachrom = v;
-//  wavelet.enaedge = v;
-//  wavelet.enares = v;
-    wavelet.expfinal = v;
-    wavelet.expcontrast = v;
-    wavelet.expchroma = v;
-    wavelet.expedge = v;
-    wavelet.expresid = v;
-    wavelet.exptoning = v;
-    wavelet.expnoise = v;
-
-    for(int i = 0; i < 9; i++) {
-        wavelet.c[i] = v;
+    if (subPart & ProcParams::FLAGS) {
+        general.set(v);
     }
-
-    for(int i = 0; i < 9; i++) {
-        wavelet.ch[i] = v;
+    if (subPart & ProcParams::TOOL) {
+        toneCurve.set(v);
+        labCurve.set(v);
+        rgbCurves.set(v);
+        colorToning.set(v);
+        sharpening.set(v);
+        prsharpening.set(v);
+        sharpenEdge.set(v);
+        sharpenMicro.set(v);
+        vibrance.set(v);
+        colorappearance.set(v);
+        wb.set(v);
+        defringe.set(v);
+        impulseDenoise.set(v);
+        dirpyrDenoise.set(v);
+        epd.set(v);
+        sh.set(v);
+        crop.set(v);
+        coarse.set(v);
+        commonTrans.set(v);
+        rotate.set(v);
+        distortion.set(v);
+        lensProf.set(v);
+        perspective.set(v);
+        gradient.set(v);
+        pcvignette.set(v);
+        cacorrection.set(v);
+        vignetting.set(v);
+        chmixer.set(v);
+        blackwhite.set(v);
+        resize.set(v);
+        icm.set(v);
+        raw.set(v);
+        wavelet.set(v);
+        dirpyrequalizer.set(v);
+        hsvequalizer.set(v);
+        filmSimulation.set(v);
     }
-
-    dirpyrequalizer.enabled = v;
-    dirpyrequalizer.gamutlab = v;
-
-    for(int i = 0; i < 6; i++) {
-        dirpyrequalizer.mult[i] = v;
+    if (subPart & ProcParams::EXIF) {
+        exif = v;
     }
-
-    dirpyrequalizer.threshold = v;
-    dirpyrequalizer.skinprotect = v;
-    dirpyrequalizer.hueskin = v;
-    //dirpyrequalizer.algo = v;
-    hsvequalizer.hcurve = v;
-    hsvequalizer.scurve = v;
-    hsvequalizer.vcurve = v;
-    filmSimulation.enabled = v;
-    filmSimulation.clutFilename = v;
-    filmSimulation.strength = v;
-
-    exif = v;
-    iptc = v;
+    if (subPart & ProcParams::IPTC) {
+        iptc = v;
+    }
 }
 
-using namespace rtengine;
-using namespace rtengine::procparams;
+void ToneCurveParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ToneCurveParams *e0 = static_cast< const ToneCurveParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ToneCurveParams* e = static_cast< const ToneCurveParams* >(elems.at(i));
+        curve = curve && e0->curve == e->curve;
+        curve2 = curve2 && e0->curve2 == e->curve2;
+        curveMode = curveMode && e0->curveMode == e->curveMode;
+        curveMode2 = curveMode2 && e0->curveMode2 == e->curveMode2;
+        brightness = brightness && e0->brightness == e->brightness;
+        black = black && e0->black == e->black;
+        contrast = contrast && e0->contrast == e->contrast;
+        saturation = saturation && e0->saturation == e->saturation;
+        shcompr = shcompr && e0->shcompr == e->shcompr;
+        hlcompr = hlcompr && e0->hlcompr == e->hlcompr;
+        hlcomprthresh = hlcomprthresh && e0->hlcomprthresh == e->hlcomprthresh;
+        autoexp = autoexp && e0->autoexp == e->autoexp;
+        clip = clip && e0->clip == e->clip;
+        expcomp = expcomp && e0->expcomp == e->expcomp;
+        hrenabled = hrenabled && e0->hrenabled == e->hrenabled;
+        method = method && e0->method == e->method;
+    }
+}
+
+void LCurveParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const LCurveParams *e0 = static_cast< const LCurveParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const LCurveParams* e = static_cast< const LCurveParams* >(elems.at(i));
+        lcurve = lcurve && e0->lcurve == e->lcurve;
+        acurve = acurve && e0->acurve == e->acurve;
+        bcurve = bcurve && e0->bcurve == e->bcurve;
+        cccurve = cccurve && e0->cccurve == e->cccurve;
+        chcurve = chcurve && e0->chcurve == e->chcurve;
+        lhcurve = lhcurve && e0->lhcurve == e->lhcurve;
+        hhcurve = hhcurve && e0->hhcurve == e->hhcurve;
+        lccurve = lccurve && e0->lccurve == e->lccurve;
+        clcurve = clcurve && e0->clcurve == e->clcurve;
+        brightness = brightness && e0->brightness == e->brightness;
+        contrast = contrast && e0->contrast == e->contrast;
+        chromaticity = chromaticity && e0->chromaticity == e->chromaticity;
+        avoidcolorshift = avoidcolorshift && e0->avoidcolorshift == e->avoidcolorshift;
+        rstprotection = rstprotection && e0->rstprotection == e->rstprotection;
+        lcredsk = lcredsk && e0->lcredsk == e->lcredsk;
+    }
+}
+
+void RGBCurvesParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const RGBCurvesParams *e0 = static_cast< const RGBCurvesParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const RGBCurvesParams* e = static_cast< const RGBCurvesParams* >(elems.at(i));
+        lumamode = lumamode && e0->lumamode == e->lumamode;
+        rcurve = rcurve && e0->rcurve == e->rcurve;
+        gcurve = gcurve && e0->gcurve == e->gcurve;
+        bcurve = bcurve && e0->bcurve == e->bcurve;
+    }
+}
+
+void ColorToningEdited::initFrom (std::vector<const void*> elems)
+{
+    const ColorToningParams *e0 = static_cast< const ColorToningParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ColorToningParams *e = static_cast< const ColorToningParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        twocolor = twocolor && e0->twocolor == e->twocolor;
+        opacityCurve = opacityCurve && e0->opacityCurve == e->opacityCurve;
+        colorCurve = colorCurve && e0->colorCurve == e->colorCurve;
+        autosat = autosat && e0->autosat == e->autosat;
+        satprotectionthreshold = satprotectionthreshold && e0->satProtectionThreshold == e->satProtectionThreshold;
+        saturatedopacity = saturatedopacity && e0->saturatedOpacity == e->saturatedOpacity;
+        strength = strength && e0->strength == e->strength;
+        shadowsColSat = shadowsColSat && e0->shadowsColSat == e->shadowsColSat;
+        hlColSat = hlColSat && e0->hlColSat == e->hlColSat;
+        balance = balance && e0->balance == e->balance;
+        clcurve = clcurve && e0->clcurve == e->clcurve;
+        cl2curve = cl2curve && e0->cl2curve == e->cl2curve;
+        method = method && e0->method == e->method;
+        redlow = redlow && e0->redlow == e->redlow;
+        greenlow = greenlow && e0->greenlow == e->greenlow;
+        bluelow = bluelow && e0->bluelow == e->bluelow;
+        satlow = satlow && e0->satlow == e->satlow;
+        sathigh = sathigh && e0->sathigh == e->sathigh;
+        redmed = redmed && e0->redmed == e->redmed;
+        greenmed = greenmed && e0->greenmed == e->greenmed;
+        bluemed = bluemed && e0->bluemed == e->bluemed;
+        redhigh = redhigh && e0->redhigh == e->redhigh;
+        greenhigh = greenhigh && e0->greenhigh == e->greenhigh;
+        bluehigh = bluehigh && e0->bluehigh == e->bluehigh;
+        lumamode = lumamode && e0->lumamode == e->lumamode;
+    }
+}
+
+void SharpeningParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const SharpeningParams *e0 = static_cast< const SharpeningParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const SharpeningParams *e = static_cast< const SharpeningParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        radius = radius && e0->radius == e->radius;
+        amount = amount && e0->amount == e->amount;
+        threshold = threshold && e0->threshold == e->threshold;
+        edgesonly = edgesonly && e0->edgesonly == e->edgesonly;
+        edges_radius = edges_radius && e0->edges_radius == e->edges_radius;
+        edges_tolerance = edges_tolerance && e0->edges_tolerance == e->edges_tolerance;
+        halocontrol = halocontrol && e0->halocontrol == e->halocontrol;
+        halocontrol_amount = halocontrol_amount && e0->halocontrol_amount == e->halocontrol_amount;
+        method = method && e0->method == e->method;
+        deconvamount = deconvamount && e0->deconvamount == e->deconvamount;
+        deconvradius = deconvradius && e0->deconvradius == e->deconvradius;
+        deconviter = deconviter && e0->deconviter == e->deconviter;
+        deconvdamping = deconvdamping && e0->deconvdamping == e->deconvdamping;
+    }
+}
+
+void SharpenEdgeParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const SharpenEdgeParams *e0 = static_cast< const SharpenEdgeParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const SharpenEdgeParams *e = static_cast< const SharpenEdgeParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        passes = passes && e0->passes == e->passes;
+        amount = amount && e0->amount == e->amount;
+        threechannels = threechannels && e0->threechannels == e->threechannels;
+    }
+}
+
+void SharpenMicroParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const SharpenMicroParams *e0 = static_cast< const SharpenMicroParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const SharpenMicroParams *e = static_cast< const SharpenMicroParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        matrix = matrix && e0->matrix == e->matrix;
+        amount = amount && e0->amount == e->amount;
+        uniformity = uniformity && e0->uniformity == e->uniformity;
+    }
+}
+
+void VibranceParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const VibranceParams *e0 = static_cast< const VibranceParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const VibranceParams *e = static_cast< const VibranceParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        pastels = pastels && e0->pastels == e->pastels;
+        saturated = saturated && e0->saturated == e->saturated;
+        psthreshold = psthreshold && e0->psthreshold == e->psthreshold;
+        protectskins = protectskins && e0->protectskins == e->protectskins;
+        avoidcolorshift = avoidcolorshift && e0->avoidcolorshift == e->avoidcolorshift;
+        pastsattog = pastsattog && e0->pastsattog == e->pastsattog;
+        skintonescurve = skintonescurve && e0->skintonescurve == e->skintonescurve;
+    }
+}
+
+void ColorAppearanceParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ColorAppearanceParams *e0 = static_cast< const ColorAppearanceParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ColorAppearanceParams *e = static_cast< const ColorAppearanceParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        degree = degree && e0->degree == e->degree;
+        autodegree = autodegree && e0->autodegree == e->autodegree;
+        surround = surround && e0->surround == e->surround;
+        adapscen = adapscen && e0->adapscen == e->adapscen;
+        autoadapscen = autoadapscen && e0->autoadapscen == e->autoadapscen;
+        adaplum = adaplum && e0->adaplum == e->adaplum;
+        badpixsl = badpixsl && e0->badpixsl == e->badpixsl;
+        wbmodel = wbmodel && e0->wbmodel == e->wbmodel;
+        algo = algo && e0->algo == e->algo;
+        jlight = jlight && e0->jlight == e->jlight;
+        qbright = qbright && e0->qbright == e->qbright;
+        chroma = chroma && e0->chroma == e->chroma;
+        schroma = schroma && e0->schroma == e->schroma;
+        mchroma = mchroma && e0->mchroma == e->mchroma;
+        rstprotection = rstprotection && e0->rstprotection == e->rstprotection;
+        contrast = contrast && e0->contrast == e->contrast;
+        qcontrast = qcontrast && e0->qcontrast == e->qcontrast;
+        colorh = colorh && e0->colorh == e->colorh;
+        surrsource = surrsource && e0->surrsource == e->surrsource;
+        gamut = gamut && e0->gamut == e->gamut;
+        //badpix = badpix && e0->badpix == e->badpix;
+        datacie = datacie && e0->datacie == e->datacie;
+        tonecie = tonecie && e0->tonecie == e->tonecie;
+        //sharpcie = sharpcie && e0->sharpcie == e->sharpcie;
+        curve = curve && e0->curve == e->curve;
+        curve3 = curve3 && e0->curve3 == e->curve3;
+        curve2 = curve2 && e0->curve2 == e->curve2;
+        curveMode = curveMode && e0->curveMode == e->curveMode;
+        curveMode2 = curveMode2 && e0->curveMode2 == e->curveMode2;
+        curveMode3 = curveMode3 && e0->curveMode3 == e->curveMode3;
+    }
+}
+
+void WBParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const WBParams *e0 = static_cast< const WBParams* >(elems.at(0));
+    size_t size = elems.size();
+  for (size_t i = 1; i < size; ++i) {
+    const WBParams *e = static_cast< const WBParams* >(elems.at(i));
+      method = method && e0->method == e->method;
+        green = green && e0->green == e->green;
+        equal = equal && e0->equal == e->equal;
+        temperature = temperature && e0->temperature == e->temperature;
+    }
+}
+
+void DefringeParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const DefringeParams *e0 = static_cast< const DefringeParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const DefringeParams *e = static_cast< const DefringeParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        radius = radius && e0->radius == e->radius;
+        threshold = threshold && e0->threshold == e->threshold;
+        huecurve = huecurve && e0->huecurve == e->huecurve;
+    }
+}
+
+void DirPyrDenoiseParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const DirPyrDenoiseParams *e0 = static_cast< const DirPyrDenoiseParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const DirPyrDenoiseParams *e = static_cast< const DirPyrDenoiseParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        enhance = enhance && e0->enhance == e->enhance;
+        median = median && e0->median == e->median;
+        autochroma = autochroma && e0->autochroma == e->autochroma;
+        //perform = perform && e0->perform == e->perform;
+        luma = luma && e0->luma == e->luma;
+        lcurve = lcurve && e0->lcurve == e->lcurve;
+        cccurve = cccurve && e0->cccurve == e->cccurve;
+        Ldetail = Ldetail && e0->Ldetail == e->Ldetail;
+        chroma = chroma && e0->chroma == e->chroma;
+        redchro = redchro && e0->redchro == e->redchro;
+        bluechro = bluechro && e0->bluechro == e->bluechro;
+        gamma = gamma && e0->gamma == e->gamma;
+        passes = passes && e0->passes == e->passes;
+        dmethod = dmethod && e0->dmethod == e->dmethod;
+        Lmethod = Lmethod && e0->Lmethod == e->Lmethod;
+        Cmethod = Cmethod && e0->Cmethod == e->Cmethod;
+        C2method = C2method && e0->C2method == e->C2method;
+        smethod = smethod && e0->smethod == e->smethod;
+        medmethod = medmethod && e0->medmethod == e->medmethod;
+        methodmed = methodmed && e0->methodmed == e->methodmed;
+        rgbmethod = rgbmethod && e0->rgbmethod == e->rgbmethod;
+    }
+}
+
+void EPDParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const EPDParams *e0 = static_cast< const EPDParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const EPDParams *e = static_cast< const EPDParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        strength = strength && e0->strength == e->strength;
+        gamma = gamma && e0->gamma == e->gamma;
+        edgeStopping = edgeStopping && e0->edgeStopping == e->edgeStopping;
+        scale = scale && e0->scale == e->scale;
+        reweightingIterates = reweightingIterates && e0->reweightingIterates == e->reweightingIterates;
+    }
+}
+
+void ImpulseDenoiseParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ImpulseDenoiseParams *e0 = static_cast< const ImpulseDenoiseParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ImpulseDenoiseParams *e = static_cast< const ImpulseDenoiseParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        thresh = thresh && e0->thresh == e->thresh;
+    }
+}
+
+void SHParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const SHParams *e0 = static_cast< const SHParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const SHParams *e = static_cast< const SHParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        hq = hq && e0->hq == e->hq;
+        highlights = highlights && e0->highlights == e->highlights;
+        htonalwidth = htonalwidth && e0->htonalwidth == e->htonalwidth;
+        shadows = shadows && e0->shadows == e->shadows;
+        stonalwidth = stonalwidth && e0->stonalwidth == e->stonalwidth;
+        localcontrast = localcontrast && e0->localcontrast == e->localcontrast;
+        radius = radius && e0->radius == e->radius;
+    }
+}
+
+void CropParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const CropParams *e0 = static_cast< const CropParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const CropParams *e = static_cast< const CropParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        x = x && e0->x == e->x;
+        y = y && e0->y == e->y;
+        w = w && e0->w == e->w;
+        h = h && e0->h == e->h;
+        fixratio = fixratio && e0->fixratio == e->fixratio;
+        ratio = ratio && e0->ratio == e->ratio;
+        orientation = orientation && e0->orientation == e->orientation;
+        guide = guide && e0->guide == e->guide;
+    }
+}
+
+void CoarseTransformParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const CoarseTransformParams *e0 = static_cast< const CoarseTransformParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const CoarseTransformParams *e = static_cast< const CoarseTransformParams* >(elems.at(i));
+        rotate = rotate && e0->rotate == e->rotate;
+        hflip = hflip && e0->hflip == e->hflip;
+        vflip = vflip && e0->vflip == e->vflip;
+    }
+}
+
+void CommonTransformParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const CommonTransformParams *e0 = static_cast< const CommonTransformParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const CommonTransformParams *e = static_cast< const CommonTransformParams* >(elems.at(i));
+        autofill = autofill && e0->autofill == e->autofill;
+    }
+}
+
+void RotateParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const RotateParams *e0 = static_cast< const RotateParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const RotateParams *e = static_cast< const RotateParams* >(elems.at(i));
+        degree = degree && e0->degree == e->degree;
+    }
+}
+
+void DistortionParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const DistortionParams *e0 = static_cast< const DistortionParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const DistortionParams *e = static_cast< const DistortionParams* >(elems.at(i));
+        amount = amount && e0->amount == e->amount;
+    }
+}
+
+void LensProfParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const LensProfParams *e0 = static_cast< const LensProfParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const LensProfParams *e = static_cast< const LensProfParams* >(elems.at(i));
+        lcpFile = lcpFile && e0->lcpFile == e->lcpFile;
+        useDist = useDist && e0->useDist == e->useDist;
+        useVign = useVign && e0->useVign == e->useVign;
+        useCA = useCA && e0->useCA == e->useCA;
+    }
+}
+
+void PerspectiveParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const PerspectiveParams *e0 = static_cast< const PerspectiveParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const PerspectiveParams *e = static_cast< const PerspectiveParams* >(elems.at(i));
+        horizontal = horizontal && e0->horizontal == e->horizontal;
+        vertical = vertical && e0->vertical == e->vertical;
+    }
+}
+
+void GradientParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const GradientParams *e0 = static_cast< const GradientParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const GradientParams *e = static_cast< const GradientParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        degree = degree && e0->degree == e->degree;
+        feather = feather && e0->feather == e->feather;
+        strength = strength && e0->strength == e->strength;
+        centerX = centerX && e0->centerX == e->centerX;
+        centerY = centerY && e0->centerY == e->centerY;
+    }
+}
+
+void PCVignetteParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const PCVignetteParams *e0 = static_cast< const PCVignetteParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const PCVignetteParams *e = static_cast< const PCVignetteParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        strength = strength && e0->strength == e->strength;
+        feather = feather && e0->feather == e->feather;
+        roundness = roundness && e0->roundness == e->roundness;
+    }
+}
+
+void CACorrParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const CACorrParams *e0 = static_cast< const CACorrParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const CACorrParams *e = static_cast< const CACorrParams* >(elems.at(i));
+        red = red && e0->red == e->red;
+        blue = blue && e0->blue == e->blue;
+    }
+}
+
+void VignettingParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const VignettingParams *e0 = static_cast< const VignettingParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const VignettingParams *e = static_cast< const VignettingParams* >(elems.at(i));
+        amount = amount && e0->amount == e->amount;
+        radius = radius && e0->radius == e->radius;
+        strength = strength && e0->strength == e->strength;
+        centerX = centerX && e0->centerX == e->centerX;
+        centerY = centerY && e0->centerY == e->centerY;
+    }
+}
+
+void ChannelMixerParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ChannelMixerParams *e0 = static_cast< const ChannelMixerParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ChannelMixerParams *e = static_cast< const ChannelMixerParams* >(elems.at(i));
+        red[0] = red[0] && e0->red[0] == e->red[0];
+        red[1] = red[1] && e0->red[1] == e->red[1];
+        red[2] = red[2] && e0->red[2] == e->red[2];
+        green[0] = green[0] && e0->green[0] == e->green[0];
+        green[1] = green[1] && e0->green[1] == e->green[1];
+        green[2] = green[2] && e0->green[2] == e->green[2];
+        blue[0] = blue[0] && e0->blue[0] == e->blue[0];
+        blue[1] = blue[1] && e0->blue[1] == e->blue[1];
+        blue[2] = blue[2] && e0->blue[2] == e->blue[2];
+    }
+}
+
+void BlackWhiteParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const BlackWhiteParams *e0 = static_cast< const BlackWhiteParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const BlackWhiteParams *e = static_cast< const BlackWhiteParams* >(elems.at(i));
+        enabledcc = enabledcc && e0->enabledcc == e->enabledcc;
+        enabled = enabled && e0->enabled == e->enabled;
+        mixerRed = mixerRed && e0->mixerRed == e->mixerRed;
+        mixerOrange = mixerOrange && e0->mixerOrange == e->mixerOrange;
+        mixerYellow = mixerYellow && e0->mixerYellow == e->mixerYellow;
+        mixerGreen = mixerGreen && e0->mixerGreen == e->mixerGreen;
+        mixerCyan = mixerCyan && e0->mixerCyan == e->mixerCyan;
+        mixerBlue = mixerBlue && e0->mixerBlue == e->mixerBlue;
+        mixerMagenta = mixerMagenta && e0->mixerMagenta == e->mixerMagenta;
+        mixerPurple = mixerPurple && e0->mixerPurple == e->mixerPurple;
+        gammaRed = gammaRed && e0->gammaRed == e->gammaRed;
+        gammaGreen = gammaGreen && e0->gammaGreen == e->gammaGreen;
+        gammaBlue = gammaBlue && e0->gammaBlue == e->gammaBlue;
+        filter = filter && e0->filter == e->filter;
+        setting = setting && e0->setting == e->setting;
+        luminanceCurve = luminanceCurve && e0->luminanceCurve == e->luminanceCurve;
+        method = method && e0->method == e->method;
+        beforeCurve = beforeCurve && e0->beforeCurve == e->beforeCurve;
+        beforeCurveMode = beforeCurveMode && e0->beforeCurveMode == e->beforeCurveMode;
+        afterCurve = afterCurve && e0->afterCurve == e->afterCurve;
+        afterCurveMode = afterCurveMode && e0->afterCurveMode == e->afterCurveMode;
+        autoc = autoc && e0->autoc == e->autoc;
+        algo = algo && e0->algo == e->algo;
+    }
+}
+
+void ResizeParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ResizeParams *e0 = static_cast< const ResizeParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ResizeParams *e = static_cast< const ResizeParams* >(elems.at(i));
+        scale = scale && e0->scale == e->scale;
+        appliesTo = appliesTo && e0->appliesTo == e->appliesTo;
+        method = method && e0->method == e->method;
+        dataspec = dataspec && e0->dataspec == e->dataspec;
+        width = width && e0->width == e->width;
+        height = height && e0->height == e->height;
+        enabled = enabled && e0->enabled == e->enabled;
+    }
+}
+
+void ColorManagementParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const ColorManagementParams *e0 = static_cast< const ColorManagementParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const ColorManagementParams *e = static_cast< const ColorManagementParams* >(elems.at(i));
+        input = input && e0->input == e->input;
+        toneCurve = toneCurve && e0->toneCurve == e->toneCurve;
+        applyLookTable = applyLookTable && e0->applyLookTable == e->applyLookTable;
+        applyBaselineExposureOffset = applyBaselineExposureOffset && e0->applyBaselineExposureOffset == e->applyBaselineExposureOffset;
+        applyHueSatMap = applyHueSatMap && e0->applyHueSatMap == e->applyHueSatMap;
+        blendCMSMatrix = blendCMSMatrix && e0->blendCMSMatrix == e->blendCMSMatrix;
+        dcpIlluminant = dcpIlluminant && e0->dcpIlluminant == e->dcpIlluminant;
+        working = working && e0->working == e->working;
+        output = output && e0->output == e->output;
+        gamma = gamma && e0->gamma == e->gamma;
+        freegamma = freegamma && e0->freegamma == e->freegamma;
+        gampos = gampos && e0->gampos == e->gampos;
+        slpos = slpos && e0->slpos == e->slpos;
+    }
+}
+
+void RAWParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const RAWParams *e0 = static_cast< const RAWParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const RAWParams *e = static_cast< const RAWParams* >(elems.at(i));
+        bayersensor.method = bayersensor.method && e0->bayersensor.method == e->bayersensor.method;
+        bayersensor.ccSteps = bayersensor.ccSteps && e0->bayersensor.ccSteps == e->bayersensor.ccSteps;
+        bayersensor.exBlack0 = bayersensor.exBlack0 && e0->bayersensor.black0 == e->bayersensor.black0;
+        bayersensor.exBlack1 = bayersensor.exBlack1 && e0->bayersensor.black1 == e->bayersensor.black1;
+        bayersensor.exBlack2 = bayersensor.exBlack2 && e0->bayersensor.black2 == e->bayersensor.black2;
+        bayersensor.exBlack3 = bayersensor.exBlack3 && e0->bayersensor.black3 == e->bayersensor.black3;
+        bayersensor.exTwoGreen = bayersensor.exTwoGreen && e0->bayersensor.twogreen == e->bayersensor.twogreen;
+        bayersensor.dcbIterations = bayersensor.dcbIterations && e0->bayersensor.dcb_iterations == e->bayersensor.dcb_iterations;
+        bayersensor.dcbEnhance = bayersensor.dcbEnhance && e0->bayersensor.dcb_enhance == e->bayersensor.dcb_enhance;
+        //bayersensor.allEnhance = bayersensor.allEnhance && e0->bayersensor.all_enhance == e->bayersensor.all_enhance;
+        bayersensor.lmmseIterations = bayersensor.lmmseIterations && e0->bayersensor.lmmse_iterations == e->bayersensor.lmmse_iterations;
+        bayersensor.greenEq = bayersensor.greenEq && e0->bayersensor.greenthresh == e->bayersensor.greenthresh;
+        bayersensor.linenoise = bayersensor.linenoise && e0->bayersensor.linenoise == e->bayersensor.linenoise;
+        xtranssensor.method = xtranssensor.method && e0->xtranssensor.method == e->xtranssensor.method;
+        xtranssensor.ccSteps = xtranssensor.ccSteps && e0->xtranssensor.ccSteps == e->xtranssensor.ccSteps;
+        xtranssensor.exBlackRed = xtranssensor.exBlackRed && e0->xtranssensor.blackred == e->xtranssensor.blackred;
+        xtranssensor.exBlackGreen = xtranssensor.exBlackGreen && e0->xtranssensor.blackgreen == e->xtranssensor.blackgreen;
+        xtranssensor.exBlackBlue = xtranssensor.exBlackBlue && e0->xtranssensor.blackblue == e->xtranssensor.blackblue;
+        caCorrection = caCorrection && e0->ca_autocorrect == e->ca_autocorrect;
+        caRed = caRed && e0->cared == e->cared;
+        caBlue = caBlue && e0->cablue == e->cablue;
+        hotPixelFilter = hotPixelFilter && e0->hotPixelFilter == e->hotPixelFilter;
+        deadPixelFilter = deadPixelFilter && e0->deadPixelFilter == e->deadPixelFilter;
+        hotDeadPixelThresh = hotDeadPixelThresh && e0->hotdeadpix_thresh == e->hotdeadpix_thresh;
+        darkFrame = darkFrame && e0->dark_frame == e->dark_frame;
+        dfAuto = dfAuto && e0->df_autoselect == e->df_autoselect;
+        ff_file = ff_file && e0->ff_file == e->ff_file;
+        ff_AutoSelect = ff_AutoSelect && e0->ff_AutoSelect == e->ff_AutoSelect;
+        ff_BlurRadius = ff_BlurRadius && e0->ff_BlurRadius == e->ff_BlurRadius;
+        ff_BlurType = ff_BlurType && e0->ff_BlurType == e->ff_BlurType;
+        ff_AutoClipControl = ff_AutoClipControl && e0->ff_AutoClipControl == e->ff_AutoClipControl;
+        ff_clipControl = ff_clipControl && e0->ff_clipControl == e->ff_clipControl;
+        exPos = exPos && e0->expos == e->expos;
+        exPreser = exPreser && e0->preser == e->preser;
+    }
+}
+
+void DirPyrEqualizerParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const DirPyrEqualizerParams *e0 = static_cast< const DirPyrEqualizerParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const DirPyrEqualizerParams *e = static_cast< const DirPyrEqualizerParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        gamutlab = gamutlab && e0->gamutlab == e->gamutlab;
+        for(int i = 0; i < 6; i++) {
+            mult[i] = mult[i] && e0->mult[i] == e->mult[i];
+        }
+        threshold = threshold && e0->threshold == e->threshold;
+        skinprotect = skinprotect && e0->skinprotect == e->skinprotect;
+        //algo = algo && e0->algo == e->algo;
+        hueskin = hueskin && e0->hueskin == e->hueskin;
+    }
+}
+
+void WaveletParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const WaveletParams *e0 = static_cast< const WaveletParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const WaveletParams *e = static_cast< const WaveletParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        strength = strength && e0->strength == e->strength;
+        balance = balance && e0->balance == e->balance;
+        iter = iter && e0->iter == e->iter;
+        median = median && e0->median == e->median;
+        medianlev = medianlev && e0->medianlev == e->medianlev;
+        linkedg = linkedg && e0->linkedg == e->linkedg;
+        cbenab = cbenab && e0->cbenab == e->cbenab;
+        greenmed = greenmed && e0->greenmed == e->greenmed;
+        bluemed = bluemed && e0->bluemed == e->bluemed;
+        greenhigh = greenhigh && e0->greenhigh == e->greenhigh;
+        bluehigh = bluehigh && e0->bluehigh == e->bluehigh;
+        greenlow = greenlow && e0->greenlow == e->greenlow;
+        bluelow = bluelow && e0->bluelow == e->bluelow;
+        lipst = lipst && e0->lipst == e->lipst;
+        Medgreinf = Medgreinf && e0->Medgreinf == e->Medgreinf;
+        avoid = avoid && e0->avoid == e->avoid;
+        tmr = tmr && e0->tmr == e->tmr;
+        Lmethod = Lmethod && e0->Lmethod == e->Lmethod;
+        CLmethod = CLmethod && e0->CLmethod == e->CLmethod;
+        Backmethod = Backmethod && e0->Backmethod == e->Backmethod;
+        Tilesmethod = Tilesmethod && e0->Tilesmethod == e->Tilesmethod;
+        daubcoeffmethod = daubcoeffmethod && e0->daubcoeffmethod == e->daubcoeffmethod;
+        CHmethod = CHmethod && e0->CHmethod == e->CHmethod;
+        CHSLmethod = CHSLmethod && e0->CHSLmethod == e->CHSLmethod;
+        EDmethod = EDmethod && e0->EDmethod == e->EDmethod;
+        NPmethod = NPmethod && e0->NPmethod == e->NPmethod;
+        BAmethod = BAmethod && e0->BAmethod == e->BAmethod;
+        TMmethod = TMmethod && e0->TMmethod == e->TMmethod;
+        HSmethod = HSmethod && e0->HSmethod == e->HSmethod;
+        Dirmethod = Dirmethod && e0->Dirmethod == e->Dirmethod;
+        rescon = rescon && e0->rescon == e->rescon;
+        resconH = resconH && e0->resconH == e->resconH;
+        reschro = reschro && e0->reschro == e->reschro;
+        tmrs = tmrs && e0->tmrs == e->tmrs;
+        gamma = gamma && e0->gamma == e->gamma;
+        sup = sup && e0->sup == e->sup;
+        sky = sky && e0->sky == e->sky;
+        threshold = threshold && e0->threshold == e->threshold;
+        threshold2 = threshold2 && e0->threshold2 == e->threshold2;
+        edgedetect = edgedetect && e0->edgedetect == e->edgedetect;
+        edgedetectthr = edgedetectthr && e0->edgedetectthr == e->edgedetectthr;
+        edgedetectthr2 = edgedetectthr2 && e0->edgedetectthr2 == e->edgedetectthr2;
+        edgesensi = edgesensi && e0->edgesensi == e->edgesensi;
+        edgeampli = edgeampli && e0->edgeampli == e->edgeampli;
+        thres = thres && e0->thres == e->thres;
+        chroma = chroma && e0->chroma == e->chroma;
+        chro = chro && e0->chro == e->chro;
+        contrast = contrast && e0->contrast == e->contrast;
+        edgrad = edgrad && e0->edgrad == e->edgrad;
+        edgval = edgval && e0->edgval == e->edgval;
+        edgthresh = edgthresh && e0->edgthresh == e->edgthresh;
+        thr = thr && e0->thr == e->thr;
+        thrH = thrH && e0->thrH == e->thrH;
+        hueskin = hueskin && e0->hueskin == e->hueskin;
+        hueskin2 = hueskin2 && e0->hueskin2 == e->hueskin2;
+        hllev = hllev && e0->hllev == e->hllev;
+        bllev = bllev && e0->bllev == e->bllev;
+        edgcont = edgcont && e0->edgcont == e->edgcont;
+        level0noise = level0noise && e0->level0noise == e->level0noise;
+        level1noise = level1noise && e0->level1noise == e->level1noise;
+        level2noise = level2noise && e0->level2noise == e->level2noise;
+        level3noise = level3noise && e0->level3noise == e->level3noise;
+        pastlev = pastlev && e0->pastlev == e->pastlev;
+        satlev = satlev && e0->satlev == e->satlev;
+        ccwcurve = ccwcurve && e0->ccwcurve == e->ccwcurve;
+        opacityCurveRG = opacityCurveRG && e0->opacityCurveRG == e->opacityCurveRG;
+        opacityCurveBY = opacityCurveBY && e0->opacityCurveBY == e->opacityCurveBY;
+        opacityCurveW = opacityCurveW && e0->opacityCurveW == e->opacityCurveW;
+        opacityCurveWL = opacityCurveWL && e0->opacityCurveWL == e->opacityCurveWL;
+        wavclCurve = wavclCurve && e0->wavclCurve == e->wavclCurve;
+        hhcurve = hhcurve && e0->hhcurve == e->hhcurve;
+        Chcurve = Chcurve && e0->Chcurve == e->Chcurve;
+        skinprotect = skinprotect && e0->skinprotect == e->skinprotect;
+        //enacont = enacont && e0->enacont == e->enacont;
+        expcontrast = expcontrast && e0->expcontrast == e->expcontrast;
+        expchroma = expchroma && e0->expchroma == e->expchroma;
+        expedge = expedge && e0->expedge == e->expedge;
+        expresid = expresid && e0->expresid == e->expresid;
+        expfinal = expfinal && e0->expfinal == e->expfinal;
+        exptoning = exptoning && e0->exptoning == e->exptoning;
+        expnoise = expnoise && e0->expnoise == e->expnoise;
+        for(int i = 0; i < 9; i++) {
+            c[i] = c[i] && e0->c[i] == e->c[i];
+        }
+        for(int i = 0; i < 9; i++) {
+            ch[i] = ch[i] && e0->ch[i] == e->ch[i];
+        }
+    }
+}
+
+void HSVEqualizerParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const HSVEqualizerParams *e0 = static_cast< const HSVEqualizerParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const HSVEqualizerParams *e = static_cast< const HSVEqualizerParams* >(elems.at(i));
+        hcurve = hcurve && e0->hcurve == e->hcurve;
+        scurve = scurve && e0->scurve == e->scurve;
+        vcurve = vcurve && e0->vcurve == e->vcurve;
+    }
+}
+
+void FilmSimulationParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const FilmSimulationParams *e0 = static_cast< const FilmSimulationParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const FilmSimulationParams *e = static_cast< const FilmSimulationParams* >(elems.at(i));
+        enabled = enabled && e0->enabled == e->enabled;
+        clutFilename = clutFilename && e0->clutFilename == e->clutFilename;
+        strength = strength && e0->strength == e->strength;
+    }
+}
 
 void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>& src)
 {
@@ -484,446 +1356,877 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         return;
     }
 
-    const ProcParams& p = src[0];
+    size_t vectSize = src.size();
+    std::vector<const void*> elems(vectSize);
 
-    for (size_t i = 1; i < src.size(); i++) {
+    // *INDENT-OFF*
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).toneCurve);
+    toneCurve.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).labCurve);
+    labCurve.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).rgbCurves);
+    rgbCurves.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).colorToning);
+    colorToning.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpenEdge);
+    sharpenEdge.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpenMicro);
+    sharpenMicro.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpening);
+    sharpening.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).prsharpening);
+    prsharpening.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).vibrance);
+    vibrance.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).colorappearance);
+    colorappearance.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).wb);
+    wb.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).defringe);
+    defringe.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).impulseDenoise);
+    impulseDenoise.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrDenoise);
+    dirpyrDenoise.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).epd);
+    epd.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sh);
+    sh.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).crop);
+    crop.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).coarse);
+    coarse.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).commonTrans);
+    commonTrans.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).rotate);
+    rotate.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).distortion);
+    distortion.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).lensProf);
+    lensProf.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).perspective);
+    perspective.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).gradient);
+    gradient.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).pcvignette);
+    pcvignette.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).cacorrection);
+    cacorrection.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).vignetting);
+    vignetting.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).chmixer);
+    chmixer.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).blackwhite);
+    blackwhite.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).resize);
+    resize.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).icm);
+    icm.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).raw);
+    raw.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).wavelet);
+    wavelet.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrequalizer);
+    dirpyrequalizer.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).hsvequalizer);
+    hsvequalizer.initFrom(elems);
+
+    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).filmSimulation);
+    filmSimulation.initFrom(elems);
+
+    // *INDENT-ON*
+
+    // Handling EXIF & IPTC
+    /*
+     * HOMBRE: How can we handle that ???
+     *
+    for (size_t i = 1; i < vectSize; ++i) {
         const ProcParams& other = src[i];
-        toneCurve.curve = toneCurve.curve && p.toneCurve.curve == other.toneCurve.curve;
-        toneCurve.curve2 = toneCurve.curve2 && p.toneCurve.curve2 == other.toneCurve.curve2;
-        toneCurve.curveMode = toneCurve.curveMode && p.toneCurve.curveMode == other.toneCurve.curveMode;
-        toneCurve.curveMode2 = toneCurve.curveMode2 && p.toneCurve.curveMode2 == other.toneCurve.curveMode2;
-        toneCurve.brightness = toneCurve.brightness && p.toneCurve.brightness == other.toneCurve.brightness;
-        toneCurve.black = toneCurve.black && p.toneCurve.black == other.toneCurve.black;
-        toneCurve.contrast = toneCurve.contrast && p.toneCurve.contrast == other.toneCurve.contrast;
-        toneCurve.saturation = toneCurve.saturation && p.toneCurve.saturation == other.toneCurve.saturation;
-        toneCurve.shcompr = toneCurve.shcompr && p.toneCurve.shcompr == other.toneCurve.shcompr;
-        toneCurve.hlcompr = toneCurve.hlcompr && p.toneCurve.hlcompr == other.toneCurve.hlcompr;
-        toneCurve.hlcomprthresh = toneCurve.hlcomprthresh && p.toneCurve.hlcomprthresh == other.toneCurve.hlcomprthresh;
-        toneCurve.autoexp = toneCurve.autoexp && p.toneCurve.autoexp == other.toneCurve.autoexp;
-        toneCurve.clip = toneCurve.clip && p.toneCurve.clip == other.toneCurve.clip;
-        toneCurve.expcomp = toneCurve.expcomp && p.toneCurve.expcomp == other.toneCurve.expcomp;
-        toneCurve.hrenabled = toneCurve.hrenabled && p.toneCurve.hrenabled == other.toneCurve.hrenabled;
-        toneCurve.method = toneCurve.method && p.toneCurve.method == other.toneCurve.method;
-        labCurve.lcurve = labCurve.lcurve && p.labCurve.lcurve == other.labCurve.lcurve;
-        labCurve.acurve = labCurve.acurve && p.labCurve.acurve == other.labCurve.acurve;
-        labCurve.bcurve = labCurve.bcurve && p.labCurve.bcurve == other.labCurve.bcurve;
-        labCurve.cccurve = labCurve.cccurve && p.labCurve.cccurve == other.labCurve.cccurve;
-        labCurve.chcurve = labCurve.chcurve && p.labCurve.chcurve == other.labCurve.chcurve;
-        labCurve.lhcurve = labCurve.lhcurve && p.labCurve.lhcurve == other.labCurve.lhcurve;
-        labCurve.hhcurve = labCurve.hhcurve && p.labCurve.hhcurve == other.labCurve.hhcurve;
-        labCurve.lccurve = labCurve.lccurve && p.labCurve.lccurve == other.labCurve.lccurve;
-        labCurve.clcurve = labCurve.clcurve && p.labCurve.clcurve == other.labCurve.clcurve;
-        labCurve.brightness = labCurve.brightness && p.labCurve.brightness == other.labCurve.brightness;
-        labCurve.contrast = labCurve.contrast && p.labCurve.contrast == other.labCurve.contrast;
-        labCurve.chromaticity = labCurve.chromaticity && p.labCurve.chromaticity == other.labCurve.chromaticity;
-        labCurve.avoidcolorshift = labCurve.avoidcolorshift && p.labCurve.avoidcolorshift == other.labCurve.avoidcolorshift;
-        labCurve.rstprotection = labCurve.rstprotection && p.labCurve.rstprotection == other.labCurve.rstprotection;
-        labCurve.lcredsk = labCurve.lcredsk && p.labCurve.lcredsk == other.labCurve.lcredsk;
-        rgbCurves.lumamode = rgbCurves.lumamode && p.rgbCurves.lumamode == other.rgbCurves.lumamode;
-        rgbCurves.rcurve = rgbCurves.rcurve && p.rgbCurves.rcurve == other.rgbCurves.rcurve;
-        rgbCurves.gcurve = rgbCurves.gcurve && p.rgbCurves.gcurve == other.rgbCurves.gcurve;
-        rgbCurves.bcurve = rgbCurves.bcurve && p.rgbCurves.bcurve == other.rgbCurves.bcurve;
-        colorToning.enabled = colorToning.enabled && p.colorToning.enabled == other.colorToning.enabled;
-        colorToning.twocolor = colorToning.twocolor && p.colorToning.twocolor == other.colorToning.twocolor;
-        colorToning.opacityCurve = colorToning.opacityCurve && p.colorToning.opacityCurve == other.colorToning.opacityCurve;
-        colorToning.colorCurve = colorToning.colorCurve && p.colorToning.colorCurve == other.colorToning.colorCurve;
-        colorToning.autosat = colorToning.autosat && p.colorToning.autosat == other.colorToning.autosat;
-        colorToning.satprotectionthreshold = colorToning.satprotectionthreshold && p.colorToning.satProtectionThreshold == other.colorToning.satProtectionThreshold;
-        colorToning.saturatedopacity = colorToning.saturatedopacity && p.colorToning.saturatedOpacity == other.colorToning.saturatedOpacity;
-        colorToning.strength = colorToning.strength && p.colorToning.strength == other.colorToning.strength;
-        colorToning.shadowsColSat = colorToning.shadowsColSat && p.colorToning.shadowsColSat == other.colorToning.shadowsColSat;
-        colorToning.hlColSat = colorToning.hlColSat && p.colorToning.hlColSat == other.colorToning.hlColSat;
-        colorToning.balance = colorToning.balance && p.colorToning.balance == other.colorToning.balance;
-        colorToning.clcurve = colorToning.clcurve && p.colorToning.clcurve == other.colorToning.clcurve;
-        colorToning.cl2curve = colorToning.cl2curve && p.colorToning.cl2curve == other.colorToning.cl2curve;
-        colorToning.method = colorToning.method && p.colorToning.method == other.colorToning.method;
-        colorToning.redlow = colorToning.redlow && p.colorToning.redlow == other.colorToning.redlow;
-        colorToning.greenlow = colorToning.greenlow && p.colorToning.greenlow == other.colorToning.greenlow;
-        colorToning.bluelow = colorToning.bluelow && p.colorToning.bluelow == other.colorToning.bluelow;
-        colorToning.satlow = colorToning.satlow && p.colorToning.satlow == other.colorToning.satlow;
-        colorToning.sathigh = colorToning.sathigh && p.colorToning.sathigh == other.colorToning.sathigh;
-        colorToning.redmed = colorToning.redmed && p.colorToning.redmed == other.colorToning.redmed;
-        colorToning.greenmed = colorToning.greenmed && p.colorToning.greenmed == other.colorToning.greenmed;
-        colorToning.bluemed = colorToning.bluemed && p.colorToning.bluemed == other.colorToning.bluemed;
-        colorToning.redhigh = colorToning.redhigh && p.colorToning.redhigh == other.colorToning.redhigh;
-        colorToning.greenhigh = colorToning.greenhigh && p.colorToning.greenhigh == other.colorToning.greenhigh;
-        colorToning.bluehigh = colorToning.bluehigh && p.colorToning.bluehigh == other.colorToning.bluehigh;
-        colorToning.lumamode = colorToning.lumamode && p.colorToning.lumamode == other.colorToning.lumamode;
-        sharpenEdge.enabled = sharpenEdge.enabled && p.sharpenEdge.enabled == other.sharpenEdge.enabled;
-        sharpenEdge.passes = sharpenEdge.passes && p.sharpenEdge.passes == other.sharpenEdge.passes;
-        sharpenEdge.amount = sharpenEdge.amount && p.sharpenEdge.amount == other.sharpenEdge.amount;
-        sharpenEdge.threechannels = sharpenEdge.threechannels && p.sharpenEdge.threechannels == other.sharpenEdge.threechannels;
-        sharpenMicro.enabled = sharpenMicro.enabled && p.sharpenMicro.enabled == other.sharpenMicro.enabled;
-        sharpenMicro.matrix = sharpenMicro.matrix && p.sharpenMicro.matrix == other.sharpenMicro.matrix;
-        sharpenMicro.amount = sharpenMicro.amount && p.sharpenMicro.amount == other.sharpenMicro.amount;
-        sharpenMicro.uniformity = sharpenMicro.uniformity && p.sharpenMicro.uniformity == other.sharpenMicro.uniformity;
-        sharpening.enabled = sharpening.enabled && p.sharpening.enabled == other.sharpening.enabled;
-        sharpening.radius = sharpening.radius && p.sharpening.radius == other.sharpening.radius;
-        sharpening.amount = sharpening.amount && p.sharpening.amount == other.sharpening.amount;
-        sharpening.threshold = sharpening.threshold && p.sharpening.threshold == other.sharpening.threshold;
-        sharpening.edgesonly = sharpening.edgesonly && p.sharpening.edgesonly == other.sharpening.edgesonly;
-        sharpening.edges_radius = sharpening.edges_radius && p.sharpening.edges_radius == other.sharpening.edges_radius;
-        sharpening.edges_tolerance = sharpening.edges_tolerance && p.sharpening.edges_tolerance == other.sharpening.edges_tolerance;
-        sharpening.halocontrol = sharpening.halocontrol && p.sharpening.halocontrol == other.sharpening.halocontrol;
-        sharpening.halocontrol_amount = sharpening.halocontrol_amount && p.sharpening.halocontrol_amount == other.sharpening.halocontrol_amount;
-        sharpening.method = sharpening.method && p.sharpening.method == other.sharpening.method;
-        sharpening.deconvamount = sharpening.deconvamount && p.sharpening.deconvamount == other.sharpening.deconvamount;
-        sharpening.deconvradius = sharpening.deconvradius && p.sharpening.deconvradius == other.sharpening.deconvradius;
-        sharpening.deconviter = sharpening.deconviter && p.sharpening.deconviter == other.sharpening.deconviter;
-        sharpening.deconvdamping = sharpening.deconvdamping && p.sharpening.deconvdamping == other.sharpening.deconvdamping;
-        prsharpening.enabled = prsharpening.enabled && p.prsharpening.enabled == other.prsharpening.enabled;
-        prsharpening.radius = prsharpening.radius && p.prsharpening.radius == other.prsharpening.radius;
-        prsharpening.amount = prsharpening.amount && p.prsharpening.amount == other.prsharpening.amount;
-        prsharpening.threshold = prsharpening.threshold && p.prsharpening.threshold == other.prsharpening.threshold;
-        prsharpening.edgesonly = prsharpening.edgesonly && p.prsharpening.edgesonly == other.prsharpening.edgesonly;
-        prsharpening.edges_radius = prsharpening.edges_radius && p.prsharpening.edges_radius == other.prsharpening.edges_radius;
-        prsharpening.edges_tolerance = prsharpening.edges_tolerance && p.prsharpening.edges_tolerance == other.prsharpening.edges_tolerance;
-        prsharpening.halocontrol = prsharpening.halocontrol && p.prsharpening.halocontrol == other.prsharpening.halocontrol;
-        prsharpening.halocontrol_amount = prsharpening.halocontrol_amount && p.prsharpening.halocontrol_amount == other.prsharpening.halocontrol_amount;
-        prsharpening.method = prsharpening.method && p.prsharpening.method == other.prsharpening.method;
-        prsharpening.deconvamount = prsharpening.deconvamount && p.prsharpening.deconvamount == other.prsharpening.deconvamount;
-        prsharpening.deconvradius = prsharpening.deconvradius && p.prsharpening.deconvradius == other.prsharpening.deconvradius;
-        prsharpening.deconviter = prsharpening.deconviter && p.prsharpening.deconviter == other.prsharpening.deconviter;
-        prsharpening.deconvdamping = prsharpening.deconvdamping && p.prsharpening.deconvdamping == other.prsharpening.deconvdamping;
-        vibrance.enabled = vibrance.enabled && p.vibrance.enabled == other.vibrance.enabled;
-        vibrance.pastels = vibrance.pastels && p.vibrance.pastels == other.vibrance.pastels;
-        vibrance.saturated = vibrance.saturated && p.vibrance.saturated == other.vibrance.saturated;
-        vibrance.psthreshold = vibrance.psthreshold && p.vibrance.psthreshold == other.vibrance.psthreshold;
-        vibrance.protectskins = vibrance.protectskins && p.vibrance.protectskins == other.vibrance.protectskins;
-        vibrance.avoidcolorshift = vibrance.avoidcolorshift && p.vibrance.avoidcolorshift == other.vibrance.avoidcolorshift;
-        vibrance.pastsattog = vibrance.pastsattog && p.vibrance.pastsattog == other.vibrance.pastsattog;
-        vibrance.skintonescurve = vibrance.skintonescurve && p.vibrance.skintonescurve == other.vibrance.skintonescurve;
 
-        colorappearance.enabled = colorappearance.enabled && p.colorappearance.enabled == other.colorappearance.enabled;
-        colorappearance.degree = colorappearance.degree && p.colorappearance.degree == other.colorappearance.degree;
-        colorappearance.autodegree = colorappearance.autodegree && p.colorappearance.autodegree == other.colorappearance.autodegree;
-        colorappearance.surround = colorappearance.surround && p.colorappearance.surround == other.colorappearance.surround;
-        colorappearance.adapscen = colorappearance.adapscen && p.colorappearance.adapscen == other.colorappearance.adapscen;
-        colorappearance.autoadapscen = colorappearance.autoadapscen && p.colorappearance.autoadapscen == other.colorappearance.autoadapscen;
-        colorappearance.adaplum = colorappearance.adaplum && p.colorappearance.adaplum == other.colorappearance.adaplum;
-        colorappearance.badpixsl = colorappearance.badpixsl && p.colorappearance.badpixsl == other.colorappearance.badpixsl;
-        colorappearance.wbmodel = colorappearance.wbmodel && p.colorappearance.wbmodel == other.colorappearance.wbmodel;
-        colorappearance.algo = colorappearance.algo && p.colorappearance.algo == other.colorappearance.algo;
-        colorappearance.jlight = colorappearance.jlight && p.colorappearance.jlight == other.colorappearance.jlight;
-        colorappearance.qbright = colorappearance.qbright && p.colorappearance.qbright == other.colorappearance.qbright;
-        colorappearance.chroma = colorappearance.chroma && p.colorappearance.chroma == other.colorappearance.chroma;
-        colorappearance.schroma = colorappearance.schroma && p.colorappearance.schroma == other.colorappearance.schroma;
-        colorappearance.mchroma = colorappearance.mchroma && p.colorappearance.mchroma == other.colorappearance.mchroma;
-        colorappearance.rstprotection = colorappearance.rstprotection && p.colorappearance.rstprotection == other.colorappearance.rstprotection;
-        colorappearance.contrast = colorappearance.contrast && p.colorappearance.contrast == other.colorappearance.contrast;
-        colorappearance.qcontrast = colorappearance.qcontrast && p.colorappearance.qcontrast == other.colorappearance.qcontrast;
-        colorappearance.colorh = colorappearance.colorh && p.colorappearance.colorh == other.colorappearance.colorh;
-        colorappearance.surrsource = colorappearance.surrsource && p.colorappearance.surrsource == other.colorappearance.surrsource;
-        colorappearance.gamut = colorappearance.gamut && p.colorappearance.gamut == other.colorappearance.gamut;
-//       colorappearance.badpix = colorappearance.badpix && p.colorappearance.badpix == other.colorappearance.badpix;
-        colorappearance.datacie = colorappearance.datacie && p.colorappearance.datacie == other.colorappearance.datacie;
-        colorappearance.tonecie = colorappearance.tonecie && p.colorappearance.tonecie == other.colorappearance.tonecie;
-        //     colorappearance.sharpcie = colorappearance.sharpcie && p.colorappearance.sharpcie == other.colorappearance.sharpcie;
-        colorappearance.curve = colorappearance.curve && p.colorappearance.curve == other.colorappearance.curve;
-        colorappearance.curve3 = colorappearance.curve3 && p.colorappearance.curve3 == other.colorappearance.curve3;
-        colorappearance.curve2 = colorappearance.curve2 && p.colorappearance.curve2 == other.colorappearance.curve2;
-        colorappearance.curveMode = colorappearance.curveMode && p.colorappearance.curveMode == other.colorappearance.curveMode;
-        colorappearance.curveMode2 = colorappearance.curveMode2 && p.colorappearance.curveMode2 == other.colorappearance.curveMode2;
-        colorappearance.curveMode3 = colorappearance.curveMode3 && p.colorappearance.curveMode3 == other.colorappearance.curveMode3;
-
-        //colorBoost.amount = colorBoost.amount && p.colorBoost.amount == other.colorBoost.amount;
-        //colorBoost.avoidclip = colorBoost.avoidclip && p.colorBoost.avoidclip == other.colorBoost.avoidclip;
-        //colorBoost.enable_saturationlimiter = colorBoost.enable_saturationlimiter && p.colorBoost.enable_saturationlimiter == other.colorBoost.enable_saturationlimiter;
-        //colorBoost.saturationlimit = colorBoost.saturationlimit && p.colorBoost.saturationlimit == other.colorBoost.saturationlimit;
-        wb.method = wb.method && p.wb.method == other.wb.method;
-        wb.green = wb.green && p.wb.green == other.wb.green;
-        wb.equal = wb.equal && p.wb.equal == other.wb.equal;
-        wb.temperature = wb.temperature && p.wb.temperature == other.wb.temperature;
-        //colorShift.a = colorShift.a && p.colorShift.a == other.colorShift.a;
-        //colorShift.b = colorShift.b && p.colorShift.b == other.colorShift.b;
-        //lumaDenoise.enabled = lumaDenoise.enabled && p.lumaDenoise.enabled == other.lumaDenoise.enabled;
-        //lumaDenoise.radius = lumaDenoise.radius && p.lumaDenoise.radius == other.lumaDenoise.radius;
-        //lumaDenoise.edgetolerance = lumaDenoise.edgetolerance && p.lumaDenoise.edgetolerance == other.lumaDenoise.edgetolerance;
-        //colorDenoise.enabled = colorDenoise.enabled && p.colorDenoise.enabled == other.colorDenoise.enabled;
-        //colorDenoise.amount = colorDenoise.amount && p.colorDenoise.amount == other.colorDenoise.amount;
-        defringe.enabled = defringe.enabled && p.defringe.enabled == other.defringe.enabled;
-        defringe.radius = defringe.radius && p.defringe.radius == other.defringe.radius;
-        defringe.threshold = defringe.threshold && p.defringe.threshold == other.defringe.threshold;
-        defringe.huecurve = defringe.huecurve && p.defringe.huecurve == other.defringe.huecurve;
-
-        impulseDenoise.enabled = impulseDenoise.enabled && p.impulseDenoise.enabled == other.impulseDenoise.enabled;
-        impulseDenoise.thresh = impulseDenoise.thresh && p.impulseDenoise.thresh == other.impulseDenoise.thresh;
-
-        dirpyrDenoise.enabled = dirpyrDenoise.enabled && p.dirpyrDenoise.enabled == other.dirpyrDenoise.enabled;
-        dirpyrDenoise.enhance = dirpyrDenoise.enhance && p.dirpyrDenoise.enhance == other.dirpyrDenoise.enhance;
-        dirpyrDenoise.median = dirpyrDenoise.median && p.dirpyrDenoise.median == other.dirpyrDenoise.median;
-        dirpyrDenoise.autochroma = dirpyrDenoise.autochroma && p.dirpyrDenoise.autochroma == other.dirpyrDenoise.autochroma;
-//       dirpyrDenoise.perform = dirpyrDenoise.perform && p.dirpyrDenoise.perform == other.dirpyrDenoise.perform;
-        dirpyrDenoise.luma = dirpyrDenoise.luma && p.dirpyrDenoise.luma == other.dirpyrDenoise.luma;
-        dirpyrDenoise.lcurve = dirpyrDenoise.lcurve && p.dirpyrDenoise.lcurve == other.dirpyrDenoise.lcurve;
-        dirpyrDenoise.cccurve = dirpyrDenoise.cccurve && p.dirpyrDenoise.cccurve == other.dirpyrDenoise.cccurve;
-        dirpyrDenoise.Ldetail = dirpyrDenoise.Ldetail && p.dirpyrDenoise.Ldetail == other.dirpyrDenoise.Ldetail;
-        dirpyrDenoise.chroma = dirpyrDenoise.chroma && p.dirpyrDenoise.chroma == other.dirpyrDenoise.chroma;
-        dirpyrDenoise.redchro = dirpyrDenoise.redchro && p.dirpyrDenoise.redchro == other.dirpyrDenoise.redchro;
-        dirpyrDenoise.bluechro = dirpyrDenoise.bluechro && p.dirpyrDenoise.bluechro == other.dirpyrDenoise.bluechro;
-        dirpyrDenoise.gamma = dirpyrDenoise.gamma && p.dirpyrDenoise.gamma == other.dirpyrDenoise.gamma;
-        dirpyrDenoise.passes = dirpyrDenoise.passes && p.dirpyrDenoise.passes == other.dirpyrDenoise.passes;
-        dirpyrDenoise.dmethod = dirpyrDenoise.dmethod && p.dirpyrDenoise.dmethod == other.dirpyrDenoise.dmethod;
-        dirpyrDenoise.Lmethod = dirpyrDenoise.Lmethod && p.dirpyrDenoise.Lmethod == other.dirpyrDenoise.Lmethod;
-        dirpyrDenoise.Cmethod = dirpyrDenoise.Cmethod && p.dirpyrDenoise.Cmethod == other.dirpyrDenoise.Cmethod;
-        dirpyrDenoise.C2method = dirpyrDenoise.C2method && p.dirpyrDenoise.C2method == other.dirpyrDenoise.C2method;
-        dirpyrDenoise.smethod = dirpyrDenoise.smethod && p.dirpyrDenoise.smethod == other.dirpyrDenoise.smethod;
-        dirpyrDenoise.medmethod = dirpyrDenoise.medmethod && p.dirpyrDenoise.medmethod == other.dirpyrDenoise.medmethod;
-        dirpyrDenoise.methodmed = dirpyrDenoise.methodmed && p.dirpyrDenoise.methodmed == other.dirpyrDenoise.methodmed;
-        dirpyrDenoise.rgbmethod = dirpyrDenoise.rgbmethod && p.dirpyrDenoise.rgbmethod == other.dirpyrDenoise.rgbmethod;
-
-        epd.enabled = epd.enabled && p.epd.enabled == other.epd.enabled;
-        epd.strength = epd.strength && p.epd.strength == other.epd.strength;
-        epd.gamma = epd.gamma && p.epd.gamma == other.epd.gamma;
-        epd.edgeStopping = epd.edgeStopping && p.epd.edgeStopping == other.epd.edgeStopping;
-        epd.scale = epd.scale && p.epd.scale == other.epd.scale;
-        epd.reweightingIterates = epd.reweightingIterates && p.epd.reweightingIterates == other.epd.reweightingIterates;
-
-        sh.enabled = sh.enabled && p.sh.enabled == other.sh.enabled;
-        sh.hq = sh.hq && p.sh.hq == other.sh.hq;
-        sh.highlights = sh.highlights && p.sh.highlights == other.sh.highlights;
-        sh.htonalwidth = sh.htonalwidth && p.sh.htonalwidth == other.sh.htonalwidth;
-        sh.shadows = sh.shadows && p.sh.shadows == other.sh.shadows;
-        sh.stonalwidth = sh.stonalwidth && p.sh.stonalwidth == other.sh.stonalwidth;
-        sh.localcontrast = sh.localcontrast && p.sh.localcontrast == other.sh.localcontrast;
-        sh.radius = sh.radius && p.sh.radius == other.sh.radius;
-        crop.enabled = crop.enabled && p.crop.enabled == other.crop.enabled;
-        crop.x = crop.x && p.crop.x == other.crop.x;
-        crop.y = crop.y && p.crop.y == other.crop.y;
-        crop.w = crop.w && p.crop.w == other.crop.w;
-        crop.h = crop.h && p.crop.h == other.crop.h;
-        crop.fixratio = crop.fixratio && p.crop.fixratio == other.crop.fixratio;
-        crop.ratio = crop.ratio && p.crop.ratio == other.crop.ratio;
-        crop.orientation = crop.orientation && p.crop.orientation == other.crop.orientation;
-        crop.guide = crop.guide && p.crop.guide == other.crop.guide;
-        coarse.rotate = coarse.rotate && p.coarse.rotate == other.coarse.rotate;
-        coarse.hflip = coarse.hflip && p.coarse.hflip == other.coarse.hflip;
-        coarse.vflip = coarse.vflip && p.coarse.vflip == other.coarse.vflip;
-        commonTrans.autofill = commonTrans.autofill && p.commonTrans.autofill == other.commonTrans.autofill;
-        rotate.degree = rotate.degree && p.rotate.degree == other.rotate.degree;
-        distortion.amount = distortion.amount && p.distortion.amount == other.distortion.amount;
-        lensProf.lcpFile = lensProf.lcpFile && p.lensProf.lcpFile == other.lensProf.lcpFile;
-        lensProf.useDist = lensProf.useDist && p.lensProf.useDist == other.lensProf.useDist;
-        lensProf.useVign = lensProf.useVign && p.lensProf.useVign == other.lensProf.useVign;
-        lensProf.useCA = lensProf.useCA && p.lensProf.useCA == other.lensProf.useCA;
-        perspective.horizontal = perspective.horizontal && p.perspective.horizontal == other.perspective.horizontal;
-        perspective.vertical = perspective.vertical && p.perspective.vertical == other.perspective.vertical;
-        gradient.enabled = gradient.enabled && p.gradient.enabled == other.gradient.enabled;
-        gradient.degree = gradient.degree && p.gradient.degree == other.gradient.degree;
-        gradient.feather = gradient.feather && p.gradient.feather == other.gradient.feather;
-        gradient.strength = gradient.strength && p.gradient.strength == other.gradient.strength;
-        gradient.centerX = gradient.centerX && p.gradient.centerX == other.gradient.centerX;
-        gradient.centerY = gradient.centerY && p.gradient.centerY == other.gradient.centerY;
-        pcvignette.enabled = pcvignette.enabled && p.pcvignette.enabled == other.pcvignette.enabled;
-        pcvignette.strength = pcvignette.strength && p.pcvignette.strength == other.pcvignette.strength;
-        pcvignette.feather = pcvignette.feather && p.pcvignette.feather == other.pcvignette.feather;
-        pcvignette.roundness = pcvignette.roundness && p.pcvignette.roundness == other.pcvignette.roundness;
-        cacorrection.red = cacorrection.red && p.cacorrection.red == other.cacorrection.red;
-        cacorrection.blue = cacorrection.blue && p.cacorrection.blue == other.cacorrection.blue;
-        vignetting.amount = vignetting.amount && p.vignetting.amount == other.vignetting.amount;
-        vignetting.radius = vignetting.radius && p.vignetting.radius == other.vignetting.radius;
-        vignetting.strength = vignetting.strength && p.vignetting.strength == other.vignetting.strength;
-        vignetting.centerX = vignetting.centerX && p.vignetting.centerX == other.vignetting.centerX;
-        vignetting.centerY = vignetting.centerY && p.vignetting.centerY == other.vignetting.centerY;
-        chmixer.red[0] = chmixer.red[0] && p.chmixer.red[0] == other.chmixer.red[0];
-        chmixer.red[1] = chmixer.red[1] && p.chmixer.red[1] == other.chmixer.red[1];
-        chmixer.red[2] = chmixer.red[2] && p.chmixer.red[2] == other.chmixer.red[2];
-        chmixer.green[0] = chmixer.green[0] && p.chmixer.green[0] == other.chmixer.green[0];
-        chmixer.green[1] = chmixer.green[1] && p.chmixer.green[1] == other.chmixer.green[1];
-        chmixer.green[2] = chmixer.green[2] && p.chmixer.green[2] == other.chmixer.green[2];
-        chmixer.blue[0] = chmixer.blue[0] && p.chmixer.blue[0] == other.chmixer.blue[0];
-        chmixer.blue[1] = chmixer.blue[1] && p.chmixer.blue[1] == other.chmixer.blue[1];
-        chmixer.blue[2] = chmixer.blue[2] && p.chmixer.blue[2] == other.chmixer.blue[2];
-        blackwhite.enabledcc = blackwhite.enabledcc && p.blackwhite.enabledcc == other.blackwhite.enabledcc;
-        blackwhite.enabled = blackwhite.enabled && p.blackwhite.enabled == other.blackwhite.enabled;
-        blackwhite.mixerRed = blackwhite.mixerRed && p.blackwhite.mixerRed == other.blackwhite.mixerRed;
-        blackwhite.mixerOrange = blackwhite.mixerOrange && p.blackwhite.mixerOrange == other.blackwhite.mixerOrange;
-        blackwhite.mixerYellow = blackwhite.mixerYellow && p.blackwhite.mixerYellow == other.blackwhite.mixerYellow;
-        blackwhite.mixerGreen = blackwhite.mixerGreen && p.blackwhite.mixerGreen == other.blackwhite.mixerGreen;
-        blackwhite.mixerCyan = blackwhite.mixerCyan && p.blackwhite.mixerCyan == other.blackwhite.mixerCyan;
-        blackwhite.mixerBlue = blackwhite.mixerBlue && p.blackwhite.mixerBlue == other.blackwhite.mixerBlue;
-        blackwhite.mixerMagenta = blackwhite.mixerMagenta && p.blackwhite.mixerMagenta == other.blackwhite.mixerMagenta;
-        blackwhite.mixerPurple = blackwhite.mixerPurple && p.blackwhite.mixerPurple == other.blackwhite.mixerPurple;
-        blackwhite.gammaRed = blackwhite.gammaRed && p.blackwhite.gammaRed == other.blackwhite.gammaRed;
-        blackwhite.gammaGreen = blackwhite.gammaGreen && p.blackwhite.gammaGreen == other.blackwhite.gammaGreen;
-        blackwhite.gammaBlue = blackwhite.gammaBlue && p.blackwhite.gammaBlue == other.blackwhite.gammaBlue;
-        blackwhite.filter = blackwhite.filter && p.blackwhite.filter == other.blackwhite.filter;
-        blackwhite.setting = blackwhite.setting && p.blackwhite.setting == other.blackwhite.setting;
-        blackwhite.luminanceCurve = blackwhite.luminanceCurve && p.blackwhite.luminanceCurve == other.blackwhite.luminanceCurve;
-        blackwhite.method = blackwhite.method && p.blackwhite.method == other.blackwhite.method;
-        blackwhite.beforeCurve = blackwhite.beforeCurve && p.blackwhite.beforeCurve == other.blackwhite.beforeCurve;
-        blackwhite.beforeCurveMode = blackwhite.beforeCurveMode && p.blackwhite.beforeCurveMode == other.blackwhite.beforeCurveMode;
-        blackwhite.afterCurve = blackwhite.afterCurve && p.blackwhite.afterCurve == other.blackwhite.afterCurve;
-        blackwhite.afterCurveMode = blackwhite.afterCurveMode && p.blackwhite.afterCurveMode == other.blackwhite.afterCurveMode;
-        blackwhite.autoc = blackwhite.autoc && p.blackwhite.autoc == other.blackwhite.autoc;
-        blackwhite.algo = blackwhite.algo && p.blackwhite.algo == other.blackwhite.algo;
-        resize.scale = resize.scale && p.resize.scale == other.resize.scale;
-        resize.appliesTo = resize.appliesTo && p.resize.appliesTo == other.resize.appliesTo;
-        resize.method = resize.method && p.resize.method == other.resize.method;
-        resize.dataspec = resize.dataspec && p.resize.dataspec == other.resize.dataspec;
-        resize.width = resize.width && p.resize.width == other.resize.width;
-        resize.height = resize.height && p.resize.height == other.resize.height;
-        resize.enabled = resize.enabled && p.resize.enabled == other.resize.enabled;
-        icm.input = icm.input && p.icm.input == other.icm.input;
-        icm.toneCurve = icm.toneCurve && p.icm.toneCurve == other.icm.toneCurve;
-        icm.applyLookTable = icm.applyLookTable && p.icm.applyLookTable == other.icm.applyLookTable;
-        icm.applyBaselineExposureOffset = icm.applyBaselineExposureOffset && p.icm.applyBaselineExposureOffset == other.icm.applyBaselineExposureOffset;
-        icm.applyHueSatMap = icm.applyHueSatMap && p.icm.applyHueSatMap == other.icm.applyHueSatMap;
-        icm.blendCMSMatrix = icm.blendCMSMatrix && p.icm.blendCMSMatrix == other.icm.blendCMSMatrix;
-        icm.dcpIlluminant = icm.dcpIlluminant && p.icm.dcpIlluminant == other.icm.dcpIlluminant;
-        icm.working = icm.working && p.icm.working == other.icm.working;
-        icm.output = icm.output && p.icm.output == other.icm.output;
-        icm.gamma = icm.gamma && p.icm.gamma == other.icm.gamma;
-        icm.freegamma = icm.freegamma && p.icm.freegamma == other.icm.freegamma;
-        icm.gampos = icm.gampos && p.icm.gampos == other.icm.gampos;
-        icm.slpos = icm.slpos && p.icm.slpos == other.icm.slpos;
-        raw.bayersensor.method = raw.bayersensor.method && p.raw.bayersensor.method == other.raw.bayersensor.method;
-        raw.bayersensor.ccSteps = raw.bayersensor.ccSteps && p.raw.bayersensor.ccSteps == other.raw.bayersensor.ccSteps;
-        raw.bayersensor.exBlack0 = raw.bayersensor.exBlack0 && p.raw.bayersensor.black0 == other.raw.bayersensor.black0;
-        raw.bayersensor.exBlack1 = raw.bayersensor.exBlack1 && p.raw.bayersensor.black1 == other.raw.bayersensor.black1;
-        raw.bayersensor.exBlack2 = raw.bayersensor.exBlack2 && p.raw.bayersensor.black2 == other.raw.bayersensor.black2;
-        raw.bayersensor.exBlack3 = raw.bayersensor.exBlack3 && p.raw.bayersensor.black3 == other.raw.bayersensor.black3;
-        raw.bayersensor.exTwoGreen = raw.bayersensor.exTwoGreen && p.raw.bayersensor.twogreen == other.raw.bayersensor.twogreen;
-        raw.bayersensor.dcbIterations = raw.bayersensor.dcbIterations && p.raw.bayersensor.dcb_iterations == other.raw.bayersensor.dcb_iterations;
-        raw.bayersensor.dcbEnhance = raw.bayersensor.dcbEnhance && p.raw.bayersensor.dcb_enhance == other.raw.bayersensor.dcb_enhance;
-        //raw.bayersensor.allEnhance = raw.bayersensor.allEnhance && p.raw.bayersensor.all_enhance == other.raw.bayersensor.all_enhance;
-        raw.bayersensor.lmmseIterations = raw.bayersensor.lmmseIterations && p.raw.bayersensor.lmmse_iterations == other.raw.bayersensor.lmmse_iterations;
-        raw.bayersensor.greenEq = raw.bayersensor.greenEq && p.raw.bayersensor.greenthresh == other.raw.bayersensor.greenthresh;
-        raw.bayersensor.linenoise = raw.bayersensor.linenoise && p.raw.bayersensor.linenoise == other.raw.bayersensor.linenoise;
-        raw.xtranssensor.method = raw.xtranssensor.method && p.raw.xtranssensor.method == other.raw.xtranssensor.method;
-        raw.xtranssensor.ccSteps = raw.xtranssensor.ccSteps && p.raw.xtranssensor.ccSteps == other.raw.xtranssensor.ccSteps;
-        raw.xtranssensor.exBlackRed = raw.xtranssensor.exBlackRed && p.raw.xtranssensor.blackred == other.raw.xtranssensor.blackred;
-        raw.xtranssensor.exBlackGreen = raw.xtranssensor.exBlackGreen && p.raw.xtranssensor.blackgreen == other.raw.xtranssensor.blackgreen;
-        raw.xtranssensor.exBlackBlue = raw.xtranssensor.exBlackBlue && p.raw.xtranssensor.blackblue == other.raw.xtranssensor.blackblue;
-        raw.caCorrection = raw.caCorrection && p.raw.ca_autocorrect == other.raw.ca_autocorrect;
-        raw.caRed = raw.caRed && p.raw.cared == other.raw.cared;
-        raw.caBlue = raw.caBlue && p.raw.cablue == other.raw.cablue;
-        raw.hotPixelFilter = raw.hotPixelFilter && p.raw.hotPixelFilter == other.raw.hotPixelFilter;
-        raw.deadPixelFilter = raw.deadPixelFilter && p.raw.deadPixelFilter == other.raw.deadPixelFilter;
-        raw.hotDeadPixelThresh = raw.hotDeadPixelThresh && p.raw.hotdeadpix_thresh == other.raw.hotdeadpix_thresh;
-        raw.darkFrame = raw.darkFrame && p.raw.dark_frame == other.raw.dark_frame;
-        raw.dfAuto = raw.dfAuto && p.raw.df_autoselect == other.raw.df_autoselect;
-        raw.ff_file = raw.ff_file && p.raw.ff_file == other.raw.ff_file;
-        raw.ff_AutoSelect = raw.ff_AutoSelect && p.raw.ff_AutoSelect == other.raw.ff_AutoSelect;
-        raw.ff_BlurRadius = raw.ff_BlurRadius && p.raw.ff_BlurRadius == other.raw.ff_BlurRadius;
-        raw.ff_BlurType = raw.ff_BlurType && p.raw.ff_BlurType == other.raw.ff_BlurType;
-        raw.ff_AutoClipControl = raw.ff_AutoClipControl && p.raw.ff_AutoClipControl == other.raw.ff_AutoClipControl;
-        raw.ff_clipControl = raw.ff_clipControl && p.raw.ff_clipControl == other.raw.ff_clipControl;
-        raw.exPos = raw.exPos && p.raw.expos == other.raw.expos;
-        raw.exPreser = raw.exPreser && p.raw.preser == other.raw.preser;
-        wavelet.enabled = wavelet.enabled && p.wavelet.enabled == other.wavelet.enabled;
-        wavelet.strength = wavelet.strength && p.wavelet.strength == other.wavelet.strength;
-        wavelet.balance = wavelet.balance && p.wavelet.balance == other.wavelet.balance;
-        wavelet.iter = wavelet.iter && p.wavelet.iter == other.wavelet.iter;
-        wavelet.median = wavelet.median && p.wavelet.median == other.wavelet.median;
-        wavelet.medianlev = wavelet.medianlev && p.wavelet.medianlev == other.wavelet.medianlev;
-        wavelet.linkedg = wavelet.linkedg && p.wavelet.linkedg == other.wavelet.linkedg;
-        wavelet.cbenab = wavelet.cbenab && p.wavelet.cbenab == other.wavelet.cbenab;
-        wavelet.greenmed = wavelet.greenmed && p.wavelet.greenmed == other.wavelet.greenmed;
-        wavelet.bluemed = wavelet.bluemed && p.wavelet.bluemed == other.wavelet.bluemed;
-        wavelet.greenhigh = wavelet.greenhigh && p.wavelet.greenhigh == other.wavelet.greenhigh;
-        wavelet.bluehigh = wavelet.bluehigh && p.wavelet.bluehigh == other.wavelet.bluehigh;
-        wavelet.greenlow = wavelet.greenlow && p.wavelet.greenlow == other.wavelet.greenlow;
-        wavelet.bluelow = wavelet.bluelow && p.wavelet.bluelow == other.wavelet.bluelow;
-        wavelet.lipst = wavelet.lipst && p.wavelet.lipst == other.wavelet.lipst;
-        wavelet.Medgreinf = wavelet.Medgreinf && p.wavelet.Medgreinf == other.wavelet.Medgreinf;
-        wavelet.avoid = wavelet.avoid && p.wavelet.avoid == other.wavelet.avoid;
-        wavelet.tmr = wavelet.tmr && p.wavelet.tmr == other.wavelet.tmr;
-        wavelet.Lmethod = wavelet.Lmethod && p.wavelet.Lmethod == other.wavelet.Lmethod;
-        wavelet.CLmethod = wavelet.CLmethod && p.wavelet.CLmethod == other.wavelet.CLmethod;
-        wavelet.Backmethod = wavelet.Backmethod && p.wavelet.Backmethod == other.wavelet.Backmethod;
-        wavelet.Tilesmethod = wavelet.Tilesmethod && p.wavelet.Tilesmethod == other.wavelet.Tilesmethod;
-        wavelet.daubcoeffmethod = wavelet.daubcoeffmethod && p.wavelet.daubcoeffmethod == other.wavelet.daubcoeffmethod;
-        wavelet.CHmethod = wavelet.CHmethod && p.wavelet.CHmethod == other.wavelet.CHmethod;
-        wavelet.CHSLmethod = wavelet.CHSLmethod && p.wavelet.CHSLmethod == other.wavelet.CHSLmethod;
-        wavelet.EDmethod = wavelet.EDmethod && p.wavelet.EDmethod == other.wavelet.EDmethod;
-        wavelet.NPmethod = wavelet.NPmethod && p.wavelet.NPmethod == other.wavelet.NPmethod;
-        wavelet.BAmethod = wavelet.BAmethod && p.wavelet.BAmethod == other.wavelet.BAmethod;
-        wavelet.TMmethod = wavelet.TMmethod && p.wavelet.TMmethod == other.wavelet.TMmethod;
-        wavelet.HSmethod = wavelet.HSmethod && p.wavelet.HSmethod == other.wavelet.HSmethod;
-        wavelet.Dirmethod = wavelet.Dirmethod && p.wavelet.Dirmethod == other.wavelet.Dirmethod;
-        wavelet.rescon = wavelet.rescon && p.wavelet.rescon == other.wavelet.rescon;
-        wavelet.resconH = wavelet.resconH && p.wavelet.resconH == other.wavelet.resconH;
-        wavelet.reschro = wavelet.reschro && p.wavelet.reschro == other.wavelet.reschro;
-        wavelet.tmrs = wavelet.tmrs && p.wavelet.tmrs == other.wavelet.tmrs;
-        wavelet.gamma = wavelet.gamma && p.wavelet.gamma == other.wavelet.gamma;
-        wavelet.sup = wavelet.sup && p.wavelet.sup == other.wavelet.sup;
-        wavelet.sky = wavelet.sky && p.wavelet.sky == other.wavelet.sky;
-        wavelet.threshold = wavelet.threshold && p.wavelet.threshold == other.wavelet.threshold;
-        wavelet.threshold2 = wavelet.threshold2 && p.wavelet.threshold2 == other.wavelet.threshold2;
-        wavelet.edgedetect = wavelet.edgedetect && p.wavelet.edgedetect == other.wavelet.edgedetect;
-        wavelet.edgedetectthr = wavelet.edgedetectthr && p.wavelet.edgedetectthr == other.wavelet.edgedetectthr;
-        wavelet.edgedetectthr2 = wavelet.edgedetectthr2 && p.wavelet.edgedetectthr2 == other.wavelet.edgedetectthr2;
-        wavelet.edgesensi = wavelet.edgesensi && p.wavelet.edgesensi == other.wavelet.edgesensi;
-        wavelet.edgeampli = wavelet.edgeampli && p.wavelet.edgeampli == other.wavelet.edgeampli;
-        wavelet.thres = wavelet.thres && p.wavelet.thres == other.wavelet.thres;
-        wavelet.chroma = wavelet.chroma && p.wavelet.chroma == other.wavelet.chroma;
-        wavelet.chro = wavelet.chro && p.wavelet.chro == other.wavelet.chro;
-        wavelet.contrast = wavelet.contrast && p.wavelet.contrast == other.wavelet.contrast;
-        wavelet.edgrad = wavelet.edgrad && p.wavelet.edgrad == other.wavelet.edgrad;
-        wavelet.edgval = wavelet.edgval && p.wavelet.edgval == other.wavelet.edgval;
-        wavelet.edgthresh = wavelet.edgthresh && p.wavelet.edgthresh == other.wavelet.edgthresh;
-        wavelet.thr = wavelet.thr && p.wavelet.thr == other.wavelet.thr;
-        wavelet.thrH = wavelet.thrH && p.wavelet.thrH == other.wavelet.thrH;
-        wavelet.hueskin = wavelet.hueskin && p.wavelet.hueskin == other.wavelet.hueskin;
-        wavelet.hueskin2 = wavelet.hueskin2 && p.wavelet.hueskin2 == other.wavelet.hueskin2;
-        wavelet.hllev = wavelet.hllev && p.wavelet.hllev == other.wavelet.hllev;
-        wavelet.bllev = wavelet.bllev && p.wavelet.bllev == other.wavelet.bllev;
-        wavelet.edgcont = wavelet.edgcont && p.wavelet.edgcont == other.wavelet.edgcont;
-        wavelet.level0noise = wavelet.level0noise && p.wavelet.level0noise == other.wavelet.level0noise;
-        wavelet.level1noise = wavelet.level1noise && p.wavelet.level1noise == other.wavelet.level1noise;
-        wavelet.level2noise = wavelet.level2noise && p.wavelet.level2noise == other.wavelet.level2noise;
-        wavelet.level3noise = wavelet.level3noise && p.wavelet.level3noise == other.wavelet.level3noise;
-        wavelet.pastlev = wavelet.pastlev && p.wavelet.pastlev == other.wavelet.pastlev;
-        wavelet.satlev = wavelet.satlev && p.wavelet.satlev == other.wavelet.satlev;
-        wavelet.ccwcurve = wavelet.ccwcurve && p.wavelet.ccwcurve == other.wavelet.ccwcurve;
-        wavelet.opacityCurveRG = wavelet.opacityCurveRG && p.wavelet.opacityCurveRG == other.wavelet.opacityCurveRG;
-        wavelet.opacityCurveBY = wavelet.opacityCurveBY && p.wavelet.opacityCurveBY == other.wavelet.opacityCurveBY;
-        wavelet.opacityCurveW = wavelet.opacityCurveW && p.wavelet.opacityCurveW == other.wavelet.opacityCurveW;
-        wavelet.opacityCurveWL = wavelet.opacityCurveWL && p.wavelet.opacityCurveWL == other.wavelet.opacityCurveWL;
-        wavelet.wavclCurve = wavelet.wavclCurve && p.wavelet.wavclCurve == other.wavelet.wavclCurve;
-        wavelet.hhcurve = wavelet.hhcurve && p.wavelet.hhcurve == other.wavelet.hhcurve;
-        wavelet.Chcurve = wavelet.Chcurve && p.wavelet.Chcurve == other.wavelet.Chcurve;
-        wavelet.skinprotect = wavelet.skinprotect && p.wavelet.skinprotect == other.wavelet.skinprotect;
-        //    wavelet.enacont = wavelet.enacont && p.wavelet.enacont == other.wavelet.enacont;
-        wavelet.expcontrast = wavelet.expcontrast && p.wavelet.expcontrast == other.wavelet.expcontrast;
-        wavelet.expchroma = wavelet.expchroma && p.wavelet.expchroma == other.wavelet.expchroma;
-        wavelet.expedge = wavelet.expedge && p.wavelet.expedge == other.wavelet.expedge;
-        wavelet.expresid = wavelet.expresid && p.wavelet.expresid == other.wavelet.expresid;
-        wavelet.expfinal = wavelet.expfinal && p.wavelet.expfinal == other.wavelet.expfinal;
-        wavelet.exptoning = wavelet.exptoning && p.wavelet.exptoning == other.wavelet.exptoning;
-        wavelet.expnoise = wavelet.expnoise && p.wavelet.expnoise == other.wavelet.expnoise;
-
-        for(int i = 0; i < 9; i++) {
-            wavelet.c[i] = wavelet.c[i] && p.wavelet.c[i] == other.wavelet.c[i];
-        }
-
-        for(int i = 0; i < 9; i++) {
-            wavelet.ch[i] = wavelet.ch[i] && p.wavelet.ch[i] == other.wavelet.ch[i];
-        }
-
-        dirpyrequalizer.enabled = dirpyrequalizer.enabled && p.dirpyrequalizer.enabled == other.dirpyrequalizer.enabled;
-        dirpyrequalizer.gamutlab = dirpyrequalizer.gamutlab && p.dirpyrequalizer.gamutlab == other.dirpyrequalizer.gamutlab;
-
-        for(int i = 0; i < 6; i++) {
-            dirpyrequalizer.mult[i] = dirpyrequalizer.mult[i] && p.dirpyrequalizer.mult[i] == other.dirpyrequalizer.mult[i];
-        }
-
-        dirpyrequalizer.threshold = dirpyrequalizer.threshold && p.dirpyrequalizer.threshold == other.dirpyrequalizer.threshold;
-        dirpyrequalizer.skinprotect = dirpyrequalizer.skinprotect && p.dirpyrequalizer.skinprotect == other.dirpyrequalizer.skinprotect;
-        //    dirpyrequalizer.algo = dirpyrequalizer.algo && p.dirpyrequalizer.algo == other.dirpyrequalizer.algo;
-        dirpyrequalizer.hueskin = dirpyrequalizer.hueskin && p.dirpyrequalizer.hueskin == other.dirpyrequalizer.hueskin;
-        hsvequalizer.hcurve = hsvequalizer.hcurve && p.hsvequalizer.hcurve == other.hsvequalizer.hcurve;
-        hsvequalizer.scurve = hsvequalizer.scurve && p.hsvequalizer.scurve == other.hsvequalizer.scurve;
-        hsvequalizer.vcurve = hsvequalizer.vcurve && p.hsvequalizer.vcurve == other.hsvequalizer.vcurve;
-        filmSimulation.enabled = filmSimulation.enabled && p.filmSimulation.enabled == other.filmSimulation.enabled;
-        filmSimulation.clutFilename = filmSimulation.clutFilename && p.filmSimulation.clutFilename == other.filmSimulation.clutFilename;
-        filmSimulation.strength = filmSimulation.strength && p.filmSimulation.strength == other.filmSimulation.strength;
-
-//      How the hell can we handle that???
-//      exif = exif && p.exif==other.exif
-//      iptc = other.iptc;
+        exif = exif && p.exif==other.exif
+        iptc = other.iptc;
     }
+    */
+}
+
+void ToneCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ToneCurveParams* toEdit = static_cast<ToneCurveParams*>(paramsToEdit);
+    const ToneCurveParams* mods = static_cast<const ToneCurveParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (curve) toEdit->curve = mods->curve;
+    if (curve2) toEdit->curve2 = mods->curve2;
+    if (curveMode) toEdit->curveMode = mods->curveMode;
+    if (curveMode2) toEdit->curveMode2 = mods->curveMode2;
+    if (brightness) toEdit->brightness = dontforceSet && options.baBehav[ADDSET_TC_BRIGHTNESS] ? toEdit->brightness + mods->brightness : mods->brightness;
+    if (black) toEdit->black = dontforceSet && options.baBehav[ADDSET_TC_BLACKLEVEL] ? toEdit->black + mods->black : mods->black;
+    if (contrast) toEdit->contrast = dontforceSet && options.baBehav[ADDSET_TC_CONTRAST] ? toEdit->contrast + mods->contrast : mods->contrast;
+    if (saturation) toEdit->saturation = dontforceSet && options.baBehav[ADDSET_TC_SATURATION] ? toEdit->saturation + mods->saturation : mods->saturation;
+    if (shcompr) toEdit->shcompr = dontforceSet && options.baBehav[ADDSET_TC_SHCOMP] ? toEdit->shcompr + mods->shcompr : mods->shcompr;
+    if (autoexp) toEdit->autoexp = mods->autoexp;
+    if (clip) toEdit->clip = mods->clip;
+    if (expcomp) toEdit->expcomp = dontforceSet && options.baBehav[ADDSET_TC_EXPCOMP] ? toEdit->expcomp + mods->expcomp : mods->expcomp;
+    if (hlcompr) toEdit->hlcompr = dontforceSet && options.baBehav[ADDSET_TC_HLCOMPAMOUNT] ? toEdit->hlcompr + mods->hlcompr : mods->hlcompr;
+    if (hlcomprthresh) toEdit->hlcomprthresh = dontforceSet && options.baBehav[ADDSET_TC_HLCOMPTHRESH] ? toEdit->hlcomprthresh + mods->hlcomprthresh : mods->hlcomprthresh;
+    if (hrenabled) toEdit->hrenabled = mods->hrenabled;
+    if (method) toEdit->method = mods->method;
+    // *INDENT-ON*
+}
+
+void LCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    LCurveParams* toEdit = static_cast<LCurveParams*>(paramsToEdit);
+    const LCurveParams* mods = static_cast<const LCurveParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (lcurve) toEdit->lcurve = mods->lcurve;
+    if (acurve) toEdit->acurve = mods->acurve;
+    if (bcurve) toEdit->bcurve = mods->bcurve;
+    if (cccurve) toEdit->cccurve = mods->cccurve;
+    if (chcurve) toEdit->chcurve = mods->chcurve;
+    if (lhcurve) toEdit->lhcurve = mods->lhcurve;
+    if (hhcurve) toEdit->hhcurve = mods->hhcurve;
+    if (lccurve) toEdit->lccurve = mods->lccurve;
+    if (clcurve) toEdit->clcurve = mods->clcurve;
+    if (brightness) toEdit->brightness = dontforceSet && options.baBehav[ADDSET_LC_BRIGHTNESS] ? toEdit->brightness + mods->brightness : mods->brightness;
+    if (contrast) toEdit->contrast = dontforceSet && options.baBehav[ADDSET_LC_CONTRAST] ? toEdit->contrast + mods->contrast : mods->contrast;
+    if (chromaticity) toEdit->chromaticity = dontforceSet && options.baBehav[ADDSET_LC_CHROMATICITY] ? toEdit->chromaticity + mods->chromaticity : mods->chromaticity;
+    if (avoidcolorshift) toEdit->avoidcolorshift = mods->avoidcolorshift;
+    if (rstprotection) toEdit->rstprotection = mods->rstprotection;
+    if (lcredsk) toEdit->lcredsk = mods->lcredsk;
+    // *INDENT-ON*
+}
+
+void RGBCurvesParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    RGBCurvesParams* toEdit = static_cast<RGBCurvesParams*>(paramsToEdit);
+    const RGBCurvesParams* mods = static_cast<const RGBCurvesParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (lumamode) toEdit->lumamode = mods->lumamode;
+    if (rcurve) toEdit->rcurve = mods->rcurve;
+    if (gcurve) toEdit->gcurve = mods->gcurve;
+    if (bcurve) toEdit->bcurve = mods->bcurve;
+    // *INDENT-ON*
+}
+
+void ColorToningEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ColorToningParams* toEdit = static_cast<ColorToningParams*>(paramsToEdit);
+    const ColorToningParams* mods = static_cast<const ColorToningParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (twocolor) toEdit->twocolor = mods->twocolor;
+    if (opacityCurve) toEdit->opacityCurve = mods->opacityCurve;
+    if (colorCurve) toEdit->colorCurve = mods->colorCurve;
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (opacityCurve) toEdit->opacityCurve = mods->opacityCurve;
+    if (satprotectionthreshold) toEdit->satProtectionThreshold = dontforceSet && options.baBehav[ADDSET_COLORTONING_SATTHRESHOLD] ? toEdit->satProtectionThreshold + mods->satProtectionThreshold : mods->satProtectionThreshold;
+    if (autosat) toEdit->autosat = mods->autosat;
+    if (saturatedopacity) toEdit->saturatedOpacity = dontforceSet && options.baBehav[ADDSET_COLORTONING_SATOPACITY] ? toEdit->saturatedOpacity + mods->saturatedOpacity : mods->saturatedOpacity;
+    if (strength) toEdit->strength = dontforceSet && options.baBehav[ADDSET_COLORTONING_STRENGTH] ? toEdit->strength + mods->strength : mods->strength;
+    if (shadowsColSat) toEdit->shadowsColSat = mods->shadowsColSat;
+    if (hlColSat) toEdit->hlColSat = mods->hlColSat;
+    if (balance) toEdit->balance = dontforceSet && options.baBehav[ADDSET_COLORTONING_BALANCE] ? toEdit->balance + mods->balance : mods->balance;
+    if (clcurve) toEdit->clcurve = mods->clcurve;
+    if (method) toEdit->method = mods->method;
+    if (cl2curve) toEdit->cl2curve = mods->cl2curve;
+    if (lumamode) toEdit->lumamode = mods->lumamode;
+    if (satlow) toEdit->satlow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->satlow + mods->satlow : mods->satlow;
+    if (sathigh) toEdit->sathigh = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->sathigh + mods->sathigh : mods->sathigh;
+    if (redlow) toEdit->redlow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->redlow + mods->redlow : mods->redlow;
+    if (greenlow) toEdit->greenlow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->greenlow + mods->greenlow : mods->greenlow;
+    if (bluelow) toEdit->bluelow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->bluelow + mods->bluelow : mods->bluelow;
+    if (redmed) toEdit->redmed = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->redmed + mods->redmed : mods->redmed;
+    if (greenmed) toEdit->greenmed = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->greenmed + mods->greenmed : mods->greenmed;
+    if (bluemed) toEdit->bluemed = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->bluemed + mods->bluemed : mods->bluemed;
+    if (redhigh) toEdit->redhigh = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->redhigh + mods->redhigh : mods->redhigh;
+    if (greenhigh) toEdit->greenhigh = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->greenhigh + mods->greenhigh : mods->greenhigh;
+    if (bluehigh) toEdit->bluehigh = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit->bluehigh + mods->bluehigh : mods->bluehigh;
+    // *INDENT-ON*
+}
+
+void SharpeningParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    SharpeningParams* toEdit = static_cast<SharpeningParams*>(paramsToEdit);
+    const SharpeningParams* mods = static_cast<const SharpeningParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (radius) toEdit->radius = mods->radius;
+    if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
+    if (threshold) toEdit->threshold = mods->threshold;
+    if (edgesonly) toEdit->edgesonly = mods->edgesonly;
+    if (edges_radius) toEdit->edges_radius = mods->edges_radius;
+    if (edges_tolerance) toEdit->edges_tolerance = mods->edges_tolerance;
+    if (halocontrol) toEdit->halocontrol = mods->halocontrol;
+    if (halocontrol_amount) toEdit->halocontrol_amount = mods->halocontrol_amount;
+    if (method) toEdit->method = mods->method;
+    if (deconvamount) toEdit->deconvamount = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit->deconvamount + mods->deconvamount : mods->deconvamount;
+    if (deconvradius) toEdit->deconvradius = mods->deconvradius;
+    if (deconviter) toEdit->deconviter = mods->deconviter;
+    if (deconvdamping) toEdit->deconvdamping = mods->deconvdamping;
+    // *INDENT-ON*
+}
+
+void SharpenEdgeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    SharpenEdgeParams* toEdit = static_cast<SharpenEdgeParams*>(paramsToEdit);
+    const SharpenEdgeParams* mods = static_cast<const SharpenEdgeParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (passes) toEdit->passes = dontforceSet && options.baBehav[ADDSET_SHARPENEDGE_PASS] ? toEdit->passes + mods->passes : mods->passes;
+    if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_SHARPENEDGE_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
+    if (threechannels) toEdit->threechannels = mods->threechannels;
+    // *INDENT-ON*
+}
+
+void SharpenMicroParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    SharpenMicroParams* toEdit = static_cast<SharpenMicroParams*>(paramsToEdit);
+    const SharpenMicroParams* mods = static_cast<const SharpenMicroParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (matrix) toEdit->matrix = mods->matrix;
+    if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_SHARPENMICRO_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
+    if (uniformity) toEdit->uniformity = dontforceSet && options.baBehav[ADDSET_SHARPENMICRO_UNIFORMITY] ? toEdit->uniformity + mods->uniformity : mods->uniformity;
+    // *INDENT-ON*
+}
+
+void VibranceParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    VibranceParams* toEdit = static_cast<VibranceParams*>(paramsToEdit);
+    const VibranceParams* mods = static_cast<const VibranceParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (pastels) toEdit->pastels = dontforceSet && options.baBehav[ADDSET_VIBRANCE_PASTELS] ? toEdit->pastels + mods->pastels : mods->pastels;
+    if (saturated) toEdit->saturated = dontforceSet && options.baBehav[ADDSET_VIBRANCE_SATURATED] ? toEdit->saturated + mods->saturated : mods->saturated;
+    if (psthreshold) toEdit->psthreshold = mods->psthreshold;
+    if (protectskins) toEdit->protectskins = mods->protectskins;
+    if (avoidcolorshift) toEdit->avoidcolorshift = mods->avoidcolorshift;
+    if (pastsattog) toEdit->pastsattog = mods->pastsattog;
+    if (skintonescurve) toEdit->skintonescurve = mods->skintonescurve;
+    // *INDENT-ON*
+}
+
+void ColorAppearanceParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ColorAppearanceParams* toEdit = static_cast<ColorAppearanceParams*>(paramsToEdit);
+    const ColorAppearanceParams* mods = static_cast<const ColorAppearanceParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (curve) toEdit->curve = mods->curve;
+    if (curve2) toEdit->curve2 = mods->curve2;
+    if (curve3) toEdit->curve3 = mods->curve3;
+    if (curveMode) toEdit->curveMode = mods->curveMode;
+    if (curveMode2) toEdit->curveMode2 = mods->curveMode2;
+    if (curveMode3) toEdit->curveMode3 = mods->curveMode3;
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (degree) toEdit->degree = dontforceSet && options.baBehav[ADDSET_CAT_DEGREE] ? toEdit->degree + mods->degree : mods->degree;
+    if (autodegree) toEdit->autodegree = mods->autodegree;
+    if (surround) toEdit->surround = mods->surround;
+    if (autoadapscen) toEdit->autoadapscen = mods->autoadapscen;
+    if (adapscen) toEdit->adapscen = mods->adapscen;
+    if (adaplum) toEdit->adaplum = dontforceSet && options.baBehav[ADDSET_CAT_ADAPTVIEWING] ? toEdit->adaplum + mods->adaplum : mods->adaplum;
+    if (badpixsl) toEdit->badpixsl = dontforceSet && options.baBehav[ADDSET_CAT_BADPIX] ? toEdit->badpixsl + mods->badpixsl : mods->badpixsl;
+    if (wbmodel) toEdit->wbmodel = mods->wbmodel;
+    if (algo) toEdit->algo = mods->algo;
+    if (jlight) toEdit->jlight = dontforceSet && options.baBehav[ADDSET_CAT_LIGHT] ? toEdit->jlight + mods->jlight : mods->jlight;
+    if (qbright) toEdit->qbright = dontforceSet && options.baBehav[ADDSET_CAT_BRIGHT] ? toEdit->qbright + mods->qbright : mods->qbright;
+    if (chroma) toEdit->chroma = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA] ? toEdit->chroma + mods->chroma : mods->chroma;
+    if (schroma) toEdit->schroma = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA_S] ? toEdit->schroma + mods->schroma : mods->schroma;
+    if (mchroma) toEdit->mchroma = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA_M] ? toEdit->mchroma + mods->mchroma : mods->mchroma;
+    if (contrast) toEdit->contrast = dontforceSet && options.baBehav[ADDSET_CAT_CONTRAST] ? toEdit->contrast + mods->contrast : mods->contrast;
+    if (qcontrast) toEdit->qcontrast = dontforceSet && options.baBehav[ADDSET_CAT_CONTRAST_Q] ? toEdit->qcontrast + mods->qcontrast : mods->qcontrast;
+    if (colorh) toEdit->colorh = dontforceSet && options.baBehav[ADDSET_CAT_HUE] ? toEdit->colorh + mods->colorh : mods->colorh;
+    if (rstprotection) toEdit->rstprotection = dontforceSet && options.baBehav[ADDSET_CAT_RSTPRO] ? toEdit->rstprotection + mods->rstprotection : mods->rstprotection;
+    if (surrsource) toEdit->surrsource = mods->surrsource;
+    if (gamut) toEdit->gamut = mods->gamut;
+    // if (badpix) toEdit->badpix = mods->badpix;
+    if (datacie) toEdit->datacie = mods->datacie;
+    if (tonecie) toEdit->tonecie = mods->tonecie;
+    // if (sharpcie) toEdit->sharpcie = mods->sharpcie;
+    // *INDENT-ON*
+}
+
+void WBParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    WBParams* toEdit = static_cast<WBParams*>(paramsToEdit);
+    const WBParams* mods = static_cast<const WBParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (method) toEdit->method = mods->method;
+    if (equal) toEdit->equal = dontforceSet && options.baBehav[ADDSET_WB_EQUAL] ? toEdit->equal + mods->equal : mods->equal;
+    if (green) toEdit->green = dontforceSet && options.baBehav[ADDSET_WB_GREEN] ? toEdit->green + mods->green : mods->green;
+    if (temperature) toEdit->temperature = dontforceSet && options.baBehav[ADDSET_WB_TEMPERATURE] ? toEdit->temperature + mods->temperature : mods->temperature;
+    // *INDENT-ON*
+}
+
+/*
+void ColorShiftParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ColorShiftParams* toEdit = static_cast<ColorShiftParams*>(paramsToEdit);
+    const ColorShiftParams* mods = static_cast<const ColorShiftParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (a) toEdit->a = dontforceSet && options.baBehav[ADDSET_CS_BLUEYELLOW] ? toEdit->a + mods->a : mods->a;
+    if (b) toEdit->b = dontforceSet && options.baBehav[ADDSET_CS_GREENMAGENTA] ? toEdit->b + mods->b : mods->b;
+    // *INDENT-ON*
+}
+
+void LumaDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    LumaDenoiseParams* toEdit = static_cast<LumaDenoiseParams*>(paramsToEdit);
+    const LumaDenoiseParams* mods = static_cast<const LumaDenoiseParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (radius) toEdit->radius = mods->radius;
+    if (edgetolerance) toEdit->edgetolerance = dontforceSet && options.baBehav[ADDSET_LD_EDGETOLERANCE] ? toEdit->edgetolerance + mods->edgetolerance : mods->edgetolerance;
+    // *INDENT-ON*
+}
+
+void ColorDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ColorDenoiseParams* toEdit = static_cast<ColorDenoiseParams*>(paramsToEdit);
+    const ColorDenoiseParams* mods = static_cast<const ColorDenoiseParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (amount) toEdit->amount = mods->amount;
+    // *INDENT-ON*
+}
+*/
+
+void DefringeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    DefringeParams* toEdit = static_cast<DefringeParams*>(paramsToEdit);
+    const DefringeParams* mods = static_cast<const DefringeParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (radius) toEdit->radius = mods->radius;
+    if (threshold) toEdit->threshold = mods->threshold;
+    if (huecurve) toEdit->huecurve = mods->huecurve;
+    // *INDENT-ON*
+}
+
+void DirPyrDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    DirPyrDenoiseParams* toEdit = static_cast<DirPyrDenoiseParams*>(paramsToEdit);
+    const DirPyrDenoiseParams* mods = static_cast<const DirPyrDenoiseParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (enhance) toEdit->enhance = mods->enhance;
+    if (median) toEdit->median = mods->median;
+    if (autochroma) toEdit->autochroma = mods->autochroma;
+    if (luma) toEdit->luma = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_LUMA] ? toEdit->luma + mods->luma : mods->luma;
+    if (lcurve) toEdit->lcurve = mods->lcurve;
+    if (cccurve) toEdit->cccurve = mods->cccurve;
+    if (Ldetail) toEdit->Ldetail = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_LUMDET] ? toEdit->Ldetail + mods->Ldetail : mods->Ldetail;
+    if (chroma) toEdit->chroma = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMA] ? toEdit->chroma + mods->chroma : mods->chroma;
+    if (redchro) toEdit->redchro = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMARED] ? toEdit->redchro + mods->redchro : mods->redchro;
+    if (bluechro) toEdit->bluechro = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMABLUE] ? toEdit->bluechro + mods->bluechro : mods->bluechro;
+    if (gamma) toEdit->gamma = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_GAMMA] ? toEdit->gamma + mods->gamma : mods->gamma;
+    if (passes) toEdit->passes = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_PASSES] ? toEdit->passes + mods->passes : mods->passes;
+    // if (perform) toEdit->perform = mods->perform;
+    if (dmethod) toEdit->dmethod = mods->dmethod;
+    if (Lmethod) toEdit->Lmethod = mods->Lmethod;
+    if (Cmethod) toEdit->Cmethod = mods->Cmethod;
+    if (C2method) toEdit->C2method = mods->C2method;
+    if (smethod) toEdit->smethod = mods->smethod;
+    if (medmethod) toEdit->medmethod = mods->medmethod;
+    if (methodmed) toEdit->methodmed = mods->methodmed;
+    if (rgbmethod) toEdit->rgbmethod = mods->rgbmethod;
+    // *INDENT-ON*
+}
+
+void EPDParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    EPDParams* toEdit = static_cast<EPDParams*>(paramsToEdit);
+    const EPDParams* mods = static_cast<const EPDParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (strength) toEdit->strength = mods->strength;
+    if (gamma) toEdit->gamma = mods->gamma;
+    if (edgeStopping) toEdit->edgeStopping = mods->edgeStopping;
+    if (scale) toEdit->scale = mods->scale;
+    if (reweightingIterates) toEdit->reweightingIterates = mods->reweightingIterates;
+    // *INDENT-ON*
+}
+
+void ImpulseDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ImpulseDenoiseParams* toEdit = static_cast<ImpulseDenoiseParams*>(paramsToEdit);
+    const ImpulseDenoiseParams* mods = static_cast<const ImpulseDenoiseParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (thresh) toEdit->thresh = mods->thresh;
+    // *INDENT-ON*
+}
+
+void SHParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    SHParams* toEdit = static_cast<SHParams*>(paramsToEdit);
+    const SHParams* mods = static_cast<const SHParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (hq) toEdit->hq = mods->hq;
+    if (highlights) toEdit->highlights = dontforceSet && options.baBehav[ADDSET_SH_HIGHLIGHTS] ? toEdit->highlights + mods->highlights : mods->highlights;
+    if (htonalwidth) toEdit->htonalwidth = mods->htonalwidth;
+    if (shadows) toEdit->shadows = dontforceSet && options.baBehav[ADDSET_SH_SHADOWS] ? toEdit->shadows + mods->shadows : mods->shadows;
+    if (stonalwidth) toEdit->stonalwidth = mods->stonalwidth;
+    if (localcontrast) toEdit->localcontrast = dontforceSet && options.baBehav[ADDSET_SH_LOCALCONTRAST] ? toEdit->localcontrast + mods->localcontrast : mods->localcontrast;
+    if (radius) toEdit->radius = mods->radius;
+    // *INDENT-ON*
+}
+
+void CropParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    CropParams* toEdit = static_cast<CropParams*>(paramsToEdit);
+    const CropParams* mods = static_cast<const CropParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (x) toEdit->x = mods->x;
+    if (y) toEdit->y = mods->y;
+    if (w) toEdit->w = mods->w;
+    if (h) toEdit->h = mods->h;
+    if (fixratio) toEdit->fixratio = mods->fixratio;
+    if (ratio) toEdit->ratio = mods->ratio;
+    if (orientation) toEdit->orientation = mods->orientation;
+    if (guide) toEdit->guide = mods->guide;
+    // *INDENT-ON*
+}
+
+void CoarseTransformParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    CoarseTransformParams* toEdit = static_cast<CoarseTransformParams*>(paramsToEdit);
+    const CoarseTransformParams* mods = static_cast<const CoarseTransformParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (rotate) toEdit->rotate = mods->rotate;
+    if (hflip) toEdit->hflip = mods->hflip;
+    if (vflip) toEdit->vflip = mods->vflip;
+    // *INDENT-ON*
+}
+
+void CommonTransformParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    CommonTransformParams* toEdit = static_cast<CommonTransformParams*>(paramsToEdit);
+    const CommonTransformParams* mods = static_cast<const CommonTransformParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (autofill) toEdit->autofill = mods->autofill;
+    // *INDENT-ON*
+}
+
+void RotateParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    RotateParams* toEdit = static_cast<RotateParams*>(paramsToEdit);
+    const RotateParams* mods = static_cast<const RotateParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (degree) toEdit->degree = dontforceSet && options.baBehav[ADDSET_ROTATE_DEGREE] ? toEdit->degree + mods->degree : mods->degree;
+    // *INDENT-ON*
+}
+
+void DistortionParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    DistortionParams* toEdit = static_cast<DistortionParams*>(paramsToEdit);
+    const DistortionParams* mods = static_cast<const DistortionParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_DIST_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
+    // *INDENT-ON*
+}
+
+void LensProfParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    LensProfParams* toEdit = static_cast<LensProfParams*>(paramsToEdit);
+    const LensProfParams* mods = static_cast<const LensProfParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (lcpFile) toEdit->lcpFile = mods->lcpFile;
+    if (useDist) toEdit->useDist = mods->useDist;
+    if (useVign) toEdit->useVign = mods->useVign;
+    if (useCA) toEdit->useCA = mods->useCA;
+    // *INDENT-ON*
+}
+
+void PerspectiveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    PerspectiveParams* toEdit = static_cast<PerspectiveParams*>(paramsToEdit);
+    const PerspectiveParams* mods = static_cast<const PerspectiveParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (horizontal) toEdit->horizontal = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit->horizontal + mods->horizontal : mods->horizontal;
+    if (vertical) toEdit->vertical = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit->vertical + mods->vertical : mods->vertical;
+    // *INDENT-ON*
+}
+
+void GradientParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    GradientParams* toEdit = static_cast<GradientParams*>(paramsToEdit);
+    const GradientParams* mods = static_cast<const GradientParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (degree) toEdit->degree = dontforceSet && options.baBehav[ADDSET_GRADIENT_DEGREE] ? toEdit->degree + mods->degree : mods->degree;
+    if (feather) toEdit->feather = mods->feather;
+    if (strength) toEdit->strength = mods->strength;
+    if (centerX) toEdit->centerX = mods->centerX;
+    if (centerY) toEdit->centerY = mods->centerY;
+    // *INDENT-ON*
+}
+
+void PCVignetteParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    PCVignetteParams* toEdit = static_cast<PCVignetteParams*>(paramsToEdit);
+    const PCVignetteParams* mods = static_cast<const PCVignetteParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (strength) toEdit->strength = mods->strength;
+    if (feather) toEdit->feather = mods->feather;
+    if (roundness) toEdit->roundness = mods->roundness;
+    // *INDENT-ON*
+}
+
+void CACorrParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    CACorrParams* toEdit = static_cast<CACorrParams*>(paramsToEdit);
+    const CACorrParams* mods = static_cast<const CACorrParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (red) toEdit->red = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit->red + mods->red : mods->red;
+    if (blue) toEdit->blue = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit->blue + mods->blue : mods->blue;
+    // *INDENT-ON*
+}
+
+void VignettingParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    VignettingParams* toEdit = static_cast<VignettingParams*>(paramsToEdit);
+    const VignettingParams* mods = static_cast<const VignettingParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_VIGN_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
+    if (radius) toEdit->radius = mods->radius;
+    if (strength) toEdit->strength = mods->strength;
+    if (centerX) toEdit->centerX = mods->centerX;
+    if (centerY) toEdit->centerY = mods->centerY;
+    // *INDENT-ON*
+}
+
+void ChannelMixerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ChannelMixerParams* toEdit = static_cast<ChannelMixerParams*>(paramsToEdit);
+    const ChannelMixerParams* mods = static_cast<const ChannelMixerParams*>(newValues);
+
+    // *INDENT-OFF*
+    for (int i = 0; i < 3; i++) {
+        if (red[i]) toEdit->red[i] = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit->red[i] + mods->red[i] : mods->red[i];
+        if (green[i]) toEdit->green[i] = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit->green[i] + mods->green[i] : mods->green[i];
+        if (blue[i]) toEdit->blue[i] = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit->blue[i] + mods->blue[i] : mods->blue[i];
+    }
+    // *INDENT-ON*
+}
+
+void BlackWhiteParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    BlackWhiteParams* toEdit = static_cast<BlackWhiteParams*>(paramsToEdit);
+    const BlackWhiteParams* mods = static_cast<const BlackWhiteParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (method) toEdit->method = mods->method;
+    if (luminanceCurve) toEdit->luminanceCurve = mods->luminanceCurve;
+    if (autoc) toEdit->autoc = mods->autoc;
+    if (setting) toEdit->setting = mods->setting;
+    if (enabledcc) toEdit->enabledcc = mods->enabledcc;
+    if (filter) toEdit->filter = mods->filter;
+    if (mixerRed) toEdit->mixerRed = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerRed + mods->mixerRed : mods->mixerRed;
+    if (mixerOrange) toEdit->mixerOrange = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerOrange + mods->mixerOrange : mods->mixerOrange;
+    if (mixerYellow) toEdit->mixerYellow = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerYellow + mods->mixerYellow : mods->mixerYellow;
+    if (mixerGreen) toEdit->mixerGreen = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerGreen + mods->mixerGreen : mods->mixerGreen;
+    if (mixerCyan) toEdit->mixerCyan = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerCyan + mods->mixerCyan : mods->mixerCyan;
+    if (mixerBlue) toEdit->mixerBlue = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerBlue + mods->mixerBlue : mods->mixerBlue;
+    if (mixerMagenta) toEdit->mixerMagenta = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerMagenta + mods->mixerMagenta : mods->mixerMagenta;
+    if (mixerPurple) toEdit->mixerPurple = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit->mixerPurple + mods->mixerPurple : mods->mixerPurple;
+    if (gammaRed) toEdit->gammaRed = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit->gammaRed + mods->gammaRed : mods->gammaRed;
+    if (gammaGreen) toEdit->gammaGreen = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit->gammaGreen + mods->gammaGreen : mods->gammaGreen;
+    if (gammaBlue) toEdit->gammaBlue = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit->gammaBlue + mods->gammaBlue : mods->gammaBlue;
+    if (beforeCurve) toEdit->beforeCurve = mods->beforeCurve;
+    if (beforeCurveMode) toEdit->beforeCurveMode = mods->beforeCurveMode;
+    if (afterCurve) toEdit->afterCurve = mods->afterCurve;
+    if (afterCurveMode) toEdit->afterCurveMode = mods->afterCurveMode;
+    if (algo) toEdit->algo = mods->algo;
+    // *INDENT-ON*
+}
+
+void ResizeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ResizeParams* toEdit = static_cast<ResizeParams*>(paramsToEdit);
+    const ResizeParams* mods = static_cast<const ResizeParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (scale) toEdit->scale = mods->scale;
+    if (appliesTo) toEdit->appliesTo = mods->appliesTo;
+    if (method) toEdit->method = mods->method;
+    if (dataspec) toEdit->dataspec = mods->dataspec;
+    if (width) toEdit->width = mods->width;
+    if (height) toEdit->height = mods->height;
+    if (enabled) toEdit->enabled = mods->enabled;
+    // *INDENT-ON*
+}
+
+void ColorManagementParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    ColorManagementParams* toEdit = static_cast<ColorManagementParams*>(paramsToEdit);
+    const ColorManagementParams* mods = static_cast<const ColorManagementParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (input) toEdit->input = mods->input;
+    if (toneCurve) toEdit->toneCurve = mods->toneCurve;
+    if (applyLookTable) toEdit->applyLookTable = mods->applyLookTable;
+    if (applyBaselineExposureOffset) toEdit->applyBaselineExposureOffset = mods->applyBaselineExposureOffset;
+    if (applyHueSatMap) toEdit->applyHueSatMap = mods->applyHueSatMap;
+    if (blendCMSMatrix) toEdit->blendCMSMatrix = mods->blendCMSMatrix;
+    if (dcpIlluminant) toEdit->dcpIlluminant = mods->dcpIlluminant;
+    if (working) toEdit->working = mods->working;
+    if (output) toEdit->output = mods->output;
+    //if (gampos) toEdit->gampos = mods->gampos;
+    //if (slpos) toEdit->slpos = mods->slpos;
+    if (gampos) toEdit->gampos = dontforceSet && options.baBehav[ADDSET_FREE_OUPUT_GAMMA] ? toEdit->gampos + mods->gampos : mods->gampos;
+    if (slpos) toEdit->slpos = dontforceSet && options.baBehav[ADDSET_FREE_OUTPUT_SLOPE] ? toEdit->slpos + mods->slpos : mods->slpos;
+    if (gamma) toEdit->gamma = mods->gamma;
+    if (freegamma) toEdit->freegamma = mods->freegamma;
+    // *INDENT-ON*
+}
+
+void RAWParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    RAWParams* toEdit = static_cast<RAWParams*>(paramsToEdit);
+    const RAWParams* mods = static_cast<const RAWParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (bayersensor.method) toEdit->bayersensor.method = mods->bayersensor.method;
+    if (bayersensor.ccSteps) toEdit->bayersensor.ccSteps = mods->bayersensor.ccSteps;
+    if (bayersensor.exBlack0) toEdit->bayersensor.black0 = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->bayersensor.black0 + mods->bayersensor.black0 : mods->bayersensor.black0;
+    if (bayersensor.exBlack1) toEdit->bayersensor.black1 = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->bayersensor.black1 + mods->bayersensor.black1 : mods->bayersensor.black1;
+    if (bayersensor.exBlack2) toEdit->bayersensor.black2 = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->bayersensor.black2 + mods->bayersensor.black2 : mods->bayersensor.black2;
+    if (bayersensor.exBlack3) toEdit->bayersensor.black3 = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->bayersensor.black3 + mods->bayersensor.black3 : mods->bayersensor.black3;
+    if (bayersensor.exTwoGreen) toEdit->bayersensor.twogreen = mods->bayersensor.twogreen;
+    if (bayersensor.dcbIterations) toEdit->bayersensor.dcb_iterations = mods->bayersensor.dcb_iterations;
+    if (bayersensor.dcbEnhance) toEdit->bayersensor.dcb_enhance = mods->bayersensor.dcb_enhance;
+    if (bayersensor.lmmseIterations) toEdit->bayersensor.lmmse_iterations = mods->bayersensor.lmmse_iterations;
+    //if (bayersensor.allEnhance) toEdit->bayersensor.all_enhance = mods->bayersensor.all_enhance;
+    if (bayersensor.greenEq) toEdit->bayersensor.greenthresh = dontforceSet && options.baBehav[ADDSET_PREPROCESS_GREENEQUIL] ? toEdit->bayersensor.greenthresh + mods->bayersensor.greenthresh : mods->bayersensor.greenthresh;
+    if (bayersensor.linenoise) toEdit->bayersensor.linenoise = dontforceSet && options.baBehav[ADDSET_PREPROCESS_LINEDENOISE] ? toEdit->bayersensor.linenoise + mods->bayersensor.linenoise : mods->bayersensor.linenoise;
+    if (xtranssensor.method) toEdit->xtranssensor.method = mods->xtranssensor.method;
+    if (xtranssensor.ccSteps) toEdit->xtranssensor.ccSteps = mods->xtranssensor.ccSteps;
+    if (xtranssensor.exBlackRed) toEdit->xtranssensor.blackred = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->xtranssensor.blackred + mods->xtranssensor.blackred : mods->xtranssensor.blackred;
+    if (xtranssensor.exBlackGreen) toEdit->xtranssensor.blackgreen = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->xtranssensor.blackgreen + mods->xtranssensor.blackgreen : mods->xtranssensor.blackgreen;
+    if (xtranssensor.exBlackBlue) toEdit->xtranssensor.blackblue = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->xtranssensor.blackblue + mods->xtranssensor.blackblue : mods->xtranssensor.blackblue;
+    if (caCorrection) toEdit->ca_autocorrect = mods->ca_autocorrect;
+    if (caRed) toEdit->cared = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit->cared + mods->cared : mods->cared;
+    if (caBlue) toEdit->cablue = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit->cablue + mods->cablue : mods->cablue;
+    if (exPos) toEdit->expos = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_LINEAR] ? toEdit->expos + mods->expos : mods->expos;
+    if (exPreser) toEdit->preser = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_PRESER] ? toEdit->preser + mods->preser : mods->preser;
+    if (hotPixelFilter) toEdit->hotPixelFilter = mods->hotPixelFilter;
+    if (deadPixelFilter) toEdit->deadPixelFilter = mods->deadPixelFilter;
+    if (hotDeadPixelThresh) toEdit->hotdeadpix_thresh = mods->hotdeadpix_thresh;
+    if (darkFrame) toEdit->dark_frame = mods->dark_frame;
+    if (dfAuto) toEdit->df_autoselect = mods->df_autoselect;
+    if (ff_file) toEdit->ff_file = mods->ff_file;
+    if (ff_AutoSelect) toEdit->ff_AutoSelect = mods->ff_AutoSelect;
+    if (ff_BlurRadius) toEdit->ff_BlurRadius = mods->ff_BlurRadius;
+    if (ff_BlurType) toEdit->ff_BlurType = mods->ff_BlurType;
+    if (ff_AutoClipControl) toEdit->ff_AutoClipControl = mods->ff_AutoClipControl;
+    if (ff_clipControl) toEdit->ff_clipControl = dontforceSet && options.baBehav[ADDSET_RAWFFCLIPCONTROL] ? toEdit->ff_clipControl + mods->ff_clipControl : mods->ff_clipControl;
+    // *INDENT-ON*
+}
+
+void DirPyrEqualizerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    DirPyrEqualizerParams* toEdit = static_cast<DirPyrEqualizerParams*>(paramsToEdit);
+    const DirPyrEqualizerParams* mods = static_cast<const DirPyrEqualizerParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (gamutlab) toEdit->gamutlab = mods->gamutlab;
+    for(int i = 0; i < 6; i++) {
+        if(mult[i]) toEdit->mult[i] = dontforceSet && options.baBehav[ADDSET_DIRPYREQ] ? toEdit->mult[i] + mods->mult[i] : mods->mult[i];
+    }
+    if (threshold) toEdit->threshold = dontforceSet && options.baBehav[ADDSET_DIRPYREQ_THRESHOLD] ? toEdit->threshold + mods->threshold : mods->threshold;
+    if (skinprotect) toEdit->skinprotect = dontforceSet && options.baBehav[ADDSET_DIRPYREQ_SKINPROTECT] ? toEdit->skinprotect + mods->skinprotect : mods->skinprotect;
+    if (hueskin) toEdit->hueskin = mods->hueskin;
+    // if (algo) toEdit->algo = mods->algo;
+    // *INDENT-ON*
+}
+
+void WaveletParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    WaveletParams* toEdit = static_cast<WaveletParams*>(paramsToEdit);
+    const WaveletParams* mods = static_cast<const WaveletParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (strength) toEdit->strength = mods->strength;
+    if (balance) toEdit->balance = mods->balance;
+    if (iter) toEdit->iter = mods->iter;
+    if (median) toEdit->median = mods->median;
+    if (medianlev) toEdit->medianlev = mods->medianlev;
+    if (linkedg) toEdit->linkedg = mods->linkedg;
+    if (cbenab) toEdit->cbenab = mods->cbenab;
+    if (greenhigh) toEdit->greenhigh = mods->greenhigh;
+    if (bluehigh) toEdit->bluehigh = mods->bluehigh;
+    if (greenmed) toEdit->greenmed = mods->greenmed;
+    if (bluemed) toEdit->bluemed = mods->bluemed;
+    if (greenlow) toEdit->greenlow = mods->greenlow;
+    if (bluelow) toEdit->bluelow = mods->bluelow;
+    if (lipst) toEdit->lipst = mods->lipst;
+    if (Medgreinf) toEdit->Medgreinf = mods->Medgreinf;
+    if (avoid) toEdit->avoid = mods->avoid;
+    if (tmr) toEdit->tmr = mods->tmr;
+    if (Lmethod) toEdit->Lmethod = mods->Lmethod;
+    if (CLmethod) toEdit->CLmethod = mods->CLmethod;
+    if (Backmethod) toEdit->Backmethod = mods->Backmethod;
+    if (Tilesmethod) toEdit->Tilesmethod = mods->Tilesmethod;
+    if (daubcoeffmethod) toEdit->daubcoeffmethod = mods->daubcoeffmethod;
+    if (CHmethod) toEdit->CHmethod = mods->CHmethod;
+    if (CHSLmethod) toEdit->CHSLmethod = mods->CHSLmethod;
+    if (EDmethod) toEdit->EDmethod = mods->EDmethod;
+    if (NPmethod) toEdit->NPmethod = mods->NPmethod;
+    if (BAmethod) toEdit->BAmethod = mods->BAmethod;
+    if (TMmethod) toEdit->TMmethod = mods->TMmethod;
+    if (HSmethod) toEdit->HSmethod = mods->HSmethod;
+    if (Dirmethod) toEdit->Dirmethod = mods->Dirmethod;
+    if (edgthresh) toEdit->edgthresh = mods->edgthresh;
+    if (sky) toEdit->sky = dontforceSet && options.baBehav[ADDSET_WA_SKYPROTECT] ? toEdit->sky + mods->sky : mods->sky;
+    if (thr) toEdit->thr = dontforceSet && options.baBehav[ADDSET_WA_THRR] ? toEdit->thr + mods->thr : mods->thr;
+    if (thrH) toEdit->thrH = dontforceSet && options.baBehav[ADDSET_WA_THRRH] ? toEdit->thrH + mods->thrH : mods->thrH;
+    if (sup) toEdit->sup = mods->sup;
+    if (hllev) toEdit->hllev = mods->hllev;
+    if (bllev) toEdit->bllev = mods->bllev;
+    if (edgcont) toEdit->edgcont = mods->edgcont;
+    if (level0noise) toEdit->level0noise = mods->level0noise;
+    if (level1noise) toEdit->level1noise = mods->level1noise;
+    if (level2noise) toEdit->level2noise = mods->level2noise;
+    if (level3noise) toEdit->level3noise = mods->level3noise;
+    if (pastlev) toEdit->pastlev = mods->pastlev;
+    if (satlev) toEdit->satlev = mods->satlev;
+    if (ccwcurve) toEdit->ccwcurve = mods->ccwcurve;
+    if (opacityCurveRG) toEdit->opacityCurveRG = mods->opacityCurveRG;
+    if (opacityCurveBY) toEdit->opacityCurveBY = mods->opacityCurveBY;
+    if (opacityCurveW) toEdit->opacityCurveW = mods->opacityCurveW;
+    if (opacityCurveWL) toEdit->opacityCurveWL = mods->opacityCurveWL;
+    if (hhcurve) toEdit->hhcurve = mods->hhcurve;
+    if (Chcurve) toEdit->Chcurve = mods->Chcurve;
+    if (wavclCurve) toEdit->wavclCurve = mods->wavclCurve;
+    //if (enacont) toEdit->enacont = mods->enacont;
+    if (expcontrast) toEdit->expcontrast = mods->expcontrast;
+    if (expchroma) toEdit->expchroma = mods->expchroma;
+    if (expedge) toEdit->expedge = mods->expedge;
+    if (expresid) toEdit->expresid = mods->expresid;
+    if (expfinal) toEdit->expfinal = mods->expfinal;
+    if (exptoning) toEdit->exptoning = mods->exptoning;
+    if (expnoise) toEdit->expnoise = mods->expnoise;
+    for(int i = 0; i < 9; ++i) {
+        if(c[i]) toEdit->c[i] = dontforceSet && options.baBehav[ADDSET_WA] ? toEdit->c[i] + mods->c[i] : mods->c[i];
+        if(ch[i]) toEdit->ch[i] = dontforceSet && options.baBehav[ADDSET_WA] ? toEdit->ch[i] + mods->ch[i] : mods->ch[i];
+    }
+    if (skinprotect) toEdit->skinprotect = dontforceSet && options.baBehav[ADDSET_WA_SKINPROTECT] ? toEdit->skinprotect + mods->skinprotect : mods->skinprotect;
+    if (hueskin) toEdit->hueskin = mods->hueskin;
+    if (hueskin2) toEdit->hueskin2 = mods->hueskin2;
+    if (edgesensi) toEdit->edgesensi = mods->edgesensi;
+    if (edgeampli) toEdit->edgeampli = mods->edgeampli;
+    if (resconH) toEdit->resconH = dontforceSet && options.baBehav[ADDSET_WA_RESCONH] ? toEdit->resconH + mods->resconH : mods->resconH;
+    if (reschro) toEdit->reschro = dontforceSet && options.baBehav[ADDSET_WA_RESCHRO] ? toEdit->reschro + mods->reschro : mods->reschro;
+    if (tmrs) toEdit->tmrs = dontforceSet && options.baBehav[ADDSET_WA_TMRS] ? toEdit->tmrs + mods->tmrs : mods->tmrs;
+    if (gamma) toEdit->gamma = dontforceSet && options.baBehav[ADDSET_WA_GAMMA] ? toEdit->gamma + mods->gamma : mods->gamma;
+    if (rescon) toEdit->rescon = dontforceSet && options.baBehav[ADDSET_WA_RESCON] ? toEdit->rescon + mods->rescon : mods->rescon;
+    if (thres) toEdit->thres = dontforceSet && options.baBehav[ADDSET_WA_THRES] ? toEdit->thres + mods->thres : mods->thres;
+    if (threshold) toEdit->threshold = dontforceSet && options.baBehav[ADDSET_WA_THRESHOLD] ? toEdit->threshold + mods->threshold : mods->threshold;
+    if (threshold2) toEdit->threshold2 = dontforceSet && options.baBehav[ADDSET_WA_THRESHOLD2] ? toEdit->threshold2 + mods->threshold2 : mods->threshold2;
+    if (edgedetect) toEdit->edgedetect = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECT] ? toEdit->edgedetect + mods->edgedetect : mods->edgedetect;
+    if (edgedetectthr) toEdit->edgedetectthr = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECTTHR] ? toEdit->edgedetectthr + mods->edgedetectthr : mods->edgedetectthr;
+    if (edgedetectthr2) toEdit->edgedetectthr2 = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECTTHR2] ? toEdit->edgedetectthr2 + mods->edgedetectthr2 : mods->edgedetectthr2;
+    if (chro) toEdit->chro = dontforceSet && options.baBehav[ADDSET_WA_CHRO] ? toEdit->chro + mods->chro : mods->chro;
+    if (chroma) toEdit->chroma = dontforceSet && options.baBehav[ADDSET_WA_CHROMA] ? toEdit->chroma + mods->chroma : mods->chroma;
+    if (contrast) toEdit->contrast = dontforceSet && options.baBehav[ADDSET_WA_CONTRAST] ? toEdit->contrast + mods->contrast : mods->contrast;
+    if (edgrad) toEdit->edgrad = dontforceSet && options.baBehav[ADDSET_WA_EDGRAD] ? toEdit->edgrad + mods->edgrad : mods->edgrad;
+    if (edgval) toEdit->edgval = dontforceSet && options.baBehav[ADDSET_WA_EDGVAL] ? toEdit->edgval + mods->edgval : mods->edgval;
+    if (strength) toEdit->strength = dontforceSet && options.baBehav[ADDSET_WA_STRENGTH] ? toEdit->strength + mods->strength : mods->strength;
+    // *INDENT-ON*
+}
+
+void HSVEqualizerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    HSVEqualizerParams* toEdit = static_cast<HSVEqualizerParams*>(paramsToEdit);
+    const HSVEqualizerParams* mods = static_cast<const HSVEqualizerParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (hcurve) toEdit->hcurve = mods->hcurve;
+    if (scurve) toEdit->scurve = mods->scurve;
+    if (vcurve) toEdit->vcurve = mods->vcurve;
+    // *INDENT-ON*
+}
+
+void FilmSimulationParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+{
+    FilmSimulationParams* toEdit = static_cast<FilmSimulationParams*>(paramsToEdit);
+    const FilmSimulationParams* mods = static_cast<const FilmSimulationParams*>(newValues);
+
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (clutFilename) toEdit->clutFilename = mods->clutFilename;
+    if (strength) toEdit->strength = dontforceSet && options.baBehav[ADDSET_FILMSIMULATION_STRENGTH] ? toEdit->strength + mods->strength : mods->strength;
+    // *INDENT-ON*
 }
 
 void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rtengine::procparams::ProcParams& mods, bool forceSet)
@@ -931,1643 +2234,105 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     bool dontforceSet = !forceSet;
 
-    if (toneCurve.curve) {
-        toEdit.toneCurve.curve      = mods.toneCurve.curve;
-    }
-
-    if (toneCurve.curve2) {
-        toEdit.toneCurve.curve2     = mods.toneCurve.curve2;
-    }
-
-    if (toneCurve.curveMode) {
-        toEdit.toneCurve.curveMode  = mods.toneCurve.curveMode;
-    }
-
-    if (toneCurve.curveMode2) {
-        toEdit.toneCurve.curveMode2 = mods.toneCurve.curveMode2;
-    }
-
-    if (toneCurve.brightness) {
-        toEdit.toneCurve.brightness = dontforceSet && options.baBehav[ADDSET_TC_BRIGHTNESS] ? toEdit.toneCurve.brightness + mods.toneCurve.brightness : mods.toneCurve.brightness;
-    }
-
-    if (toneCurve.black) {
-        toEdit.toneCurve.black        = dontforceSet && options.baBehav[ADDSET_TC_BLACKLEVEL] ? toEdit.toneCurve.black + mods.toneCurve.black : mods.toneCurve.black;
-    }
-
-    if (toneCurve.contrast) {
-        toEdit.toneCurve.contrast     = dontforceSet && options.baBehav[ADDSET_TC_CONTRAST] ? toEdit.toneCurve.contrast + mods.toneCurve.contrast : mods.toneCurve.contrast;
-    }
-
-    if (toneCurve.saturation) {
-        toEdit.toneCurve.saturation = dontforceSet && options.baBehav[ADDSET_TC_SATURATION] ? toEdit.toneCurve.saturation + mods.toneCurve.saturation : mods.toneCurve.saturation;
-    }
-
-    if (toneCurve.shcompr) {
-        toEdit.toneCurve.shcompr  = dontforceSet && options.baBehav[ADDSET_TC_SHCOMP] ? toEdit.toneCurve.shcompr + mods.toneCurve.shcompr : mods.toneCurve.shcompr;
-    }
-
-    if (toneCurve.autoexp) {
-        toEdit.toneCurve.autoexp  = mods.toneCurve.autoexp;
-    }
-
-    if (toneCurve.clip) {
-        toEdit.toneCurve.clip         = mods.toneCurve.clip;
-    }
-
-    if (toneCurve.expcomp) {
-        toEdit.toneCurve.expcomp  = dontforceSet && options.baBehav[ADDSET_TC_EXPCOMP] ? toEdit.toneCurve.expcomp + mods.toneCurve.expcomp : mods.toneCurve.expcomp;
-    }
-
-    if (toneCurve.hlcompr) {
-        toEdit.toneCurve.hlcompr  = dontforceSet && options.baBehav[ADDSET_TC_HLCOMPAMOUNT] ? toEdit.toneCurve.hlcompr + mods.toneCurve.hlcompr : mods.toneCurve.hlcompr;
-    }
-
-    if (toneCurve.hlcomprthresh) {
-        toEdit.toneCurve.hlcomprthresh   = dontforceSet && options.baBehav[ADDSET_TC_HLCOMPTHRESH] ? toEdit.toneCurve.hlcomprthresh + mods.toneCurve.hlcomprthresh : mods.toneCurve.hlcomprthresh;
-    }
-
-    if (toneCurve.hrenabled) {
-        toEdit.toneCurve.hrenabled    = mods.toneCurve.hrenabled;
-    }
-
-    if (toneCurve.method) {
-        toEdit.toneCurve.method   = mods.toneCurve.method;
-    }
-
-    if (labCurve.lcurve) {
-        toEdit.labCurve.lcurve        = mods.labCurve.lcurve;
-    }
-
-    if (labCurve.acurve) {
-        toEdit.labCurve.acurve        = mods.labCurve.acurve;
-    }
-
-    if (labCurve.bcurve) {
-        toEdit.labCurve.bcurve        = mods.labCurve.bcurve;
-    }
-
-    if (labCurve.cccurve) {
-        toEdit.labCurve.cccurve     = mods.labCurve.cccurve;
-    }
-
-    if (labCurve.chcurve) {
-        toEdit.labCurve.chcurve     = mods.labCurve.chcurve;
-    }
-
-    if (labCurve.lhcurve) {
-        toEdit.labCurve.lhcurve     = mods.labCurve.lhcurve;
-    }
-
-    if (labCurve.hhcurve) {
-        toEdit.labCurve.hhcurve     = mods.labCurve.hhcurve;
-    }
-
-    if (labCurve.lccurve) {
-        toEdit.labCurve.lccurve    = mods.labCurve.lccurve;
-    }
-
-    if (labCurve.clcurve) {
-        toEdit.labCurve.clcurve    = mods.labCurve.clcurve;
-    }
-
-    if (labCurve.brightness) {
-        toEdit.labCurve.brightness   = dontforceSet && options.baBehav[ADDSET_LC_BRIGHTNESS] ? toEdit.labCurve.brightness + mods.labCurve.brightness : mods.labCurve.brightness;
-    }
-
-    if (labCurve.contrast) {
-        toEdit.labCurve.contrast   = dontforceSet && options.baBehav[ADDSET_LC_CONTRAST] ? toEdit.labCurve.contrast + mods.labCurve.contrast : mods.labCurve.contrast;
-    }
-
-    if (labCurve.chromaticity) {
-        toEdit.labCurve.chromaticity = dontforceSet && options.baBehav[ADDSET_LC_CHROMATICITY] ? toEdit.labCurve.chromaticity + mods.labCurve.chromaticity : mods.labCurve.chromaticity;
-    }
-
-    if (labCurve.avoidcolorshift) {
-        toEdit.labCurve.avoidcolorshift       = mods.labCurve.avoidcolorshift;
-    }
-
-    if (labCurve.rstprotection) {
-        toEdit.labCurve.rstprotection     = mods.labCurve.rstprotection;
-    }
-
-    if (labCurve.lcredsk) {
-        toEdit.labCurve.lcredsk               = mods.labCurve.lcredsk;
-    }
-
-    if (rgbCurves.lumamode) {
-        toEdit.rgbCurves.lumamode   = mods.rgbCurves.lumamode;
-    }
-
-    if (rgbCurves.rcurve) {
-        toEdit.rgbCurves.rcurve     = mods.rgbCurves.rcurve;
-    }
-
-    if (rgbCurves.gcurve) {
-        toEdit.rgbCurves.gcurve     = mods.rgbCurves.gcurve;
-    }
-
-    if (rgbCurves.bcurve) {
-        toEdit.rgbCurves.bcurve     = mods.rgbCurves.bcurve;
-    }
-
-    if (colorToning.enabled) {
-        toEdit.colorToning.enabled        = mods.colorToning.enabled;
-    }
-
-    if (colorToning.twocolor) {
-        toEdit.colorToning.twocolor       = mods.colorToning.twocolor;
-    }
-
-    if (colorToning.opacityCurve) {
-        toEdit.colorToning.opacityCurve   = mods.colorToning.opacityCurve;
-    }
-
-    if (colorToning.colorCurve) {
-        toEdit.colorToning.colorCurve = mods.colorToning.colorCurve;
-    }
-
-    if (colorToning.enabled) {
-        toEdit.colorToning.enabled        = mods.colorToning.enabled;
-    }
-
-    if (colorToning.opacityCurve) {
-        toEdit.colorToning.opacityCurve   = mods.colorToning.opacityCurve;
-    }
-
-    if (colorToning.satprotectionthreshold) {
-        toEdit.colorToning.satProtectionThreshold = dontforceSet && options.baBehav[ADDSET_COLORTONING_SATTHRESHOLD] ? toEdit.colorToning.satProtectionThreshold + mods.colorToning.satProtectionThreshold : mods.colorToning.satProtectionThreshold;
-    }
-
-    if (colorToning.autosat) {
-        toEdit.colorToning.autosat                    = mods.colorToning.autosat;
-    }
-
-    if (colorToning.saturatedopacity) {
-        toEdit.colorToning.saturatedOpacity           = dontforceSet && options.baBehav[ADDSET_COLORTONING_SATOPACITY] ? toEdit.colorToning.saturatedOpacity + mods.colorToning.saturatedOpacity : mods.colorToning.saturatedOpacity;
-    }
-
-    if (colorToning.strength) {
-        toEdit.colorToning.strength                   = dontforceSet && options.baBehav[ADDSET_COLORTONING_STRENGTH] ? toEdit.colorToning.strength + mods.colorToning.strength : mods.colorToning.strength;
-    }
-
-    if (colorToning.shadowsColSat) {
-        toEdit.colorToning.shadowsColSat          = mods.colorToning.shadowsColSat;
-    }
-
-    if (colorToning.hlColSat) {
-        toEdit.colorToning.hlColSat   = mods.colorToning.hlColSat;
-    }
-
-    if (colorToning.balance) {
-        toEdit.colorToning.balance    = dontforceSet && options.baBehav[ADDSET_COLORTONING_BALANCE] ? toEdit.colorToning.balance + mods.colorToning.balance : mods.colorToning.balance;
-    }
-
-    if (colorToning.clcurve) {
-        toEdit.colorToning.clcurve    = mods.colorToning.clcurve;
-    }
-
-    if (colorToning.method) {
-        toEdit.colorToning.method = mods.colorToning.method;
-    }
-
-    if (colorToning.cl2curve) {
-        toEdit.colorToning.cl2curve   = mods.colorToning.cl2curve;
-    }
-
-    if (colorToning.lumamode) {
-        toEdit.colorToning.lumamode   = mods.colorToning.lumamode;
-    }
-
-    if (colorToning.satlow) {
-        toEdit.colorToning.satlow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.satlow + mods.colorToning.satlow : mods.colorToning.satlow;
-    }
-
-    if (colorToning.sathigh) {
-        toEdit.colorToning.sathigh    = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.sathigh + mods.colorToning.sathigh : mods.colorToning.sathigh;
-    }
-
-    if (colorToning.redlow) {
-        toEdit.colorToning.redlow = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.redlow + mods.colorToning.redlow : mods.colorToning.redlow;
-    }
-
-    if (colorToning.greenlow) {
-        toEdit.colorToning.greenlow   = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.greenlow + mods.colorToning.greenlow : mods.colorToning.greenlow;
-    }
-
-    if (colorToning.bluelow) {
-        toEdit.colorToning.bluelow    = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.bluelow + mods.colorToning.bluelow : mods.colorToning.bluelow;
-    }
-
-    if (colorToning.redmed) {
-        toEdit.colorToning.redmed = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.redmed + mods.colorToning.redmed : mods.colorToning.redmed;
-    }
-
-    if (colorToning.greenmed) {
-        toEdit.colorToning.greenmed   = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.greenmed + mods.colorToning.greenmed : mods.colorToning.greenmed;
-    }
-
-    if (colorToning.bluemed) {
-        toEdit.colorToning.bluemed    = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.bluemed + mods.colorToning.bluemed : mods.colorToning.bluemed;
-    }
-
-    if (colorToning.redhigh) {
-        toEdit.colorToning.redhigh    = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.redhigh + mods.colorToning.redhigh : mods.colorToning.redhigh;
-    }
-
-    if (colorToning.greenhigh) {
-        toEdit.colorToning.greenhigh = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.greenhigh + mods.colorToning.greenhigh : mods.colorToning.greenhigh;
-    }
-
-    if (colorToning.bluehigh) {
-        toEdit.colorToning.bluehigh   = dontforceSet && options.baBehav[ADDSET_COLORTONING_SPLIT] ? toEdit.colorToning.bluehigh + mods.colorToning.bluehigh : mods.colorToning.bluehigh;
-    }
-
-    if (sharpenEdge.enabled) {
-        toEdit.sharpenEdge.enabled    = mods.sharpenEdge.enabled;
-    }
-
-    if (sharpenEdge.passes) {
-        toEdit.sharpenEdge.passes = dontforceSet && options.baBehav[ADDSET_SHARPENEDGE_PASS] ? toEdit.sharpenEdge.passes + mods.sharpenEdge.passes : mods.sharpenEdge.passes;
-    }
-
-    if (sharpenEdge.amount) {
-        toEdit.sharpenEdge.amount = dontforceSet && options.baBehav[ADDSET_SHARPENEDGE_AMOUNT] ? toEdit.sharpenEdge.amount + mods.sharpenEdge.amount : mods.sharpenEdge.amount;
-    }
-
-    if (sharpenEdge.threechannels) {
-        toEdit.sharpenEdge.threechannels  = mods.sharpenEdge.threechannels;
-    }
-
-    if (sharpenMicro.enabled) {
-        toEdit.sharpenMicro.enabled   = mods.sharpenMicro.enabled;
-    }
-
-    if (sharpenMicro.matrix) {
-        toEdit.sharpenMicro.matrix    = mods.sharpenMicro.matrix;
-    }
-
-    if (sharpenMicro.amount) {
-        toEdit.sharpenMicro.amount    = dontforceSet && options.baBehav[ADDSET_SHARPENMICRO_AMOUNT] ? toEdit.sharpenMicro.amount + mods.sharpenMicro.amount : mods.sharpenMicro.amount;
-    }
-
-    if (sharpenMicro.uniformity) {
-        toEdit.sharpenMicro.uniformity    = dontforceSet && options.baBehav[ADDSET_SHARPENMICRO_UNIFORMITY] ? toEdit.sharpenMicro.uniformity + mods.sharpenMicro.uniformity : mods.sharpenMicro.uniformity;
-    }
-
-    if (sharpening.enabled) {
-        toEdit.sharpening.enabled     = mods.sharpening.enabled;
-    }
-
-    if (sharpening.radius) {
-        toEdit.sharpening.radius  = mods.sharpening.radius;
-    }
-
-    if (sharpening.amount) {
-        toEdit.sharpening.amount  = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit.sharpening.amount + mods.sharpening.amount : mods.sharpening.amount;
-    }
-
-    if (sharpening.threshold) {
-        toEdit.sharpening.threshold = mods.sharpening.threshold;
-    }
-
-    if (sharpening.edgesonly) {
-        toEdit.sharpening.edgesonly   = mods.sharpening.edgesonly;
-    }
-
-    if (sharpening.edges_radius) {
-        toEdit.sharpening.edges_radius    = mods.sharpening.edges_radius;
-    }
-
-    if (sharpening.edges_tolerance) {
-        toEdit.sharpening.edges_tolerance  = mods.sharpening.edges_tolerance;
-    }
-
-    if (sharpening.halocontrol) {
-        toEdit.sharpening.halocontrol          = mods.sharpening.halocontrol;
-    }
-
-    if (sharpening.halocontrol_amount) {
-        toEdit.sharpening.halocontrol_amount = mods.sharpening.halocontrol_amount;
-    }
-
-    if (sharpening.method) {
-        toEdit.sharpening.method      = mods.sharpening.method;
-    }
-
-    if (sharpening.deconvamount) {
-        toEdit.sharpening.deconvamount    = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit.sharpening.deconvamount + mods.sharpening.deconvamount : mods.sharpening.deconvamount;
-    }
-
-    if (sharpening.deconvradius) {
-        toEdit.sharpening.deconvradius    = mods.sharpening.deconvradius;
-    }
-
-    if (sharpening.deconviter) {
-        toEdit.sharpening.deconviter  = mods.sharpening.deconviter;
-    }
-
-    if (sharpening.deconvdamping) {
-        toEdit.sharpening.deconvdamping = mods.sharpening.deconvdamping;
-    }
-
-    if (prsharpening.enabled) {
-        toEdit.prsharpening.enabled   = mods.prsharpening.enabled;
-    }
-
-    if (prsharpening.radius) {
-        toEdit.prsharpening.radius    = mods.prsharpening.radius;
-    }
-
-    if (prsharpening.amount) {
-        toEdit.prsharpening.amount    = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit.prsharpening.amount + mods.prsharpening.amount : mods.prsharpening.amount;
-    }
-
-    if (prsharpening.threshold) {
-        toEdit.prsharpening.threshold = mods.prsharpening.threshold;
-    }
-
-    if (prsharpening.edgesonly) {
-        toEdit.prsharpening.edgesonly     = mods.prsharpening.edgesonly;
-    }
-
-    if (prsharpening.edges_radius) {
-        toEdit.prsharpening.edges_radius  = mods.prsharpening.edges_radius;
-    }
-
-    if (prsharpening.edges_tolerance) {
-        toEdit.prsharpening.edges_tolerance    = mods.prsharpening.edges_tolerance;
-    }
-
-    if (prsharpening.halocontrol) {
-        toEdit.prsharpening.halocontrol        = mods.prsharpening.halocontrol;
-    }
-
-    if (prsharpening.halocontrol_amount) {
-        toEdit.prsharpening.halocontrol_amount = mods.prsharpening.halocontrol_amount;
-    }
-
-    if (prsharpening.method) {
-        toEdit.prsharpening.method        = mods.prsharpening.method;
-    }
-
-    if (prsharpening.deconvamount) {
-        toEdit.prsharpening.deconvamount  = dontforceSet && options.baBehav[ADDSET_SHARP_AMOUNT] ? toEdit.prsharpening.deconvamount + mods.prsharpening.deconvamount : mods.prsharpening.deconvamount;
-    }
-
-    if (prsharpening.deconvradius) {
-        toEdit.prsharpening.deconvradius  = mods.prsharpening.deconvradius;
-    }
-
-    if (prsharpening.deconviter) {
-        toEdit.prsharpening.deconviter    = mods.prsharpening.deconviter;
-    }
-
-    if (prsharpening.deconvdamping) {
-        toEdit.prsharpening.deconvdamping = mods.prsharpening.deconvdamping;
-    }
-
-    if (vibrance.enabled) {
-        toEdit.vibrance.enabled           = mods.vibrance.enabled;
-    }
-
-    if (vibrance.pastels) {
-        toEdit.vibrance.pastels           = dontforceSet && options.baBehav[ADDSET_VIBRANCE_PASTELS] ? toEdit.vibrance.pastels + mods.vibrance.pastels : mods.vibrance.pastels;
-    }
-
-    if (vibrance.saturated) {
-        toEdit.vibrance.saturated     = dontforceSet && options.baBehav[ADDSET_VIBRANCE_SATURATED] ? toEdit.vibrance.saturated + mods.vibrance.saturated : mods.vibrance.saturated;
-    }
-
-    if (vibrance.psthreshold) {
-        toEdit.vibrance.psthreshold       = mods.vibrance.psthreshold;
-    }
-
-    if (vibrance.protectskins) {
-        toEdit.vibrance.protectskins  = mods.vibrance.protectskins;
-    }
-
-    if (vibrance.avoidcolorshift) {
-        toEdit.vibrance.avoidcolorshift   = mods.vibrance.avoidcolorshift;
-    }
-
-    if (vibrance.pastsattog) {
-        toEdit.vibrance.pastsattog        = mods.vibrance.pastsattog;
-    }
-
-    if (vibrance.skintonescurve) {
-        toEdit.vibrance.skintonescurve    = mods.vibrance.skintonescurve;
-    }
-
-    //if (colorBoost.amount)                    toEdit.colorBoost.amount        = dontforceSet && options.baBehav[ADDSET_CBOOST_AMOUNT] ? toEdit.colorBoost.amount + mods.colorBoost.amount : mods.colorBoost.amount;
-    //if (colorBoost.avoidclip)             toEdit.colorBoost.avoidclip     = mods.colorBoost.avoidclip;
-    //if (colorBoost.enable_saturationlimiter)toEdit.colorBoost.enable_saturationlimiter    = mods.colorBoost.enable_saturationlimiter;
-    //if (colorBoost.saturationlimit)           toEdit.colorBoost.saturationlimit   = mods.colorBoost.saturationlimit;
-    if (wb.method) {
-        toEdit.wb.method  = mods.wb.method;
-    }
-
-    if (wb.equal) {
-        toEdit.wb.equal   = dontforceSet && options.baBehav[ADDSET_WB_EQUAL] ? toEdit.wb.equal + mods.wb.equal : mods.wb.equal;
-    }
-
-    if (wb.green) {
-        toEdit.wb.green   = dontforceSet && options.baBehav[ADDSET_WB_GREEN] ? toEdit.wb.green + mods.wb.green : mods.wb.green;
-    }
-
-    if (wb.temperature) {
-        toEdit.wb.temperature     = dontforceSet && options.baBehav[ADDSET_WB_TEMPERATURE] ? toEdit.wb.temperature + mods.wb.temperature : mods.wb.temperature;
-    }
-
-    //if (colorShift.a)                     toEdit.colorShift.a     = dontforceSet && options.baBehav[ADDSET_CS_BLUEYELLOW] ? toEdit.colorShift.a + mods.colorShift.a : mods.colorShift.a;
-    //if (colorShift.b)                     toEdit.colorShift.b     = dontforceSet && options.baBehav[ADDSET_CS_GREENMAGENTA] ? toEdit.colorShift.b + mods.colorShift.b : mods.colorShift.b;
-    //if (lumaDenoise.enabled)              toEdit.lumaDenoise.enabled  = mods.lumaDenoise.enabled;
-    //if (lumaDenoise.radius)                   toEdit.lumaDenoise.radius   = mods.lumaDenoise.radius;
-    //if (lumaDenoise.edgetolerance)            toEdit.lumaDenoise.edgetolerance    = dontforceSet && options.baBehav[ADDSET_LD_EDGETOLERANCE] ? toEdit.lumaDenoise.edgetolerance + mods.lumaDenoise.edgetolerance : mods.lumaDenoise.edgetolerance;
-    //if (colorDenoise.enabled)             toEdit.colorDenoise.enabled     = mods.colorDenoise.enabled;
-    //if (colorDenoise.amount)              toEdit.colorDenoise.amount  = mods.colorDenoise.amount;
-
-    if (defringe.enabled) {
-        toEdit.defringe.enabled   = mods.defringe.enabled;
-    }
-
-    if (defringe.radius) {
-        toEdit.defringe.radius    = mods.defringe.radius;
-    }
-
-    if (defringe.threshold) {
-        toEdit.defringe.threshold = mods.defringe.threshold;
-    }
-
-    if (defringe.huecurve) {
-        toEdit.defringe.huecurve  = mods.defringe.huecurve;
-    }
-
-    if (colorappearance.curve) {
-        toEdit.colorappearance.curve      = mods.colorappearance.curve;
-    }
-
-    if (colorappearance.curve2) {
-        toEdit.colorappearance.curve2     = mods.colorappearance.curve2;
-    }
-
-    if (colorappearance.curve3) {
-        toEdit.colorappearance.curve3     = mods.colorappearance.curve3;
-    }
-
-    if (colorappearance.curveMode) {
-        toEdit.colorappearance.curveMode  = mods.colorappearance.curveMode;
-    }
-
-    if (colorappearance.curveMode2) {
-        toEdit.colorappearance.curveMode2 = mods.colorappearance.curveMode2;
-    }
-
-    if (colorappearance.curveMode3) {
-        toEdit.colorappearance.curveMode3 = mods.colorappearance.curveMode3;
-    }
-
-    if (colorappearance.enabled) {
-        toEdit.colorappearance.enabled        = mods.colorappearance.enabled;
-    }
-
-    if (colorappearance.degree) {
-        toEdit.colorappearance.degree     = dontforceSet && options.baBehav[ADDSET_CAT_DEGREE] ? toEdit.colorappearance.degree + mods.colorappearance.degree : mods.colorappearance.degree;
-    }
-
-    if (colorappearance.autodegree) {
-        toEdit.colorappearance.autodegree = mods.colorappearance.autodegree;
-    }
-
-    if (colorappearance.surround) {
-        toEdit.colorappearance.surround       = mods.colorappearance.surround;
-    }
-
-    if (colorappearance.autoadapscen) {
-        toEdit.colorappearance.autoadapscen   = mods.colorappearance.autoadapscen;
-    }
-
-    if (colorappearance.adapscen) {
-        toEdit.colorappearance.adapscen   = mods.colorappearance.adapscen;
-    }
-
-    if (colorappearance.adaplum) {
-        toEdit.colorappearance.adaplum        = dontforceSet && options.baBehav[ADDSET_CAT_ADAPTVIEWING] ? toEdit.colorappearance.adaplum + mods.colorappearance.adaplum : mods.colorappearance.adaplum;
-    }
-
-    if (colorappearance.badpixsl) {
-        toEdit.colorappearance.badpixsl       = dontforceSet && options.baBehav[ADDSET_CAT_BADPIX] ? toEdit.colorappearance.badpixsl + mods.colorappearance.badpixsl : mods.colorappearance.badpixsl;
-    }
-
-    if (colorappearance.wbmodel) {
-        toEdit.colorappearance.wbmodel        = mods.colorappearance.wbmodel;
-    }
-
-    if (colorappearance.algo) {
-        toEdit.colorappearance.algo       = mods.colorappearance.algo;
-    }
-
-    if (colorappearance.jlight) {
-        toEdit.colorappearance.jlight     = dontforceSet && options.baBehav[ADDSET_CAT_LIGHT] ? toEdit.colorappearance.jlight + mods.colorappearance.jlight : mods.colorappearance.jlight;
-    }
-
-    if (colorappearance.qbright) {
-        toEdit.colorappearance.qbright        = dontforceSet && options.baBehav[ADDSET_CAT_BRIGHT] ? toEdit.colorappearance.qbright + mods.colorappearance.qbright : mods.colorappearance.qbright;
-    }
-
-    if (colorappearance.chroma) {
-        toEdit.colorappearance.chroma     = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA] ? toEdit.colorappearance.chroma + mods.colorappearance.chroma : mods.colorappearance.chroma;
-    }
-
-    if (colorappearance.schroma) {
-        toEdit.colorappearance.schroma        = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA_S] ? toEdit.colorappearance.schroma + mods.colorappearance.schroma : mods.colorappearance.schroma;
-    }
-
-    if (colorappearance.mchroma) {
-        toEdit.colorappearance.mchroma        = dontforceSet && options.baBehav[ADDSET_CAT_CHROMA_M] ? toEdit.colorappearance.mchroma + mods.colorappearance.mchroma : mods.colorappearance.mchroma;
-    }
-
-    if (colorappearance.contrast) {
-        toEdit.colorappearance.contrast       = dontforceSet && options.baBehav[ADDSET_CAT_CONTRAST] ? toEdit.colorappearance.contrast + mods.colorappearance.contrast : mods.colorappearance.contrast;
-    }
-
-    if (colorappearance.qcontrast) {
-        toEdit.colorappearance.qcontrast  = dontforceSet && options.baBehav[ADDSET_CAT_CONTRAST_Q] ? toEdit.colorappearance.qcontrast + mods.colorappearance.qcontrast : mods.colorappearance.qcontrast;
-    }
-
-    if (colorappearance.colorh) {
-        toEdit.colorappearance.colorh     = dontforceSet && options.baBehav[ADDSET_CAT_HUE] ? toEdit.colorappearance.colorh + mods.colorappearance.colorh : mods.colorappearance.colorh;
-    }
-
-    if (colorappearance.rstprotection) {
-        toEdit.colorappearance.rstprotection = dontforceSet && options.baBehav[ADDSET_CAT_RSTPRO] ? toEdit.colorappearance.rstprotection + mods.colorappearance.rstprotection : mods.colorappearance.rstprotection;
-    }
-
-    if (colorappearance.surrsource) {
-        toEdit.colorappearance.surrsource = mods.colorappearance.surrsource;
-    }
-
-    if (colorappearance.gamut) {
-        toEdit.colorappearance.gamut = mods.colorappearance.gamut;
-    }
-
-//  if (colorappearance.badpix)             toEdit.colorappearance.badpix = mods.colorappearance.badpix;
-    if (colorappearance.datacie) {
-        toEdit.colorappearance.datacie = mods.colorappearance.datacie;
-    }
-
-    if (colorappearance.tonecie) {
-        toEdit.colorappearance.tonecie = mods.colorappearance.tonecie;
-    }
-
-//  if (colorappearance.sharpcie)           toEdit.colorappearance.sharpcie = mods.colorappearance.sharpcie;
-    if (impulseDenoise.enabled) {
-        toEdit.impulseDenoise.enabled     = mods.impulseDenoise.enabled;
-    }
-
-    if (impulseDenoise.thresh) {
-        toEdit.impulseDenoise.thresh  = mods.impulseDenoise.thresh;
-    }
-
-    if (dirpyrDenoise.enabled) {
-        toEdit.dirpyrDenoise.enabled  = mods.dirpyrDenoise.enabled;
-    }
-
-    if (dirpyrDenoise.enhance) {
-        toEdit.dirpyrDenoise.enhance  = mods.dirpyrDenoise.enhance;
-    }
-
-    if (dirpyrDenoise.median) {
-        toEdit.dirpyrDenoise.median   = mods.dirpyrDenoise.median;
-    }
-
-    if (dirpyrDenoise.autochroma) {
-        toEdit.dirpyrDenoise.autochroma   = mods.dirpyrDenoise.autochroma;
-    }
-
-    if (dirpyrDenoise.luma) {
-        toEdit.dirpyrDenoise.luma     = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_LUMA] ? toEdit.dirpyrDenoise.luma + mods.dirpyrDenoise.luma : mods.dirpyrDenoise.luma;
-    }
-
-    if (dirpyrDenoise.lcurve) {
-        toEdit.dirpyrDenoise.lcurve       = mods.dirpyrDenoise.lcurve;
-    }
-
-    if (dirpyrDenoise.cccurve) {
-        toEdit.dirpyrDenoise.cccurve      = mods.dirpyrDenoise.cccurve;
-    }
-
-    if (dirpyrDenoise.Ldetail) {
-        toEdit.dirpyrDenoise.Ldetail  = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_LUMDET] ? toEdit.dirpyrDenoise.Ldetail + mods.dirpyrDenoise.Ldetail : mods.dirpyrDenoise.Ldetail;
-    }
-
-    if (dirpyrDenoise.chroma) {
-        toEdit.dirpyrDenoise.chroma       = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMA] ? toEdit.dirpyrDenoise.chroma + mods.dirpyrDenoise.chroma : mods.dirpyrDenoise.chroma;
-    }
-
-    if (dirpyrDenoise.redchro) {
-        toEdit.dirpyrDenoise.redchro  = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMARED] ? toEdit.dirpyrDenoise.redchro + mods.dirpyrDenoise.redchro : mods.dirpyrDenoise.redchro;
-    }
-
-    if (dirpyrDenoise.bluechro) {
-        toEdit.dirpyrDenoise.bluechro = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_CHROMABLUE] ? toEdit.dirpyrDenoise.bluechro + mods.dirpyrDenoise.bluechro : mods.dirpyrDenoise.bluechro;
-    }
-
-    if (dirpyrDenoise.gamma) {
-        toEdit.dirpyrDenoise.gamma        = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_GAMMA] ? toEdit.dirpyrDenoise.gamma + mods.dirpyrDenoise.gamma : mods.dirpyrDenoise.gamma;
-    }
-
-    if (dirpyrDenoise.passes) {
-        toEdit.dirpyrDenoise.passes       = dontforceSet && options.baBehav[ADDSET_DIRPYRDN_PASSES] ? toEdit.dirpyrDenoise.passes + mods.dirpyrDenoise.passes : mods.dirpyrDenoise.passes;
-    }
-
-//  if (dirpyrDenoise.perform)              toEdit.dirpyrDenoise.perform    = mods.dirpyrDenoise.perform;
-    if (dirpyrDenoise.dmethod) {
-        toEdit.dirpyrDenoise.dmethod      = mods.dirpyrDenoise.dmethod;
-    }
-
-    if (dirpyrDenoise.Lmethod) {
-        toEdit.dirpyrDenoise.Lmethod      = mods.dirpyrDenoise.Lmethod;
-    }
-
-    if (dirpyrDenoise.Cmethod) {
-        toEdit.dirpyrDenoise.Cmethod      = mods.dirpyrDenoise.Cmethod;
-    }
-
-    if (dirpyrDenoise.C2method) {
-        toEdit.dirpyrDenoise.C2method     = mods.dirpyrDenoise.C2method;
-    }
-
-    if (dirpyrDenoise.smethod) {
-        toEdit.dirpyrDenoise.smethod      = mods.dirpyrDenoise.smethod;
-    }
-
-    if (dirpyrDenoise.medmethod) {
-        toEdit.dirpyrDenoise.medmethod        = mods.dirpyrDenoise.medmethod;
-    }
-
-    if (dirpyrDenoise.methodmed) {
-        toEdit.dirpyrDenoise.methodmed        = mods.dirpyrDenoise.methodmed;
-    }
-
-    if (dirpyrDenoise.rgbmethod) {
-        toEdit.dirpyrDenoise.rgbmethod        = mods.dirpyrDenoise.rgbmethod;
-    }
-
-    if (epd.enabled) {
-        toEdit.epd.enabled                = mods.epd.enabled;
-    }
-
-    if (epd.strength) {
-        toEdit.epd.strength               = mods.epd.strength;
-    }
-
-    if (epd.gamma) {
-        toEdit.epd.gamma              = mods.epd.gamma;
-    }
-
-    if (epd.edgeStopping) {
-        toEdit.epd.edgeStopping           = mods.epd.edgeStopping;
-    }
-
-    if (epd.scale) {
-        toEdit.epd.scale              = mods.epd.scale;
-    }
-
-    if (epd.reweightingIterates) {
-        toEdit.epd.reweightingIterates    = mods.epd.reweightingIterates;
-    }
-
-    if (sh.enabled) {
-        toEdit.sh.enabled         = mods.sh.enabled;
-    }
-
-    if (sh.hq) {
-        toEdit.sh.hq          = mods.sh.hq;
-    }
-
-    if (sh.highlights) {
-        toEdit.sh.highlights  = dontforceSet && options.baBehav[ADDSET_SH_HIGHLIGHTS] ? toEdit.sh.highlights + mods.sh.highlights : mods.sh.highlights;
-    }
-
-    if (sh.htonalwidth) {
-        toEdit.sh.htonalwidth     = mods.sh.htonalwidth;
-    }
-
-    if (sh.shadows) {
-        toEdit.sh.shadows         = dontforceSet && options.baBehav[ADDSET_SH_SHADOWS] ? toEdit.sh.shadows + mods.sh.shadows : mods.sh.shadows;
-    }
-
-    if (sh.stonalwidth) {
-        toEdit.sh.stonalwidth     = mods.sh.stonalwidth;
-    }
-
-    if (sh.localcontrast) {
-        toEdit.sh.localcontrast = dontforceSet && options.baBehav[ADDSET_SH_LOCALCONTRAST] ? toEdit.sh.localcontrast + mods.sh.localcontrast : mods.sh.localcontrast;
-    }
-
-    if (sh.radius) {
-        toEdit.sh.radius      = mods.sh.radius;
-    }
-
-    if (crop.enabled) {
-        toEdit.crop.enabled = mods.crop.enabled;
-    }
-
-    if (crop.x) {
-        toEdit.crop.x         = mods.crop.x;
-    }
-
-    if (crop.y) {
-        toEdit.crop.y         = mods.crop.y;
-    }
-
-    if (crop.w) {
-        toEdit.crop.w         = mods.crop.w;
-    }
-
-    if (crop.h) {
-        toEdit.crop.h         = mods.crop.h;
-    }
-
-    if (crop.fixratio) {
-        toEdit.crop.fixratio  = mods.crop.fixratio;
-    }
-
-    if (crop.ratio) {
-        toEdit.crop.ratio         = mods.crop.ratio;
-    }
-
-    if (crop.orientation) {
-        toEdit.crop.orientation = mods.crop.orientation;
-    }
-
-    if (crop.guide) {
-        toEdit.crop.guide         = mods.crop.guide;
-    }
-
-    if (coarse.rotate) {
-        toEdit.coarse.rotate  = mods.coarse.rotate;
-    }
-
-    if (coarse.hflip) {
-        toEdit.coarse.hflip   = mods.coarse.hflip;
-    }
-
-    if (coarse.vflip) {
-        toEdit.coarse.vflip   = mods.coarse.vflip;
-    }
-
-    if (commonTrans.autofill) {
-        toEdit.commonTrans.autofill       = mods.commonTrans.autofill;
-    }
-
-    if (rotate.degree) {
-        toEdit.rotate.degree          = dontforceSet && options.baBehav[ADDSET_ROTATE_DEGREE] ? toEdit.rotate.degree + mods.rotate.degree : mods.rotate.degree;
-    }
-
-    if (distortion.amount) {
-        toEdit.distortion.amount      = dontforceSet && options.baBehav[ADDSET_DIST_AMOUNT] ? toEdit.distortion.amount + mods.distortion.amount : mods.distortion.amount;
-    }
-
-    if (lensProf.lcpFile) {
-        toEdit.lensProf.lcpFile         = mods.lensProf.lcpFile;
-    }
-
-    if (lensProf.useDist) {
-        toEdit.lensProf.useDist         = mods.lensProf.useDist;
-    }
-
-    if (lensProf.useVign) {
-        toEdit.lensProf.useVign         = mods.lensProf.useVign;
-    }
-
-    if (lensProf.useCA) {
-        toEdit.lensProf.useCA           = mods.lensProf.useCA;
-    }
-
-    if (perspective.horizontal) {
-        toEdit.perspective.horizontal     = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit.perspective.horizontal + mods.perspective.horizontal : mods.perspective.horizontal;
-    }
-
-    if (perspective.vertical) {
-        toEdit.perspective.vertical   = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit.perspective.vertical + mods.perspective.vertical : mods.perspective.vertical;
-    }
-
-    if (gradient.enabled) {
-        toEdit.gradient.enabled   = mods.gradient.enabled;
-    }
-
-    if (gradient.degree) {
-        toEdit.gradient.degree        = dontforceSet && options.baBehav[ADDSET_GRADIENT_DEGREE] ? toEdit.gradient.degree + mods.gradient.degree : mods.gradient.degree;
-    }
-
-    if (gradient.feather) {
-        toEdit.gradient.feather   = mods.gradient.feather;
-    }
-
-    if (gradient.strength) {
-        toEdit.gradient.strength  = mods.gradient.strength;
-    }
-
-    if (gradient.centerX) {
-        toEdit.gradient.centerX   = mods.gradient.centerX;
-    }
-
-    if (gradient.centerY) {
-        toEdit.gradient.centerY   = mods.gradient.centerY;
-    }
-
-    if (pcvignette.enabled) {
-        toEdit.pcvignette.enabled     = mods.pcvignette.enabled;
-    }
-
-    if (pcvignette.strength) {
-        toEdit.pcvignette.strength    = mods.pcvignette.strength;
-    }
-
-    if (pcvignette.feather) {
-        toEdit.pcvignette.feather     = mods.pcvignette.feather;
-    }
-
-    if (pcvignette.roundness) {
-        toEdit.pcvignette.roundness = mods.pcvignette.roundness;
-    }
-
-    if (cacorrection.red) {
-        toEdit.cacorrection.red   = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit.cacorrection.red + mods.cacorrection.red : mods.cacorrection.red;
-    }
-
-    if (cacorrection.blue) {
-        toEdit.cacorrection.blue  = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit.cacorrection.blue + mods.cacorrection.blue : mods.cacorrection.blue;
-    }
-
-    if (vignetting.amount) {
-        toEdit.vignetting.amount  = dontforceSet && options.baBehav[ADDSET_VIGN_AMOUNT] ? toEdit.vignetting.amount + mods.vignetting.amount : mods.vignetting.amount;
-    }
-
-    if (vignetting.radius) {
-        toEdit.vignetting.radius  = mods.vignetting.radius;
-    }
-
-    if (vignetting.strength) {
-        toEdit.vignetting.strength    = mods.vignetting.strength;
-    }
-
-    if (vignetting.centerX) {
-        toEdit.vignetting.centerX     = mods.vignetting.centerX;
-    }
-
-    if (vignetting.centerY) {
-        toEdit.vignetting.centerY     = mods.vignetting.centerY;
-    }
-
-    for (int i = 0; i < 3; i++) {
-        if (chmixer.red[i]) {
-            toEdit.chmixer.red[i]     = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit.chmixer.red[i] + mods.chmixer.red[i] : mods.chmixer.red[i];
-        }
-
-        if (chmixer.green[i]) {
-            toEdit.chmixer.green[i]   = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit.chmixer.green[i] + mods.chmixer.green[i] : mods.chmixer.green[i];
-        }
-
-        if (chmixer.blue[i]) {
-            toEdit.chmixer.blue[i]    = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit.chmixer.blue[i] + mods.chmixer.blue[i] : mods.chmixer.blue[i];
-        }
-    }
-
-    if (blackwhite.enabled) {
-        toEdit.blackwhite.enabled         = mods.blackwhite.enabled;
-    }
-
-    if (blackwhite.method) {
-        toEdit.blackwhite.method          = mods.blackwhite.method;
-    }
-
-    if (blackwhite.luminanceCurve) {
-        toEdit.blackwhite.luminanceCurve  = mods.blackwhite.luminanceCurve;
-    }
-
-    if (blackwhite.autoc) {
-        toEdit.blackwhite.autoc               = mods.blackwhite.autoc;
-    }
-
-    if (blackwhite.setting) {
-        toEdit.blackwhite.setting         = mods.blackwhite.setting;
-    }
-
-    if (blackwhite.enabledcc) {
-        toEdit.blackwhite.enabledcc           = mods.blackwhite.enabledcc;
-    }
-
-    if (blackwhite.filter) {
-        toEdit.blackwhite.filter          = mods.blackwhite.filter;
-    }
-
-    if (blackwhite.mixerRed) {
-        toEdit.blackwhite.mixerRed            = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerRed + mods.blackwhite.mixerRed : mods.blackwhite.mixerRed;
-    }
-
-    if (blackwhite.mixerOrange) {
-        toEdit.blackwhite.mixerOrange         = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerOrange + mods.blackwhite.mixerOrange : mods.blackwhite.mixerOrange;
-    }
-
-    if (blackwhite.mixerYellow) {
-        toEdit.blackwhite.mixerYellow         = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerYellow + mods.blackwhite.mixerYellow : mods.blackwhite.mixerYellow;
-    }
-
-    if (blackwhite.mixerGreen) {
-        toEdit.blackwhite.mixerGreen      = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerGreen + mods.blackwhite.mixerGreen : mods.blackwhite.mixerGreen;
-    }
-
-    if (blackwhite.mixerCyan) {
-        toEdit.blackwhite.mixerCyan       = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerCyan + mods.blackwhite.mixerCyan : mods.blackwhite.mixerCyan;
-    }
-
-    if (blackwhite.mixerBlue) {
-        toEdit.blackwhite.mixerBlue       = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerBlue + mods.blackwhite.mixerBlue : mods.blackwhite.mixerBlue;
-    }
-
-    if (blackwhite.mixerMagenta) {
-        toEdit.blackwhite.mixerMagenta        = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerMagenta + mods.blackwhite.mixerMagenta : mods.blackwhite.mixerMagenta;
-    }
-
-    if (blackwhite.mixerPurple) {
-        toEdit.blackwhite.mixerPurple         = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_HUES] ? toEdit.blackwhite.mixerPurple + mods.blackwhite.mixerPurple : mods.blackwhite.mixerPurple;
-    }
-
-    if (blackwhite.gammaRed) {
-        toEdit.blackwhite.gammaRed            = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit.blackwhite.gammaRed + mods.blackwhite.gammaRed : mods.blackwhite.gammaRed;
-    }
-
-    if (blackwhite.gammaGreen) {
-        toEdit.blackwhite.gammaGreen      = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit.blackwhite.gammaGreen + mods.blackwhite.gammaGreen : mods.blackwhite.gammaGreen;
-    }
-
-    if (blackwhite.gammaBlue) {
-        toEdit.blackwhite.gammaBlue       = dontforceSet && options.baBehav[ADDSET_BLACKWHITE_GAMMA] ? toEdit.blackwhite.gammaBlue + mods.blackwhite.gammaBlue : mods.blackwhite.gammaBlue;
-    }
-
-    if (blackwhite.beforeCurve) {
-        toEdit.blackwhite.beforeCurve     = mods.blackwhite.beforeCurve;
-    }
-
-    if (blackwhite.beforeCurveMode) {
-        toEdit.blackwhite.beforeCurveMode = mods.blackwhite.beforeCurveMode;
-    }
-
-    if (blackwhite.afterCurve) {
-        toEdit.blackwhite.afterCurve      = mods.blackwhite.afterCurve;
-    }
-
-    if (blackwhite.afterCurveMode) {
-        toEdit.blackwhite.afterCurveMode  = mods.blackwhite.afterCurveMode;
-    }
-
-    if (blackwhite.algo) {
-        toEdit.blackwhite.algo                = mods.blackwhite.algo;
-    }
-
-    if (resize.scale) {
-        toEdit.resize.scale   = mods.resize.scale;
-    }
-
-    if (resize.appliesTo) {
-        toEdit.resize.appliesTo = mods.resize.appliesTo;
-    }
-
-    if (resize.method) {
-        toEdit.resize.method  = mods.resize.method;
-    }
-
-    if (resize.dataspec) {
-        toEdit.resize.dataspec    = mods.resize.dataspec;
-    }
-
-    if (resize.width) {
-        toEdit.resize.width   = mods.resize.width;
-    }
-
-    if (resize.height) {
-        toEdit.resize.height  = mods.resize.height;
-    }
-
-    if (resize.enabled) {
-        toEdit.resize.enabled     = mods.resize.enabled;
-    }
-
-    if (icm.input) {
-        toEdit.icm.input      = mods.icm.input;
-    }
-
-    if (icm.toneCurve) {
-        toEdit.icm.toneCurve = mods.icm.toneCurve;
-    }
-
-    if (icm.applyLookTable) {
-        toEdit.icm.applyLookTable = mods.icm.applyLookTable;
-    }
-
-    if (icm.applyBaselineExposureOffset) {
-        toEdit.icm.applyBaselineExposureOffset = mods.icm.applyBaselineExposureOffset;
-    }
-
-    if (icm.applyHueSatMap) {
-        toEdit.icm.applyHueSatMap = mods.icm.applyHueSatMap;
-    }
-
-    if (icm.blendCMSMatrix) {
-        toEdit.icm.blendCMSMatrix = mods.icm.blendCMSMatrix;
-    }
-
-    if (icm.dcpIlluminant) {
-        toEdit.icm.dcpIlluminant = mods.icm.dcpIlluminant;
-    }
-
-    if (icm.working) {
-        toEdit.icm.working        = mods.icm.working;
-    }
-
-    if (icm.output) {
-        toEdit.icm.output       = mods.icm.output;
-    }
-
-    //if (icm.gampos)           toEdit.icm.gampos       = mods.icm.gampos;
-    //if (icm.slpos)            toEdit.icm.slpos        = mods.icm.slpos;
-    if (icm.gampos) {
-        toEdit.icm.gampos     = dontforceSet && options.baBehav[ADDSET_FREE_OUPUT_GAMMA] ? toEdit.icm.gampos + mods.icm.gampos : mods.icm.gampos;
-    }
-
-    if (icm.slpos) {
-        toEdit.icm.slpos      = dontforceSet && options.baBehav[ADDSET_FREE_OUTPUT_SLOPE] ? toEdit.icm.slpos + mods.icm.slpos : mods.icm.slpos;
-    }
-
-    if (icm.gamma) {
-        toEdit.icm.gamma        = mods.icm.gamma;
-    }
-
-    if (icm.freegamma) {
-        toEdit.icm.freegamma    = mods.icm.freegamma;
-    }
-
-    if (raw.bayersensor.method) {
-        toEdit.raw.bayersensor.method           = mods.raw.bayersensor.method;
-    }
-
-    if (raw.bayersensor.ccSteps) {
-        toEdit.raw.bayersensor.ccSteps          = mods.raw.bayersensor.ccSteps;
-    }
-
-    if (raw.bayersensor.exBlack0) {
-        toEdit.raw.bayersensor.black0           = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.bayersensor.black0 + mods.raw.bayersensor.black0 : mods.raw.bayersensor.black0;
-    }
-
-    if (raw.bayersensor.exBlack1) {
-        toEdit.raw.bayersensor.black1           = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.bayersensor.black1 + mods.raw.bayersensor.black1 : mods.raw.bayersensor.black1;
-    }
-
-    if (raw.bayersensor.exBlack2) {
-        toEdit.raw.bayersensor.black2           = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.bayersensor.black2 + mods.raw.bayersensor.black2 : mods.raw.bayersensor.black2;
-    }
-
-    if (raw.bayersensor.exBlack3) {
-        toEdit.raw.bayersensor.black3           = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.bayersensor.black3 + mods.raw.bayersensor.black3 : mods.raw.bayersensor.black3;
-    }
-
-    if (raw.bayersensor.exTwoGreen) {
-        toEdit.raw.bayersensor.twogreen         = mods.raw.bayersensor.twogreen;
-    }
-
-    if (raw.bayersensor.dcbIterations) {
-        toEdit.raw.bayersensor.dcb_iterations   = mods.raw.bayersensor.dcb_iterations;
-    }
-
-    if (raw.bayersensor.dcbEnhance) {
-        toEdit.raw.bayersensor.dcb_enhance      = mods.raw.bayersensor.dcb_enhance;
-    }
-
-    if (raw.bayersensor.lmmseIterations) {
-        toEdit.raw.bayersensor.lmmse_iterations = mods.raw.bayersensor.lmmse_iterations;
-    }
-
-    //if (raw.bayersensor.allEnhance)    toEdit.raw.bayersensor.all_enhance      = mods.raw.bayersensor.all_enhance;
-    if (raw.bayersensor.greenEq) {
-        toEdit.raw.bayersensor.greenthresh      = dontforceSet && options.baBehav[ADDSET_PREPROCESS_GREENEQUIL] ? toEdit.raw.bayersensor.greenthresh + mods.raw.bayersensor.greenthresh : mods.raw.bayersensor.greenthresh;
-    }
-
-    if (raw.bayersensor.linenoise) {
-        toEdit.raw.bayersensor.linenoise        = dontforceSet && options.baBehav[ADDSET_PREPROCESS_LINEDENOISE] ? toEdit.raw.bayersensor.linenoise + mods.raw.bayersensor.linenoise : mods.raw.bayersensor.linenoise;
-    }
-
-    if (raw.xtranssensor.method) {
-        toEdit.raw.xtranssensor.method          = mods.raw.xtranssensor.method;
-    }
-
-    if (raw.xtranssensor.ccSteps) {
-        toEdit.raw.xtranssensor.ccSteps         = mods.raw.xtranssensor.ccSteps;
-    }
-
-    if (raw.xtranssensor.exBlackRed) {
-        toEdit.raw.xtranssensor.blackred        = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.xtranssensor.blackred + mods.raw.xtranssensor.blackred : mods.raw.xtranssensor.blackred;
-    }
-
-    if (raw.xtranssensor.exBlackGreen) {
-        toEdit.raw.xtranssensor.blackgreen      = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.xtranssensor.blackgreen + mods.raw.xtranssensor.blackgreen : mods.raw.xtranssensor.blackgreen;
-    }
-
-    if (raw.xtranssensor.exBlackBlue) {
-        toEdit.raw.xtranssensor.blackblue       = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit.raw.xtranssensor.blackblue + mods.raw.xtranssensor.blackblue : mods.raw.xtranssensor.blackblue;
-    }
-
-    if (raw.caCorrection) {
-        toEdit.raw.ca_autocorrect  = mods.raw.ca_autocorrect;
-    }
-
-    if (raw.caRed) {
-        toEdit.raw.cared           = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit.raw.cared + mods.raw.cared : mods.raw.cared;
-    }
-
-    if (raw.caBlue) {
-        toEdit.raw.cablue          = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit.raw.cablue + mods.raw.cablue : mods.raw.cablue;
-    }
-
-    if (raw.exPos) {
-        toEdit.raw.expos           = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_LINEAR] ? toEdit.raw.expos + mods.raw.expos : mods.raw.expos;
-    }
-
-    if (raw.exPreser) {
-        toEdit.raw.preser          = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_PRESER] ? toEdit.raw.preser + mods.raw.preser : mods.raw.preser;
-    }
-
-    if (raw.hotPixelFilter) {
-        toEdit.raw.hotPixelFilter    = mods.raw.hotPixelFilter;
-    }
-
-    if (raw.deadPixelFilter) {
-        toEdit.raw.deadPixelFilter   = mods.raw.deadPixelFilter;
-    }
-
-    if (raw.hotDeadPixelThresh) {
-        toEdit.raw.hotdeadpix_thresh = mods.raw.hotdeadpix_thresh;
-    }
-
-    if (raw.darkFrame) {
-        toEdit.raw.dark_frame        = mods.raw.dark_frame;
-    }
-
-    if (raw.dfAuto) {
-        toEdit.raw.df_autoselect     = mods.raw.df_autoselect;
-    }
-
-    if (raw.ff_file) {
-        toEdit.raw.ff_file            = mods.raw.ff_file;
-    }
-
-    if (raw.ff_AutoSelect) {
-        toEdit.raw.ff_AutoSelect      = mods.raw.ff_AutoSelect;
-    }
-
-    if (raw.ff_BlurRadius) {
-        toEdit.raw.ff_BlurRadius      = mods.raw.ff_BlurRadius;
-    }
-
-    if (raw.ff_BlurType) {
-        toEdit.raw.ff_BlurType        = mods.raw.ff_BlurType;
-    }
-
-    if (raw.ff_AutoClipControl) {
-        toEdit.raw.ff_AutoClipControl = mods.raw.ff_AutoClipControl;
-    }
-
-    if (raw.ff_clipControl) {
-        toEdit.raw.ff_clipControl     = dontforceSet && options.baBehav[ADDSET_RAWFFCLIPCONTROL] ? toEdit.raw.ff_clipControl + mods.raw.ff_clipControl : mods.raw.ff_clipControl;
-    }
-
-    if (wavelet.enabled) {
-        toEdit.wavelet.enabled   = mods.wavelet.enabled;
-    }
-
-    if (wavelet.strength) {
-        toEdit.wavelet.strength   = mods.wavelet.strength;
-    }
-
-    if (wavelet.balance) {
-        toEdit.wavelet.balance   = mods.wavelet.balance;
-    }
-
-    if (wavelet.iter) {
-        toEdit.wavelet.iter   = mods.wavelet.iter;
-    }
-
-    if (wavelet.median) {
-        toEdit.wavelet.median   = mods.wavelet.median;
-    }
-
-    if (wavelet.medianlev) {
-        toEdit.wavelet.medianlev   = mods.wavelet.medianlev;
-    }
-
-    if (wavelet.linkedg) {
-        toEdit.wavelet.linkedg   = mods.wavelet.linkedg;
-    }
-
-    if (wavelet.cbenab) {
-        toEdit.wavelet.cbenab   = mods.wavelet.cbenab;
-    }
-
-    if (wavelet.greenhigh) {
-        toEdit.wavelet.greenhigh   = mods.wavelet.greenhigh;
-    }
-
-    if (wavelet.bluehigh) {
-        toEdit.wavelet.bluehigh   = mods.wavelet.bluehigh;
-    }
-
-    if (wavelet.greenmed) {
-        toEdit.wavelet.greenmed   = mods.wavelet.greenmed;
-    }
-
-    if (wavelet.bluemed) {
-        toEdit.wavelet.bluemed   = mods.wavelet.bluemed;
-    }
-
-    if (wavelet.greenlow) {
-        toEdit.wavelet.greenlow   = mods.wavelet.greenlow;
-    }
-
-    if (wavelet.bluelow) {
-        toEdit.wavelet.bluelow   = mods.wavelet.bluelow;
-    }
-
-    if (wavelet.lipst) {
-        toEdit.wavelet.lipst   = mods.wavelet.lipst;
-    }
-
-    if (wavelet.Medgreinf) {
-        toEdit.wavelet.Medgreinf   = mods.wavelet.Medgreinf;
-    }
-
-    if (wavelet.avoid) {
-        toEdit.wavelet.avoid   = mods.wavelet.avoid;
-    }
-
-    if (wavelet.tmr) {
-        toEdit.wavelet.tmr   = mods.wavelet.tmr;
-    }
-
-    if (wavelet.Lmethod) {
-        toEdit.wavelet.Lmethod        = mods.wavelet.Lmethod;
-    }
-
-    if (wavelet.CLmethod) {
-        toEdit.wavelet.CLmethod       = mods.wavelet.CLmethod;
-    }
-
-    if (wavelet.Backmethod) {
-        toEdit.wavelet.Backmethod     = mods.wavelet.Backmethod;
-    }
-
-    if (wavelet.Tilesmethod) {
-        toEdit.wavelet.Tilesmethod        = mods.wavelet.Tilesmethod;
-    }
-
-    if (wavelet.daubcoeffmethod) {
-        toEdit.wavelet.daubcoeffmethod        = mods.wavelet.daubcoeffmethod;
-    }
-
-    if (wavelet.CHmethod) {
-        toEdit.wavelet.CHmethod       = mods.wavelet.CHmethod;
-    }
-
-    if (wavelet.CHSLmethod) {
-        toEdit.wavelet.CHSLmethod     = mods.wavelet.CHSLmethod;
-    }
-
-    if (wavelet.EDmethod) {
-        toEdit.wavelet.EDmethod       = mods.wavelet.EDmethod;
-    }
-
-    if (wavelet.NPmethod) {
-        toEdit.wavelet.NPmethod       = mods.wavelet.NPmethod;
-    }
-
-    if (wavelet.BAmethod) {
-        toEdit.wavelet.BAmethod       = mods.wavelet.BAmethod;
-    }
-
-    if (wavelet.TMmethod) {
-        toEdit.wavelet.TMmethod       = mods.wavelet.TMmethod;
-    }
-
-    if (wavelet.HSmethod) {
-        toEdit.wavelet.HSmethod       = mods.wavelet.HSmethod;
-    }
-
-    if (wavelet.Dirmethod) {
-        toEdit.wavelet.Dirmethod      = mods.wavelet.Dirmethod;
-    }
-
-    if (wavelet.edgthresh) {
-        toEdit.wavelet.edgthresh      = mods.wavelet.edgthresh;
-    }
-
-    if (wavelet.sky) {
-        toEdit.wavelet.sky = dontforceSet && options.baBehav[ADDSET_WA_SKYPROTECT] ? toEdit.wavelet.sky + mods.wavelet.sky : mods.wavelet.sky;
-    }
-
-    if (wavelet.thr) {
-        toEdit.wavelet.thr = dontforceSet && options.baBehav[ADDSET_WA_THRR] ? toEdit.wavelet.thr + mods.wavelet.thr : mods.wavelet.thr;
-    }
-
-    if (wavelet.thrH) {
-        toEdit.wavelet.thrH = dontforceSet && options.baBehav[ADDSET_WA_THRRH] ? toEdit.wavelet.thrH + mods.wavelet.thrH : mods.wavelet.thrH;
-    }
-
-    if (wavelet.sup) {
-        toEdit.wavelet.sup        = mods.wavelet.sup;
-    }
-
-    if (wavelet.hllev) {
-        toEdit.wavelet.hllev  = mods.wavelet.hllev;
-    }
-
-    if (wavelet.bllev) {
-        toEdit.wavelet.bllev  = mods.wavelet.bllev;
-    }
-
-    if (wavelet.edgcont) {
-        toEdit.wavelet.edgcont    = mods.wavelet.edgcont;
-    }
-
-    if (wavelet.level0noise) {
-        toEdit.wavelet.level0noise    = mods.wavelet.level0noise;
-    }
-
-    if (wavelet.level1noise) {
-        toEdit.wavelet.level1noise    = mods.wavelet.level1noise;
-    }
-
-    if (wavelet.level2noise) {
-        toEdit.wavelet.level2noise    = mods.wavelet.level2noise;
-    }
-
-    if (wavelet.level3noise) {
-        toEdit.wavelet.level3noise    = mods.wavelet.level3noise;
-    }
-
-    if (wavelet.pastlev) {
-        toEdit.wavelet.pastlev    = mods.wavelet.pastlev;
-    }
-
-    if (wavelet.satlev) {
-        toEdit.wavelet.satlev = mods.wavelet.satlev;
-    }
-
-    if (wavelet.ccwcurve) {
-        toEdit.wavelet.ccwcurve   = mods.wavelet.ccwcurve;
-    }
-
-    if (wavelet.opacityCurveRG) {
-        toEdit.wavelet.opacityCurveRG = mods.wavelet.opacityCurveRG;
-    }
-
-    if (wavelet.opacityCurveBY) {
-        toEdit.wavelet.opacityCurveBY = mods.wavelet.opacityCurveBY;
-    }
-
-    if (wavelet.opacityCurveW) {
-        toEdit.wavelet.opacityCurveW  = mods.wavelet.opacityCurveW;
-    }
-
-    if (wavelet.opacityCurveWL) {
-        toEdit.wavelet.opacityCurveWL = mods.wavelet.opacityCurveWL;
-    }
-
-    if (wavelet.hhcurve) {
-        toEdit.wavelet.hhcurve    = mods.wavelet.hhcurve;
-    }
-
-    if (wavelet.Chcurve) {
-        toEdit.wavelet.Chcurve    = mods.wavelet.Chcurve;
-    }
-
-    if (wavelet.wavclCurve) {
-        toEdit.wavelet.wavclCurve = mods.wavelet.wavclCurve;
-    }
-
-    //if (wavelet.enacont)  toEdit.wavelet.enacont   = mods.wavelet.enacont;
-    if (wavelet.expcontrast) {
-        toEdit.wavelet.expcontrast   = mods.wavelet.expcontrast;
-    }
-
-    if (wavelet.expchroma) {
-        toEdit.wavelet.expchroma   = mods.wavelet.expchroma;
-    }
-
-    if (wavelet.expedge) {
-        toEdit.wavelet.expedge   = mods.wavelet.expedge;
-    }
-
-    if (wavelet.expresid) {
-        toEdit.wavelet.expresid   = mods.wavelet.expresid;
-    }
-
-    if (wavelet.expfinal) {
-        toEdit.wavelet.expfinal   = mods.wavelet.expfinal;
-    }
-
-    if (wavelet.exptoning) {
-        toEdit.wavelet.exptoning   = mods.wavelet.exptoning;
-    }
-
-    if (wavelet.expnoise) {
-        toEdit.wavelet.expnoise   = mods.wavelet.expnoise;
-    }
-
-    for(int i = 0; i < 9; i++) {
-        if(wavelet.c[i]) {
-            toEdit.wavelet.c[i] = dontforceSet && options.baBehav[ADDSET_WA] ? toEdit.wavelet.c[i] + mods.wavelet.c[i] : mods.wavelet.c[i];
-        }
-    }
-
-    for(int i = 0; i < 9; i++) {
-        if(wavelet.ch[i]) {
-            toEdit.wavelet.ch[i] = dontforceSet && options.baBehav[ADDSET_WA] ? toEdit.wavelet.ch[i] + mods.wavelet.ch[i] : mods.wavelet.ch[i];
-        }
-    }
-
-    if (wavelet.skinprotect) {
-        toEdit.wavelet.skinprotect = dontforceSet && options.baBehav[ADDSET_WA_SKINPROTECT] ? toEdit.wavelet.skinprotect + mods.wavelet.skinprotect : mods.wavelet.skinprotect;
-    }
-
-    if (wavelet.hueskin) {
-        toEdit.wavelet.hueskin    = mods.wavelet.hueskin;
-    }
-
-    if (wavelet.hueskin2) {
-        toEdit.wavelet.hueskin2   = mods.wavelet.hueskin2;
-    }
-
-    if (wavelet.edgesensi) {
-        toEdit.wavelet.edgesensi  = mods.wavelet.edgesensi;
-    }
-
-    if (wavelet.edgeampli) {
-        toEdit.wavelet.edgeampli  = mods.wavelet.edgeampli;
-    }
-
-    if (wavelet.resconH) {
-        toEdit.wavelet.resconH = dontforceSet && options.baBehav[ADDSET_WA_RESCONH] ? toEdit.wavelet.resconH + mods.wavelet.resconH : mods.wavelet.resconH;
-    }
-
-    if (wavelet.reschro) {
-        toEdit.wavelet.reschro = dontforceSet && options.baBehav[ADDSET_WA_RESCHRO] ? toEdit.wavelet.reschro + mods.wavelet.reschro : mods.wavelet.reschro;
-    }
-
-    if (wavelet.tmrs) {
-        toEdit.wavelet.tmrs = dontforceSet && options.baBehav[ADDSET_WA_TMRS] ? toEdit.wavelet.tmrs + mods.wavelet.tmrs : mods.wavelet.tmrs;
-    }
-
-    if (wavelet.gamma) {
-        toEdit.wavelet.gamma = dontforceSet && options.baBehav[ADDSET_WA_GAMMA] ? toEdit.wavelet.gamma + mods.wavelet.gamma : mods.wavelet.gamma;
-    }
-
-    if (wavelet.rescon) {
-        toEdit.wavelet.rescon = dontforceSet && options.baBehav[ADDSET_WA_RESCON] ? toEdit.wavelet.rescon + mods.wavelet.rescon : mods.wavelet.rescon;
-    }
-
-    if (wavelet.thres) {
-        toEdit.wavelet.thres = dontforceSet && options.baBehav[ADDSET_WA_THRES] ? toEdit.wavelet.thres + mods.wavelet.thres : mods.wavelet.thres;
-    }
-
-    if (wavelet.threshold) {
-        toEdit.wavelet.threshold = dontforceSet && options.baBehav[ADDSET_WA_THRESHOLD] ? toEdit.wavelet.threshold + mods.wavelet.threshold : mods.wavelet.threshold;
-    }
-
-    if (wavelet.threshold2) {
-        toEdit.wavelet.threshold2 = dontforceSet && options.baBehav[ADDSET_WA_THRESHOLD2] ? toEdit.wavelet.threshold2 + mods.wavelet.threshold2 : mods.wavelet.threshold2;
-    }
-
-    if (wavelet.edgedetect) {
-        toEdit.wavelet.edgedetect = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECT] ? toEdit.wavelet.edgedetect + mods.wavelet.edgedetect : mods.wavelet.edgedetect;
-    }
-
-    if (wavelet.edgedetectthr) {
-        toEdit.wavelet.edgedetectthr = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECTTHR] ? toEdit.wavelet.edgedetectthr + mods.wavelet.edgedetectthr : mods.wavelet.edgedetectthr;
-    }
-
-    if (wavelet.edgedetectthr2) {
-        toEdit.wavelet.edgedetectthr2 = dontforceSet && options.baBehav[ADDSET_WA_EDGEDETECTTHR2] ? toEdit.wavelet.edgedetectthr2 + mods.wavelet.edgedetectthr2 : mods.wavelet.edgedetectthr2;
-    }
-
-    if (wavelet.chro) {
-        toEdit.wavelet.chro = dontforceSet && options.baBehav[ADDSET_WA_CHRO] ? toEdit.wavelet.chro + mods.wavelet.chro : mods.wavelet.chro;
-    }
-
-    if (wavelet.chroma) {
-        toEdit.wavelet.chroma = dontforceSet && options.baBehav[ADDSET_WA_CHROMA] ? toEdit.wavelet.chroma + mods.wavelet.chroma : mods.wavelet.chroma;
-    }
-
-    if (wavelet.contrast) {
-        toEdit.wavelet.contrast = dontforceSet && options.baBehav[ADDSET_WA_CONTRAST] ? toEdit.wavelet.contrast + mods.wavelet.contrast : mods.wavelet.contrast;
-    }
-
-    if (wavelet.edgrad) {
-        toEdit.wavelet.edgrad = dontforceSet && options.baBehav[ADDSET_WA_EDGRAD] ? toEdit.wavelet.edgrad + mods.wavelet.edgrad : mods.wavelet.edgrad;
-    }
-
-    if (wavelet.edgval) {
-        toEdit.wavelet.edgval = dontforceSet && options.baBehav[ADDSET_WA_EDGVAL] ? toEdit.wavelet.edgval + mods.wavelet.edgval : mods.wavelet.edgval;
-    }
-
-    if (wavelet.strength) {
-        toEdit.wavelet.strength = dontforceSet && options.baBehav[ADDSET_WA_STRENGTH] ? toEdit.wavelet.strength + mods.wavelet.strength : mods.wavelet.strength;
-    }
-
-
-    if (dirpyrequalizer.enabled) {
-        toEdit.dirpyrequalizer.enabled    = mods.dirpyrequalizer.enabled;
-    }
-
-    if (dirpyrequalizer.gamutlab) {
-        toEdit.dirpyrequalizer.gamutlab   = mods.dirpyrequalizer.gamutlab;
-    }
-
-    for(int i = 0; i < 6; i++) {
-        if(dirpyrequalizer.mult[i]) {
-            toEdit.dirpyrequalizer.mult[i]    = dontforceSet && options.baBehav[ADDSET_DIRPYREQ] ? toEdit.dirpyrequalizer.mult[i] + mods.dirpyrequalizer.mult[i] : mods.dirpyrequalizer.mult[i];
-        }
-    }
-
-    if (dirpyrequalizer.threshold) {
-        toEdit.dirpyrequalizer.threshold = dontforceSet && options.baBehav[ADDSET_DIRPYREQ_THRESHOLD] ? toEdit.dirpyrequalizer.threshold + mods.dirpyrequalizer.threshold : mods.dirpyrequalizer.threshold;
-    }
-
-    if (dirpyrequalizer.skinprotect) {
-        toEdit.dirpyrequalizer.skinprotect = dontforceSet && options.baBehav[ADDSET_DIRPYREQ_SKINPROTECT] ? toEdit.dirpyrequalizer.skinprotect + mods.dirpyrequalizer.skinprotect : mods.dirpyrequalizer.skinprotect;
-    }
-
-    if (dirpyrequalizer.hueskin) {
-        toEdit.dirpyrequalizer.hueskin    = mods.dirpyrequalizer.hueskin;
-    }
-
-//  if (dirpyrequalizer.algo)       toEdit.dirpyrequalizer.algo     = mods.dirpyrequalizer.algo;
-    if (hsvequalizer.hcurve) {
-        toEdit.hsvequalizer.hcurve        = mods.hsvequalizer.hcurve;
-    }
-
-    if (hsvequalizer.scurve) {
-        toEdit.hsvequalizer.scurve        = mods.hsvequalizer.scurve;
-    }
-
-    if (hsvequalizer.vcurve) {
-        toEdit.hsvequalizer.vcurve        = mods.hsvequalizer.vcurve;
-    }
-
-    if (filmSimulation.enabled) {
-        toEdit.filmSimulation.enabled     = mods.filmSimulation.enabled;
-    }
-
-    if (filmSimulation.clutFilename) {
-        toEdit.filmSimulation.clutFilename    = mods.filmSimulation.clutFilename;
-    }
-
-    if (filmSimulation.strength) {
-        toEdit.filmSimulation.strength        = dontforceSet && options.baBehav[ADDSET_FILMSIMULATION_STRENGTH] ? toEdit.filmSimulation.strength + mods.filmSimulation.strength : mods.filmSimulation.strength;
-    }
-
+    // *INDENT-OFF*
+
+    toneCurve.combine(&toEdit, &mods, dontforceSet);
+    labCurve.combine(&toEdit, &mods, dontforceSet);
+    rgbCurves.combine(&toEdit, &mods, dontforceSet);
+    colorToning.combine(&toEdit, &mods, dontforceSet);
+    sharpenEdge.combine(&toEdit, &mods, dontforceSet);
+    sharpenMicro.combine(&toEdit, &mods, dontforceSet);
+    sharpening.combine(&toEdit, &mods, dontforceSet);
+    prsharpening.combine(&toEdit, &mods, dontforceSet);
+    vibrance.combine(&toEdit, &mods, dontforceSet);
+    wb.combine(&toEdit, &mods, dontforceSet);
+    defringe.combine(&toEdit, &mods, dontforceSet);
+    colorappearance.combine(&toEdit, &mods, dontforceSet);
+    impulseDenoise.combine(&toEdit, &mods, dontforceSet);
+    dirpyrDenoise.combine(&toEdit, &mods, dontforceSet);
+    epd.combine(&toEdit, &mods, dontforceSet);
+    sh.combine(&toEdit, &mods, dontforceSet);
+    crop.combine(&toEdit, &mods, dontforceSet);
+    coarse.combine(&toEdit, &mods, dontforceSet);
+    commonTrans.combine(&toEdit, &mods, dontforceSet);
+    rotate.combine(&toEdit, &mods, dontforceSet);
+    distortion.combine(&toEdit, &mods, dontforceSet);
+    lensProf.combine(&toEdit, &mods, dontforceSet);
+    perspective.combine(&toEdit, &mods, dontforceSet);
+    gradient.combine(&toEdit, &mods, dontforceSet);
+    pcvignette.combine(&toEdit, &mods, dontforceSet);
+    cacorrection.combine(&toEdit, &mods, dontforceSet);
+    vignetting.combine(&toEdit, &mods, dontforceSet);
+    chmixer.combine(&toEdit, &mods, dontforceSet);
+    blackwhite.combine(&toEdit, &mods, dontforceSet);
+    resize.combine(&toEdit, &mods, dontforceSet);
+    icm.combine(&toEdit, &mods, dontforceSet);
+    raw.combine(&toEdit, &mods, dontforceSet);
+    wavelet.combine(&toEdit, &mods, dontforceSet);
+    dirpyrequalizer.combine(&toEdit, &mods, dontforceSet);
+    hsvequalizer.combine(&toEdit, &mods, dontforceSet);
+    filmSimulation.combine(&toEdit, &mods, dontforceSet);
+
+    // *INDENT-ON*
 
     // Exif changes are added to the existing ones
-    if (exif)
+    if (exif) {
         for (procparams::ExifPairs::const_iterator i = mods.exif.begin(); i != mods.exif.end(); i++) {
             toEdit.exif[i->first] = i->second;
         }
+    }
 
     // IPTC changes are added to the existing ones
-    if (iptc)
+    if (iptc) {
         for (procparams::IPTCPairs::const_iterator i = mods.iptc.begin(); i != mods.iptc.end(); i++) {
             toEdit.iptc[i->first] = i->second;
         }
+    }
 }
 
-bool RAWParamsEdited::BayerSensor::isUnchanged() const
+bool ParamsEdited::isTagsSet()
 {
-    return  method && ccSteps && dcbIterations && dcbEnhance && lmmseIterations/*&& allEnhance*/ &&  greenEq
-            && linenoise && exBlack0 && exBlack1 && exBlack2 && exBlack3 && exTwoGreen;
+    bool retVal = general;
+    return retVal;
+    //return general;
 }
 
-bool RAWParamsEdited::XTransSensor::isUnchanged() const
+bool ParamsEdited::isToolSet()
 {
-    return method && ccSteps && exBlackRed && exBlackGreen && exBlackBlue;
+    bool retVal = toneCurve;
+    retVal |= labCurve;
+    retVal |= rgbCurves;
+    retVal |= colorToning;
+    retVal |= sharpenEdge;
+    retVal |= sharpenMicro;
+    retVal |= sharpening;
+    retVal |= prsharpening;
+    retVal |= vibrance;
+    retVal |= wb;
+    retVal |= defringe;
+    retVal |= colorappearance;
+    retVal |= impulseDenoise;
+    retVal |= dirpyrDenoise;
+    retVal |= epd;
+    retVal |= sh;
+    retVal |= crop;
+    retVal |= coarse;
+    retVal |= commonTrans;
+    retVal |= rotate|distortion|lensProf|perspective|gradient|pcvignette|cacorrection|vignetting|chmixer|blackwhite|resize|icm|raw|wavelet|dirpyrequalizer|hsvequalizer|filmSimulation;
+    return retVal;
+    //return toneCurve|labCurve|rgbCurves|colorToning|sharpenEdge|sharpenMicro|sharpening|prsharpening|vibrance|wb|defringe|colorappearance|impulseDenoise|dirpyrDenoise|epd|sh|crop|coarse|commonTrans|rotate|distortion|lensProf|perspective|gradient|pcvignette|cacorrection|vignetting|chmixer|blackwhite|resize|icm|raw|wavelet|dirpyrequalizer|hsvequalizer|filmSimulation;
 }
 
-bool RAWParamsEdited::isUnchanged() const
+bool ParamsEdited::isExifSet()
 {
-    return  bayersensor.isUnchanged() && xtranssensor.isUnchanged() && caCorrection && caRed && caBlue && hotPixelFilter && deadPixelFilter && hotDeadPixelThresh && darkFrame
-            && dfAuto && ff_file && ff_AutoSelect && ff_BlurRadius && ff_BlurType && exPos && exPreser && ff_AutoClipControl && ff_clipControl;
+    bool retVal = exif;
+    return retVal;
+    //return exif;
 }
 
-bool LensProfParamsEdited::isUnchanged() const
+bool ParamsEdited::isIptcSet()
 {
-    return lcpFile;
+    bool retVal = iptc;
+    return retVal;
+    //return iptc;
 }

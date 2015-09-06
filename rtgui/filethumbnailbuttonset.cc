@@ -20,8 +20,6 @@
 #include "multilangmgr.h"
 #include "../rtengine/safegtk.h"
 
-extern Glib::ustring argv0;
-
 bool FileThumbnailButtonSet::iconsLoaded = false;
 
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::rankIcon;
@@ -30,6 +28,7 @@ Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::unRankIcon;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::trashIcon;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::unTrashIcon;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::processIcon;
+Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::clearProfileIcon;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::colorLabelIcon_0;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::colorLabelIcon_1;
 Cairo::RefPtr<Cairo::ImageSurface> FileThumbnailButtonSet::colorLabelIcon_2;
@@ -47,6 +46,7 @@ FileThumbnailButtonSet::FileThumbnailButtonSet (FileBrowserEntry* myEntry)
         trashIcon   = safe_create_from_png ("trash-thumbnail.png");
         unTrashIcon = safe_create_from_png ("undelete-thumbnail.png");
         processIcon = safe_create_from_png ("processing-thumbnail.png");
+        clearProfileIcon = safe_create_from_png ("clear-profile-thumbnail.png");
 
         colorLabelIcon_0 = safe_create_from_png ("cglabel0.png"); //("nocolorlabel.png");
         colorLabelIcon_1 = safe_create_from_png ("clabel1.png");
@@ -67,6 +67,8 @@ FileThumbnailButtonSet::FileThumbnailButtonSet (FileBrowserEntry* myEntry)
     add (new LWButton (trashIcon, 7, myEntry, LWButton::Right, LWButton::Center, M("FILEBROWSER_POPUPTRASH")));
 
     add (new LWButton (colorLabelIcon_0, 8, myEntry, LWButton::Right, LWButton::Center, M("FILEBROWSER_COLORLABEL_TOOLTIP")));
+
+    add (new LWButton (clearProfileIcon, 9, myEntry, LWButton::Right, LWButton::Center, M("FILEBROWSER_CLEARPROFILE")));
 
     buttons[2]->setToolTip (M("FILEBROWSER_RANK1_TOOLTIP"));
     buttons[3]->setToolTip (M("FILEBROWSER_RANK2_TOOLTIP"));
@@ -116,4 +118,13 @@ void FileThumbnailButtonSet::setInTrash (bool inTrash)
 
     buttons[7]->setIcon (inTrash ? unTrashIcon : trashIcon);
     buttons[7]->setToolTip (inTrash ? M("FILEBROWSER_POPUPUNTRASH") : M("FILEBROWSER_POPUPTRASH"));
+}
+
+void FileThumbnailButtonSet::setHasProcParams (bool procParams)
+{
+    if (procParams) {
+        buttons[9]->show();
+    } else {
+        buttons[9]->hide();
+    }
 }

@@ -52,28 +52,40 @@ void CacheManager::init ()
     openEntries.clear ();
     baseDir = options.cacheBaseDir;
 
-    if (!safe_file_test (baseDir, Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (baseDir, (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (baseDir, 511);
     }
 
-    if (!safe_file_test (Glib::build_filename (baseDir, "profiles"), Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (Glib::build_filename (baseDir, "profiles"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (baseDir, "profiles")), 511);
     }
 
-    if (!safe_file_test (Glib::build_filename (baseDir, "images"), Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (Glib::build_filename (baseDir, "images"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (baseDir, "images")), 511);
     }
 
-    if (!safe_file_test (Glib::build_filename (baseDir, "aehistograms"), Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (Glib::build_filename (baseDir, "aehistograms"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (baseDir, "aehistograms")), 511);
     }
 
-    if (!safe_file_test (Glib::build_filename (baseDir, "embprofiles"), Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (Glib::build_filename (baseDir, "embprofiles"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (baseDir, "embprofiles")), 511);
     }
 
-    if (!safe_file_test (Glib::build_filename (baseDir, "data"), Glib::FILE_TEST_IS_DIR)) {
+    if (!safe_file_test (Glib::build_filename (baseDir, "data"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
         safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (baseDir, "data")), 511);
+    }
+
+    Glib::ustring tmpDir = g_get_tmp_dir();
+    Glib::ustring tmpDirRT = Glib::build_filename (tmpDir, "RawTherapee");
+    if (!safe_file_test (tmpDirRT, (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        safe_g_mkdir_with_parents (tmpDirRT, 511);
+    }
+    if (!safe_file_test (Glib::build_filename (tmpDirRT, "Small"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Small")), 511);
+    }
+    if (!safe_file_test (Glib::build_filename (tmpDirRT, "Big"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Big")), 511);
     }
 }
 
@@ -367,6 +379,16 @@ Glib::ustring CacheManager::getCacheFileName (const Glib::ustring& subdir, const
     Glib::ustring cfn = Glib::build_filename (baseDir, subdir);
     Glib::ustring cname = Glib::path_get_basename (fname) + "." + md5;
     return Glib::build_filename (cfn, cname);
+}
+
+Glib::ustring CacheManager::getTempFileNameSmall (const Glib::ustring& fname)
+{
+    return Glib::build_filename (tempDirSmall, Glib::path_get_basename (fname));
+}
+
+Glib::ustring CacheManager::getTempFileNameBig (const Glib::ustring& fname)
+{
+    return Glib::build_filename (tempDirBig, Glib::path_get_basename (fname));
 }
 
 void CacheManager::applyCacheSizeLimitation ()

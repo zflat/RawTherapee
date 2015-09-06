@@ -36,7 +36,7 @@ class LWButton
 
 public:
     enum Alignment {Left, Right, Top, Bottom, Center};
-    enum State { Normal, Over, Pressed_In, Pressed_Out};
+    enum State { Normal, Over, Pressed_In, Pressed_Out, Invisible};
 
 private:
     int xpos, ypos, w, h;
@@ -75,6 +75,8 @@ public:
     }
 
     void    redraw              (Cairo::RefPtr<Cairo::Context> context);
+    void    show                ();
+    void    hide                ();
 };
 
 #endif

@@ -297,7 +297,8 @@ void Options::setDefaults ()
     windowMaximized = true;
     saveAsDialogWidth = 920;
     saveAsDialogHeight = 680;
-    savesParamsAtExit = true;
+    savesParamsEvenIfUnmodified = true;
+    savesParamsOnExit = true;
     saveFormat.format = "jpg";
     saveFormat.jpegQuality = 92;
     saveFormat.jpegSubSamp = 2;
@@ -754,8 +755,12 @@ int Options::readFromFile (Glib::ustring fname)
                     adjusterDelay   = keyFile.get_integer ("General", "AdjusterDelay");
                 }
 
+                if (keyFile.has_key ("General", "StoreProfileEvenIfUnmodified")) {
+                    savesParamsEvenIfUnmodified = keyFile.get_boolean ("General", "StoreProfileEvenIfUnmodified");
+                }
+
                 if (keyFile.has_key ("General", "StoreLastProfile")) {
-                    savesParamsAtExit = keyFile.get_boolean ("General", "StoreLastProfile");
+                    savesParamsOnExit = keyFile.get_boolean ("General", "StoreLastProfile");
                 }
 
                 if (keyFile.has_key ("General", "MultiUser")) {
@@ -1782,7 +1787,8 @@ int Options::saveToFile (Glib::ustring fname)
     rtengine::SafeKeyFile keyFile;
     keyFile.set_boolean ("General", "TabbedEditor", tabbedUI);
 
-    keyFile.set_boolean ("General", "StoreLastProfile", savesParamsAtExit);
+    keyFile.set_boolean ("General", "StoreProfileEvenIfUnmodified", savesParamsEvenIfUnmodified);
+    keyFile.set_boolean ("General", "StoreLastProfile", savesParamsOnExit);
 
     if (startupDir == STARTUPDIR_HOME) {
         keyFile.set_string ("General", "StartupDirectory", "home");

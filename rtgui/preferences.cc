@@ -448,12 +448,31 @@ Gtk::Widget* Preferences::getProcParamsPanel ()
     mvbpp->pack_start (*cpfrm, Gtk::PACK_SHRINK, 4);
 
     Gtk::Frame* fdp = Gtk::manage (new Gtk::Frame (M("PREFERENCES_PROFILEHANDLING")));
+    Gtk::VBox* vbdpC1 = Gtk::manage (new Gtk::VBox ());
+    vbdpC1->set_border_width(0);
+    vbdpC1->set_spacing(2);
+    Gtk::VBox* vbdpC2 = Gtk::manage (new Gtk::VBox ());
+    vbdpC2->set_border_width(0);
+    vbdpC2->set_spacing(2);
+    Gtk::HBox* vbdpHb = Gtk::manage (new Gtk::HBox ());
+    vbdpHb->set_border_width(0);
+    vbdpHb->set_spacing(10);
     Gtk::VBox* vbdp = Gtk::manage (new Gtk::VBox ());
     vbdp->set_border_width (4);
+    vbdp->set_spacing(2);
     saveParamsFile = Gtk::manage (new Gtk::CheckButton (M("PREFERENCES_PROFILESAVEINPUT")));
-    vbdp->pack_start (*saveParamsFile, Gtk::PACK_SHRINK, 4);
+    vbdpC1->pack_start (*saveParamsFile, Gtk::PACK_SHRINK, 0);
     saveParamsCache = Gtk::manage (new Gtk::CheckButton (M("PREFERENCES_PROFILESAVECACHE")));
-    vbdp->pack_start (*saveParamsCache, Gtk::PACK_SHRINK, 4);
+    vbdpC1->pack_start (*saveParamsCache, Gtk::PACK_SHRINK, 0);
+    saveParamsEvenIfUnmodified = Gtk::manage (new Gtk::CheckButton (M("PREFERENCES_PROFILESAVEUNMODIFIED")));
+    vbdpC2->pack_start (*saveParamsEvenIfUnmodified, Gtk::PACK_SHRINK, 0);
+    //saveParamsOnExit = Gtk::manage (new Gtk::CheckButton (M("PREFERENCES_PROFILESAVEONEXIT")));
+    //vbdpC2->pack_start (*saveParamsOnExit, Gtk::PACK_SHRINK, 0);
+
+    vbdpHb->pack_start(*vbdpC1, Gtk::PACK_SHRINK, 0);
+    vbdpHb->pack_start(*vbdpC2, Gtk::PACK_SHRINK, 0);
+    vbdp->pack_start (*vbdpHb, Gtk::PACK_EXPAND_WIDGET, 0);
+
     Gtk::Label* lplab = Gtk::manage (new Gtk::Label (M("PREFERENCES_PROFILELOADPR") + ":"));
     loadParamsPreference = Gtk::manage (new Gtk::ComboBoxText ());
     loadParamsPreference->append_text (M("PREFERENCES_PROFILEPRCACHE"));
@@ -462,7 +481,7 @@ Gtk::Widget* Preferences::getProcParamsPanel ()
     hb41->pack_start (*lplab, Gtk::PACK_SHRINK, 0);
     hb41->pack_start (*loadParamsPreference, Gtk::PACK_EXPAND_WIDGET, 0);
     hb41->set_spacing(4);
-    vbdp->pack_start (*hb41, Gtk::PACK_EXPAND_WIDGET, 4);
+    vbdp->pack_start (*hb41, Gtk::PACK_EXPAND_WIDGET, 0);
     fdp->add (*vbdp);
     mvbpp->pack_start (*fdp, Gtk::PACK_SHRINK, 4);
 
@@ -1473,6 +1492,8 @@ void Preferences::storePreferences ()
     moptions.sameThumbSize = sameThumbSize->get_active();
     moptions.internalThumbIfUntouched = ckbInternalThumbIfUntouched->get_active ();
 
+    moptions.savesParamsEvenIfUnmodified = saveParamsEvenIfUnmodified->get_active ();
+    //moptions.savesParamsOnExit = saveParamsOnExit->get_active ();
     moptions.saveParamsFile = saveParamsFile->get_active ();
     moptions.saveParamsCache = saveParamsCache->get_active ();
     moptions.paramsLoadLocation = (PPLoadLocation)loadParamsPreference->get_active_row_number ();
@@ -1655,6 +1676,8 @@ void Preferences::fillPreferences ()
     sameThumbSize->set_active(moptions.sameThumbSize);
     ckbInternalThumbIfUntouched->set_active(moptions.internalThumbIfUntouched);
 
+    saveParamsEvenIfUnmodified->set_active (moptions.savesParamsEvenIfUnmodified);
+    //saveParamsOnExit->set_active (moptions.savesParamsOnExit);
     saveParamsFile->set_active (moptions.saveParamsFile);
     saveParamsCache->set_active (moptions.saveParamsCache);
     loadParamsPreference->set_active (moptions.paramsLoadLocation);

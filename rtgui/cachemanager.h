@@ -37,6 +37,8 @@ class CacheManager
 
     string_thumb_map openEntries;
     Glib::ustring    baseDir;
+    Glib::ustring    tempDirSmall;
+    Glib::ustring    tempDirBig;
     MyMutex          mutex_;
 
     void deleteDir (const Glib::ustring& dirName);
@@ -71,6 +73,8 @@ public:
     void applyCacheSizeLimitation ();
 
     Glib::ustring    getCacheFileName (const Glib::ustring& subdir, const Glib::ustring& fname, const Glib::ustring& md5);
+    Glib::ustring    getTempFileNameSmall (const Glib::ustring& fname);
+    Glib::ustring    getTempFileNameBig (const Glib::ustring& fname);
 };
 
 #define cacheMgr CacheManager::getInstance()

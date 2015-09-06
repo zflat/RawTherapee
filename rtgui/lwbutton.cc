@@ -84,12 +84,16 @@ void LWButton::setColors (const Gdk::Color& bg, const Gdk::Color& fg)
 
 bool LWButton::inside (int x, int y)
 {
+    if (state == Invisible)
+        return false;
 
     return x > xpos && x < xpos + w && y > ypos && y < ypos + h;
 }
 
 bool LWButton::motionNotify  (int x, int y)
 {
+    if (state == Invisible)
+        return false;
 
     bool in = inside (x, y);
     State nstate = state;
@@ -119,6 +123,8 @@ bool LWButton::motionNotify  (int x, int y)
 
 bool LWButton::pressNotify   (int x, int y)
 {
+    if (state == Invisible)
+        return false;
 
     bool in = inside (x, y);
     State nstate = state;
@@ -144,6 +150,8 @@ bool LWButton::pressNotify   (int x, int y)
 
 bool LWButton::releaseNotify (int x, int y)
 {
+    if (state == Invisible)
+        return false;
 
     bool in = inside (x, y);
     State nstate = state;
@@ -189,7 +197,12 @@ void LWButton::redraw (Cairo::RefPtr<Cairo::Context> context)
         context->set_source_rgba (bgr, bgg, bgb, 0);
     }
 
-    context->fill_preserve ();
+    if (state == Invisible) {
+        context->fill ();
+        return;
+    } else {
+        context->fill_preserve ();
+    }
 
     if (state == Over) {
         context->set_source_rgb (fgr, fgg, fgb);
@@ -231,5 +244,24 @@ void LWButton::setToolTip (const Glib::ustring& tooltip)
 {
 
     toolTip = tooltip;
+}
+
+void LWButton::show ()
+{
+    if (state == Invisible) {
+        state = Normal;
+        if (listener) {
+            listener->redrawNeeded (this);
+        }
+    }
+}
+void LWButton::hide ()
+{
+    if (state != Invisible) {
+        state = Invisible;
+        if (listener) {
+            listener->redrawNeeded (this);
+        }
+    }
 }
 

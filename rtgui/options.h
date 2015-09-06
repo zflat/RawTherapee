@@ -91,7 +91,8 @@ private:
                     const Glib::ustring& entryName, Glib::ustring& destination);
 
 public:
-    bool savesParamsAtExit;
+    bool savesParamsEvenIfUnmodified;  // save the params when closing RT, or closing the editor tab, or switching to another image (SETM) even if unmodified by the user (no action on the Tools)
+    bool savesParamsOnExit;            // save the params when closing RT, or closing the editor tab, or switching to another image (SETM)  -> ACTUALLY ALWAYS TRUE, but take care of the above parameter
     SaveFormat saveFormat, saveFormatBatch;
     Glib::ustring savePathTemplate;
     Glib::ustring savePathFolder;

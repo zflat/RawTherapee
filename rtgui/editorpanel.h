@@ -54,9 +54,12 @@ private:
 
     Glib::ustring lastSaveAsFileName;
     bool realized;
+    bool unmodified;
 
 protected:
     Gtk::ProgressBar  *progressLabel;
+    Gtk::Button* savePP3;
+    Gtk::Button* deletePP3;
     Gtk::ToggleButton* info;
     Gtk::ToggleButton* hidehp;
     Gtk::ToggleButton* tbShowHideSidePanels;
