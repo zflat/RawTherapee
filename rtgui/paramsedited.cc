@@ -1484,11 +1484,8 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
     */
 }
 
-void ToneCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ToneCurveParamsEdited::combine (ToneCurveParams* toEdit, const ToneCurveParams* mods, bool dontforceSet)
 {
-    ToneCurveParams* toEdit = static_cast<ToneCurveParams*>(paramsToEdit);
-    const ToneCurveParams* mods = static_cast<const ToneCurveParams*>(newValues);
-
     // *INDENT-OFF*
     if (curve) toEdit->curve = mods->curve;
     if (curve2) toEdit->curve2 = mods->curve2;
@@ -1509,11 +1506,8 @@ void ToneCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, 
     // *INDENT-ON*
 }
 
-void LCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void LCurveParamsEdited::combine (LCurveParams* toEdit, const LCurveParams* mods, bool dontforceSet)
 {
-    LCurveParams* toEdit = static_cast<LCurveParams*>(paramsToEdit);
-    const LCurveParams* mods = static_cast<const LCurveParams*>(newValues);
-
     // *INDENT-OFF*
     if (lcurve) toEdit->lcurve = mods->lcurve;
     if (acurve) toEdit->acurve = mods->acurve;
@@ -1533,11 +1527,8 @@ void LCurveParamsEdited::combine (void* paramsToEdit, const void* newValues, boo
     // *INDENT-ON*
 }
 
-void RGBCurvesParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void RGBCurvesParamsEdited::combine (RGBCurvesParams* toEdit, const RGBCurvesParams* mods, bool dontforceSet)
 {
-    RGBCurvesParams* toEdit = static_cast<RGBCurvesParams*>(paramsToEdit);
-    const RGBCurvesParams* mods = static_cast<const RGBCurvesParams*>(newValues);
-
     // *INDENT-OFF*
     if (lumamode) toEdit->lumamode = mods->lumamode;
     if (rcurve) toEdit->rcurve = mods->rcurve;
@@ -1546,11 +1537,8 @@ void RGBCurvesParamsEdited::combine (void* paramsToEdit, const void* newValues, 
     // *INDENT-ON*
 }
 
-void ColorToningEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ColorToningEdited::combine (ColorToningParams* toEdit, const ColorToningParams* mods, bool dontforceSet)
 {
-    ColorToningParams* toEdit = static_cast<ColorToningParams*>(paramsToEdit);
-    const ColorToningParams* mods = static_cast<const ColorToningParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (twocolor) toEdit->twocolor = mods->twocolor;
@@ -1583,11 +1571,8 @@ void ColorToningEdited::combine (void* paramsToEdit, const void* newValues, bool
     // *INDENT-ON*
 }
 
-void SharpeningParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void SharpeningParamsEdited::combine (SharpeningParams* toEdit, const SharpeningParams* mods, bool dontforceSet)
 {
-    SharpeningParams* toEdit = static_cast<SharpeningParams*>(paramsToEdit);
-    const SharpeningParams* mods = static_cast<const SharpeningParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (radius) toEdit->radius = mods->radius;
@@ -1606,11 +1591,8 @@ void SharpeningParamsEdited::combine (void* paramsToEdit, const void* newValues,
     // *INDENT-ON*
 }
 
-void SharpenEdgeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void SharpenEdgeParamsEdited::combine (SharpenEdgeParams* toEdit, const SharpenEdgeParams* mods, bool dontforceSet)
 {
-    SharpenEdgeParams* toEdit = static_cast<SharpenEdgeParams*>(paramsToEdit);
-    const SharpenEdgeParams* mods = static_cast<const SharpenEdgeParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (passes) toEdit->passes = dontforceSet && options.baBehav[ADDSET_SHARPENEDGE_PASS] ? toEdit->passes + mods->passes : mods->passes;
@@ -1619,11 +1601,8 @@ void SharpenEdgeParamsEdited::combine (void* paramsToEdit, const void* newValues
     // *INDENT-ON*
 }
 
-void SharpenMicroParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void SharpenMicroParamsEdited::combine (SharpenMicroParams* toEdit, const SharpenMicroParams* mods, bool dontforceSet)
 {
-    SharpenMicroParams* toEdit = static_cast<SharpenMicroParams*>(paramsToEdit);
-    const SharpenMicroParams* mods = static_cast<const SharpenMicroParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (matrix) toEdit->matrix = mods->matrix;
@@ -1632,11 +1611,8 @@ void SharpenMicroParamsEdited::combine (void* paramsToEdit, const void* newValue
     // *INDENT-ON*
 }
 
-void VibranceParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void VibranceParamsEdited::combine (VibranceParams* toEdit, const VibranceParams* mods, bool dontforceSet)
 {
-    VibranceParams* toEdit = static_cast<VibranceParams*>(paramsToEdit);
-    const VibranceParams* mods = static_cast<const VibranceParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (pastels) toEdit->pastels = dontforceSet && options.baBehav[ADDSET_VIBRANCE_PASTELS] ? toEdit->pastels + mods->pastels : mods->pastels;
@@ -1649,11 +1625,8 @@ void VibranceParamsEdited::combine (void* paramsToEdit, const void* newValues, b
     // *INDENT-ON*
 }
 
-void ColorAppearanceParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ColorAppearanceParamsEdited::combine (ColorAppearanceParams* toEdit, const ColorAppearanceParams* mods, bool dontforceSet)
 {
-    ColorAppearanceParams* toEdit = static_cast<ColorAppearanceParams*>(paramsToEdit);
-    const ColorAppearanceParams* mods = static_cast<const ColorAppearanceParams*>(newValues);
-
     // *INDENT-OFF*
     if (curve) toEdit->curve = mods->curve;
     if (curve2) toEdit->curve2 = mods->curve2;
@@ -1689,11 +1662,8 @@ void ColorAppearanceParamsEdited::combine (void* paramsToEdit, const void* newVa
     // *INDENT-ON*
 }
 
-void WBParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void WBParamsEdited::combine (WBParams* toEdit, const WBParams* mods, bool dontforceSet)
 {
-    WBParams* toEdit = static_cast<WBParams*>(paramsToEdit);
-    const WBParams* mods = static_cast<const WBParams*>(newValues);
-
     // *INDENT-OFF*
     if (method) toEdit->method = mods->method;
     if (equal) toEdit->equal = dontforceSet && options.baBehav[ADDSET_WB_EQUAL] ? toEdit->equal + mods->equal : mods->equal;
@@ -1703,22 +1673,16 @@ void WBParamsEdited::combine (void* paramsToEdit, const void* newValues, bool do
 }
 
 /*
-void ColorShiftParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ColorShiftParamsEdited::combine (ColorShiftParams* toEdit, const ColorShiftParams* mods, bool dontforceSet)
 {
-    ColorShiftParams* toEdit = static_cast<ColorShiftParams*>(paramsToEdit);
-    const ColorShiftParams* mods = static_cast<const ColorShiftParams*>(newValues);
-
     // *INDENT-OFF*
     if (a) toEdit->a = dontforceSet && options.baBehav[ADDSET_CS_BLUEYELLOW] ? toEdit->a + mods->a : mods->a;
     if (b) toEdit->b = dontforceSet && options.baBehav[ADDSET_CS_GREENMAGENTA] ? toEdit->b + mods->b : mods->b;
     // *INDENT-ON*
 }
 
-void LumaDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void LumaDenoiseParamsEdited::combine (LumaDenoiseParams* toEdit, const LumaDenoiseParams* mods, bool dontforceSet)
 {
-    LumaDenoiseParams* toEdit = static_cast<LumaDenoiseParams*>(paramsToEdit);
-    const LumaDenoiseParams* mods = static_cast<const LumaDenoiseParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (radius) toEdit->radius = mods->radius;
@@ -1726,11 +1690,8 @@ void LumaDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues
     // *INDENT-ON*
 }
 
-void ColorDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ColorDenoiseParamsEdited::combine (ColorDenoiseParams* toEdit, const ColorDenoiseParams* mods, bool dontforceSet)
 {
-    ColorDenoiseParams* toEdit = static_cast<ColorDenoiseParams*>(paramsToEdit);
-    const ColorDenoiseParams* mods = static_cast<const ColorDenoiseParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (amount) toEdit->amount = mods->amount;
@@ -1738,11 +1699,8 @@ void ColorDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValue
 }
 */
 
-void DefringeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void DefringeParamsEdited::combine (DefringeParams* toEdit, const DefringeParams* mods, bool dontforceSet)
 {
-    DefringeParams* toEdit = static_cast<DefringeParams*>(paramsToEdit);
-    const DefringeParams* mods = static_cast<const DefringeParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (radius) toEdit->radius = mods->radius;
@@ -1751,11 +1709,8 @@ void DefringeParamsEdited::combine (void* paramsToEdit, const void* newValues, b
     // *INDENT-ON*
 }
 
-void DirPyrDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void DirPyrDenoiseParamsEdited::combine (DirPyrDenoiseParams* toEdit, const DirPyrDenoiseParams* mods, bool dontforceSet)
 {
-    DirPyrDenoiseParams* toEdit = static_cast<DirPyrDenoiseParams*>(paramsToEdit);
-    const DirPyrDenoiseParams* mods = static_cast<const DirPyrDenoiseParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (enhance) toEdit->enhance = mods->enhance;
@@ -1782,11 +1737,8 @@ void DirPyrDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValu
     // *INDENT-ON*
 }
 
-void EPDParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void EPDParamsEdited::combine (EPDParams* toEdit, const EPDParams* mods, bool dontforceSet)
 {
-    EPDParams* toEdit = static_cast<EPDParams*>(paramsToEdit);
-    const EPDParams* mods = static_cast<const EPDParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (strength) toEdit->strength = mods->strength;
@@ -1797,22 +1749,16 @@ void EPDParamsEdited::combine (void* paramsToEdit, const void* newValues, bool d
     // *INDENT-ON*
 }
 
-void ImpulseDenoiseParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ImpulseDenoiseParamsEdited::combine (ImpulseDenoiseParams* toEdit, const ImpulseDenoiseParams* mods, bool dontforceSet)
 {
-    ImpulseDenoiseParams* toEdit = static_cast<ImpulseDenoiseParams*>(paramsToEdit);
-    const ImpulseDenoiseParams* mods = static_cast<const ImpulseDenoiseParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (thresh) toEdit->thresh = mods->thresh;
     // *INDENT-ON*
 }
 
-void SHParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void SHParamsEdited::combine (SHParams* toEdit, const SHParams* mods, bool dontforceSet)
 {
-    SHParams* toEdit = static_cast<SHParams*>(paramsToEdit);
-    const SHParams* mods = static_cast<const SHParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (hq) toEdit->hq = mods->hq;
@@ -1825,11 +1771,8 @@ void SHParamsEdited::combine (void* paramsToEdit, const void* newValues, bool do
     // *INDENT-ON*
 }
 
-void CropParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void CropParamsEdited::combine (CropParams* toEdit, const CropParams* mods, bool dontforceSet)
 {
-    CropParams* toEdit = static_cast<CropParams*>(paramsToEdit);
-    const CropParams* mods = static_cast<const CropParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (x) toEdit->x = mods->x;
@@ -1843,11 +1786,8 @@ void CropParamsEdited::combine (void* paramsToEdit, const void* newValues, bool 
     // *INDENT-ON*
 }
 
-void CoarseTransformParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void CoarseTransformParamsEdited::combine (CoarseTransformParams* toEdit, const CoarseTransformParams* mods, bool dontforceSet)
 {
-    CoarseTransformParams* toEdit = static_cast<CoarseTransformParams*>(paramsToEdit);
-    const CoarseTransformParams* mods = static_cast<const CoarseTransformParams*>(newValues);
-
     // *INDENT-OFF*
     if (rotate) toEdit->rotate = mods->rotate;
     if (hflip) toEdit->hflip = mods->hflip;
@@ -1855,41 +1795,29 @@ void CoarseTransformParamsEdited::combine (void* paramsToEdit, const void* newVa
     // *INDENT-ON*
 }
 
-void CommonTransformParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void CommonTransformParamsEdited::combine (CommonTransformParams* toEdit, const CommonTransformParams* mods, bool dontforceSet)
 {
-    CommonTransformParams* toEdit = static_cast<CommonTransformParams*>(paramsToEdit);
-    const CommonTransformParams* mods = static_cast<const CommonTransformParams*>(newValues);
-
     // *INDENT-OFF*
     if (autofill) toEdit->autofill = mods->autofill;
     // *INDENT-ON*
 }
 
-void RotateParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void RotateParamsEdited::combine (RotateParams* toEdit, const RotateParams* mods, bool dontforceSet)
 {
-    RotateParams* toEdit = static_cast<RotateParams*>(paramsToEdit);
-    const RotateParams* mods = static_cast<const RotateParams*>(newValues);
-
     // *INDENT-OFF*
     if (degree) toEdit->degree = dontforceSet && options.baBehav[ADDSET_ROTATE_DEGREE] ? toEdit->degree + mods->degree : mods->degree;
     // *INDENT-ON*
 }
 
-void DistortionParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void DistortionParamsEdited::combine (DistortionParams* toEdit, const DistortionParams* mods, bool dontforceSet)
 {
-    DistortionParams* toEdit = static_cast<DistortionParams*>(paramsToEdit);
-    const DistortionParams* mods = static_cast<const DistortionParams*>(newValues);
-
     // *INDENT-OFF*
     if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_DIST_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
     // *INDENT-ON*
 }
 
-void LensProfParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void LensProfParamsEdited::combine (LensProfParams* toEdit, const LensProfParams* mods, bool dontforceSet)
 {
-    LensProfParams* toEdit = static_cast<LensProfParams*>(paramsToEdit);
-    const LensProfParams* mods = static_cast<const LensProfParams*>(newValues);
-
     // *INDENT-OFF*
     if (lcpFile) toEdit->lcpFile = mods->lcpFile;
     if (useDist) toEdit->useDist = mods->useDist;
@@ -1898,22 +1826,16 @@ void LensProfParamsEdited::combine (void* paramsToEdit, const void* newValues, b
     // *INDENT-ON*
 }
 
-void PerspectiveParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void PerspectiveParamsEdited::combine (PerspectiveParams* toEdit, const PerspectiveParams* mods, bool dontforceSet)
 {
-    PerspectiveParams* toEdit = static_cast<PerspectiveParams*>(paramsToEdit);
-    const PerspectiveParams* mods = static_cast<const PerspectiveParams*>(newValues);
-
     // *INDENT-OFF*
     if (horizontal) toEdit->horizontal = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit->horizontal + mods->horizontal : mods->horizontal;
     if (vertical) toEdit->vertical = dontforceSet && options.baBehav[ADDSET_PERSPECTIVE] ? toEdit->vertical + mods->vertical : mods->vertical;
     // *INDENT-ON*
 }
 
-void GradientParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void GradientParamsEdited::combine (GradientParams* toEdit, const GradientParams* mods, bool dontforceSet)
 {
-    GradientParams* toEdit = static_cast<GradientParams*>(paramsToEdit);
-    const GradientParams* mods = static_cast<const GradientParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (degree) toEdit->degree = dontforceSet && options.baBehav[ADDSET_GRADIENT_DEGREE] ? toEdit->degree + mods->degree : mods->degree;
@@ -1924,11 +1846,8 @@ void GradientParamsEdited::combine (void* paramsToEdit, const void* newValues, b
     // *INDENT-ON*
 }
 
-void PCVignetteParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void PCVignetteParamsEdited::combine (PCVignetteParams* toEdit, const PCVignetteParams* mods, bool dontforceSet)
 {
-    PCVignetteParams* toEdit = static_cast<PCVignetteParams*>(paramsToEdit);
-    const PCVignetteParams* mods = static_cast<const PCVignetteParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (strength) toEdit->strength = mods->strength;
@@ -1937,22 +1856,16 @@ void PCVignetteParamsEdited::combine (void* paramsToEdit, const void* newValues,
     // *INDENT-ON*
 }
 
-void CACorrParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void CACorrParamsEdited::combine (CACorrParams* toEdit, const CACorrParams* mods, bool dontforceSet)
 {
-    CACorrParams* toEdit = static_cast<CACorrParams*>(paramsToEdit);
-    const CACorrParams* mods = static_cast<const CACorrParams*>(newValues);
-
     // *INDENT-OFF*
     if (red) toEdit->red = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit->red + mods->red : mods->red;
     if (blue) toEdit->blue = dontforceSet && options.baBehav[ADDSET_CA] ? toEdit->blue + mods->blue : mods->blue;
     // *INDENT-ON*
 }
 
-void VignettingParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void VignettingParamsEdited::combine (VignettingParams* toEdit, const VignettingParams* mods, bool dontforceSet)
 {
-    VignettingParams* toEdit = static_cast<VignettingParams*>(paramsToEdit);
-    const VignettingParams* mods = static_cast<const VignettingParams*>(newValues);
-
     // *INDENT-OFF*
     if (amount) toEdit->amount = dontforceSet && options.baBehav[ADDSET_VIGN_AMOUNT] ? toEdit->amount + mods->amount : mods->amount;
     if (radius) toEdit->radius = mods->radius;
@@ -1962,11 +1875,8 @@ void VignettingParamsEdited::combine (void* paramsToEdit, const void* newValues,
     // *INDENT-ON*
 }
 
-void ChannelMixerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ChannelMixerParamsEdited::combine (ChannelMixerParams* toEdit, const ChannelMixerParams* mods, bool dontforceSet)
 {
-    ChannelMixerParams* toEdit = static_cast<ChannelMixerParams*>(paramsToEdit);
-    const ChannelMixerParams* mods = static_cast<const ChannelMixerParams*>(newValues);
-
     // *INDENT-OFF*
     for (int i = 0; i < 3; i++) {
         if (red[i]) toEdit->red[i] = dontforceSet && options.baBehav[ADDSET_CHMIXER] ? toEdit->red[i] + mods->red[i] : mods->red[i];
@@ -1976,11 +1886,8 @@ void ChannelMixerParamsEdited::combine (void* paramsToEdit, const void* newValue
     // *INDENT-ON*
 }
 
-void BlackWhiteParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void BlackWhiteParamsEdited::combine (BlackWhiteParams* toEdit, const BlackWhiteParams* mods, bool dontforceSet)
 {
-    BlackWhiteParams* toEdit = static_cast<BlackWhiteParams*>(paramsToEdit);
-    const BlackWhiteParams* mods = static_cast<const BlackWhiteParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (method) toEdit->method = mods->method;
@@ -2008,11 +1915,8 @@ void BlackWhiteParamsEdited::combine (void* paramsToEdit, const void* newValues,
     // *INDENT-ON*
 }
 
-void ResizeParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ResizeParamsEdited::combine (ResizeParams* toEdit, const ResizeParams* mods, bool dontforceSet)
 {
-    ResizeParams* toEdit = static_cast<ResizeParams*>(paramsToEdit);
-    const ResizeParams* mods = static_cast<const ResizeParams*>(newValues);
-
     // *INDENT-OFF*
     if (scale) toEdit->scale = mods->scale;
     if (appliesTo) toEdit->appliesTo = mods->appliesTo;
@@ -2024,11 +1928,8 @@ void ResizeParamsEdited::combine (void* paramsToEdit, const void* newValues, boo
     // *INDENT-ON*
 }
 
-void ColorManagementParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void ColorManagementParamsEdited::combine (ColorManagementParams* toEdit, const ColorManagementParams* mods, bool dontforceSet)
 {
-    ColorManagementParams* toEdit = static_cast<ColorManagementParams*>(paramsToEdit);
-    const ColorManagementParams* mods = static_cast<const ColorManagementParams*>(newValues);
-
     // *INDENT-OFF*
     if (input) toEdit->input = mods->input;
     if (toneCurve) toEdit->toneCurve = mods->toneCurve;
@@ -2048,11 +1949,8 @@ void ColorManagementParamsEdited::combine (void* paramsToEdit, const void* newVa
     // *INDENT-ON*
 }
 
-void RAWParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void RAWParamsEdited::combine (RAWParams* toEdit, const RAWParams* mods, bool dontforceSet)
 {
-    RAWParams* toEdit = static_cast<RAWParams*>(paramsToEdit);
-    const RAWParams* mods = static_cast<const RAWParams*>(newValues);
-
     // *INDENT-OFF*
     if (bayersensor.method) toEdit->bayersensor.method = mods->bayersensor.method;
     if (bayersensor.ccSteps) toEdit->bayersensor.ccSteps = mods->bayersensor.ccSteps;
@@ -2091,11 +1989,8 @@ void RAWParamsEdited::combine (void* paramsToEdit, const void* newValues, bool d
     // *INDENT-ON*
 }
 
-void DirPyrEqualizerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void DirPyrEqualizerParamsEdited::combine (DirPyrEqualizerParams* toEdit, const DirPyrEqualizerParams* mods, bool dontforceSet)
 {
-    DirPyrEqualizerParams* toEdit = static_cast<DirPyrEqualizerParams*>(paramsToEdit);
-    const DirPyrEqualizerParams* mods = static_cast<const DirPyrEqualizerParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (gamutlab) toEdit->gamutlab = mods->gamutlab;
@@ -2109,11 +2004,8 @@ void DirPyrEqualizerParamsEdited::combine (void* paramsToEdit, const void* newVa
     // *INDENT-ON*
 }
 
-void WaveletParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void WaveletParamsEdited::combine (WaveletParams* toEdit, const WaveletParams* mods, bool dontforceSet)
 {
-    WaveletParams* toEdit = static_cast<WaveletParams*>(paramsToEdit);
-    const WaveletParams* mods = static_cast<const WaveletParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (strength) toEdit->strength = mods->strength;
@@ -2205,11 +2097,8 @@ void WaveletParamsEdited::combine (void* paramsToEdit, const void* newValues, bo
     // *INDENT-ON*
 }
 
-void HSVEqualizerParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void HSVEqualizerParamsEdited::combine (HSVEqualizerParams* toEdit, const HSVEqualizerParams* mods, bool dontforceSet)
 {
-    HSVEqualizerParams* toEdit = static_cast<HSVEqualizerParams*>(paramsToEdit);
-    const HSVEqualizerParams* mods = static_cast<const HSVEqualizerParams*>(newValues);
-
     // *INDENT-OFF*
     if (hcurve) toEdit->hcurve = mods->hcurve;
     if (scurve) toEdit->scurve = mods->scurve;
@@ -2217,11 +2106,8 @@ void HSVEqualizerParamsEdited::combine (void* paramsToEdit, const void* newValue
     // *INDENT-ON*
 }
 
-void FilmSimulationParamsEdited::combine (void* paramsToEdit, const void* newValues, bool dontforceSet)
+void FilmSimulationParamsEdited::combine (FilmSimulationParams* toEdit, const FilmSimulationParams* mods, bool dontforceSet)
 {
-    FilmSimulationParams* toEdit = static_cast<FilmSimulationParams*>(paramsToEdit);
-    const FilmSimulationParams* mods = static_cast<const FilmSimulationParams*>(newValues);
-
     // *INDENT-OFF*
     if (enabled) toEdit->enabled = mods->enabled;
     if (clutFilename) toEdit->clutFilename = mods->clutFilename;
@@ -2236,43 +2122,42 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     // *INDENT-OFF*
 
-    toneCurve.combine(&toEdit, &mods, dontforceSet);
-    labCurve.combine(&toEdit, &mods, dontforceSet);
-    rgbCurves.combine(&toEdit, &mods, dontforceSet);
-    colorToning.combine(&toEdit, &mods, dontforceSet);
-    sharpenEdge.combine(&toEdit, &mods, dontforceSet);
-    sharpenMicro.combine(&toEdit, &mods, dontforceSet);
-    sharpening.combine(&toEdit, &mods, dontforceSet);
-    prsharpening.combine(&toEdit, &mods, dontforceSet);
-    vibrance.combine(&toEdit, &mods, dontforceSet);
-    wb.combine(&toEdit, &mods, dontforceSet);
-    defringe.combine(&toEdit, &mods, dontforceSet);
-    colorappearance.combine(&toEdit, &mods, dontforceSet);
-    impulseDenoise.combine(&toEdit, &mods, dontforceSet);
-    dirpyrDenoise.combine(&toEdit, &mods, dontforceSet);
-    epd.combine(&toEdit, &mods, dontforceSet);
-    sh.combine(&toEdit, &mods, dontforceSet);
-    crop.combine(&toEdit, &mods, dontforceSet);
-    coarse.combine(&toEdit, &mods, dontforceSet);
-    commonTrans.combine(&toEdit, &mods, dontforceSet);
-    rotate.combine(&toEdit, &mods, dontforceSet);
-    distortion.combine(&toEdit, &mods, dontforceSet);
-    lensProf.combine(&toEdit, &mods, dontforceSet);
-    perspective.combine(&toEdit, &mods, dontforceSet);
-    gradient.combine(&toEdit, &mods, dontforceSet);
-    pcvignette.combine(&toEdit, &mods, dontforceSet);
-    cacorrection.combine(&toEdit, &mods, dontforceSet);
-    vignetting.combine(&toEdit, &mods, dontforceSet);
-    chmixer.combine(&toEdit, &mods, dontforceSet);
-    blackwhite.combine(&toEdit, &mods, dontforceSet);
-    resize.combine(&toEdit, &mods, dontforceSet);
-    icm.combine(&toEdit, &mods, dontforceSet);
-    raw.combine(&toEdit, &mods, dontforceSet);
-    wavelet.combine(&toEdit, &mods, dontforceSet);
-    dirpyrequalizer.combine(&toEdit, &mods, dontforceSet);
-    hsvequalizer.combine(&toEdit, &mods, dontforceSet);
-    filmSimulation.combine(&toEdit, &mods, dontforceSet);
-
+    toneCurve.combine(&toEdit.toneCurve, &mods.toneCurve, dontforceSet);
+    labCurve.combine(&toEdit.labCurve, &mods.labCurve, dontforceSet);
+    rgbCurves.combine(&toEdit.rgbCurves, &mods.rgbCurves, dontforceSet);
+    colorToning.combine(&toEdit.colorToning, &mods.colorToning, dontforceSet);
+    sharpenEdge.combine(&toEdit.sharpenEdge, &mods.sharpenEdge, dontforceSet);
+    sharpenMicro.combine(&toEdit.sharpenMicro, &mods.sharpenMicro, dontforceSet);
+    sharpening.combine(&toEdit.sharpening, &mods.sharpening, dontforceSet);
+    prsharpening.combine(&toEdit.prsharpening, &mods.prsharpening, dontforceSet);
+    vibrance.combine(&toEdit.vibrance, &mods.vibrance, dontforceSet);
+    wb.combine(&toEdit.wb, &mods.wb, dontforceSet);
+    defringe.combine(&toEdit.defringe, &mods.defringe, dontforceSet);
+    colorappearance.combine(&toEdit.colorappearance, &mods.colorappearance, dontforceSet);
+    impulseDenoise.combine(&toEdit.impulseDenoise, &mods.impulseDenoise, dontforceSet);
+    dirpyrDenoise.combine(&toEdit.dirpyrDenoise, &mods.dirpyrDenoise, dontforceSet);
+    epd.combine(&toEdit.epd, &mods.epd, dontforceSet);
+    sh.combine(&toEdit.sh, &mods.sh, dontforceSet);
+    crop.combine(&toEdit.crop, &mods.crop, dontforceSet);
+    coarse.combine(&toEdit.coarse, &mods.coarse, dontforceSet);
+    commonTrans.combine(&toEdit.commonTrans, &mods.commonTrans, dontforceSet);
+    rotate.combine(&toEdit.rotate, &mods.rotate, dontforceSet);
+    distortion.combine(&toEdit.distortion, &mods.distortion, dontforceSet);
+    lensProf.combine(&toEdit.lensProf, &mods.lensProf, dontforceSet);
+    perspective.combine(&toEdit.perspective, &mods.perspective, dontforceSet);
+    gradient.combine(&toEdit.gradient, &mods.gradient, dontforceSet);
+    pcvignette.combine(&toEdit.pcvignette, &mods.pcvignette, dontforceSet);
+    cacorrection.combine(&toEdit.cacorrection, &mods.cacorrection, dontforceSet);
+    vignetting.combine(&toEdit.vignetting, &mods.vignetting, dontforceSet);
+    chmixer.combine(&toEdit.chmixer, &mods.chmixer, dontforceSet);
+    blackwhite.combine(&toEdit.blackwhite, &mods.blackwhite, dontforceSet);
+    resize.combine(&toEdit.resize, &mods.resize, dontforceSet);
+    icm.combine(&toEdit.icm, &mods.icm, dontforceSet);
+    raw.combine(&toEdit.raw, &mods.raw, dontforceSet);
+    wavelet.combine(&toEdit.wavelet, &mods.wavelet, dontforceSet);
+    dirpyrequalizer.combine(&toEdit.dirpyrequalizer, &mods.dirpyrequalizer, dontforceSet);
+    hsvequalizer.combine(&toEdit.hsvequalizer, &mods.hsvequalizer, dontforceSet);
+    filmSimulation.combine(&toEdit.filmSimulation, &mods.filmSimulation, dontforceSet);
     // *INDENT-ON*
 
     // Exif changes are added to the existing ones

@@ -98,8 +98,6 @@ void FileBrowserEntry::refreshQuickThumbnailImage ()
         return;
     }
 
-    printf("refreshQuickThumbnailImage de %s\n", thumbnail->getFileName().c_str());
-
     // Only make a (slow) processed preview if the picture has been edited at all
     bool upgrade_to_processed = (!options.internalThumbIfUntouched || thumbnail->hasToolParamsSet());
     thumbImageUpdater->add(this, &updatepriority, upgrade_to_processed, this);

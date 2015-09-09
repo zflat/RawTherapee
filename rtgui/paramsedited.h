@@ -34,7 +34,7 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", rank|colorlabel|intrash);
+        //printf("bool: %d\n", rank|colorlabel|intrash);
         return rank|colorlabel|intrash;
     }
     void set(bool v);
@@ -63,12 +63,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", curve|curve2|curveMode|curveMode2|brightness|black|contrast|saturation|shcompr|hlcompr|hlcomprthresh|autoexp|clip|expcomp|hrenabled|method);
+        //printf("bool: %d\n", curve|curve2|curveMode|curveMode2|brightness|black|contrast|saturation|shcompr|hlcompr|hlcomprthresh|autoexp|clip|expcomp|hrenabled|method);
         return curve|curve2|curveMode|curveMode2|brightness|black|contrast|saturation|shcompr|hlcompr|hlcomprthresh|autoexp|clip|expcomp|hrenabled|method;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ToneCurveParams* toEdit, const rtengine::procparams::ToneCurveParams* mods, bool dontforceSet);
 };
 
 class LCurveParamsEdited
@@ -95,12 +95,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", brightness|contrast|chromaticity|avoidcolorshift|rstprotection|lcurve|acurve|bcurve|lcredsk|cccurve|chcurve|lhcurve|hhcurve|lccurve|clcurve|enabled|method);
+        //printf("bool: %d\n", brightness|contrast|chromaticity|avoidcolorshift|rstprotection|lcurve|acurve|bcurve|lcredsk|cccurve|chcurve|lhcurve|hhcurve|lccurve|clcurve|enabled|method);
         return brightness|contrast|chromaticity|avoidcolorshift|rstprotection|lcurve|acurve|bcurve|lcredsk|cccurve|chcurve|lhcurve|hhcurve|lccurve|clcurve|enabled|method;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::LCurveParams* toEdit, const rtengine::procparams::LCurveParams* mods, bool dontforceSet);
 };
 
 class RGBCurvesParamsEdited
@@ -114,12 +114,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", lumamode|rcurve|gcurve|bcurve);
+        //printf("bool: %d\n", lumamode|rcurve|gcurve|bcurve);
         return lumamode|rcurve|gcurve|bcurve;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::RGBCurvesParams* toEdit, const rtengine::procparams::RGBCurvesParams* mods, bool dontforceSet);
 };
 
 class ColorToningEdited
@@ -155,12 +155,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|opacityCurve|colorCurve|clcurve|method|autosat|satprotectionthreshold|saturatedopacity|strength|shadowsColSat|hlColSat|balance|twocolor|cl2curve|redlow|greenlow|bluelow|redmed|greenmed|bluemed|redhigh|greenhigh|bluehigh|satlow|sathigh|lumamode);
+        //printf("bool: %d\n", enabled|opacityCurve|colorCurve|clcurve|method|autosat|satprotectionthreshold|saturatedopacity|strength|shadowsColSat|hlColSat|balance|twocolor|cl2curve|redlow|greenlow|bluelow|redmed|greenmed|bluemed|redhigh|greenhigh|bluehigh|satlow|sathigh|lumamode);
         return enabled|opacityCurve|colorCurve|clcurve|method|autosat|satprotectionthreshold|saturatedopacity|strength|shadowsColSat|hlColSat|balance|twocolor|cl2curve|redlow|greenlow|bluelow|redmed|greenmed|bluemed|redhigh|greenhigh|bluehigh|satlow|sathigh|lumamode;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ColorToningParams* toEdit, const rtengine::procparams::ColorToningParams* mods, bool dontforceSet);
 };
 
 class SharpenEdgeParamsEdited
@@ -174,12 +174,12 @@ public :
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|passes|amount|threechannels);
+        //printf("bool: %d\n", enabled|passes|amount|threechannels);
         return enabled|passes|amount|threechannels;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::SharpenEdgeParams* toEdit, const rtengine::procparams::SharpenEdgeParams* mods, bool dontforceSet);
 };
 
 class SharpenMicroParamsEdited
@@ -192,12 +192,12 @@ public :
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|matrix|amount|uniformity);
+        //printf("bool: %d\n", enabled|matrix|amount|uniformity);
         return enabled|matrix|amount|uniformity;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::SharpenMicroParams* toEdit, const rtengine::procparams::SharpenMicroParams* mods, bool dontforceSet);
 };
 
 class SharpeningParamsEdited
@@ -222,12 +222,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|radius|amount|threshold|edgesonly|edges_radius|edges_tolerance|halocontrol|halocontrol_amount|method|deconvamount|deconvradius|deconviter|deconvdamping);
+        //printf("bool: %d\n", enabled|radius|amount|threshold|edgesonly|edges_radius|edges_tolerance|halocontrol|halocontrol_amount|method|deconvamount|deconvradius|deconviter|deconvdamping);
         return enabled|radius|amount|threshold|edgesonly|edges_radius|edges_tolerance|halocontrol|halocontrol_amount|method|deconvamount|deconvradius|deconviter|deconvdamping;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::SharpeningParams* toEdit, const rtengine::procparams::SharpeningParams* mods, bool dontforceSet);
 };
 
 class VibranceParamsEdited
@@ -245,12 +245,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|pastels|saturated|psthreshold|protectskins|avoidcolorshift|pastsattog|skintonescurve);
+        //printf("bool: %d\n", enabled|pastels|saturated|psthreshold|protectskins|avoidcolorshift|pastsattog|skintonescurve);
         return enabled|pastels|saturated|psthreshold|protectskins|avoidcolorshift|pastsattog|skintonescurve;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::VibranceParams* toEdit, const rtengine::procparams::VibranceParams* mods, bool dontforceSet);
 };
 
 class WBParamsEdited
@@ -264,12 +264,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", method|temperature|green|equal);
+        //printf("bool: %d\n", method|temperature|green|equal);
         return method|temperature|green|equal;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::WBParams* toEdit, const rtengine::procparams::WBParams* mods, bool dontforceSet);
 };
 
 class DefringeParamsEdited
@@ -283,12 +283,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|radius|threshold|huecurve);
+        //printf("bool: %d\n", enabled|radius|threshold|huecurve);
         return enabled|radius|threshold|huecurve;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::DefringeParams* toEdit, const rtengine::procparams::DefringeParams* mods, bool dontforceSet);
 };
 
 class ImpulseDenoiseParamsEdited
@@ -300,12 +300,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|thresh);
+        //printf("bool: %d\n", enabled|thresh);
         return enabled|thresh;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ImpulseDenoiseParams* toEdit, const rtengine::procparams::ImpulseDenoiseParams* mods, bool dontforceSet);
 };
 
 class ColorAppearanceParamsEdited
@@ -346,12 +346,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", curve|curve2|curve3|curveMode|curveMode2|curveMode3|enabled|degree|autodegree|autoadapscen|surround|adapscen|adaplum|badpixsl|wbmodel|algo|jlight|qbright|chroma|schroma|mchroma|contrast|qcontrast|colorh|rstprotection|surrsource|gamut/*|badpix*/|datacie|tonecie/*|sharpcie*/);
+        //printf("bool: %d\n", curve|curve2|curve3|curveMode|curveMode2|curveMode3|enabled|degree|autodegree|autoadapscen|surround|adapscen|adaplum|badpixsl|wbmodel|algo|jlight|qbright|chroma|schroma|mchroma|contrast|qcontrast|colorh|rstprotection|surrsource|gamut/*|badpix*/|datacie|tonecie/*|sharpcie*/);
         return curve|curve2|curve3|curveMode|curveMode2|curveMode3|enabled|degree|autodegree|autoadapscen|surround|adapscen|adaplum|badpixsl|wbmodel|algo|jlight|qbright|chroma|schroma|mchroma|contrast|qcontrast|colorh|rstprotection|surrsource|gamut/*|badpix*/|datacie|tonecie/*|sharpcie*/;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ColorAppearanceParams* toEdit, const rtengine::procparams::ColorAppearanceParams* mods, bool dontforceSet);
 };
 
 class DirPyrDenoiseParamsEdited
@@ -384,12 +384,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|enhance|median|autochroma|Ldetail|luma|chroma|redchro|bluechro|gamma|lcurve|cccurve/*|perform*/|dmethod|Lmethod|Cmethod|C2method|smethod|medmethod|methodmed|rgbmethod|passes);
+        //printf("bool: %d\n", enabled|enhance|median|autochroma|Ldetail|luma|chroma|redchro|bluechro|gamma|lcurve|cccurve/*|perform*/|dmethod|Lmethod|Cmethod|C2method|smethod|medmethod|methodmed|rgbmethod|passes);
         return enabled|enhance|median|autochroma|Ldetail|luma|chroma|redchro|bluechro|gamma|lcurve|cccurve/*|perform*/|dmethod|Lmethod|Cmethod|C2method|smethod|medmethod|methodmed|rgbmethod|passes;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::DirPyrDenoiseParams* toEdit, const rtengine::procparams::DirPyrDenoiseParams* mods, bool dontforceSet);
 };
 
 class EPDParamsEdited
@@ -404,12 +404,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|strength|gamma|edgeStopping|scale|reweightingIterates);
+        //printf("bool: %d\n", enabled|strength|gamma|edgeStopping|scale|reweightingIterates);
         return enabled|strength|gamma|edgeStopping|scale|reweightingIterates;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::EPDParams* toEdit, const rtengine::procparams::EPDParams* mods, bool dontforceSet);
 };
 
 
@@ -428,12 +428,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|hq|highlights|htonalwidth|shadows|stonalwidth|localcontrast|radius);
+        //printf("bool: %d\n", enabled|hq|highlights|htonalwidth|shadows|stonalwidth|localcontrast|radius);
         return enabled|hq|highlights|htonalwidth|shadows|stonalwidth|localcontrast|radius;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::SHParams* toEdit, const rtengine::procparams::SHParams* mods, bool dontforceSet);
 };
 
 class CropParamsEdited
@@ -452,12 +452,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|x|y|w|h|fixratio|ratio|orientation|guide);
+        //printf("bool: %d\n", enabled|x|y|w|h|fixratio|ratio|orientation|guide);
         return enabled|x|y|w|h|fixratio|ratio|orientation|guide;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::CropParams* toEdit, const rtengine::procparams::CropParams* mods, bool dontforceSet);
 };
 
 class CoarseTransformParamsEdited
@@ -470,12 +470,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", rotate|hflip|vflip);
+        //printf("bool: %d\n", rotate|hflip|vflip);
         return rotate|hflip|vflip;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::CoarseTransformParams* toEdit, const rtengine::procparams::CoarseTransformParams* mods, bool dontforceSet);
 };
 
 class CommonTransformParamsEdited
@@ -486,12 +486,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", autofill);
+        //printf("bool: %d\n", autofill);
         return autofill;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::CommonTransformParams* toEdit, const rtengine::procparams::CommonTransformParams* mods, bool dontforceSet);
 };
 
 class RotateParamsEdited
@@ -502,12 +502,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", degree);
+        //printf("bool: %d\n", degree);
         return degree;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::RotateParams* toEdit, const rtengine::procparams::RotateParams* mods, bool dontforceSet);
 };
 
 class DistortionParamsEdited
@@ -518,12 +518,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", amount);
+        //printf("bool: %d\n", amount);
         return amount;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::DistortionParams* toEdit, const rtengine::procparams::DistortionParams* mods, bool dontforceSet);
 };
 
 class LensProfParamsEdited
@@ -533,12 +533,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", lcpFile|useDist|useVign|useCA);
+        //printf("bool: %d\n", lcpFile|useDist|useVign|useCA);
         return lcpFile|useDist|useVign|useCA;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::LensProfParams* toEdit, const rtengine::procparams::LensProfParams* mods, bool dontforceSet);
 };
 
 class PerspectiveParamsEdited
@@ -550,12 +550,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", horizontal|vertical);
+        //printf("bool: %d\n", horizontal|vertical);
         return horizontal|vertical;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::PerspectiveParams* toEdit, const rtengine::procparams::PerspectiveParams* mods, bool dontforceSet);
 };
 
 class GradientParamsEdited
@@ -571,12 +571,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|degree|feather|strength|centerX|centerY);
+        //printf("bool: %d\n", enabled|degree|feather|strength|centerX|centerY);
         return enabled|degree|feather|strength|centerX|centerY;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::GradientParams* toEdit, const rtengine::procparams::GradientParams* mods, bool dontforceSet);
 };
 
 class PCVignetteParamsEdited
@@ -590,12 +590,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|strength|feather|roundness);
+        //printf("bool: %d\n", enabled|strength|feather|roundness);
         return enabled|strength|feather|roundness;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::PCVignetteParams* toEdit, const rtengine::procparams::PCVignetteParams* mods, bool dontforceSet);
 };
 
 class VignettingParamsEdited
@@ -610,12 +610,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", amount|radius|strength|centerX|centerY);
+        //printf("bool: %d\n", amount|radius|strength|centerX|centerY);
         return amount|radius|strength|centerX|centerY;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::VignettingParams* toEdit, const rtengine::procparams::VignettingParams* mods, bool dontforceSet);
 };
 
 class ChannelMixerParamsEdited
@@ -632,12 +632,12 @@ public:
         for (size_t i=0; i<3; ++i) {
             retVal |= red[i]|green[i]|blue[i];
         }
-        printf("bool: %d\n", retVal);
+        //printf("bool: %d\n", retVal);
         return retVal;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ChannelMixerParams* toEdit, const rtengine::procparams::ChannelMixerParams* mods, bool dontforceSet);
 };
 
 class BlackWhiteParamsEdited
@@ -670,12 +670,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabledcc|enabled|method|filter|setting|mixerRed|mixerOrange|mixerYellow|mixerGreen|mixerCyan|mixerBlue|mixerMagenta|mixerPurple|gammaRed|gammaGreen|gammaBlue|luminanceCurve|beforeCurve|beforeCurveMode|afterCurve|afterCurveMode|autoc|algo);
+        //printf("bool: %d\n", enabledcc|enabled|method|filter|setting|mixerRed|mixerOrange|mixerYellow|mixerGreen|mixerCyan|mixerBlue|mixerMagenta|mixerPurple|gammaRed|gammaGreen|gammaBlue|luminanceCurve|beforeCurve|beforeCurveMode|afterCurve|afterCurveMode|autoc|algo);
         return enabledcc|enabled|method|filter|setting|mixerRed|mixerOrange|mixerYellow|mixerGreen|mixerCyan|mixerBlue|mixerMagenta|mixerPurple|gammaRed|gammaGreen|gammaBlue|luminanceCurve|beforeCurve|beforeCurveMode|afterCurve|afterCurveMode|autoc|algo;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::BlackWhiteParams* toEdit, const rtengine::procparams::BlackWhiteParams* mods, bool dontforceSet);
 };
 
 class CACorrParamsEdited
@@ -687,12 +687,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", red|blue);
+        //printf("bool: %d\n", red|blue);
         return red|blue;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::CACorrParams* toEdit, const rtengine::procparams::CACorrParams* mods, bool dontforceSet);
 };
 
 class ResizeParamsEdited
@@ -709,12 +709,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", scale|appliesTo|method|dataspec|width|height|enabled);
+        //printf("bool: %d\n", scale|appliesTo|method|dataspec|width|height|enabled);
         return scale|appliesTo|method|dataspec|width|height|enabled;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ResizeParams* toEdit, const rtengine::procparams::ResizeParams* mods, bool dontforceSet);
 };
 
 class ColorManagementParamsEdited
@@ -738,12 +738,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", input|toneCurve|applyLookTable|applyBaselineExposureOffset|applyHueSatMap|blendCMSMatrix|dcpIlluminant|working|output|gamma|gampos|slpos|gamfree|freegamma);
+        //printf("bool: %d\n", input|toneCurve|applyLookTable|applyBaselineExposureOffset|applyHueSatMap|blendCMSMatrix|dcpIlluminant|working|output|gamma|gampos|slpos|gamfree|freegamma);
         return input|toneCurve|applyLookTable|applyBaselineExposureOffset|applyHueSatMap|blendCMSMatrix|dcpIlluminant|working|output|gamma|gampos|slpos|gamfree|freegamma;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::ColorManagementParams* toEdit, const rtengine::procparams::ColorManagementParams* mods, bool dontforceSet);
 };
 
 class WaveletParamsEdited
@@ -841,12 +841,12 @@ public:
         for (size_t i=0; i<9; ++i) {
             retVal |= c[i]|ch[i];
         }
-        printf("bool: %d\n", retVal);
+        //printf("bool: %d\n", retVal);
         return retVal;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::WaveletParams* toEdit, const rtengine::procparams::WaveletParams* mods, bool dontforceSet);
 };
 
 class DirPyrEqualizerParamsEdited
@@ -868,12 +868,12 @@ public:
         for (size_t i=0; i<6; ++i) {
             retVal |= mult[i];
         }
-        printf("bool: %d\n", retVal);
+        //printf("bool: %d\n", retVal);
         return retVal;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::DirPyrEqualizerParams* toEdit, const rtengine::procparams::DirPyrEqualizerParams* mods, bool dontforceSet);
 };
 
 class HSVEqualizerParamsEdited
@@ -886,12 +886,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", hcurve|scurve|vcurve);
+        //printf("bool: %d\n", hcurve|scurve|vcurve);
         return hcurve|scurve|vcurve;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::HSVEqualizerParams* toEdit, const rtengine::procparams::HSVEqualizerParams* mods, bool dontforceSet);
 };
 
 class FilmSimulationParamsEdited
@@ -903,12 +903,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", enabled|clutFilename|strength);
+        //printf("bool: %d\n", enabled|clutFilename|strength);
         return enabled|clutFilename|strength;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::FilmSimulationParams* toEdit, const rtengine::procparams::FilmSimulationParams* mods, bool dontforceSet);
 };
 
 class RAWParamsEdited
@@ -935,7 +935,7 @@ public:
 
         operator bool (void) const
         {
-            printf("bool: %d\n", method|ccSteps|exBlack0|exBlack1|exBlack2|exBlack3|exTwoGreen|dcbIterations|dcbEnhance|lmmseIterations/*|allEnhance*/|greenEq|linenoise);
+            //printf("bool: %d\n", method|ccSteps|exBlack0|exBlack1|exBlack2|exBlack3|exTwoGreen|dcbIterations|dcbEnhance|lmmseIterations/*|allEnhance*/|greenEq|linenoise);
             return method|ccSteps|exBlack0|exBlack1|exBlack2|exBlack3|exTwoGreen|dcbIterations|dcbEnhance|lmmseIterations/*|allEnhance*/|greenEq|linenoise;
         }
     };
@@ -952,7 +952,7 @@ public:
 
         operator bool (void) const
         {
-            printf("bool: %d\n", method|ccSteps|exBlackRed|exBlackGreen|exBlackBlue);
+            //printf("bool: %d\n", method|ccSteps|exBlackRed|exBlackGreen|exBlackBlue);
             return method|ccSteps|exBlackRed|exBlackGreen|exBlackBlue;
         }
     };
@@ -979,12 +979,12 @@ public:
 
     operator bool (void) const
     {
-        printf("bool: %d\n", bayersensor|xtranssensor|caCorrection|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser);
+        //printf("bool: %d\n", bayersensor|xtranssensor|caCorrection|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser);
         return bayersensor|xtranssensor|caCorrection|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);
-    void combine (void* paramsToEdit, const void* newValues, bool dontforceSet);
+    void combine (rtengine::procparams::RAWParams* toEdit, const rtengine::procparams::RAWParams* mods, bool dontforceSet);
 };
 
 class ParamsEdited

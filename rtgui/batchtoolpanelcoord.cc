@@ -860,7 +860,6 @@ void BatchToolPanelCoordinator::beginBatchPParamsChange(int numberOfEntries)
 // The end of a batch pparams change triggers a close/initsession
 void BatchToolPanelCoordinator::endBatchPParamsChange()
 {
-    //printf("BatchToolPanelCoordinator::endBatchPParamsChange  /  Nouvelle session!\n");
     closeSession (false);
     initSession ();
     blockedUpdate = false;

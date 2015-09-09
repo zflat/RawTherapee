@@ -521,6 +521,7 @@ void FileBrowser::addEntry_ (FileBrowserEntry* entry)
 
     // add button set to the thumbbrowserentry
     entry->addButtonSet (new FileThumbnailButtonSet (entry));
+    printf("FileBrowser::addEntry_ / file %s / setRank=%d\n", entry->thumbnail->getFileName().c_str(), entry->thumbnail->getRank());
     entry->getThumbButtonSet()->setRank (entry->thumbnail->getRank());
     entry->getThumbButtonSet()->setColorLabel (entry->thumbnail->getColorLabel());
     entry->getThumbButtonSet()->setInTrash (entry->thumbnail->getStage() == 1);
@@ -1499,24 +1500,22 @@ bool FileBrowser::checkFilter (ThumbBrowserEntryBase* entryb)   // true -> entry
 void FileBrowser::toTrashRequested (std::vector<FileBrowserEntry*> tbe)
 {
 
-    for (size_t i = 0; i < tbe.size(); i++) {
-        // try to load the last saved parameters from the cache or from the paramfile file
-        tbe[i]->thumbnail->createProcParamsForUpdate(false, false, true);  // this can execute customprofilebuilder in "flagging" mode, but it is not saved to disk
+    for (size_t i = 0; i < tbe.size(); ++i) {
+        FileBrowserEntry* currEntry = tbe.at(i);
+        Thumbnail* currThumb = currEntry->thumbnail;
 
-        // no need to notify listeners as item goes to trash, likely to be deleted
-
-        if (tbe[i]->thumbnail->getStage() == 1) {
+        if (currThumb->getStage() == 1) {
             continue;
         }
 
-        tbe[i]->thumbnail->setStage (1);
+        currThumb->setStage (1);
+        currThumb->updateCache ();
 
-        if (tbe[i]->getThumbButtonSet()) {
-            tbe[i]->getThumbButtonSet()->setRank (tbe[i]->thumbnail->getRank());
-            tbe[i]->getThumbButtonSet()->setColorLabel (tbe[i]->thumbnail->getColorLabel());
-            tbe[i]->getThumbButtonSet()->setInTrash (true);
-            tbe[i]->thumbnail->updateCache (); // needed to save the colorlabel to disk in the procparam file(s) and the cache image data file
-            tbe[i]->getThumbButtonSet()->setHasProcParams (tbe[i]->thumbnail->hasToolParamsSet());
+        if (currEntry->getThumbButtonSet()) {
+            currEntry->getThumbButtonSet()->setRank (currThumb->getRank());
+            currEntry->getThumbButtonSet()->setColorLabel (currThumb->getColorLabel());
+            currEntry->getThumbButtonSet()->setInTrash (true);
+            currEntry->getThumbButtonSet()->setHasProcParams (currThumb->hasToolParamsSet());
         }
     }
 
@@ -1527,21 +1526,22 @@ void FileBrowser::toTrashRequested (std::vector<FileBrowserEntry*> tbe)
 void FileBrowser::fromTrashRequested (std::vector<FileBrowserEntry*> tbe)
 {
 
-    for (size_t i = 0; i < tbe.size(); i++) {
-        // if thumbnail was marked inTrash=true then param file must be there, no need to run customprofilebuilder
+    for (size_t i = 0; i < tbe.size(); ++i) {
+        FileBrowserEntry* currEntry = tbe.at(i);
+        Thumbnail* currThumb = currEntry->thumbnail;
 
-        if (tbe[i]->thumbnail->getStage() == 0) {
+        if (currThumb->getStage() == 0) {
             continue;
         }
 
-        tbe[i]->thumbnail->setStage (0);
+        currThumb->setStage (0);
+        currThumb->updateCache ();
 
-        if (tbe[i]->getThumbButtonSet()) {
-            tbe[i]->getThumbButtonSet()->setRank (tbe[i]->thumbnail->getRank());
-            tbe[i]->getThumbButtonSet()->setColorLabel (tbe[i]->thumbnail->getColorLabel());
-            tbe[i]->getThumbButtonSet()->setInTrash (false);
-            tbe[i]->thumbnail->updateCache (); // needed to save the colorlabel to disk in the procparam file(s) and the cache image data file
-            tbe[i]->getThumbButtonSet()->setHasProcParams (tbe[i]->thumbnail->hasToolParamsSet());
+        if (currEntry->getThumbButtonSet()) {
+            currEntry->getThumbButtonSet()->setRank (currThumb->getRank());
+            currEntry->getThumbButtonSet()->setColorLabel (currThumb->getColorLabel());
+            currEntry->getThumbButtonSet()->setInTrash (false);
+            currEntry->getThumbButtonSet()->setHasProcParams (currThumb->hasToolParamsSet());
         }
     }
 
@@ -1552,62 +1552,61 @@ void FileBrowser::fromTrashRequested (std::vector<FileBrowserEntry*> tbe)
 void FileBrowser::rankingRequested (std::vector<FileBrowserEntry*> tbe, int rank)
 {
 
+    /*
     if (!tbe.empty() && bppcl) {
         bppcl->beginBatchPParamsChange(tbe.size());
     }
+    */
 
-    for (size_t i = 0; i < tbe.size(); i++) {
+    for (size_t i = 0; i < tbe.size(); ++i) {
+        FileBrowserEntry* currEntry = tbe.at(i);
+        Thumbnail* currThumb = currEntry->thumbnail;
 
-        // try to load the last saved parameters from the cache or from the paramfile file
-        tbe[i]->thumbnail->createProcParamsForUpdate(false, false, true);  // this can execute customprofilebuilder in "flagging" mode, but it is not saved to disk
+        currThumb->setRank (rank);
+        currThumb->updateCache ();
 
-        // notify listeners TODO: should do this ONLY when params changed by customprofilebuilder?
-        tbe[i]->thumbnail->notifylisterners_procParamsChanged(FILEBROWSER);
-
-        tbe[i]->thumbnail->setRank (rank);
-        tbe[i]->thumbnail->updateCache (); // needed to save the colorlabel to disk in the procparam file(s) and the cache image data file
-        //TODO? - should update pparams instead?
-
-        if (tbe[i]->getThumbButtonSet()) {
-            tbe[i]->getThumbButtonSet()->setRank (tbe[i]->thumbnail->getRank());
+        if (currEntry->getThumbButtonSet()) {
+            currEntry->getThumbButtonSet()->setRank (currThumb->getRank());
         }
     }
 
     applyFilter (filter);
 
+    /*
     if (!tbe.empty() && bppcl) {
         bppcl->endBatchPParamsChange();
     }
+    */
 }
 
 void FileBrowser::colorlabelRequested (std::vector<FileBrowserEntry*> tbe, int colorlabel)
 {
 
+    /*
     if (!tbe.empty() && bppcl) {
         bppcl->beginBatchPParamsChange(tbe.size());
     }
+    */
 
-    for (size_t i = 0; i < tbe.size(); i++) {
-        // try to load the last saved parameters from the cache or from the paramfile file
-        tbe[i]->thumbnail->createProcParamsForUpdate(false, false, true);  // this can execute customprofilebuilder in "flagging" mode, but it is not saved to disk
+    for (size_t i = 0; i < tbe.size(); ++i) {
+        FileBrowserEntry* currEntry = tbe.at(i);
+        Thumbnail* currThumb = currEntry->thumbnail;
 
-        // notify listeners TODO: should do this ONLY when params changed by customprofilebuilder?
-        tbe[i]->thumbnail->notifylisterners_procParamsChanged(FILEBROWSER);
+        currThumb->setColorLabel (colorlabel);
+        currThumb->updateCache();
 
-        tbe[i]->thumbnail->setColorLabel (colorlabel);
-        tbe[i]->thumbnail->updateCache(); // needed to save the colorlabel to disk in the procparam file(s) and the cache image data file
-
-        //TODO? - should update pparams instead?
-        if (tbe[i]->getThumbButtonSet()) {
-            tbe[i]->getThumbButtonSet()->setColorLabel (tbe[i]->thumbnail->getColorLabel());
+        if (currEntry->getThumbButtonSet()) {
+            currEntry->getThumbButtonSet()->setColorLabel (currThumb->getColorLabel());
         }
     }
 
     applyFilter (filter);
 
+    /*
     if (!tbe.empty() && bppcl) {
         bppcl->endBatchPParamsChange();
     }
+    */
 }
 
 void FileBrowser::requestRanking(int rank)
@@ -1618,7 +1617,7 @@ void FileBrowser::requestRanking(int rank)
         MYREADERLOCK(l, entryRW);
 #endif
 
-        for (size_t i = 0; i < selected.size(); i++) {
+        for (size_t i = 0; i < selected.size(); ++i) {
             mselected.push_back (static_cast<FileBrowserEntry*>(selected[i]));
         }
     }
@@ -1634,7 +1633,7 @@ void FileBrowser::requestColorLabel(int colorlabel)
         MYREADERLOCK(l, entryRW);
 #endif
 
-        for (size_t i = 0; i < selected.size(); i++) {
+        for (size_t i = 0; i < selected.size(); ++i) {
             mselected.push_back (static_cast<FileBrowserEntry*>(selected[i]));
         }
     }

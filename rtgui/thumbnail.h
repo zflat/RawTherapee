@@ -52,6 +52,7 @@ class Thumbnail
     bool            exifSet;
     bool            iptcSet;
     bool            paramsSet;
+    bool            defaultParamsSet;
     bool            needsReProcessing;
     bool            imageLoading;
 
