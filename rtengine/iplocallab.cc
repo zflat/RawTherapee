@@ -1244,7 +1244,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         }
 
         // begin map
-        SHMap* shmap;
+        SHMap* shmap = NULL;
 
         /*
             double radius = 80.;
