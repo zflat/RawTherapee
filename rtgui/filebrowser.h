@@ -111,7 +111,9 @@ protected:
     Gtk::MenuItem* applyprof;
     Gtk::MenuItem* applypartprof;
     Gtk::MenuItem* execcustprof;
-    Gtk::MenuItem* clearprof;
+    Gtk::MenuItem* clearparams;
+    Gtk::MenuItem* clearexif;
+    Gtk::MenuItem* cleariptc;
     Gtk::MenuItem* cachemenu;
     Gtk::MenuItem* clearFromCache;
     Gtk::MenuItem* clearFromCacheFull;

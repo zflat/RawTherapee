@@ -464,18 +464,18 @@ void Thumbnail::clearProcParams (int ppSubPart, int whoClearedIt)
         // reset the params to defaults
         pparams.setDefaults(ppSubPart);
 
-        if (ppSubPart | ProcParams::FLAGS) {
+        if (ppSubPart & ProcParams::FLAGS) {
             tagsSet = false;
         }
-        if (ppSubPart | ProcParams::TOOL) {
+        if (ppSubPart & ProcParams::TOOL) {
             paramsSet = false;
             cfs.recentlySaved = false;
             needsReProcessing = true;
         }
-        if (ppSubPart | ProcParams::EXIF) {
+        if (ppSubPart & ProcParams::EXIF) {
             exifSet = false;
         }
-        if (ppSubPart | ProcParams::IPTC) {
+        if (ppSubPart & ProcParams::IPTC) {
             iptcSet = false;
         }
 

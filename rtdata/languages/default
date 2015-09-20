@@ -98,7 +98,9 @@ FILEBROWSER_BROWSEPATHHINT;Type a path to navigate to.\n\nKeyboard shortcuts:\n<
 FILEBROWSER_CACHECLEARFROMFULL;Clear from cache - full
 FILEBROWSER_CACHECLEARFROMPARTIAL;Clear from cache - partial
 FILEBROWSER_CACHE;Cache
-FILEBROWSER_CLEARPROFILE;Clear
+FILEBROWSER_CLEAREXIF;Clear EXIF modifications
+FILEBROWSER_CLEARIPTC;Clear IPTC data
+FILEBROWSER_CLEARPARAMS;Clear processing parameters
 FILEBROWSER_COLORLABEL_TOOLTIP;Color label.\n\nUse dropdown menu or shortcuts:\n<b>Shift-Ctrl-0</b> No Color\n<b>Shift-Ctrl-1</b> Red\n<b>Shift-Ctrl-2</b> Yellow\n<b>Shift-Ctrl-3</b> Green\n<b>Shift-Ctrl-4</b> Blue\n<b>Shift-Ctrl-5</b> Purple
 FILEBROWSER_COPYPROFILE;Copy
 FILEBROWSER_CURRENT_NAME;Current name:

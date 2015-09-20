@@ -1361,112 +1361,112 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
 
     // *INDENT-OFF*
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).toneCurve);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).toneCurve);
     toneCurve.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).labCurve);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).labCurve);
     labCurve.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).rgbCurves);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).rgbCurves);
     rgbCurves.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).colorToning);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).colorToning);
     colorToning.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpenEdge);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).sharpenEdge);
     sharpenEdge.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpenMicro);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).sharpenMicro);
     sharpenMicro.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sharpening);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).sharpening);
     sharpening.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).prsharpening);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).prsharpening);
     prsharpening.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).vibrance);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).vibrance);
     vibrance.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).colorappearance);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).colorappearance);
     colorappearance.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).wb);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).wb);
     wb.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).defringe);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).defringe);
     defringe.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).impulseDenoise);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).impulseDenoise);
     impulseDenoise.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrDenoise);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrDenoise);
     dirpyrDenoise.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).epd);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).epd);
     epd.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).sh);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).sh);
     sh.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).crop);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).crop);
     crop.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).coarse);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).coarse);
     coarse.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).commonTrans);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).commonTrans);
     commonTrans.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).rotate);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).rotate);
     rotate.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).distortion);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).distortion);
     distortion.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).lensProf);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).lensProf);
     lensProf.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).perspective);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).perspective);
     perspective.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).gradient);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).gradient);
     gradient.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).pcvignette);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).pcvignette);
     pcvignette.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).cacorrection);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).cacorrection);
     cacorrection.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).vignetting);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).vignetting);
     vignetting.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).chmixer);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).chmixer);
     chmixer.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).blackwhite);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).blackwhite);
     blackwhite.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).resize);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).resize);
     resize.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).icm);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).icm);
     icm.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).raw);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).raw);
     raw.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).wavelet);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).wavelet);
     wavelet.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrequalizer);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).dirpyrequalizer);
     dirpyrequalizer.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).hsvequalizer);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).hsvequalizer);
     hsvequalizer.initFrom(elems);
 
-    for (size_t i = 1; i < vectSize; ++i) elems.at(i) = &(src.at(i).filmSimulation);
+    for (size_t i=0; i<vectSize; ++i) elems.at(i) = &(src.at(i).filmSimulation);
     filmSimulation.initFrom(elems);
 
     // *INDENT-ON*
@@ -1475,7 +1475,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
     /*
      * HOMBRE: How can we handle that ???
      *
-    for (size_t i = 1; i < vectSize; ++i) {
+    for (size_t i=0; i<vectSize; ++i) {
         const ProcParams& other = src[i];
 
         exif = exif && p.exif==other.exif

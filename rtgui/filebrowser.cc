@@ -260,7 +260,11 @@ FileBrowser::FileBrowser ()
         p++;
         submenuProfileOperations->attach (*Gtk::manage(execcustprof = new Gtk::MenuItem (M("FILEBROWSER_EXEC_CPB"))), 0, 1, p, p + 1);
         p++;
-        submenuProfileOperations->attach (*Gtk::manage(clearprof = new Gtk::MenuItem (M("FILEBROWSER_CLEARPROFILE"))), 0, 1, p, p + 1);
+        submenuProfileOperations->attach (*Gtk::manage(clearparams = new Gtk::MenuItem (M("FILEBROWSER_CLEARPARAMS"))), 0, 1, p, p + 1);
+        p++;
+        submenuProfileOperations->attach (*Gtk::manage(clearexif = new Gtk::MenuItem (M("FILEBROWSER_CLEAREXIF"))), 0, 1, p, p + 1);
+        p++;
+        submenuProfileOperations->attach (*Gtk::manage(cleariptc = new Gtk::MenuItem (M("FILEBROWSER_CLEARIPTC"))), 0, 1, p, p + 1);
         p++;
 
         submenuProfileOperations->show_all ();
@@ -278,7 +282,11 @@ FileBrowser::FileBrowser ()
         p++;
         pmenu->attach (*Gtk::manage(execcustprof = new Gtk::MenuItem (M("FILEBROWSER_EXEC_CPB"))), 0, 1, p, p + 1);
         p++;
-        pmenu->attach (*Gtk::manage(clearprof = new Gtk::MenuItem (M("FILEBROWSER_CLEARPROFILE"))), 0, 1, p, p + 1);
+        pmenu->attach (*Gtk::manage(clearparams = new Gtk::MenuItem (M("FILEBROWSER_CLEARPARAMS"))), 0, 1, p, p + 1);
+        p++;
+        pmenu->attach (*Gtk::manage(clearexif = new Gtk::MenuItem (M("FILEBROWSER_CLEAREXIF"))), 0, 1, p, p + 1);
+        p++;
+        pmenu->attach (*Gtk::manage(cleariptc = new Gtk::MenuItem (M("FILEBROWSER_CLEARIPTC"))), 0, 1, p, p + 1);
         p++;
     }
 
@@ -346,7 +354,9 @@ FileBrowser::FileBrowser ()
     applyprof->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), applyprof));
     applypartprof->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), applypartprof));
     execcustprof->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), execcustprof));
-    clearprof->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), clearprof));
+    clearparams->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), clearparams));
+    clearexif->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), clearexif));
+    cleariptc->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), cleariptc));
     cachemenu->signal_activate().connect (sigc::bind(sigc::mem_fun(*this, &FileBrowser::menuItemActivated), cachemenu));
 
 
@@ -412,7 +422,9 @@ void FileBrowser::rightClicked (ThumbBrowserEntryBase* entry)
         pasteprof->set_sensitive (clipboard.hasProcParams());
         partpasteprof->set_sensitive (clipboard.hasProcParams());
         copyprof->set_sensitive (selected.size() == 1);
-        clearprof->set_sensitive (!selected.empty());
+        clearparams->set_sensitive (!selected.empty());
+        clearexif->set_sensitive (!selected.empty());
+        cleariptc->set_sensitive (!selected.empty());
     }
 
     // submenuDF
@@ -675,15 +687,15 @@ void FileBrowser::menuItemActivated (Gtk::MenuItem* m)
             return;
         }
 
-    for (int j = 0; j < mMenuExtProgs.size(); j++) {
+    for (size_t j = 0; j < mMenuExtProgs.size(); j++) {
         if (m == amiExtProg[j]) {
             ExtProgAction* pAct = mMenuExtProgs[m->get_label()];
 
             // Build vector of all file names
             std::vector<Glib::ustring> selFileNames;
 
-            for (int i = 0; i < mselected.size(); i++) {
-                Glib::ustring fn = mselected[i]->thumbnail->getFileName();
+            for (size_t i = 0; i < mselected.size(); i++) {
+                Glib::ustring fn = mselected.at(i)->thumbnail->getFileName();
 
                 // Maybe batch processed version
                 if (pAct->target == 2) {
@@ -902,9 +914,21 @@ void FileBrowser::menuItemActivated (Gtk::MenuItem* m)
         pasteProfile ();
     } else if (m == partpasteprof) {
         partPasteProfile ();
-    } else if (m == clearprof) {
+    } else if (m == clearparams) {
         for (size_t i = 0; i < mselected.size(); i++) {
-            mselected[i]->thumbnail->clearProcParams (FILEBROWSER);
+            mselected[i]->thumbnail->clearProcParams (rtengine::ProcParams::TOOL, FILEBROWSER);
+        }
+
+        queue_draw ();
+    } else if (m == clearexif) {
+        for (size_t i = 0; i < mselected.size(); i++) {
+            mselected[i]->thumbnail->clearProcParams (rtengine::ProcParams::EXIF, FILEBROWSER);
+        }
+
+        queue_draw ();
+    } else if (m == cleariptc) {
+        for (size_t i = 0; i < mselected.size(); i++) {
+            mselected[i]->thumbnail->clearProcParams (rtengine::ProcParams::IPTC, FILEBROWSER);
         }
 
         queue_draw ();
@@ -1444,7 +1468,7 @@ bool FileBrowser::checkFilter (ThumbBrowserEntryBase* entryb)   // true -> entry
         int iFilenameMatch = 0;
         std::vector<Glib::ustring> vFilterStrings = Glib::Regex::split_simple(",", decodedQueryFileName.uppercase());
 
-        for(int i = 0; i < vFilterStrings.size(); i++) {
+        for(size_t i = 0; i < vFilterStrings.size(); i++) {
             // ignore empty vFilterStrings. Otherwise filter will always return true if
             // e.g. filter.queryFileName ends on "," and will stop being a filter
             if (!vFilterStrings.at(i).empty()) {
