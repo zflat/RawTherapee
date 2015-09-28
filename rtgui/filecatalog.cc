@@ -675,7 +675,6 @@ void FileCatalog::previewReady (int dir_id, FileBrowserEntry* fdn)
 
     // put it into the "full directory" browser
     fdn->setImageAreaToolListener (iatlistener);
-    printf("FileCatalog::previewReady / fichier %s / rank=%d\n", fdn->filename.c_str(), fdn->thumbnail->getRank());
     fileBrowser->addEntry (fdn);
 
     // update exif filter settings (minimal & maximal values of exif tags, cameras, lenses, etc...)

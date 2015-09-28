@@ -20,7 +20,7 @@
 #include "guiutils.h"
 
 LWButton::LWButton (Cairo::RefPtr<Cairo::ImageSurface> i, int aCode, void* aData, Alignment ha, Alignment va, Glib::ustring tooltip)
-    : halign(ha), valign(va), icon(i), state(Normal), listener(NULL), actionCode(aCode), actionData(aData), toolTip(tooltip)
+    : halign(ha), valign(va), icon(i), state(Normal), pressedButton(None), listener(NULL), actionCode(aCode), actionData(aData), toolTip(tooltip)
 {
 
     if (i)  {
@@ -90,7 +90,7 @@ bool LWButton::inside (int x, int y)
     return x > xpos && x < xpos + w && y > ypos && y < ypos + h;
 }
 
-bool LWButton::motionNotify  (int x, int y)
+bool LWButton::motionNotify  (int x, int y, int bstate)
 {
     if (state == Invisible)
         return false;
@@ -121,9 +121,9 @@ bool LWButton::motionNotify  (int x, int y)
     return in;
 }
 
-bool LWButton::pressNotify   (int x, int y)
+bool LWButton::pressNotify   (int x, int y, int button, int bstate)
 {
-    if (state == Invisible)
+    if (state == Invisible || button > 2)
         return false;
 
     bool in = inside (x, y);
@@ -131,6 +131,7 @@ bool LWButton::pressNotify   (int x, int y)
 
     if (in && (state == Normal || state == Over || state == Pressed_Out)) {
         nstate = Pressed_In;
+        pressedButton |= button;
     } else if (!in && state == Pressed_In) {
         nstate = Normal;
     }
@@ -148,9 +149,9 @@ bool LWButton::pressNotify   (int x, int y)
     return in;
 }
 
-bool LWButton::releaseNotify (int x, int y)
+bool LWButton::releaseNotify (int x, int y, int button, int bstate)
 {
-    if (state == Invisible)
+    if (state == Invisible || button > 2)
         return false;
 
     bool in = inside (x, y);
@@ -177,8 +178,21 @@ bool LWButton::releaseNotify (int x, int y)
     }
 
     if (action && listener) {
-        listener->buttonPressed (this, actionCode, actionData);
+        // triggering only one event, corresponding to the highest button number
+        // we could handle more button combination here, like pressing B1+B2 to trigger a specific action
+        if (pressedButton & Button3) {
+            listener->button1Pressed (this, actionCode, actionData);
+        }
+        else if (pressedButton & Button3) {
+            listener->button2Pressed (this, actionCode, actionData);
+        }
+        else if (pressedButton & Button3) {
+            listener->button3Pressed (this, actionCode, actionData);
+        }
     }
+
+    pressedButton |= ~button;
+
 
     return ret;
 }

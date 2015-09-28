@@ -282,10 +282,10 @@ void FileBrowserEntry::_updateImage (rtengine::IImage8* img, double s, rtengine:
     }
 }
 
-bool FileBrowserEntry::motionNotify (int x, int y)
+bool FileBrowserEntry::motionNotify (int bstate, int x, int y)
 {
 
-    bool b = ThumbBrowserEntryBase::motionNotify (x, y);
+    bool b = ThumbBrowserEntryBase::motionNotify (bstate, x, y);
 
     int ix = x - startx - ofsX;
     int iy = y - starty - ofsY;

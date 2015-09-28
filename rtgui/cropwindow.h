@@ -158,7 +158,7 @@ public:
     void expose        (Cairo::RefPtr<Cairo::Context> cr);
 
     // interface lwbuttonlistener
-    void buttonPressed (LWButton* button, int actionCode, void* actionData);
+    void button1Pressed (LWButton* button, int actionCode, void* actionData);
     void redrawNeeded  (LWButton* button);
 
     // crop handling

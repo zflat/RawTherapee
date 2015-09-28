@@ -40,7 +40,6 @@ Thumbnail::Thumbnail (CacheManager* cm, const Glib::ustring& fname, CacheImageDa
 {
 
     loadProcParams ();
-    printf("Thumbnail::Thumbnail / file %s / loadProcParams -> rank=%d\n", fname.c_str(), pparams.rank);
 
     // should be safe to use the unprotected version of loadThumbnail, since we are in the constructor
     _loadThumbnail ();
@@ -191,9 +190,11 @@ const ProcParams& Thumbnail::getToolParamsU ()
     } else {
         // We are getting the default ProcParams for this kind of file, but preserving
         // the FLAGS, EXIF and IPTC values, just in case that they have been set
-        PartialProfile partProfile(profileStore.getDefaultProcParams (getType() == FT_Raw), new ParamsEdited(true));
-        partProfile.pedited->set(false, ProcParams::FLAGS|ProcParams::EXIF|ProcParams::IPTC);
+        const PartialProfile *partProf = profileStore.getDefaultPartialProfile(getType() == FT_Raw);
+        PartialProfile partProfile(partProf->pparams, partProf->pedited, true);
         partProfile.applyTo(&pparams);
+        // resetting the FLAGS params, not sure that it's necessary
+        partProfile.pedited->set(false, ProcParams::FLAGS /*  |ProcParams::EXIF|ProcParams::IPTC */);  // If Exif and/or IPTC values are stored in the default ProcParams, we apply them
         partProfile.deleteInstance();
 
         if (pparams.wb.method == "Camera") {
@@ -388,51 +389,23 @@ void Thumbnail::loadProcParams (Glib::ustring fileName)
         // try to load it from params file next to the image file
         ppres = pparams.load (fileName, &pe);
         pparamsValid = !ppres && pparams.ppVersion >= 220;
-#ifndef NDEBUG
-        printf("Thumbnail::loadProcParams / fname not empty -> loading pparams \"%s\" -> rank=%d\n", fname.c_str(), pparams.rank);
-#endif
     } else if (options.paramsLoadLocation == PLL_Input) {
         // try to load it from params file next to the image file
         ppres = pparams.load (fname + paramFileExtension, &pe);
         pparamsValid = !ppres && pparams.ppVersion >= 220;
-#ifndef NDEBUG
-        if (pparamsValid) {
-            Glib::ustring fn_ = fname + paramFileExtension;
-            printf("Thumbnail::loadProcParams / fname empty -> loading pparams \"%s\" -> rank=%d\n", fn_.c_str(), pparams.rank);
-        }
-#endif
 
         // if no success, try to load the cached version of the procparams
         if (!pparamsValid) {
             pparamsValid = !pparams.load (getCacheFileName ("profiles") + paramFileExtension, &pe);
-#ifndef NDEBUG
-            if (pparamsValid) {
-                Glib::ustring fn_ = getCacheFileName ("profiles") + paramFileExtension;
-                printf("Thumbnail::loadProcParams / fname empty -> loading pparams \"%s\" -> rank=%d\n", fn_.c_str(), pparams.rank);
-            }
-#endif
         }
     } else {
         // try to load it from cache
         pparamsValid = !pparams.load (getCacheFileName ("profiles") + paramFileExtension, &pe);
 
-#ifndef NDEBUG
-        if (pparamsValid) {
-            Glib::ustring fn_ = getCacheFileName ("profiles") + paramFileExtension;
-            printf("Thumbnail::loadProcParams / fname empty -> loading pparams \"%s\" -> rank=%d\n", fn_.c_str(), pparams.rank);
-        }
-#endif
-
         // if no success, try to load it from params file next to the image file
         if (!pparamsValid) {
             ppres = pparams.load (fname + paramFileExtension, &pe);
             pparamsValid = !ppres && pparams.ppVersion >= 220;
-#ifndef NDEBUG
-            if (pparamsValid) {
-                Glib::ustring fn_ = fname + paramFileExtension;
-                printf("Thumbnail::loadProcParams / fname empty -> loading pparams \"%s\" -> rank=%d\n", fn_.c_str(), pparams.rank);
-            }
-#endif
         }
     }
     if (pparamsValid) {
@@ -468,7 +441,7 @@ void Thumbnail::clearProcParams (int ppSubPart, int whoClearedIt)
             tagsSet = false;
         }
         if (ppSubPart & ProcParams::TOOL) {
-            paramsSet = false;
+            defaultParamsSet = paramsSet = false;
             cfs.recentlySaved = false;
             needsReProcessing = true;
         }
@@ -557,11 +530,9 @@ void Thumbnail::setProcParams (const ProcParams& pp, ParamsEdited* pe, int whoCh
             paramsSet = pe->isToolSet();
             exifSet = pe->isExifSet();
             iptcSet = pe->isIptcSet();
-            printf("Thumbnail::setProcParams / file %s / PE / isToolSet=%d / rank=%d\n", fname.c_str(), paramsSet, pparams.rank);
         } else {
             pparams = pp;
             paramsSet = exifSet = iptcSet = true;
-            printf("Thumbnail::setProcParams / file %s / isToolSet=%d / rank=%d\n", fname.c_str(), paramsSet, pparams.rank);
         }
 
         needsReProcessing = true;
@@ -571,16 +542,13 @@ void Thumbnail::setProcParams (const ProcParams& pp, ParamsEdited* pe, int whoCh
             setRank(rank);
             setColorLabel(colorlabel);
             setStage(inTrash);
-            printf("Thumbnail::setProcParams / %s / Reset flags where rank=%d, colorLabel=%d, inTrash=%d\n", fname.c_str(), rank, colorlabel, inTrash);
         }
         else {
             // May have been set by combine, so we restore it to default
             pparams.setDefaults(ProcParams::FLAGS);
-            printf("Thumbnail::setProcParams / %s / Reset rank to default\n", fname.c_str());
         }
 
         if (updateCacheNow) {
-            printf("Thumbnail::setProcParams / %s / after updateCache, rank=%d\n", fname.c_str(), getRank());
             updateCache ();
         }
 
@@ -589,7 +557,6 @@ void Thumbnail::setProcParams (const ProcParams& pp, ParamsEdited* pe, int whoCh
     for (size_t i = 0; i < listeners.size(); i++) {
         listeners[i]->procParamsChanged (this, whoChangedIt);
     }
-    printf("Thumbnail::setProcParams / %s / after listeners, rank=%d\n", fname.c_str(), getRank());
 }
 
 bool Thumbnail::isRecentlySaved ()
@@ -1027,7 +994,6 @@ void Thumbnail::saveThumbnail ()
  */
 void Thumbnail::updateCache (bool updatePParams, bool updateCacheImageData)
 {
-    printf("Thumbnail::updateCache\n");
     ParamsEdited pe(paramsSet);  // set to false by default in the constructor
     // Now the the minor sub-parts of the ParamsEdited
     if (tagsSet != paramsSet) {

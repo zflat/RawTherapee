@@ -294,7 +294,7 @@ void CropWindow::buttonPress (int button, int type, int bstate, int x, int y)
           options.bgcolor = backColor;
       }*/
     else if (button == 1 && type == GDK_BUTTON_PRESS && state == SNormal && onArea (CropToolBar, x, y)) {
-        if (!decorated || !buttonSet.pressNotify (x, y)) {
+        if (!decorated || !buttonSet.pressNotify (x, y, button, bstate)) {
             state = SCropWinMove;
             action_x = x;
             action_y = y;
@@ -558,7 +558,7 @@ void CropWindow::buttonRelease (int button, int num, int bstate, int x, int y)
     }
 
     if (decorated) {
-        buttonSet.releaseNotify (x, y);
+        buttonSet.releaseNotify (x, y, button, bstate);
     }
 
     if (deleted) {
@@ -777,7 +777,7 @@ void CropWindow::pointerMoved (int bstate, int x, int y)
     }
 
     if (decorated) {
-        buttonSet.motionNotify (x, y);
+        buttonSet.motionNotify (x, y, bstate);
     }
 
     if (pmlistener) {
@@ -1850,7 +1850,7 @@ void CropWindow::zoomFitCrop ()
     }
 }
 
-void CropWindow::buttonPressed (LWButton* button, int actionCode, void* actionData)
+void CropWindow::button1Pressed (LWButton* button, int actionCode, void* actionData)
 {
 
     if (button == bZoomIn) { // zoom in

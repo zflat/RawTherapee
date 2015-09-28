@@ -544,22 +544,22 @@ bool ThumbBrowserEntryBase::insideWindow (int x, int y, int w, int h)
     return !(ofsX + startx > x + w || ofsX + startx + exp_width < x || ofsY + starty > y + h || ofsY + starty + exp_height < y);
 }
 
-bool ThumbBrowserEntryBase::motionNotify  (int x, int y)
+bool ThumbBrowserEntryBase::motionNotify  (int bstate, int x, int y)
 {
 
-    return buttonSet ? buttonSet->motionNotify (x, y) : false;
+    return buttonSet ? buttonSet->motionNotify (x, y, bstate) : false;
 }
 
 bool ThumbBrowserEntryBase::pressNotify   (int button, int type, int bstate, int x, int y)
 {
 
-    return buttonSet ? buttonSet->pressNotify (x, y) : false;
+    return buttonSet ? buttonSet->pressNotify (x, y, button, bstate) : false;
 }
 
 bool ThumbBrowserEntryBase::releaseNotify (int button, int type, int bstate, int x, int y)
 {
 
-    return buttonSet ? buttonSet->releaseNotify (x, y) : false;
+    return buttonSet ? buttonSet->releaseNotify (x, y, button, bstate) : false;
 }
 
 Glib::ustring ThumbBrowserEntryBase::getToolTip (int x, int y)

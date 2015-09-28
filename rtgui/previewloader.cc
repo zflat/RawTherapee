@@ -125,7 +125,6 @@ public:
             {
                 if (safe_file_test(j.dir_entry_, Glib::FILE_TEST_EXISTS)) {
                     tmb = cacheMgr->getEntry(j.dir_entry_);
-                    printf("PreviewLoader::processNextJob / file %s exist! / tmb=%p / rank=%d\n", j.dir_entry_.c_str(), tmb, tmb?tmb->getRank():-1);
                 }
             }
 

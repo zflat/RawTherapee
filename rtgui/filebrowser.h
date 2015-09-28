@@ -114,6 +114,7 @@ protected:
     Gtk::MenuItem* clearparams;
     Gtk::MenuItem* clearexif;
     Gtk::MenuItem* cleariptc;
+    Gtk::MenuItem* clearall;
     Gtk::MenuItem* cachemenu;
     Gtk::MenuItem* clearFromCache;
     Gtk::MenuItem* clearFromCacheFull;
@@ -174,7 +175,8 @@ public:
         return numFiltered;
     }
 
-    void buttonPressed (LWButton* button, int actionCode, void* actionData);
+    void button1Pressed (LWButton* button, int actionCode, void* actionData);
+    void button2Pressed (LWButton* button, int actionCode, void* actionData);
     void redrawNeeded  (LWButton* button);
     bool checkFilter (ThumbBrowserEntryBase* entry);
     void rightClicked (ThumbBrowserEntryBase* entry);

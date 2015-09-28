@@ -98,6 +98,7 @@ FILEBROWSER_BROWSEPATHHINT;Type a path to navigate to.\n\nKeyboard shortcuts:\n<
 FILEBROWSER_CACHECLEARFROMFULL;Clear from cache - full
 FILEBROWSER_CACHECLEARFROMPARTIAL;Clear from cache - partial
 FILEBROWSER_CACHE;Cache
+FILEBROWSER_CLEARALL;Clear all
 FILEBROWSER_CLEAREXIF;Clear EXIF modifications
 FILEBROWSER_CLEARIPTC;Clear IPTC data
 FILEBROWSER_CLEARPARAMS;Clear processing parameters

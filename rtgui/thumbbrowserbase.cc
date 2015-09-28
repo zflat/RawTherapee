@@ -946,7 +946,7 @@ bool ThumbBrowserBase::Internal::on_motion_notify_event (GdkEventMotion* event)
             /*#if PROTECT_VECTORS
             MYREADERLOCK_RELEASE(l); // motionNotify calls the queue, which locks
             #endif*/
-            parent->fd[i]->motionNotify ((int)event->x, (int)event->y);
+            parent->fd[i]->motionNotify ((int)event->state, (int)event->x, (int)event->y);
         }
 
     return true;

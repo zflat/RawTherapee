@@ -95,6 +95,7 @@ FILEBROWSER_BROWSEPATHHINT;Saisissez le chemin à parcourir\n<b>Ctrl-O</b> pour 
 FILEBROWSER_CACHECLEARFROMFULL;Supprimer du cache (complet)
 FILEBROWSER_CACHECLEARFROMPARTIAL;Supprimer du cache (partiel)
 FILEBROWSER_CACHE;Cache
+FILEBROWSER_CLEARALL;Supprimer tout
 FILEBROWSER_CLEAREXIF;Supprimer les modifications de données EXIF
 FILEBROWSER_CLEARIPTC;Supprimer les  données IPTC
 FILEBROWSER_CLEARPARAMS;Supprimer les paramètres de traitement d'image
