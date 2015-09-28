@@ -582,6 +582,7 @@ void EditorPanel::open (Thumbnail* tmb, rtengine::InitialImage* isrc)
         Gtk::Allocation alloc;
         iareapanel->imageArea->on_resized(alloc);
     }
+    history->resetSnapShotNumber();
 }
 
 // This method is also called from EditorPanel::open, whenever a new image is arriving in SETM
