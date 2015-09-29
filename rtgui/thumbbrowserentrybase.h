@@ -39,6 +39,7 @@ protected:
     int fnlabw, fnlabh; // dimensions of the filename label
     int dtlabw, dtlabh; // dimensions of the date/time label
     int exlabw, exlabh; // dimensions of the exif label
+    int prebh;      // height of the thumbnail box
     int prew;       // width of the thumbnail
     int preh;       // height of the thumbnail
     int prex;

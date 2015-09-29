@@ -22,7 +22,7 @@
 #include "../rtengine/mytime.h"
 
 ThumbBrowserEntryBase::ThumbBrowserEntryBase (const Glib::ustring& fname)
-    : fnlabw(0), fnlabh(0), dtlabw(0), dtlabh(0), exlabw(0), exlabh(0), prew(0), preh(0),
+    : fnlabw(0), fnlabh(0), dtlabw(0), dtlabh(0), exlabw(0), exlabh(0), prebh(0), prew(0), preh(0),
       prex(0), prey(0), upperMargin(6), borderWidth(1), textGap(6), sideMargin(8), lowerMargin(8),
       preview(NULL), dispname(Glib::path_get_basename (fname)), buttonSet(NULL), width(0), height(0),
       exp_width(0), exp_height(0), startx(0), starty(0), ofsX(0), ofsY(0), redrawRequests(0),
@@ -106,7 +106,7 @@ void ThumbBrowserEntryBase::updateBackBuffer ()
     // draw thumbnail image
     if (preview) {
         prex = borderWidth + (exp_width - prew) / 2;
-        prey = upperMargin + bsHeight + borderWidth;
+        prey = upperMargin + bsHeight + borderWidth + prebh - preh;
         backBuffer->draw_rgb_image (gc_, prex, prey, prew, preh, Gdk::RGB_DITHER_NONE, preview, prew * 3);
     }
 
@@ -200,7 +200,7 @@ void ThumbBrowserEntryBase::updateBackBuffer ()
                 textposx_dt = 0;
             }
 
-            textposy = upperMargin + bsHeight + 2 * borderWidth + preh + borderWidth + textGap;
+            textposy = upperMargin + bsHeight + 2 * borderWidth + prebh + borderWidth + textGap;
             textw = exp_width - 2 * textGap;
             gc_->set_foreground (selected ? texts : textn);
         } else {
@@ -372,7 +372,9 @@ void ThumbBrowserEntryBase::resize (int h)
         height = preh + (upperMargin + 2 * borderWidth + lowerMargin) + bsh + infoh;
     }
 
-    calcThumbnailSize ();  // recalculates prew
+    prebh = preh;
+
+    calcThumbnailSize ();  // recalculates prew and possibly preh, which can only be smaller
 
     width = prew + 2 * sideMargin + 2 * borderWidth;
 

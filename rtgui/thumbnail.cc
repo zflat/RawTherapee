@@ -206,6 +206,7 @@ const ProcParams& Thumbnail::getToolParamsU ()
             getAutoWB (ct, pparams.wb.green, pparams.wb.equal);
             pparams.wb.temperature = ct;
         }
+
         defaultParamsSet = true;
     }
 
@@ -283,6 +284,7 @@ rtengine::procparams::ProcParams* Thumbnail::createProcParamsForUpdate(bool retu
         const rtexif::TagDirectory* exifDir = NULL;
 
         Glib::ustring outFName;
+
         if (imageMetaData && (exifDir = imageMetaData->getExifData())) {
 
             if (forceCPB) {
@@ -380,8 +382,8 @@ void Thumbnail::loadProcParams (Glib::ustring fileName)
     tagsSet = paramsSet = exifSet = iptcSet = false;
     pparams.setDefaults();
     {
-    const PartialProfile *defaultPP = profileStore.getDefaultPartialProfile(getType() == FT_Raw);
-    defaultPP->applyTo(&pparams);
+        const PartialProfile *defaultPP = profileStore.getDefaultPartialProfile(getType() == FT_Raw);
+        defaultPP->applyTo(&pparams);
     }
     ParamsEdited pe(false);
 
@@ -408,6 +410,7 @@ void Thumbnail::loadProcParams (Glib::ustring fileName)
             pparamsValid = !ppres && pparams.ppVersion >= 220;
         }
     }
+
     if (pparamsValid) {
         paramsSet = pe.isToolSet();
         tagsSet = pe.isTagsSet();
@@ -440,14 +443,17 @@ void Thumbnail::clearProcParams (int ppSubPart, int whoClearedIt)
         if (ppSubPart & ProcParams::FLAGS) {
             tagsSet = false;
         }
+
         if (ppSubPart & ProcParams::TOOL) {
             defaultParamsSet = paramsSet = false;
             cfs.recentlySaved = false;
             needsReProcessing = true;
         }
+
         if (ppSubPart & ProcParams::EXIF) {
             exifSet = false;
         }
+
         if (ppSubPart & ProcParams::IPTC) {
             iptcSet = false;
         }
@@ -486,7 +492,7 @@ void Thumbnail::clearProcParams (int ppSubPart, int whoClearedIt)
             */
         }
 
-        if (oldParamsSet!=paramsSet && cfs.format == FT_Raw && options.internalThumbIfUntouched && cfs.thumbImgType != CacheImageData::QUICK_THUMBNAIL) {
+        if (oldParamsSet != paramsSet && cfs.format == FT_Raw && options.internalThumbIfUntouched && cfs.thumbImgType != CacheImageData::QUICK_THUMBNAIL) {
             // regenerate thumbnail, ie load the quick thumb again. For the rare formats not supporting quick thumbs this will
             // be a bit slow as a new full thumbnail will be generated unnecessarily, but currently there is no way to pre-check
             // if the format supports quick thumbs.
@@ -542,8 +548,7 @@ void Thumbnail::setProcParams (const ProcParams& pp, ParamsEdited* pe, int whoCh
             setRank(rank);
             setColorLabel(colorlabel);
             setStage(inTrash);
-        }
-        else {
+        } else {
             // May have been set by combine, so we restore it to default
             pparams.setDefaults(ProcParams::FLAGS);
         }
@@ -647,8 +652,15 @@ void Thumbnail::getThumbnailSize (int &w, int &h, const rtengine::procparams::Pr
         }
     }
 
-    if (imgRatio_ > 0.) {
-        w = (int)(imgRatio_ * (float)h);
+    if (imgRatio_ > 1.f) {
+        w = int(imgRatio_ * float(h));
+
+        if (imgRatio_ > 1.512f) {  // 1.512 instead of 1.5, for rounding error
+            // may be a panorama -> clipping width to 1.5*height ...
+            w = int(1.5f * float(h));
+            // and updating height
+            h = int(float(w) / imgRatio_);
+        }
     } else {
         w = tw_ * h / th_;
     }
@@ -995,13 +1007,16 @@ void Thumbnail::saveThumbnail ()
 void Thumbnail::updateCache (bool updatePParams, bool updateCacheImageData)
 {
     ParamsEdited pe(paramsSet);  // set to false by default in the constructor
+
     // Now the the minor sub-parts of the ParamsEdited
     if (tagsSet != paramsSet) {
         pe.set(tagsSet, ProcParams::FLAGS);
     }
+
     if (exifSet != paramsSet) {
         pe.set(exifSet, ProcParams::EXIF);
     }
+
     if (iptcSet != paramsSet) {
         pe.set(iptcSet, ProcParams::IPTC);
     }
