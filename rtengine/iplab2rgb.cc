@@ -640,20 +640,24 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch,
         wprof = iccStore->workingSpaceMatrix ("ProPhoto");
         profi = "ProPhoto";
     }
-
+    double dx = Color::D50x;
+    double dz = Color::D50z;
+    {
+        dx=dz=1.0;
+    }
     double toxyz[3][3] = {
         {
-            ( wprof[0][0] ),//I have suppressed / Color::D50x
-            ( wprof[0][1] ),
-            ( wprof[0][2] )
+            ( wprof[0][0]/dx),//I have suppressed / Color::D50x
+            ( wprof[0][1]/dx),
+            ( wprof[0][2]/dx)
         }, {
             ( wprof[1][0]),
             ( wprof[1][1]),
             ( wprof[1][2])
         }, {
-            ( wprof[2][0] ),//I have suppressed / Color::D50z
-            ( wprof[2][1] ),
-            ( wprof[2][2] )
+            ( wprof[2][0]/dz),//I have suppressed / Color::D50z
+            ( wprof[2][1]/dz),
+            ( wprof[2][2]/dz)
         }
     };
 
@@ -794,7 +798,6 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch,
         #pragma omp parallel for if (multiThread)
 
         for (int i = 0; i < ch; i++) {
-            float R, G, B;
             float* rr = working->r(i);
             float* rg = working->g(i);
             float* rb = working->b(i);

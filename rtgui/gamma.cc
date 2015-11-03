@@ -179,8 +179,17 @@ void Gamma::outpChanged()
 void Gamma::gammaMethodChanged()
 {
 
-    if (gammaMethod->get_active_row_number() == 1) outp->set_sensitive(true);
-    else outp->set_sensitive(false);
+    if (gammaMethod->get_active_row_number() == 1) {
+        outp->set_sensitive(true);
+        gamm->set_sensitive(false);
+        slop->set_sensitive(false);
+    }
+
+    else {
+        outp->set_sensitive(false);
+        gamm->set_sensitive(true);
+        slop->set_sensitive(true);
+    }
 
     if (!listener || !getEnabled()) {
         return;
