@@ -631,7 +631,7 @@ Image16* ImProcFunctions::lab2rgb16b (LabImage* lab, int cx, int cy, int cw, int
     return image;
 }
 
-Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch, int mul, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6)
+Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, int cw, int ch, int mul, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6)
 {
     TMatrix wprof;
     if(typ==0)
@@ -662,7 +662,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch,
     };
 
 //printf("wpo=%f\n",wprof[0][0] );
-
+printf("abso=%d\n",absolut);
     // Imagefloat* image = new Imagefloat (cw, ch);//does not work with float values...big artifacts
     Image16* image = new Image16 (cw, ch);
 
@@ -689,7 +689,8 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch,
     int select_temp = 1; //5003K
     const double eps = 0.000000001; // not divide by zero
     cmsHPROFILE oprofdef;
-    if (!params->gamma.outp) {
+    
+    if (!params->gamma.outp || absolut==0) {//&& absolut==0
         //primaries for 7 working profiles
         // eventually to adapt primaries  if RT used special profiles !
         if(profi == "ProPhoto")     {
@@ -791,8 +792,9 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int cw, int ch,
         // oprofdef = iccStore->getProfile (profile);//in case of we want add output
         cmsFreeToneCurve(GammaTRC[0]);
     }
-    if (params->gamma.outp)  oprofdef = iccStore->getProfile (profile);
-
+    if(absolut==1){
+        if (params->gamma.outp)  oprofdef = iccStore->getProfile (profile);
+    }
 
     if (oprofdef) {
         #pragma omp parallel for if (multiThread)

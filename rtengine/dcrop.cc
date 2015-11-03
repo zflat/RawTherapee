@@ -784,7 +784,7 @@ void Crop::update (int todo)
                 Image16* readyImg0 = NULL;
                 double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
                 int mul=-5;
-                readyImg0 = parent->ipf.rgbgrgb (baseCrop, 0, cw, ch, mul, params.icm.output, params.icm.working, 2.4, 12.92, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+                readyImg0 = parent->ipf.rgbgrgb (baseCrop, 0, 1, cw, ch, mul, params.icm.output, params.icm.working, 2.4, 12.92, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
                 #pragma omp parallel for
                 for(int row = 0; row < ch; row++) {
                     for(int col = 0; col < cw; col++) {
@@ -809,7 +809,10 @@ void Crop::update (int todo)
 
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=5;
-            readyImg = parent->ipf.rgbgrgb (baseCrop, 0, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            int absolut =0;
+            if(params.gamma.gammaMethod == "oneabs") absolut=1;
+            
+            readyImg = parent->ipf.rgbgrgb (baseCrop, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             /*
             customGamma = true;
                 bool pro=false;

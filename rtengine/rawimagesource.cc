@@ -1975,7 +1975,7 @@ void RawImageSource::retinexPrepareBuffers(ColorManagementParams cmp, RetinexPar
         }
 
         if(retinexParams.gammaretinex == "fre2") {
-            printf("FREE\n");
+            //printf("FREE\n");
             Imagefloat *oprevi;
 
             oprevi = new Imagefloat (W, H);
@@ -1992,7 +1992,7 @@ void RawImageSource::retinexPrepareBuffers(ColorManagementParams cmp, RetinexPar
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=5;
 
-            readyImg = ipf.rgbgrgb (oprevi,1, W, H, mul, cmp.output, cmp.working, retinexParams.gam, retinexParams.slope, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            readyImg = ipf.rgbgrgb (oprevi,1, 1, W, H, mul, cmp.output, cmp.working, retinexParams.gam, retinexParams.slope, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             #pragma omp parallel for
             for(int row = border; row < H - border; row++) {
                 for(int col = border; col < W - border; col++) {
@@ -2509,7 +2509,7 @@ void RawImageSource::retinex(ColorManagementParams cmp, RetinexParams deh, ToneC
 
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=-5;
-            readyImg = ipf.rgbgrgb (oprevi,1, W, H, mul, cmp.output, cmp.working, deh.gam, deh.slope, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            readyImg = ipf.rgbgrgb (oprevi,1, 1, W, H, mul, cmp.output, cmp.working, deh.gam, deh.slope, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             #pragma omp parallel for
             for(int row = border; row < H - border; row++) {
                 for(int col = border; col < W - border; col++) {

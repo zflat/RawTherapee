@@ -796,7 +796,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             Image16* readyImg20 = NULL;
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=-5;
-            readyImg20 = ipf.rgbgrgb (baseImg, 0, cw, ch, mul, params.icm.output, params.icm.working, 2.4, 12.92, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            readyImg20 = ipf.rgbgrgb (baseImg, 0, 1, cw, ch, mul, params.icm.output, params.icm.working, 2.4, 12.92, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             #pragma omp parallel for
             for(int row = 0; row < ch; row++) {
                 for(int col = 0; col < cw; col++) {
@@ -813,7 +813,10 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         Image16* readyImg2 = NULL;
         double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
         int mul=5;
-        readyImg2 = ipf.rgbgrgb (baseImg, 0, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+        int absolut =0;
+        if(params.gamma.gammaMethod == "oneabs") absolut = 1;
+        
+        readyImg2 = ipf.rgbgrgb (baseImg, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
         #pragma omp parallel for
         for(int row = 0; row < ch; row++) {
             for(int col = 0; col < cw; col++) {

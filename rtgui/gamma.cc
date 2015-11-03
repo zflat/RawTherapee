@@ -69,6 +69,7 @@ void Gamma::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
     disableListener ();
     gammaMethodConn.block(true);
+    outpconn.block (true);
 
 
     if (pedited) {
@@ -102,9 +103,10 @@ void Gamma::read (const ProcParams* pp, const ParamsEdited* pedited)
 
 
     gammaMethodChanged ();
-
+    outpChanged ();
 
     gammaMethodConn.block(false);
+    outpconn.block (false);
 
 
     enableListener ();
@@ -179,7 +181,13 @@ void Gamma::outpChanged()
 void Gamma::gammaMethodChanged()
 {
 
-    if (gammaMethod->get_active_row_number() == 1) {
+    if (gammaMethod->get_active_row_number() == 1 && !outp->get_active()) {
+        outp->set_sensitive(true);
+        gamm->set_sensitive(true);
+        slop->set_sensitive(true);
+    }
+
+    else if (gammaMethod->get_active_row_number() == 1 && outp->get_active()) {
         outp->set_sensitive(true);
         gamm->set_sensitive(false);
         slop->set_sensitive(false);
