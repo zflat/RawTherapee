@@ -235,7 +235,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             highDetailRawComputed = false;
         }
 
-        if (params.retinex.enabled) {
+        if ((todo & (M_RETINEX|M_INIT)) && params.retinex.enabled) {
             lhist16RETI.clear();
 
             imgsrc->retinexPrepareBuffers(params.icm, params.retinex, conversionBuffer, lhist16RETI);

@@ -2523,6 +2523,10 @@ void RawImageSource::retinex(ColorManagementParams cmp, RetinexParams deh, ToneC
             delete oprevi;
         }
     }
+
+    rgbSourceModified = false; // tricky handling for Color propagation
+
+
     t5.set();
 
     if( settings->verbose ) {
