@@ -662,7 +662,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
     };
 
 //printf("wpo=%f\n",wprof[0][0] );
-    printf("abso=%d\n",absolut);
+//    printf("abso=%d\n",absolut);
     // Imagefloat* image = new Imagefloat (cw, ch);//does not work with float values...big artifacts
     Image16* image = new Image16 (cw, ch);
 
@@ -762,7 +762,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
         ga2 = g_a4 / (1.0 + g_a4);
         ga3 = 1. / slpos;
         ga5 = 0.0;
-        printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
+    //    printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
 
 
         if(select_temp == 1) {

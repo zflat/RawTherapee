@@ -508,7 +508,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=5;
             int absolut =0;
-            if(params.gamma.gammaMethod == "oneabs2") absolut=1;
+            if(params.gamma.gammaMethod == "oneabs") absolut=1;
             readyImg = ipf.rgbgrgb (oprevi, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             /*
             customGamma = true;
