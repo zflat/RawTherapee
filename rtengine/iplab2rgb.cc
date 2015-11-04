@@ -662,7 +662,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
     };
 
 //printf("wpo=%f\n",wprof[0][0] );
-printf("abso=%d\n",absolut);
+    printf("abso=%d\n",absolut);
     // Imagefloat* image = new Imagefloat (cw, ch);//does not work with float values...big artifacts
     Image16* image = new Image16 (cw, ch);
 
@@ -689,7 +689,7 @@ printf("abso=%d\n",absolut);
     int select_temp = 1; //5003K
     const double eps = 0.000000001; // not divide by zero
     cmsHPROFILE oprofdef;
-    
+
     if (!params->gamma.outp || absolut==0) {//&& absolut==0
         //primaries for 7 working profiles
         // eventually to adapt primaries  if RT used special profiles !
@@ -792,7 +792,7 @@ printf("abso=%d\n",absolut);
         // oprofdef = iccStore->getProfile (profile);//in case of we want add output
         cmsFreeToneCurve(GammaTRC[0]);
     }
-    if(absolut==1){
+    if(absolut==1) {
         if (params->gamma.outp)  oprofdef = iccStore->getProfile (profile);
     }
 

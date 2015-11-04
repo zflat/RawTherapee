@@ -428,7 +428,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         if((params.gamma.gammaMethod!="two") && params.gamma.enabled) {
 
             int  cw=oprevi->width, ch=oprevi->height;
-            if(params.gamma.gammaMethod=="oneabs") {
+            if(params.gamma.gammaMethod=="oneabs2") {
 
                 #pragma omp parallel for
                 for(int row = 0; row < ch; row++) {
@@ -472,13 +472,17 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     }
                 }
             }
-            else  if(params.gamma.gammaMethod=="oneabs2") {
+            else  if(params.gamma.gammaMethod=="oneabs") {
 
                 Image16* readyImg0 = NULL;
 
                 double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
                 int mul=-5;
-                readyImg0 = ipf.rgbgrgb (oprevi, 0, 1, cw, ch, mul, params.icm.output, params.icm.working, 2.4, 12.92, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+                double gga=2.2, ssl=0.;
+                {   gga=2.4;
+                    ssl=12.92;
+                }
+                readyImg0 = ipf.rgbgrgb (oprevi, 0, 0, cw, ch, mul, params.icm.output, params.icm.working, gga, ssl, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
                 #pragma omp parallel for
                 for(int row = 0; row < ch; row++) {
                     for(int col = 0; col < cw; col++) {
@@ -504,7 +508,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=5;
             int absolut =0;
-            if(params.gamma.gammaMethod == "oneabs") absolut=1;
+            if(params.gamma.gammaMethod == "oneabs2") absolut=1;
             readyImg = ipf.rgbgrgb (oprevi, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             /*
             customGamma = true;
