@@ -689,8 +689,10 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
     int select_temp = 1; //5003K
     const double eps = 0.000000001; // not divide by zero
     cmsHPROFILE oprofdef;
-
-    if (!params->gamma.outp || absolut==0) {//&& absolut==0
+    bool  noicm=true;
+    if(params->icm.output == ColorManagementParams::NoICMString) noicm=false;
+    bool outpro = (!params->gamma.outp || (params->gamma.outp && noicm==false));
+    if (outpro || absolut==0) {//&& absolut==0
         //primaries for 7 working profiles
         // eventually to adapt primaries  if RT used special profiles !
         if(profi == "ProPhoto")     {
@@ -762,7 +764,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
         ga2 = g_a4 / (1.0 + g_a4);
         ga3 = 1. / slpos;
         ga5 = 0.0;
-    //    printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
+        //    printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
 
 
         if(select_temp == 1) {
@@ -793,7 +795,11 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
         cmsFreeToneCurve(GammaTRC[0]);
     }
     if(absolut==1) {
-        if (params->gamma.outp)  oprofdef = iccStore->getProfile (profile);
+        if (params->gamma.outp  && !noicm) {
+            profile="RT_sRGB";
+            oprofdef = iccStore->getProfile (profile);
+        }
+        if (params->gamma.outp  && noicm)  oprofdef = iccStore->getProfile (profile);
     }
 
     if (oprofdef) {
@@ -842,7 +848,7 @@ Image16* ImProcFunctions::rgbgrgb (Imagefloat* working, int typ, int absolut, in
 
 }
 
-Image16* ImProcFunctions::labrgbpro (LabImage* lab, int cw, int ch, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6)
+Image16* ImProcFunctions::labrgbpro (LabImage* lab, int cw, int ch, int absolut, int mul, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6)
 {
 
     TMatrix wprof = iccStore->workingSpaceMatrix (params->icm.working);
@@ -873,7 +879,7 @@ Image16* ImProcFunctions::labrgbpro (LabImage* lab, int cw, int ch, Glib::ustrin
     double ts;
     ts = slpos;
 
-    int five=-5;
+    int five=mul;
     //  if(ts < 2.) five = 4;
 
     ga6 = 0.0;
@@ -881,115 +887,130 @@ Image16* ImProcFunctions::labrgbpro (LabImage* lab, int cw, int ch, Glib::ustrin
     if(gampos<1.0) {
         pwr=gampos;
         gampos=1./gampos;
-        five=5;
+        five=-mul;
         //    if(ts < 2.) five=-4;
     }
     int mode = 0, imax = 0;
     int t50;
     int select_temp = 1; //5003K
     const double eps = 0.000000001; // not divide by zero
+    cmsHPROFILE oprofdef;
+    //  if (!params->gamma.outp || absolut==0) {//&& absolut==0
+    bool  noicm=true;
+    if(params->icm.output == ColorManagementParams::NoICMString) noicm=false;
+    bool outpro = (!params->gamma.outp || (params->gamma.outp && noicm==false));
+    if (outpro || absolut==0) {//&& absolut==0
 
-    //primaries for 7 working profiles
-    // eventually to adapt primaries  if RT used special profiles !
-    if(profi == "ProPhoto")     {
-        p1 = 0.7347;    //Prophoto primaries
-        p2 = 0.2653;
-        p3 = 0.1596;
-        p4 = 0.8404;
-        p5 = 0.0366;
-        p6 = 0.0001;
-        select_temp = 1;
-    } else if (profi == "WideGamut") {
-        p1 = 0.7350;    //Widegamut primaries
-        p2 = 0.2650;
-        p3 = 0.1150;
-        p4 = 0.8260;
-        p5 = 0.1570;
-        p6 = 0.0180;
-        select_temp = 1;
-    } else if (profi == "Adobe RGB") {
-        p1 = 0.6400;    //Adobe primaries
-        p2 = 0.3300;
-        p3 = 0.2100;
-        p4 = 0.7100;
-        p5 = 0.1500;
-        p6 = 0.0600;
-        select_temp = 2;
-    } else if (profi == "sRGB") {
-        p1 = 0.6400;    // sRGB primaries
-        p2 = 0.3300;
-        p3 = 0.3000;
-        p4 = 0.6000;
-        p5 = 0.1500;
-        p6 = 0.0600;
-        select_temp = 2;
-    } else if (profi == "BruceRGB") {
-        p1 = 0.6400;    // Bruce primaries
-        p2 = 0.3300;
-        p3 = 0.2800;
-        p4 = 0.6500;
-        p5 = 0.1500;
-        p6 = 0.0600;
-        select_temp = 2;
-    } else if (profi == "Beta RGB") {
-        p1 = 0.6888;    // Beta primaries
-        p2 = 0.3112;
-        p3 = 0.1986;
-        p4 = 0.7551;
-        p5 = 0.1265;
-        p6 = 0.0352;
-        select_temp = 1;
-    } else if (profi == "BestRGB") {
-        p1 = 0.7347;    // Best primaries
-        p2 = 0.2653;
-        p3 = 0.2150;
-        p4 = 0.7750;
-        p5 = 0.1300;
-        p6 = 0.0350;
-        select_temp = 1;
-    }
-    if(slpos == 0) {
-        slpos = eps;
-    }
+        //primaries for 7 working profiles
+        // eventually to adapt primaries  if RT used special profiles !
+        if(profi == "ProPhoto")     {
+            p1 = 0.7347;    //Prophoto primaries
+            p2 = 0.2653;
+            p3 = 0.1596;
+            p4 = 0.8404;
+            p5 = 0.0366;
+            p6 = 0.0001;
+            select_temp = 1;
+        } else if (profi == "WideGamut") {
+            p1 = 0.7350;    //Widegamut primaries
+            p2 = 0.2650;
+            p3 = 0.1150;
+            p4 = 0.8260;
+            p5 = 0.1570;
+            p6 = 0.0180;
+            select_temp = 1;
+        } else if (profi == "Adobe RGB") {
+            p1 = 0.6400;    //Adobe primaries
+            p2 = 0.3300;
+            p3 = 0.2100;
+            p4 = 0.7100;
+            p5 = 0.1500;
+            p6 = 0.0600;
+            select_temp = 2;
+        } else if (profi == "sRGB") {
+            p1 = 0.6400;    // sRGB primaries
+            p2 = 0.3300;
+            p3 = 0.3000;
+            p4 = 0.6000;
+            p5 = 0.1500;
+            p6 = 0.0600;
+            select_temp = 2;
+        } else if (profi == "BruceRGB") {
+            p1 = 0.6400;    // Bruce primaries
+            p2 = 0.3300;
+            p3 = 0.2800;
+            p4 = 0.6500;
+            p5 = 0.1500;
+            p6 = 0.0600;
+            select_temp = 2;
+        } else if (profi == "Beta RGB") {
+            p1 = 0.6888;    // Beta primaries
+            p2 = 0.3112;
+            p3 = 0.1986;
+            p4 = 0.7551;
+            p5 = 0.1265;
+            p6 = 0.0352;
+            select_temp = 1;
+        } else if (profi == "BestRGB") {
+            p1 = 0.7347;    // Best primaries
+            p2 = 0.2653;
+            p3 = 0.2150;
+            p4 = 0.7750;
+            p5 = 0.1300;
+            p6 = 0.0350;
+            select_temp = 1;
+        }
+        if(slpos == 0) {
+            slpos = eps;
+        }
 
-    Color::calcGamma(pwr, ts, mode, imax, g_a0, g_a1, g_a2, g_a3, g_a4, g_a5); // call to calcGamma with selected gamma and slope : return parameters for LCMS2
-    ga4 = g_a3 * ts;
-    //printf("g_a0=%f g_a1=%f g_a2=%f g_a3=%f g_a4=%f\n", g_a0,g_a1,g_a2,g_a3,g_a4);
-    ga0 = gampos;
-    ga1 = 1. / (1.0 + g_a4);
-    ga2 = g_a4 / (1.0 + g_a4);
-    ga3 = 1. / slpos;
-    ga5 = 0.0;
-    //printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
+        Color::calcGamma(pwr, ts, mode, imax, g_a0, g_a1, g_a2, g_a3, g_a4, g_a5); // call to calcGamma with selected gamma and slope : return parameters for LCMS2
+        ga4 = g_a3 * ts;
+        //printf("g_a0=%f g_a1=%f g_a2=%f g_a3=%f g_a4=%f\n", g_a0,g_a1,g_a2,g_a3,g_a4);
+        ga0 = gampos;
+        ga1 = 1. / (1.0 + g_a4);
+        ga2 = g_a4 / (1.0 + g_a4);
+        ga3 = 1. / slpos;
+        ga5 = 0.0;
+        //printf("ga0=%f ga1=%f ga2=%f ga3=%f ga4=%f\n", ga0,ga1,ga2,ga3,ga4);
 
 
-    if(select_temp == 1) {
-        t50 = 5003;    // for Widegamut, Prophoto Best, Beta   D50
-    } else if (select_temp == 2) {
-        t50 = 6504;    // for sRGB, AdobeRGB, Bruce  D65
-    }
+        if(select_temp == 1) {
+            t50 = 5003;    // for Widegamut, Prophoto Best, Beta   D50
+        } else if (select_temp == 2) {
+            t50 = 6504;    // for sRGB, AdobeRGB, Bruce  D65
+        }
 
-    cmsCIExyY       xyD;
-    cmsCIExyYTRIPLE Primaries = {{p1, p2, 1.0},//red primaries
-        {p3, p4, 1.0}, // green
-        {p5, p6, 1.0} //blue
-    };
-    cmsToneCurve* GammaTRC[3];
-    cmsFloat64Number Parameters[7];
-    Parameters[0] = ga0;
-    Parameters[1] = ga1;
-    Parameters[2] = ga2;
-    Parameters[3] = ga3;
-    Parameters[4] = ga4;
-    Parameters[5] = ga5;
-    Parameters[6] = ga6;
+        cmsCIExyY       xyD;
+        cmsCIExyYTRIPLE Primaries = {{p1, p2, 1.0},//red primaries
+            {p3, p4, 1.0}, // green
+            {p5, p6, 1.0} //blue
+        };
+        cmsToneCurve* GammaTRC[3];
+        cmsFloat64Number Parameters[7];
+        Parameters[0] = ga0;
+        Parameters[1] = ga1;
+        Parameters[2] = ga2;
+        Parameters[3] = ga3;
+        Parameters[4] = ga4;
+        Parameters[5] = ga5;
+        Parameters[6] = ga6;
 // 7 parameters for smoother curves
-    cmsWhitePointFromTemp(&xyD, t50);
-    GammaTRC[0] = GammaTRC[1] = GammaTRC[2] =   cmsBuildParametricToneCurve(NULL, five, Parameters);//5 = more smoother than 4
-    cmsHPROFILE oprofdef =  cmsCreateRGBProfileTHR(NULL, &xyD, &Primaries, GammaTRC); //oprofdef  become Outputprofile
-    // oprofdef = iccStore->getProfile (profile);//in case of we want add output
-    cmsFreeToneCurve(GammaTRC[0]);
+        cmsWhitePointFromTemp(&xyD, t50);
+        GammaTRC[0] = GammaTRC[1] = GammaTRC[2] =   cmsBuildParametricToneCurve(NULL, five, Parameters);//5 = more smoother than 4
+        oprofdef =  cmsCreateRGBProfileTHR(NULL, &xyD, &Primaries, GammaTRC); //oprofdef  become Outputprofile
+        // oprofdef = iccStore->getProfile (profile);//in case of we want add output
+        cmsFreeToneCurve(GammaTRC[0]);
+    }
+    if(absolut==1) {
+        // if (params->gamma.outp)  oprofdef = iccStore->getProfile (profile);
+        if (params->gamma.outp  && !noicm) {
+            profile="RT_sRGB";
+            oprofdef = iccStore->getProfile (profile);
+        }
+        if (params->gamma.outp  && noicm)  oprofdef = iccStore->getProfile (profile);
 
+    }
 
     if (oprofdef) {
         #pragma omp parallel for if (multiThread)

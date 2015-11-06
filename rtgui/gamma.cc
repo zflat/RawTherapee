@@ -22,6 +22,7 @@ Gamma::Gamma () : FoldableToolPanel(this, "gamma", M("TP_GAMMADIF_LABEL"), false
     gammaMethod = Gtk::manage (new MyComboBoxText ());
     gammaMethod->append_text (M("TP_GAMMADIF_ONE"));
     gammaMethod->append_text (M("TP_GAMMADIF_ONEABS"));
+    gammaMethod->append_text (M("TP_GAMMADIF_ONEABSPLUS"));
     gammaMethod->append_text (M("TP_GAMMADIF_TWO"));
     gammaMethod->append_text (M("TP_GAMMADIF_THR"));
     gammaMethod->set_active(0);
@@ -31,7 +32,7 @@ Gamma::Gamma () : FoldableToolPanel(this, "gamma", M("TP_GAMMADIF_LABEL"), false
     gabox->pack_start (*gammaMethod);
     gammaVBox->pack_start(*gabox);
 
-    gamm = Gtk::manage (new Adjuster (M("TP_GAMMADIF_GAMMA"), 0.5, 3., 0.01, 1.));
+    gamm = Gtk::manage (new Adjuster (M("TP_GAMMADIF_GAMMA"), 0.410, 3., 0.001, 1.));
     slop = Gtk::manage (new Adjuster (M("TP_GAMMADIF_SLOPE"), 0., 20., 0.01, 2.));
 
     outp = Gtk::manage(new Gtk::CheckButton((M("TP_GAMMADIF_OUTP"))));
@@ -95,10 +96,13 @@ void Gamma::read (const ProcParams* pp, const ParamsEdited* pedited)
         gammaMethod->set_active (0);
     } else if (pp->gamma.gammaMethod == "oneabs") {
         gammaMethod->set_active (1);
-    } else if (pp->gamma.gammaMethod == "two") {
+    } else if (pp->gamma.gammaMethod == "oneabsplus") {
         gammaMethod->set_active (2);
-    } else if (pp->gamma.gammaMethod == "thr") {
+    } else if (pp->gamma.gammaMethod == "two") {
         gammaMethod->set_active (3);
+    } else if (pp->gamma.gammaMethod == "thr") {
+        gammaMethod->set_active (4);
+
     }
 
 
@@ -137,8 +141,10 @@ void Gamma::write (ProcParams* pp, ParamsEdited* pedited)
     } else if (gammaMethod->get_active_row_number() == 1) {
         pp->gamma.gammaMethod = "oneabs";
     } else if (gammaMethod->get_active_row_number() == 2) {
-        pp->gamma.gammaMethod = "two";
+        pp->gamma.gammaMethod = "oneabsplus";
     } else if (gammaMethod->get_active_row_number() == 3) {
+        pp->gamma.gammaMethod = "two";
+    } else if (gammaMethod->get_active_row_number() == 4) {
         pp->gamma.gammaMethod = "thr";
     }
 
@@ -181,13 +187,13 @@ void Gamma::outpChanged()
 void Gamma::gammaMethodChanged()
 {
 
-    if (gammaMethod->get_active_row_number() == 1 && !outp->get_active()) {
+    if ((gammaMethod->get_active_row_number() == 1 || gammaMethod->get_active_row_number() == 2) && !outp->get_active()) {
         outp->set_sensitive(true);
         gamm->set_sensitive(true);
         slop->set_sensitive(true);
     }
 
-    else if (gammaMethod->get_active_row_number() == 1 && outp->get_active()) {
+    else if ((gammaMethod->get_active_row_number() == 1 || gammaMethod->get_active_row_number() == 2)&& outp->get_active()) {
         outp->set_sensitive(true);
         gamm->set_sensitive(false);
         slop->set_sensitive(false);

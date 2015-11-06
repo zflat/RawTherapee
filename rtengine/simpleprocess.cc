@@ -749,7 +749,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     }
 
     // RGB processing
-    if((params.gamma.gammaMethod!="two") && params.gamma.enabled) {
+    if((params.gamma.gammaMethod!="two") && params.gamma.enabled) {//!=two
         int cw=baseImg->width, ch=baseImg->height;
         if(params.gamma.gammaMethod=="oneabs2") {
 
@@ -792,7 +792,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 }
             }
         }
-        else if(params.gamma.gammaMethod=="oneabs") {
+        else  if(params.gamma.gammaMethod=="oneabs" || params.gamma.gammaMethod=="oneabsplus") {//oneabs
             Image16* readyImg20 = NULL;
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int mul=-5;
@@ -815,23 +815,25 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
 
         }
+        if(params.gamma.gammaMethod!="oneabsplus") {
 
-        Image16* readyImg2 = NULL;
-        double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
-        int mul=5;
-        int absolut =0;
-        if(params.gamma.gammaMethod == "oneabs") absolut = 1;
+            Image16* readyImg2 = NULL;
+            double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
+            int mul=5;
+            int absolut =0;
+            if(params.gamma.gammaMethod == "oneabs") absolut = 1;
 
-        readyImg2 = ipf.rgbgrgb (baseImg, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
-        #pragma omp parallel for
-        for(int row = 0; row < ch; row++) {
-            for(int col = 0; col < cw; col++) {
-                baseImg->r(row, col) = (float)readyImg2->r(row, col);
-                baseImg->g(row, col) = (float)readyImg2->g(row, col);
-                baseImg->b(row, col) = (float)readyImg2->b(row, col);
+            readyImg2 = ipf.rgbgrgb (baseImg, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            #pragma omp parallel for
+            for(int row = 0; row < ch; row++) {
+                for(int col = 0; col < cw; col++) {
+                    baseImg->r(row, col) = (float)readyImg2->r(row, col);
+                    baseImg->g(row, col) = (float)readyImg2->g(row, col);
+                    baseImg->b(row, col) = (float)readyImg2->b(row, col);
+                }
             }
+            delete readyImg2;
         }
-        delete readyImg2;
     }
 
     LUTf curve1 (65536);
@@ -1150,7 +1152,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     cieView = NULL;
 
     //here gamma inverse for Differential gamma
-    if(params.gamma.gammaMethod=="thr" && params.gamma.enabled) {
+    if((params.gamma.gammaMethod=="thr" || params.gamma.gammaMethod=="oneabsplus") && params.gamma.enabled) {
         Image16* readyImg3 = NULL;
         TMatrix wprof = iccStore->workingSpaceMatrix (params.icm.working);
 
@@ -1173,7 +1175,12 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
         int cx=0, cy=0, cw=labView->W, ch=labView->H;
-        readyImg3 = ipf.labrgbpro (labView, cw, ch, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+        int mul=-5;
+        int absolut =0;
+        if(params.gamma.gammaMethod == "oneabsplus") absolut=1;
+
+        if(params.gamma.gammaMethod=="oneabsplus") mul=5;
+        readyImg3 = ipf.labrgbpro (labView, cw, ch, absolut, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
         #pragma omp parallel for
         for(int row = 0; row < ch; row++) {
             for(int col = 0; col < cw; col++) {

@@ -385,7 +385,7 @@ public:
     Image16*    lab2rgb16 (LabImage* lab, int cx, int cy, int cw, int ch, Glib::ustring profile, bool bw);//without gamma ==>default
     // CieImage *ciec;
     Image16*    rgbgrgb (Imagefloat* working, int typ, int absolut, int cw, int ch, int num, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6);// for gamma output
-    Image16*    labrgbpro (LabImage* lab, int cw, int ch, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6);// for gamma output
+    Image16*    labrgbpro (LabImage* lab, int cw, int ch, int absolut, int num, Glib::ustring profile, Glib::ustring profi, double gampos, double slpos, double &ga0, double &ga1, double &ga2, double &ga3, double &ga4, double &ga5, double &ga6);// for gamma output
 
     bool transCoord       (int W, int H, int x, int y, int w, int h, int& xv, int& yv, int& wv, int& hv, double ascaleDef = -1, const LCPMapper *pLCPMap = NULL);
     bool transCoord       (int W, int H, const std::vector<Coord2D> &src, std::vector<Coord2D> &red,  std::vector<Coord2D> &green, std::vector<Coord2D> &blue, double ascaleDef = -1, const LCPMapper *pLCPMap = NULL);

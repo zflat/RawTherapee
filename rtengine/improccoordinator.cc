@@ -425,7 +425,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
     if ( todo &  M_LINDENOISE) {
 
-        if((params.gamma.gammaMethod!="two") && params.gamma.enabled) {
+        if((params.gamma.gammaMethod!="two") && params.gamma.enabled) {//!=two
 
             int  cw=oprevi->width, ch=oprevi->height;
             if(params.gamma.gammaMethod=="oneabs2") {
@@ -472,7 +472,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     }
                 }
             }
-            else  if(params.gamma.gammaMethod=="oneabs") {
+            else  if(params.gamma.gammaMethod=="oneabs" || params.gamma.gammaMethod=="oneabsplus") {//oneabs
 
                 Image16* readyImg0 = NULL;
 
@@ -493,44 +493,47 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 }
                 delete readyImg0;
             }
-            // }
-            Image16* readyImg = NULL;
-            //printf("gam improc one thr\n");
-            cmsHPROFILE jprof = NULL;
-            bool customGamma = false;
-            bool useLCMS = false;
-            Glib::ustring chpro;
-            cmsMLU *DescriptionMLU, *CopyrightMLU, *DmndMLU, *DmddMLU;// for modification TAG
+            if(params.gamma.gammaMethod!="oneabsplus") {
 
-            cmsToneCurve* GammaTRC[3] = { NULL, NULL, NULL };
-            cmsFloat64Number Parameters[7];
+                Image16* readyImg = NULL;
+                //printf("gam improc one thr\n");
+                cmsHPROFILE jprof = NULL;
+                bool customGamma = false;
+                bool useLCMS = false;
+                Glib::ustring chpro;
+                cmsMLU *DescriptionMLU, *CopyrightMLU, *DmndMLU, *DmddMLU;// for modification TAG
 
-            double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
-            int mul=5;
-            int absolut =0;
-            if(params.gamma.gammaMethod == "oneabs") absolut=1;
-            readyImg = ipf.rgbgrgb (oprevi, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
-            /*
-            customGamma = true;
-            bool pro=false;
-            if (!params.icm.rgbicm) {  printf("RGBICM improc\n");
-                ipf.tagtrc (params.icm.output, jprof, useLCMS, pro, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
-                    if (!useLCMS) {printf("Oui lcms improc\n");
-                        ProfileContent pc(jprof);
-                        readyImg->setOutputProfile (pc.data, pc.length);
-                    }
-                    else {printf("Non lcms\n");readyImg->setOutputProfile (NULL, 0);}
-            }
-            */
-            #pragma omp parallel for
-            for(int row = 0; row < ch; row++) {
-                for(int col = 0; col < cw; col++) {
-                    oprevi->r(row, col) = (float)readyImg->r(row, col);
-                    oprevi->g(row, col) = (float)readyImg->g(row, col);
-                    oprevi->b(row, col) = (float)readyImg->b(row, col);
+                cmsToneCurve* GammaTRC[3] = { NULL, NULL, NULL };
+                cmsFloat64Number Parameters[7];
+
+                double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
+                int mul=5;
+                int absolut =0;
+                if(params.gamma.gammaMethod == "oneabs") absolut=1;
+                readyImg = ipf.rgbgrgb (oprevi, 0, absolut, cw, ch, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+                /*
+                customGamma = true;
+                bool pro=false;
+                if (!params.icm.rgbicm) {  printf("RGBICM improc\n");
+                    ipf.tagtrc (params.icm.output, jprof, useLCMS, pro, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+                        if (!useLCMS) {printf("Oui lcms improc\n");
+                            ProfileContent pc(jprof);
+                            readyImg->setOutputProfile (pc.data, pc.length);
+                        }
+                        else {printf("Non lcms\n");readyImg->setOutputProfile (NULL, 0);}
                 }
+                */
+
+                #pragma omp parallel for
+                for(int row = 0; row < ch; row++) {
+                    for(int col = 0; col < cw; col++) {
+                        oprevi->r(row, col) = (float)readyImg->r(row, col);
+                        oprevi->g(row, col) = (float)readyImg->g(row, col);
+                        oprevi->b(row, col) = (float)readyImg->b(row, col);
+                    }
+                }
+                delete readyImg;
             }
-            delete readyImg;
         }
     }
 
@@ -900,7 +903,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
     //here Differential gamma
     if ( todo & (M_LUMINANCE)) {
 
-        if(params.gamma.gammaMethod=="thr" && params.gamma.enabled) {
+        if((params.gamma.gammaMethod=="thr" || params.gamma.gammaMethod=="oneabsplus") && params.gamma.enabled) {
 
             Image16* readyImg = NULL;
             TMatrix wprof = iccStore->workingSpaceMatrix (params.icm.working);
@@ -924,7 +927,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
             int cx=0, cy=0, cw=nprevl->W, ch=nprevl->H;
-            readyImg = ipf.labrgbpro (nprevl, cw, ch, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
+            int mul=-5;
+            int absolut =0;
+            if(params.gamma.gammaMethod == "oneabsplus") absolut=1;
+
+            if(params.gamma.gammaMethod=="oneabsplus") mul=5;
+            readyImg = ipf.labrgbpro (nprevl, cw, ch, absolut, mul, params.icm.output, params.icm.working, params.gamma.gamm, params.gamma.slop, ga0, ga1, ga2, ga3, ga4, ga5, ga6);
             #pragma omp parallel for
             for(int row = 0; row < ch; row++) {
                 for(int col = 0; col < cw; col++) {
