@@ -2523,6 +2523,7 @@ void RawImageSource::retinex(ColorManagementParams cmp, RetinexParams deh, ToneC
             delete oprevi;
         }
     }
+    rgbSourceModified = false; // tricky handling for Color propagation
 
     rgbSourceModified = false; // tricky handling for Color propagation
 
@@ -2829,7 +2830,10 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
  */
 void RawImageSource::copyOriginalPixels(const RAWParams &raw, RawImage *src, RawImage *riDark, RawImage *riFlatFile )
 {
-    unsigned short black[4] = {ri->get_cblack(0), ri->get_cblack(1), ri->get_cblack(2), ri->get_cblack(3)};
+    // TODO: Change type of black[] to float to avoid conversions
+    unsigned short black[4] = {
+            (unsigned short)ri->get_cblack(0), (unsigned short)ri->get_cblack(1),
+            (unsigned short)ri->get_cblack(2), (unsigned short)ri->get_cblack(3)};
 
     if (ri->getSensorType() == ST_BAYER || ri->getSensorType() == ST_FUJI_XTRANS) {
         if (!rawData) {
@@ -4302,7 +4306,10 @@ void RawImageSource::getRAWHistogram (LUTu & histRedRaw, LUTu & histGreenRaw, LU
     histRedRaw.clear();
     histGreenRaw.clear();
     histBlueRaw.clear();
-    const float mult[4] = { 65535.0 / ri->get_white(0), 65535.0 / ri->get_white(1), 65535.0 / ri->get_white(2), 65535.0 / ri->get_white(3) };
+    const float mult[4] = { 65535.0f / ri->get_white(0),
+                            65535.0f / ri->get_white(1),
+                            65535.0f / ri->get_white(2),
+                            65535.0f / ri->get_white(3) };
 
 #ifdef _OPENMP
     int numThreads;
