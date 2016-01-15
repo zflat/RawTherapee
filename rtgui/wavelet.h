@@ -29,6 +29,17 @@
 #include "colorprovider.h"
 #include "guiutils.h"
 #include "options.h"
+#include "toolpanel.h"
+#include "../rtengine/imagedata.h"
+#include <memory>
+
+class WavelListener
+{
+
+public:
+    virtual Glib::ustring GetCurrentImageFilePath() = 0;
+};
+
 
 class Wavelet : public ToolParamBlock, public ThresholdAdjusterListener, public AdjusterListener, public CurveListener,  public ColorProvider, public rtengine::WaveletListener, public FoldableToolPanel
 {
@@ -38,8 +49,11 @@ protected:
     Glib::RefPtr<Gdk::Pixbuf> bgPixbuf;
     Glib::RefPtr<Gdk::Pixbuf> srPixbuf;
     CurveEditorGroup* curveEditorG;
+    Gtk::Button *mFileReset;
+
 
     CurveEditorGroup* CCWcurveEditorG;
+    CurveEditorGroup* CCWcurveEditorT;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
     Gtk::HSeparator* colorSep;
@@ -47,6 +61,7 @@ protected:
     Gtk::HSeparator* separatorCB;
     Gtk::HSeparator* separatorNeutral;
     Gtk::HSeparator* separatoredge;
+    Gtk::HSeparator* separatorRT;
 
     CurveEditorGroup* opaCurveEditorG;
     FlatCurveEditor* opacityShapeRG;
@@ -62,6 +77,7 @@ protected:
     Gtk::VBox* chanMixerBox;
 
     FlatCurveEditor* ccshape;
+    FlatCurveEditor* cTshape;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;
     Gtk::CheckButton * displaychro;
@@ -96,6 +112,16 @@ protected:
     Adjuster* edgval;
     Adjuster* edgthresh;
     Adjuster* strength;
+    Adjuster* mergeL;
+    Adjuster* mergeC;
+    Adjuster* gain;
+    Adjuster* offs;
+    Adjuster* str;
+    Adjuster* neigh;
+    Adjuster* vart;
+    Adjuster* limd;
+    Adjuster* chrrt;
+
     Adjuster* balance;
     Adjuster* iter;
     Adjuster* greenlow;
@@ -104,6 +130,10 @@ protected:
     Adjuster* bluemed;
     Adjuster* greenhigh;
     Adjuster* bluehigh;
+    Adjuster* balanleft;
+    Adjuster* balanhig;
+    Adjuster* blend;
+    Adjuster* blendc;
 
     ThresholdAdjuster* hueskin;
     ThresholdAdjuster* hueskin2;
@@ -146,6 +176,8 @@ protected:
     sigc::connection  Backmethodconn;
     MyComboBoxText*   Tilesmethod;
     sigc::connection  Tilesmethodconn;
+    MyComboBoxText*   usharpmethod;
+    sigc::connection  usharpmethodconn;
     MyComboBoxText*   daubcoeffmethod;
     sigc::connection  daubcoeffmethodconn;
     MyComboBoxText*   Dirmethod;
@@ -155,6 +187,7 @@ protected:
     Gtk::Frame* settingsFrame;
     Gtk::Frame* toningFrame;
     Gtk::Frame* residualFrame;
+    Gtk::Frame* mergeFrame;
     Gtk::Frame* dispFrame;
     Gtk::Frame* levelFrame;
     Gtk::Frame* chromaFrame;
@@ -167,6 +200,32 @@ protected:
     Gtk::Frame *chanMixerMidFrame;
     Gtk::Frame *chanMixerShadowsFrame;
     Gtk::Frame *dFrame;
+
+    MyComboBoxText*   retinexMethod;
+    Gtk::Label* labmdh;
+    Gtk::HBox* dhbox;
+    MyComboBoxText*   retinexMethodpro;
+    Gtk::Label* labmdhpro;
+    Gtk::HBox* dhboxpro;
+    Gtk::Label* labretifin;
+    Gtk::HBox* labretifinbox;
+
+    Gtk::Label* labmmg;
+    Gtk::HBox* mgbox;
+    MyComboBoxText*   mergevMethod;
+    sigc::connection  mergevMethodConn;
+
+    Gtk::Label* mMLabels;
+    Gtk::Label* transLabels;
+    Gtk::Label* transLabels2;
+    double nextmin;
+    double nextmax;
+    double nextminiT;
+    double nextmaxiT;
+    double nextmeanT;
+    double nextminT;
+    double nextmaxT;
+    double nextsigma;
 
     Gtk::Label* colLabel;
     Gtk::Label* interLabel;
@@ -189,6 +248,7 @@ protected:
     MyExpander* expgamut;
     MyExpander* expnoise;
     MyExpander* expresid;
+    MyExpander* expmerge;
     MyExpander* expsettings;
     MyExpander* exptoning;
     Gtk::HBox* ctboxCB;
@@ -202,6 +262,7 @@ protected:
     Gtk::HBox* levdirMainHBox;
     Gtk::HBox* levdirSubHBox;
     Gtk::HBox* tilesizeHBox;
+    Gtk::HBox* usharpHBox;
 
     Gtk::HBox* ctboxFI;
     Gtk::HBox* ctboxNP;
@@ -212,18 +273,33 @@ protected:
     Gtk::VBox* settingsVBox;
     Gtk::VBox* contrastSHVBox;
     Gtk::Label* tilesizeLabel;
+    Gtk::Label* usharpLabel;
     Gtk::Label* levdirMainLabel;
     Gtk::Label* backgroundLabel;
     Gtk::Button* neutral;
     Gtk::HBox* neutrHBox;
 
+    Gtk::Button* load;
+    MyFileChooserButton *inputeFile;
+    Gtk::HBox *hbin;
+    Gtk::Button *btnReset;
+    Gtk::Label *inLabel;
+    Gtk::Label *inInfo;
+    sigc::connection inFile;
+    bool b_filter_asCurrent;
+    bool inChanged;
+    bool israw;
+    WavelListener*  walistener;
+
     sigc::connection enableChromaConn, enableContrastConn, enableEdgeConn, enableFinalConn;
-    sigc::connection enableNoiseConn, enableResidConn, enableToningConn;
+    sigc::connection enableNoiseConn, enableResidConn, enableToningConn, enableMergeConn;
     sigc::connection expConn,  medianConn, avoidConn, tmrConn, medianlevConn, linkedgConn, lipstConn, cbenabConn, neutralconn;
     sigc::connection neutralPressedConn;
     sigc::connection contrastPlusPressedConn;
     sigc::connection contrastMinusPressedConn;
     sigc::connection neutralchPressedConn;
+    sigc::connection retinexMethodConn, retinexMethodproConn;
+    //  rtengine::StagedImageProcessor* ipc2;
 
     bool lastdisplay, lastdisplaygam, lastdisplayres, lastdisplaychro, lastdisplaylevel, lastmedian, lastmedianlev, lastlinkedg, lastavoid, lastlipst, lasttmr, lastcbenab;
     int nextnlevel;
@@ -231,6 +307,11 @@ protected:
     double br;
     double tl;
     double bl;
+
+    double nextmergeL;
+    double nextmergeC;
+    double nextL;
+    double nextC;
 
 public:
     Wavelet ();
@@ -250,10 +331,31 @@ public:
     void updateToolState (std::vector<int> &tpOpen);
     void write (rtengine::procparams::ProcParams* pp, ParamsEdited* pedited = NULL);
     void writeOptions (std::vector<int> &tpOpen);
+    void retinexMethodChanged();
+    void retinexMethodproChanged();
+    void minmaxChanged (double cdma, double cdmin, double mini, double maxi, double Tmean, double Tsigma, double Tmin, double Tmax);
+    bool minmaxComputed_ ();
+    void updateLabel      ();
+    void updateTrans      ();
+    void setWavelListener (WavelListener* ipl)
+    {
+        walistener = ipl;
+    }
+    void inputeChanged ();
+    void mFile_Reset        ();
 
 
 private:
     void foldAllButMe (GdkEventButton* event, MyExpander *expander);
+    /*    MyFileChooserButton* ipDialog;
+        std::auto_ptr<FileChooserLastFolderPersister> ipDialogPersister;
+        sigc::connection   ipc;
+        Gtk::RadioButton*  ifromfile;
+        Glib::ustring      oldip;
+        Gtk::Button*        saveRef;
+        Glib::ustring lastRefFilename;
+    */
+    Glib::ustring      oldip;
 
     virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
     void BAmethodChanged ();
@@ -266,9 +368,12 @@ private:
     void EDmethodChanged ();
     void HSmethodChanged ();
     void LmethodChanged ();
+    void mergevMethodChanged ();
+
     void MedgreinfChanged ();
     void TMmethodChanged ();
     void TilesmethodChanged ();
+    void usharpmethodChanged ();
     void avoidToggled ();
     void cbenabToggled ();
     void contrastMinusPressed ();

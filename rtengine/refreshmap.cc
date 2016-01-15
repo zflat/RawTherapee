@@ -465,6 +465,28 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     RETINEX,          // EvLradius
     RETINEX,          // EvmapMethod
     DEMOSAIC,         // EvRetinexmapcurve
-    DEMOSAIC          // EvviewMethod
+    DEMOSAIC,          // EvviewMethod
+    DIRPYREQUALIZER,   // EvWavusharpmet
+    DIRPYREQUALIZER,   //  EvWavmergeL
+    DIRPYREQUALIZER,   // EvWavmergeC
+    DIRPYREQUALIZER,   //  EvWavgain
+    DIRPYREQUALIZER,   // EvWavoffs
+    DIRPYREQUALIZER,   //  EvWavstr
+    DIRPYREQUALIZER,   // EvWavneigh
+    DIRPYREQUALIZER,   //  EvWavvart
+    DIRPYREQUALIZER,   // EvWavlimd
+    DIRPYREQUALIZER,   // EvWavretinexMethod
+    DIRPYREQUALIZER,     //EvWavCTCurve
+    DIRPYREQUALIZER,     //EvWavchrrt
+    DIRPYREQUALIZER,     // EvWavretinexMethodpro
+    DIRPYREQUALIZER,  // EvWavenamerge
+    DIRPYREQUALIZER,  // EvWaveinput
+    DIRPYREQUALIZER,     //EvWavmergevMethod
+    DIRPYREQUALIZER,     //EvWavbalanlow
+    DIRPYREQUALIZER,     //EvWavbalanhigh
+    DIRPYREQUALIZER,     //EvWavblend
+    DIRPYREQUALIZER,     //EvWavblendc
+    DIRPYREQUALIZER     //EvmFile
+
 };
 

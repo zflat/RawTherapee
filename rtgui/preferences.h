@@ -86,9 +86,11 @@ protected:
     Gtk::RadioButton* edOther;
     Gtk::FileChooserButton* darkFrameDir;
     Gtk::FileChooserButton* flatFieldDir;
+    Gtk::FileChooserButton* mergeDir;
     Gtk::FileChooserButton* clutsDir;
     Gtk::Label *dfLabel;
     Gtk::Label *ffLabel;
+    Gtk::Label *mgLabel;
 
     Gtk::CheckButton* showDateTime;
     Gtk::CheckButton* showBasicExif;
@@ -193,7 +195,7 @@ protected:
     Glib::ustring storedValueImg;
 
     Options moptions;
-    sigc::connection tconn, sconn, fconn, usethcon, addc, setc, dfconn, ffconn, bpconn, rpconn, ipconn;
+    sigc::connection tconn, sconn, fconn, usethcon, addc, setc, dfconn, ffconn, mgconn, bpconn, rpconn, ipconn;
     sigc::connection autoMonProfileConn, sndEnableConn, langAutoDetectConn, autocielabConn;
     Glib::ustring initialTheme;
     Glib::ustring initialFont;
@@ -205,6 +207,7 @@ protected:
     void parseDir       (Glib::ustring dirname, std::vector<Glib::ustring>& items, Glib::ustring ext);
     void updateDFinfos ();
     void updateFFinfos ();
+    void updateMGinfos ();
     void workflowUpdate();
     void themeChanged  ();
     void useThemeChanged();
@@ -249,6 +252,7 @@ public:
     void moveExtDownPressed ();
     void darkFrameChanged ();
     void flatFieldChanged ();
+    void mergeChanged ();
     void clearProfilesPressed ();
     void clearThumbImagesPressed ();
     void clearAllPressed ();

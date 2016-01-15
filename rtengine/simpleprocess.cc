@@ -29,6 +29,8 @@
 #include "rawimagesource.h"
 #include "../rtgui/multilangmgr.h"
 #include "mytime.h"
+#include <fstream>
+
 #undef THREAD_PRIORITY_NORMAL
 
 namespace rtengine
@@ -973,14 +975,19 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         delete [] buffer;
     }
 
+
+    //end threatment datas Lab for merge
+
+
     WaveletParams WaveParams = params.wavelet;
     WavCurve wavCLVCurve;
+    WavretiCurve wavRETCurve;
     WavOpacityCurveRG waOpacityCurveRG;
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;
     WavOpacityCurveWL waOpacityCurveWL;
 
-    params.wavelet.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
+    params.wavelet.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
 
     // directional pyramid wavelet
     if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
@@ -992,8 +999,218 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
     CurveFactory::curveWavContL(wavcontlutili, params.wavelet.wavclCurve, wavclCurve,/* hist16C, dummy,*/ 1);
 
+    //merge images
+    LabImage * mergelabpart;
+    LabImage * mergelab;
+    LabImage * cropmergelab;
+    int pos;
+    float maxx;
+    struct E {
+        int W, H, sk;
+    } e;
+    int disp;
+
+    if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {//load Lab datas
+        bool toto = true;
+        bool merguez = false;
+        Glib::ustring  inpu;
+        inpu = params.wavelet.inpute;
+        printf("fichier improc=%s\n", inpu.c_str());
+        inpu = inpu.substr (5);
+        ofstream fout;
+        ifstream fin;
+        pos = inpu.find("mer");
+
+
+        if(pos > 2) {
+            fin.open(inpu.c_str(), ios::binary);
+            fin.read(reinterpret_cast<char *>(&e), sizeof(e));
+            printf("DW=%d DH=%d\n", e.W, e.H);
+            mergelabpart = new LabImage(e.W, e.H);
+
+
+            for(int ir = 0; ir < e.H; ir++)
+                for(int jr = 0; jr < e.W; jr++) {
+                    struct X {
+                        float L, a, b, ma;
+                    } x;
+                    fin.read(reinterpret_cast<char *>(&x), sizeof(x));
+                    mergelabpart->L[ir][jr] = x.L;
+                    mergelabpart->a[ir][jr] = x.a;
+                    mergelabpart->b[ir][jr] = x.b;
+                    maxx = x.ma;
+
+                }
+
+            //     printf("maxx=%f\n", maxx);
+            fin.close();
+
+            mergelab = new LabImage(fw, fh);
+            float LT = 0.f;
+            float aT = 0.f;
+            float bT = 0.f;
+
+            for(int ir = 0; ir < fh; ir++)
+                for(int jr = 0; jr < fw; jr++) {//fill with color
+                    mergelab->L[ir][jr] = LT;
+                    mergelab->a[ir][jr] = aT;
+                    mergelab->b[ir][jr] = bT;
+
+                }
+
+            //put  datas mergelab inside megelabtotal
+            float percenthig = (float) params.wavelet.balanhig;
+            float percentleft = (float) params.wavelet.balanleft;
+            int Lwa = e.W;
+            int Hwa = e.H;
+
+            if(Lwa > fw) {
+                Lwa = fw;
+            }
+
+            if(Hwa > fh) {
+                Hwa = fh;
+            }
+
+            int difwM = fw - Lwa;
+            int difw = (int)((percentleft * difwM) / 100.f);
+            //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+            int difhM = fh - Hwa;
+            int difh = (int)((percenthig * difhM) / 100.f);
+
+            for(int ir = difh ; ir < (difh + Hwa); ir++)
+                for(int jr = difw ; jr < (difw + Lwa); jr++) {//
+                    mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
+                    mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
+                    mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
+                }
+
+            delete mergelabpart;
+
+        }
+    }
+
+//end load Lab datas for merge
+    if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
+
+        if(pos > 2) {
+            bool merguez = true;
+            cropmergelab = new LabImage(labView->W, labView->H);
+
+            if(merguez) {//merge images
+                disp = 0;
+
+                if(params.wavelet.mergevMethod == "first") {
+                    disp = 1;
+                }
+
+                float highl = 32768.f * (float) (params.wavelet.blend) / 100.f;
+                float minhighl = 10000000.f;
+                int pi, pj;
+                float ref;
+
+                for(int ir = 0; ir < (labView->H); ir++)
+                    for(int jr = 0; jr < (labView->W); jr++) {
+                        int irfull, jrfull;
+                        irfull = (ir) * 1;
+                        jrfull = (jr) * 1;
+                        irfull = LIM(irfull, 0, fh - 1);
+                        jrfull = LIM(jrfull, 0, fw - 1);
+
+                        cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
+                        cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
+                        cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+
+                        if(disp == 1) {
+                            labView->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
+                            labView->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
+                            labView->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                        }
+
+                    }
+            }
+
+            delete mergelab;
+        }
+    }
+
+
+
     if((params.wavelet.enabled)) {
-        ipf.ip_wavelet(labView, labView, kall, WaveParams, wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1);
+        LabImage *unshar;
+        Glib::ustring provis;
+        float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+
+        if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+            unshar = new LabImage (fw, fh);
+
+            if(WaveParams.usharpmethod == "orig") {
+                unshar->CopyFrom(labView);//same time as with pragma for..but more 'clean'
+
+            } else if(WaveParams.usharpmethod == "wave") {
+                provis = params.wavelet.CLmethod;
+                params.wavelet.CLmethod = "all";
+                ipf.ip_wavelet(labView, labView, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                unshar->CopyFrom(labView);
+
+                params.wavelet.CLmethod = provis;
+
+            }
+
+        }
+
+        ipf.ip_wavelet(labView, labView, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+
+        if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+            float mL = (float) (WaveParams.mergeL / 100.f);
+            float mC = (float) (WaveParams.mergeC / 100.f);
+            float mL0;
+            float mC0;
+
+            if((WaveParams.CLmethod == "one" || WaveParams.CLmethod == "inf")  && WaveParams.Backmethod == "black") {
+                mL0 = mC0 = 0.f;
+                mL = -mL;
+                mC = -mC;
+            } else if(WaveParams.CLmethod == "sup" && WaveParams.Backmethod == "resid") {
+                mL0 = mL;
+                mC0 = mC;
+            } else {
+                mL0 = mL = mC0 = mC = 0.f;
+            }
+
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int x = 0; x < fh; x++)
+                for (int y = 0; y < fw; y++) {
+                    labView->L[x][y] = (1.f + mL0) * (unshar->L[x][y]) - mL * labView->L[x][y];
+                    labView->a[x][y] = (1.f + mC0) * (unshar->a[x][y]) - mC * labView->a[x][y];
+                    labView->b[x][y] = (1.f + mC0) * (unshar->b[x][y]) - mC * labView->b[x][y];
+                }
+
+            delete unshar;
+            unshar    = NULL;
+
+        }
+
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
+
+            if(pos > 2) {
+
+                float m_L = (float) (WaveParams.blend / 100.f);
+                float m_C = (float) (WaveParams.blendc / 100.f);
+
+                for (int x = 0; x < labView->H; x++)
+                    for (int y = 0; y < labView->W; y++) {
+                        labView->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labView->L[x][y];
+                        labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
+                        labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
+                    }
+
+                delete cropmergelab;
+            }
+        }
     }
 
     wavCLVCurve.Reset();

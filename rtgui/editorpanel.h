@@ -54,6 +54,7 @@ private:
 
     Glib::ustring lastSaveAsFileName;
     bool realized;
+    Glib::ustring lastRefFilename;
 
 protected:
     Gtk::ProgressBar  *progressLabel;
@@ -80,6 +81,7 @@ protected:
     Gtk::Button* queueimg;
     Gtk::Button* saveimgas;
     Gtk::Button* sendtogimp;
+    Gtk::Button* sendtolab;
     Gtk::Button* navSync;
     Gtk::Button* navNext;
     Gtk::Button* navPrev;
@@ -89,6 +91,7 @@ protected:
 
     ImageAreaPanel* iareapanel;
     PreviewHandler* previewHandler;
+    PreviewHandler* previewHandler2;
     PreviewHandler* beforePreviewHandler;   // for the before-after view
     Navigator* navigator;
     ImageAreaPanel* beforeIarea;    // for the before-after view
@@ -128,6 +131,8 @@ protected:
     bool                idle_saveImage(ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname, SaveFormat sf);
     bool                idle_sendToGimp( ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname);
     bool                idle_sentToGimp(ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring filename);
+    bool                idle_sendTolab( ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname);
+    bool                idle_sentTolab(ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring filename);
     int err;
 
     time_t processingStartedTime;
@@ -189,9 +194,11 @@ public:
     void saveAsPressed ();
     void queueImgPressed ();
     void sendToGimpPressed ();
+    void sendTolabPressed ();
     void openNextEditorImage ();
     void openPreviousEditorImage ();
     void syncFileBrowser ();
+    std::string fname2;// = dialog.get_filename();
 
     void tbTopPanel_1_visible (bool visible);
     bool CheckSidePanelsVisibility();

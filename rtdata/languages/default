@@ -195,6 +195,7 @@ FILECHOOSER_FILTER_ANY;All files
 FILECHOOSER_FILTER_COLPROF;Color profiles
 FILECHOOSER_FILTER_CURVE;Curve files
 FILECHOOSER_FILTER_LCP;Lens correction profiles
+FILECHOOSER_FILTER_MERGE;Merge files
 FILECHOOSER_FILTER_PP;Processing profiles
 FILECHOOSER_FILTER_SAME;Same format as current photo
 FILECHOOSER_FILTER_TIFF;TIFF files
@@ -670,6 +671,26 @@ HISTORY_MSG_436;Retinex - M - Radius
 HISTORY_MSG_437;Retinex - M - Method
 HISTORY_MSG_438;Retinex - M - Equalizer
 HISTORY_MSG_439;Retinex - Preview
+HISTORY_MSG_440;W - Unsharp method
+HISTORY_MSG_441;W - Merge luma
+HISTORY_MSG_442;W - Merge chroma
+HISTORY_MSG_443;W - Reti - gain
+HISTORY_MSG_444;W - Reti - brightness
+HISTORY_MSG_445;W - Reti - strength
+HISTORY_MSG_446;W - Reti - radius
+HISTORY_MSG_447;W - Reti - contrast
+HISTORY_MSG_448;W - Reti - threshold
+HISTORY_MSG_449;W - Retinex method
+HISTORY_MSG_450;W - Reti - transmission
+HISTORY_MSG_451;W - Reti - chroma
+HISTORY_MSG_453;W - merge - enabled
+HISTORY_MSG_454;W - merge - file
+HISTORY_MSG_455;W - merge - preview
+HISTORY_MSG_456;W - merge - H shift
+HISTORY_MSG_457;W - merge - V shift
+HISTORY_MSG_458;W - merge - blend L
+HISTORY_MSG_459;W - merge - blend C
+HISTORY_MSG_460;W - merge - reset
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -724,6 +745,7 @@ MAIN_BUTTON_PUTTOQUEUE_TOOLTIP;Put current image to processing queue.\nShortcut:
 MAIN_BUTTON_SAVE_TOOLTIP;Save current image.\nShortcut: <b>Ctrl+s</b>
 MAIN_BUTTON_SENDTOEDITOR;Edit image in external editor
 MAIN_BUTTON_SENDTOEDITOR_TOOLTIP;Edit current image in external editor.\nShortcut: <b>Ctrl+e</b>
+MAIN_BUTTON_SENDTOLAB_TOOLTIP;Save L*a*b datas for merge files (*.mer).\nWavelet levels and Merge files must be enabled.\nEdit L*a*b* data image in external editor.
 MAIN_BUTTON_SHOWHIDESIDEPANELS_TOOLTIP;Show/hide all side panels.\nShortcut: <b>m</b>
 MAIN_BUTTON_UNFULLSCREEN;Exit fullscreen
 MAIN_FRAME_BATCHQUEUE;Queue
@@ -1808,6 +1830,7 @@ TP_WAVELET_B0;Black
 TP_WAVELET_B1;Grey
 TP_WAVELET_B2;Residual
 TP_WAVELET_BACKGROUND;Background
+TP_WAVELET_BACK_TOOLTIP;Use 'black' in association with Process='below or equal' or 'onelevel' to generate an Unsharp mask with low radius\nUse 'Residual' in association with Process='above the level' to generate an Unsharp mash with very high radius
 TP_WAVELET_BACUR;Curve
 TP_WAVELET_BALANCE;Contrast balance d/v-h
 TP_WAVELET_BALANCE_TOOLTIP;Alters the balance between the wavelet directions: vertical-horizontal and diagonal.\nIf contrast, chroma or residual tone mapping are activated, the effect due to balance is amplified.
@@ -1816,6 +1839,13 @@ TP_WAVELET_BALCHRO_TOOLTIP;If enabled, the 'Contrast balance' curve or slider al
 TP_WAVELET_BANONE;None
 TP_WAVELET_BASLI;Slider
 TP_WAVELET_BATYPE;Contrast balance method
+TP_WAVELET_BLEND;Threshold blend Luma
+TP_WAVELET_BLEND_TOOLTIP;Blend luma - current and first images
+TP_WAVELET_BLENDC;Threshold blend Chroma
+TP_WAVELET_BLENDC_TOOLTIP;Blend chroma - current and first images.\nNegatives values changes colors
+TP_WAVELET_VERTSH;Vertical shift (percent)
+TP_WAVELET_HORIZSH;Horizontal shift (percent)
+TP_WAVELET_VERTSH_TOOLTIP;Move first image into current image.\nif first image size >= to current, no action.
 TP_WAVELET_CBENAB;Toning and Color Balance
 TP_WAVELET_CB_TOOLTIP;For strong values product color-toning by combining it or not with levels decomposition 'toning'\nFor low values you can change the white balance of the background (sky, ...) without changing that of the front plane, generally more contrasted
 TP_WAVELET_CCURVE;Local contrast
@@ -1889,6 +1919,7 @@ TP_WAVELET_HUESKY;Sky hue
 TP_WAVELET_HUESKY_TOOLTIP;The bottom points set the beginning of the transition zone, and the upper points the end of it, where the effect is at its maximum.\n\nIf you need to move the area significantly, or if there are artifacts, then the <b>white balance is incorrect</b>.
 TP_WAVELET_ITER;Delta balance levels
 TP_WAVELET_ITER_TOOLTIP;Left: increase low levels and reduce high levels,\nRight: reduce low levels and increase high levels.
+TP_WAVELET_INPUTE_TOOLTIP;Load L*a*b* datas (*.mer) to be merge with Current
 TP_WAVELET_LABEL;Wavelet Levels
 TP_WAVELET_LARGEST;Coarsest
 TP_WAVELET_LEVCH;Chroma
@@ -1911,6 +1942,11 @@ TP_WAVELET_MEDGREINF;First level
 TP_WAVELET_MEDI;Reduce artifacts in blue sky
 TP_WAVELET_MEDILEV;Edge detection
 TP_WAVELET_MEDILEV_TOOLTIP;When you enable Edge Detection, it is recommanded:\n- to disabled low contrast levels to avoid artifacts,\n- to use high values of gradient sensitivity.\n\nYou can modulate the strength with 'refine' from Denoise and Refine.
+TP_WAVELET_MERGE;Merge files and Watermark
+TP_WAVELET_MERGEINPUTLABEL;Select file to merge
+TP_WAVELET_MERGEINPUT_TOOLTIP;Select file data
+TP_WAVELET_MERGELABEL;MERGE FILES
+TP_WAVELET_FILTER_MERGE;
 TP_WAVELET_NEUTRAL;Neutral
 TP_WAVELET_NOIS;Denoise
 TP_WAVELET_NOISE;Denoise and Refine
@@ -1932,7 +1968,28 @@ TP_WAVELET_RESCHRO;Chroma
 TP_WAVELET_RESCON;Shadows
 TP_WAVELET_RESCONH;Highlights
 TP_WAVELET_RESID;Residual Image
+TP_WAVE_NONE;None
+TP_WAVRETI_FIN;Process Retinex 'Final Touchup' actived
+TP_WAVRETI_METHOD;Retinex method
+TP_WAVRETI_METHODPRO;Process located in
+TP_WAVE_RESIDU;Residual
+TP_WAVE_FINA;Final Touchup
+TP_WAVRETI_METHOD_TOOLTIP;Low = Reinforce low light,\nUniform = Equalize action,\nHigh = Reinforce high light.
+TP_WAVRETI_METHODPRO_TOOLTIP;Locate the Retinex Process either in Residual or in Final touchup
+TP_WAVELET_VIEW_METHOD;Preview and Save Method
+TP_WAVELET_VIEW_TOOLTIP;First image shows the precedent image to merge.\nSave data - this selection is necessary to save L*a*b datas for next merging.\nMain button "wavelet" needs to be used
+TP_WAVELET_VIEW_CURR;Current image
+TP_WAVELET_VIEW_PREV;First image
+TP_WAVELET_VIEW_SAVE;Save data
+TP_WAVELET_STR;Strength
+TP_WAVELET_CHRRT;Chroma
+TP_WAVELET_NEIGH;Radius
+TP_WAVELET_VART;Contrast
+TP_WAVELET_GAIN;Gain
+TP_WAVELET_OFFS;Brightness
+TP_WAVELET_LIMD;Threshold
 TP_WAVELET_SAT;Saturated chroma
+TP_WAVELET_SAVELAB;Save L*a*b datas (*.mer)
 TP_WAVELET_SETTINGS;Wavelet Settings
 TP_WAVELET_SKIN;Skin targetting/protection
 TP_WAVELET_SKIN_TOOLTIP;At -100 skin-tones are targetted.\nAt 0 all tones are treated equally.\nAt +100 skin-tones are protected while all other tones are affected.
@@ -1957,6 +2014,13 @@ TP_WAVELET_TMSTRENGTH_TOOLTIP;Control the strength of tone mapping or contrast c
 TP_WAVELET_TMTYPE;Compression method
 TP_WAVELET_TON;Toning
 TP_WBALANCE_AUTO;Auto
+TP_WAVELET_USHARP;Unsharp method
+TP_WAVELET_USHARP_TOOLTIP;Generate a Mask and Unsharp image with 2 methods\n*Origin : the source file is the file before Wavelet\n*Wavelet : the source file is the file including wavelet\n*if background=black and process='below or equal' or 'one level' you generate an Unsharp mash with low 'radius'\n*if background=Residual and Process="Above the level" you generate an Unsharp mask with very high 'radius'
+TP_WAVELET_USHARNONE;None
+TP_WAVELET_USHARORIG;Source origin
+TP_WAVELET_USHARWAVE;Source wavelet
+TP_WAVELET_MERGEL;Merge Luma
+TP_WAVELET_MERGEC;Merge Chroma
 TP_WBALANCE_CAMERA;Camera
 TP_WBALANCE_CLOUDY;Cloudy
 TP_WBALANCE_CUSTOM;Custom

@@ -36,6 +36,7 @@ class ColorGradientCurve;
 class OpacityCurve;
 class NoiseCurve;
 class WavCurve;
+class WavretiCurve;
 class WavOpacityCurveRG;
 class WavOpacityCurveBY;
 class WavOpacityCurveW;
@@ -992,7 +993,9 @@ class WaveletParams
 {
 
 public:
+    Glib::ustring inpute;
     std::vector<double>   ccwcurve;
+    std::vector<double>   ccwTcurve;
     std::vector<double> opacityCurveRG;
     std::vector<double> opacityCurveBY;
     std::vector<double> opacityCurveW;
@@ -1017,7 +1020,22 @@ public:
     bool avoid;
     bool tmr;
     int strength;
+    int mergeL;
+    int mergeC;
+    double gain;
+    double offs;
+    double vart;
+    double limd;
+    double str;
+    double neigh;
+    double chrrt;
+
     int balance;
+    int balanleft;
+    int balanhig;
+    int blend;
+    int blendc;
+
     int iter;
     bool expcontrast;
     bool expchroma;
@@ -1028,11 +1046,16 @@ public:
     bool expfinal;
     bool exptoning;
     bool expnoise;
+    bool expmerge;
 
     Glib::ustring Lmethod;
     Glib::ustring CLmethod;
+    Glib::ustring mergevMethod;
+    Glib::ustring retinexMethod;
+    Glib::ustring retinexMethodpro;
     Glib::ustring Backmethod;
     Glib::ustring Tilesmethod;
+    Glib::ustring usharpmethod;
     Glib::ustring daubcoeffmethod;
     Glib::ustring CHmethod;
     Glib::ustring Medgreinf;
@@ -1082,8 +1105,9 @@ public:
 
     WaveletParams ();
     void setDefaults();
-    void getCurves(WavCurve &cCurve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
+    void getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
     static void getDefaultCCWCurve(std::vector<double> &curve);
+    static void getDefaultCCWCurveT(std::vector<double> &curve);
     static void getDefaultOpacityCurveRG(std::vector<double> &curve);
     static void getDefaultOpacityCurveBY(std::vector<double> &curve);
     static void getDefaultOpacityCurveW(std::vector<double> &curve);

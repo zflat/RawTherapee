@@ -554,8 +554,22 @@ class WaveletParamsEdited
 
 public:
     bool enabled;
+    bool inpute;
     bool strength;
+    bool mergeL;
+    bool mergeC;
+    bool gain;
+    bool offs;
+    bool vart;
+    bool limd;
+    bool chrrt;
+    bool str;
+    bool neigh;
     bool balance;
+    bool balanleft;
+    bool balanhig;
+    bool blend;
+    bool blendc;
     bool iter;
     bool median;
     bool medianlev;
@@ -570,6 +584,7 @@ public:
     bool Lmethod;
     bool CHmethod;
     bool CHSLmethod;
+    bool mergevMethod;
     bool EDmethod;
     bool BAmethod;
     bool NPmethod;
@@ -577,7 +592,10 @@ public:
     bool HSmethod;
     bool CLmethod;
     bool Backmethod;
+    bool retinexMethod;
+    bool retinexMethodpro;
     bool Tilesmethod;
+    bool usharpmethod;
     bool daubcoeffmethod;
     bool Dirmethod;
     bool rescon;
@@ -614,6 +632,7 @@ public:
     bool level2noise;
     bool level3noise;
     bool ccwcurve;
+    bool ccwTcurve;
     bool opacityCurveBY;
     bool opacityCurveRG;
     bool opacityCurveW;
@@ -637,6 +656,7 @@ public:
     bool expfinal;
     bool exptoning;
     bool expnoise;
+    bool expmerge;
 
 };
 

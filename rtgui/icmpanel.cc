@@ -117,10 +117,10 @@ ICMPanel::ICMPanel () : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iunch
     ckbApplyBaselineExposureOffset->set_tooltip_text (M("TP_ICM_APPLYBASELINEEXPOSUREOFFSET_TOOLTIP"));
 
     dcpFrameVBox->pack_start(*dcpIllHBox, Gtk::PACK_SHRINK, 0);
-    dcpFrameVBox->pack_start(*ckbToneCurve, Gtk::PACK_SHRINK,0);
-    dcpFrameVBox->pack_start(*ckbApplyHueSatMap, Gtk::PACK_SHRINK,0);
-    dcpFrameVBox->pack_start(*ckbApplyLookTable, Gtk::PACK_SHRINK,0);
-    dcpFrameVBox->pack_start(*ckbApplyBaselineExposureOffset, Gtk::PACK_SHRINK,0);
+    dcpFrameVBox->pack_start(*ckbToneCurve, Gtk::PACK_SHRINK, 0);
+    dcpFrameVBox->pack_start(*ckbApplyHueSatMap, Gtk::PACK_SHRINK, 0);
+    dcpFrameVBox->pack_start(*ckbApplyLookTable, Gtk::PACK_SHRINK, 0);
+    dcpFrameVBox->pack_start(*ckbApplyBaselineExposureOffset, Gtk::PACK_SHRINK, 0);
     dcpFrame->add(*dcpFrameVBox);
     dcpFrame->set_sensitive(false);
     iVBox->pack_start (*dcpFrame);
@@ -192,7 +192,7 @@ ICMPanel::ICMPanel () : FoldableToolPanel(this, "icm", M("TP_ICM_LABEL")), iunch
 
     // Rendering intent
     Gtk::HBox *riHBox = Gtk::manage ( new Gtk::HBox());
-    Gtk::Label* outputIntentLbl = Gtk::manage (new Gtk::Label(M("TP_ICM_PROFILEINTENT")+":"));
+    Gtk::Label* outputIntentLbl = Gtk::manage (new Gtk::Label(M("TP_ICM_PROFILEINTENT") + ":"));
     riHBox->pack_start (*outputIntentLbl, Gtk::PACK_SHRINK);
     ointent = Gtk::manage (new MyComboBoxText ());
     riHBox->pack_start (*ointent, Gtk::PACK_EXPAND_WIDGET);
@@ -518,6 +518,7 @@ void ICMPanel::read (const ProcParams* pp, const ParamsEdited* pedited)
     if (onames->get_active_row_number() == -1) {
         onames->set_active_text (M("TP_ICM_NOICM"));
     }
+
     ointent->set_active(pp->icm.outputIntent);
 
     ckbToneCurve->set_active (pp->icm.toneCurve);
@@ -622,6 +623,7 @@ void ICMPanel::write (ProcParams* pp, ParamsEdited* pedited)
     }
 
     int ointentVal = ointent->get_active_row_number();
+
     if (ointentVal >= 0 && ointentVal < RI__COUNT) {
         pp->icm.outputIntent  = static_cast<RenderingIntent>(ointentVal);
     } else {

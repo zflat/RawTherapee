@@ -613,6 +613,7 @@ void Options::setDefaults ()
 
     rtSettings.darkFramesPath = "";
     rtSettings.flatFieldsPath = "";
+    rtSettings.mergePath = "";
 #ifdef WIN32
     const gchar* sysRoot = g_getenv("SystemRoot");  // Returns e.g. "c:\Windows"
 
@@ -688,6 +689,7 @@ void Options::setDefaults ()
     lastIccDir = rtSettings.iccDirectory;
     lastDarkframeDir = rtSettings.darkFramesPath;
     lastFlatfieldDir = rtSettings.flatFieldsPath;
+    lastmergeDir = rtSettings.mergePath;
 //  rtSettings.bw_complementary = true;
     // There is no reasonable default for curves. We can still suppose that they will take place
     // in a subdirectory of the user's own ProcParams presets, i.e. in a subdirectory
@@ -811,6 +813,10 @@ int Options::readFromFile (Glib::ustring fname)
 
                 if( keyFile.has_key ("General", "FlatFieldsPath")) {
                     rtSettings.flatFieldsPath = keyFile.get_string("General", "FlatFieldsPath");
+                }
+
+                if( keyFile.has_key ("General", "mergePath")) {
+                    rtSettings.mergePath = keyFile.get_string("General", "mergePath");
                 }
 
                 if( keyFile.has_key ("General", "Verbose")) {
@@ -1754,6 +1760,7 @@ int Options::readFromFile (Glib::ustring fname)
                 safeDirGet(keyFile, "Dialogs", "LastIccDir", lastIccDir);
                 safeDirGet(keyFile, "Dialogs", "LastDarkframeDir", lastDarkframeDir);
                 safeDirGet(keyFile, "Dialogs", "LastFlatfieldDir", lastFlatfieldDir);
+                safeDirGet(keyFile, "Dialogs", "LastmergeDir", lastmergeDir);
                 safeDirGet(keyFile, "Dialogs", "LastRgbCurvesDir", lastRgbCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastLabCurvesDir", lastLabCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastRetinexDir", lastRetinexDir);
@@ -1831,6 +1838,7 @@ int Options::saveToFile (Glib::ustring fname)
     keyFile.set_string  ("General", "Version", VERSION);
     keyFile.set_string  ("General", "DarkFramesPath", rtSettings.darkFramesPath);
     keyFile.set_string  ("General", "FlatFieldsPath", rtSettings.flatFieldsPath);
+    keyFile.set_string  ("General", "mergePath", rtSettings.mergePath);
     keyFile.set_boolean ("General", "Verbose", rtSettings.verbose);
     keyFile.set_double ("General", "BotLeft", rtSettings.bot_left);
     keyFile.set_double ("General", "TopLeft", rtSettings.top_left);
@@ -2093,6 +2101,7 @@ int Options::saveToFile (Glib::ustring fname)
     keyFile.set_string ("Dialogs", "LastIccDir", lastIccDir);
     keyFile.set_string ("Dialogs", "LastDarkframeDir", lastDarkframeDir);
     keyFile.set_string ("Dialogs", "LastFlatfieldDir", lastFlatfieldDir);
+    keyFile.set_string ("Dialogs", "LastmergeDir", lastmergeDir);
     keyFile.set_string ("Dialogs", "LastRgbCurvesDir", lastRgbCurvesDir);
     keyFile.set_string ("Dialogs", "LastLabCurvesDir", lastLabCurvesDir);
     keyFile.set_string ("Dialogs", "LastRetinexDir", lastRetinexDir);

@@ -24,6 +24,7 @@
 #include "rt_math.h"
 // "ceil" rounding
 #define SKIPS(a,b) ((a) / (b) + ((a) % (b) > 0))
+#include <fstream>
 
 namespace rtengine
 {
@@ -157,6 +158,7 @@ void Crop::update (int todo)
     int widIm = parent->fw;//full image
     int heiIm = parent->fh;
 
+
     bool needstransform  = parent->ipf.needsTransform();
 
     if (todo & (M_INIT | M_LINDENOISE)) {
@@ -170,6 +172,9 @@ void Crop::update (int todo)
 
         //  printf("x=%d y=%d crow=%d croh=%d skip=%d\n",rqcropx, rqcropy, rqcropw, rqcroph, skip);
         //  printf("trafx=%d trafyy=%d trafwsk=%d trafHs=%d \n",trafx, trafy, trafw*skip, trafh*skip);
+        printf("x=%d y=%d crow=%d croh=%d skip=%d cropW=%d cropH=%d leftb=%d upperb=%d\n", rqcropx, rqcropy, rqcropw, rqcroph, skip, cropw, croph, leftBorder, upperBorder);
+        printf("trafx=%d trafyy=%d trafwsk=%d trafHs=%d \n", trafx, trafy, trafw * skip, trafh * skip);
+
 
         Imagefloat *calclum = NULL;//for Luminance denoise curve
         NoiseCurve noiseLCurve;
@@ -918,8 +923,150 @@ void Crop::update (int todo)
             parent->awavListener->wavChanged(float(maxL));
         }
 
+
+        //merge images
+        //common datas
+        LabImage * mergelabpart;
+        LabImage * cropmergelab;
+        LabImage * mergelab;
+        int pos = 0;
+        float maxx;
+        struct E {
+            int W, H, sk;
+        } e;
+        int disp;
+
+
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
+            bool toto = true;
+            bool merguez = false;
+            Glib::ustring  inpu;
+            inpu = params.wavelet.inpute;
+            printf("fichier=%s\n", inpu.c_str());
+            inpu = inpu.substr (5);
+            ofstream fout;
+            ifstream fin;
+            pos = inpu.find("mer");
+
+            if(pos > 2) {//open file Lab datas with its own size
+                fin.open(inpu.c_str(), ios::binary);
+                fin.read(reinterpret_cast<char *>(&e), sizeof(e));
+                //   printf("DW=%d DH=%d\n", e.W, e.H);
+                mergelabpart = new LabImage(e.W, e.H);
+
+                for(int ir = 0; ir < e.H; ir++)
+                    for(int jr = 0; jr < e.W; jr++) {
+                        struct X {
+                            float L, a, b, ma;
+                        } x;
+                        fin.read(reinterpret_cast<char *>(&x), sizeof(x));
+                        mergelabpart->L[ir][jr] = x.L;
+                        mergelabpart->a[ir][jr] = x.a;
+                        mergelabpart->b[ir][jr] = x.b;
+                        maxx = x.ma;
+                    }
+
+                //    printf("maxx=%f\n", maxx);
+                fin.close();
+
+                mergelab = new LabImage(widIm, heiIm);
+                //   float LT=3328.f; float aT=7936.f; float bT=4864.f;//red
+                float LT = 0.f;
+                float aT = 0.f;
+                float bT = 0.f; //red
+
+                for(int ir = 0; ir < (heiIm); ir++)
+                    for(int jr = 0; jr < (widIm); jr++) {//fill with color
+                        mergelab->L[ir][jr] = LT;
+                        mergelab->a[ir][jr] = aT;
+                        mergelab->b[ir][jr] = bT;
+
+                    }
+
+                //put  datas mergelab inside megelabtotal
+                float percenthig = (float) params.wavelet.balanhig;
+                float percentleft = (float) params.wavelet.balanleft;
+                int Lwa = e.W;
+                int Hwa = e.H;
+
+                if(Lwa > widIm) {
+                    Lwa = widIm;
+                }
+
+                if(Hwa > heiIm) {
+                    Hwa = widIm;
+                }
+
+                int difwM = widIm - Lwa;
+                int difw = (int)((percentleft * difwM) / 100.f);
+                //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+                int difhM = heiIm - Hwa;
+                int difh = (int)((percenthig * difhM) / 100.f);
+
+                for(int ir = difh ; ir < (difh + Hwa); ir++)
+                    for(int jr = difw ; jr < (difw + Lwa); jr++) {//
+                        mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
+                        mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
+                        mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
+                    }
+
+                delete mergelabpart;
+
+            }
+
+        }
+
+        //end load Lab datas for merge
+
+
+        //begin threatment datas Lab for merge
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
+
+            if(pos > 2) {
+                bool merguez = true;
+                cropmergelab = new LabImage(labnCrop->W, labnCrop->H);
+
+                if(merguez) {//merge images
+                    disp = 0;
+
+                    if(params.wavelet.mergevMethod == "first") {//old image for watermark
+                        disp = 1;
+                    }
+
+
+                    for(int ir = 0; ir < (labnCrop->H); ir++)
+                        for(int jr = 0; jr < (labnCrop->W); jr++) {//take into account crop
+                            int irfull, jrfull;
+                            irfull = (ir) * skip + rqcropy - skip * upperBorder;
+                            jrfull = (jr) * skip + rqcropx - skip * leftBorder;
+                            irfull = LIM(irfull, 0, heiIm - 1);
+                            jrfull = LIM(jrfull, 0, widIm - 1);
+                            cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
+                            cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
+                            cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+
+                            if(disp == 1) {
+                                labnCrop->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
+                                labnCrop->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
+                                labnCrop->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                            }
+
+                        }
+
+                }
+
+                delete mergelab;
+            }
+        }
+
+        //end threatment datas Lab for merge
+
+
+
         if((params.wavelet.enabled)) {
             WavCurve wavCLVCurve;
+            WavretiCurve wavRETCurve;
+
             WavOpacityCurveRG waOpacityCurveRG;
             WavOpacityCurveBY waOpacityCurveBY;
             WavOpacityCurveW waOpacityCurveW;
@@ -927,14 +1074,88 @@ void Crop::update (int todo)
             LUTf wavclCurve;
             LUTu dummy;
 
-            params.wavelet.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            params.wavelet.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            LabImage *unshar;
+            Glib::ustring provis;
+            float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-            parent->ipf.ip_wavelet(labnCrop, labnCrop, kall, WaveParams, wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip);
+            if(WaveParams.usharpmethod != "none" && WaveParams.CLmethod != "all") {
+                unshar = new LabImage (labnCrop->W, labnCrop->H);
+
+                if(WaveParams.usharpmethod == "orig") {
+                    unshar->CopyFrom(labnCrop);
+
+                }  else if(WaveParams.usharpmethod == "wave") {
+                    provis = params.wavelet.CLmethod;
+                    params.wavelet.CLmethod = "all";
+
+                    parent->ipf.ip_wavelet(labnCrop, labnCrop, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                    unshar->CopyFrom(labnCrop);
+
+                    params.wavelet.CLmethod = provis;
+                }
+
+            }
+
+            parent->ipf.ip_wavelet(labnCrop, labnCrop, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+
+            if(parent->awavListener) {
+                parent->awavListener->minmaxChanged(maxCD, minCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            }
+
+            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+                float mL = (float) (WaveParams.mergeL / 100.f);
+                float mC = (float) (WaveParams.mergeC / 100.f);
+                float mL0;
+                float mC0;
+
+                if((WaveParams.CLmethod == "one" || WaveParams.CLmethod == "inf")  && WaveParams.Backmethod == "black") {
+                    mL0 = mC0 = 0.f;
+                    mL = -mL;
+                    mC = -mC;
+                } else if(WaveParams.CLmethod == "sup" && WaveParams.Backmethod == "resid") {
+                    mL0 = mL;
+                    mC0 = mC;
+                } else {
+                    mL0 = mL = mC0 = mC = 0.f;
+                }
+
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for (int x = 0; x < labnCrop->H; x++)
+                    for (int y = 0; y < labnCrop->W; y++) {
+                        labnCrop->L[x][y] = (1.f + mL0) * (unshar->L[x][y]) - mL * labnCrop->L[x][y];
+                        labnCrop->a[x][y] = (1.f + mC0) * (unshar->a[x][y]) - mC * labnCrop->a[x][y];
+                        labnCrop->b[x][y] = (1.f + mC0) * (unshar->b[x][y]) - mC * labnCrop->b[x][y];
+                    }
+
+                delete unshar;
+                unshar    = NULL;
+            }
+
+            if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
+
+                if(pos > 2) {
+
+                    float m_L = (float) (WaveParams.blend / 100.f);
+                    float m_C = (float) (WaveParams.blendc / 100.f);
+
+                    for (int x = 0; x < labnCrop->H; x++)
+                        for (int y = 0; y < labnCrop->W; y++) {
+                            labnCrop->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labnCrop->L[x][y];
+                            labnCrop->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labnCrop->a[x][y];
+                            labnCrop->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labnCrop->b[x][y];
+                        }
+
+                    delete cropmergelab;
+                }
+            }
+
         }
 
-        //     }
 
-        //   }
         if(params.colorappearance.enabled) {
             float fnum = parent->imgsrc->getMetaData()->getFNumber  ();        // F number
             float fiso = parent->imgsrc->getMetaData()->getISOSpeed () ;       // ISO

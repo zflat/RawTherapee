@@ -357,6 +357,10 @@ Gtk::Widget* Preferences::getBatchProcPanel ()
     appendBehavList (mi, M("TP_FLATFIELD_CLIPCONTROL"), ADDSET_RAWFFCLIPCONTROL, true);
 
     mi = behModel->append ();
+    mi->set_value (behavColumns.label, M("TP_MERGE_LABEL"));
+    appendBehavList (mi, M("TP_MERGE_CLIPCONTROL"), ADDSET_RAWFFCLIPCONTROL, true);
+
+    mi = behModel->append ();
     mi->set_value (behavColumns.label, M("TP_CHROMATABERR_LABEL"));
     appendBehavList (mi, M("TP_RAWCACORR_CARED") + ", " + M("TP_RAWCACORR_CABLUE"), ADDSET_RAWCACORR, true);
 
@@ -511,6 +515,24 @@ Gtk::Widget* Preferences::getProcParamsPanel ()
 
     //ffconn = flatFieldDir->signal_file_set().connect ( sigc::mem_fun(*this, &Preferences::flatFieldChanged), true);
     ffconn = flatFieldDir->signal_current_folder_changed().connect ( sigc::mem_fun(*this, &Preferences::flatFieldChanged), true);
+
+
+    // MERGE FILES
+    Gtk::Frame* fmg = Gtk::manage (new Gtk::Frame (M("PREFERENCES_MERGE")) );
+    Gtk::HBox* hb43mg = Gtk::manage (new Gtk::HBox ());
+    mergeDir = Gtk::manage(new Gtk::FileChooserButton(M("PREFERENCES_MERGEDIR"), Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER));
+    Gtk::Label *mgLab = Gtk::manage(new Gtk::Label(M("PREFERENCES_MERGEDIR") + ":"));
+    hb43mg->pack_start(*mgLab , Gtk::PACK_SHRINK, 4 );
+    hb43mg->pack_start(*mergeDir);
+    mgLabel = Gtk::manage(new Gtk::Label("Found:"));
+    Gtk::VBox* vbmg = Gtk::manage (new Gtk::VBox ());
+    vbmg->pack_start( *hb43mg, Gtk::PACK_SHRINK, 4);
+    // vbmg->pack_start( *mgLabel, Gtk::PACK_SHRINK, 4 );
+    fmg->add( *vbmg );
+    mvbpp->pack_start ( *fmg , Gtk::PACK_SHRINK, 4);
+    mvbpp->set_border_width (4);
+
+    mgconn = mergeDir->signal_current_folder_changed().connect ( sigc::mem_fun(*this, &Preferences::mergeChanged), true);
 
     //Cluts Dir
     Gtk::Frame* clutsDirFrame = Gtk::manage (new Gtk::Frame (M("PREFERENCES_FILMSIMULATION")) );
@@ -694,14 +716,16 @@ Gtk::Widget* Preferences::getColorManagementPanel ()
     Gtk::Label* mplabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONPROFILE") + ":", Gtk::ALIGN_LEFT));
 
     monIntent = Gtk::manage (new Gtk::ComboBoxText ());
-    Gtk::Label* milabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONINTENT")+":", Gtk::ALIGN_LEFT));
+    Gtk::Label* milabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONINTENT") + ":", Gtk::ALIGN_LEFT));
 
     monProfile->append_text (M("PREFERENCES_PROFILE_NONE"));
     monProfile->set_active (0);
 
     const std::vector<Glib::ustring> profiles = rtengine::ICCStore::getInstance ()->getProfiles ();
-    for (std::vector<Glib::ustring>::const_iterator profile = profiles.begin (); profile != profiles.end (); ++profile)
+
+    for (std::vector<Glib::ustring>::const_iterator profile = profiles.begin (); profile != profiles.end (); ++profile) {
         monProfile->append_text (*profile);
+    }
 
     monIntent->append_text (M("PREFERENCES_INTENT_RELATIVE"));
     monIntent->append_text (M("PREFERENCES_INTENT_PERCEPTUAL"));
@@ -1447,18 +1471,22 @@ void Preferences::storePreferences ()
 
 #if !defined(__APPLE__) // monitor profile not supported on apple
     moptions.rtSettings.monitorProfile      = monProfile->get_active_text ();
+
     switch (monIntent->get_active_row_number ()) {
     default:
     case 0:
         moptions.rtSettings.monitorIntent = rtengine::RI_RELATIVE;
         break;
+
     case 1:
         moptions.rtSettings.monitorIntent = rtengine::RI_PERCEPTUAL;
         break;
+
     case 2:
         moptions.rtSettings.monitorIntent = rtengine::RI_ABSOLUTE;
         break;
     }
+
 #if defined(WIN32)
     moptions.rtSettings.autoMonitorProfile  = cbAutoMonProfile->get_active ();
 #endif
@@ -1519,6 +1547,7 @@ void Preferences::storePreferences ()
 
     moptions.rtSettings.darkFramesPath =   darkFrameDir->get_filename();
     moptions.rtSettings.flatFieldsPath =   flatFieldDir->get_filename();
+    moptions.rtSettings.mergePath =   mergeDir->get_filename();
 
     moptions.clutsDir = clutsDir->get_filename();
 
@@ -1562,6 +1591,7 @@ void Preferences::fillPreferences ()
     sconn.block (true);
     dfconn.block (true);
     ffconn.block (true);
+    mgconn.block (true);
     rpconn.block(true);
     ipconn.block(true);
     bpconn.block(true);
@@ -1577,18 +1607,22 @@ void Preferences::fillPreferences ()
 
 #if !defined(__APPLE__) // monitor profile not supported on apple
     setActiveTextOrIndex (*monProfile, moptions.rtSettings.monitorProfile, 0);
+
     switch (moptions.rtSettings.monitorIntent) {
     default:
     case rtengine::RI_RELATIVE:
         monIntent->set_active (0);
         break;
+
     case rtengine::RI_PERCEPTUAL:
         monIntent->set_active (1);
         break;
+
     case rtengine::RI_ABSOLUTE:
         monIntent->set_active (2);
         break;
     }
+
 #if defined(WIN32)
     cbAutoMonProfile->set_active(moptions.rtSettings.autoMonitorProfile);
 #endif
@@ -1727,6 +1761,9 @@ void Preferences::fillPreferences ()
     flatFieldDir->set_current_folder( moptions.rtSettings.flatFieldsPath );
     flatFieldChanged ();
 
+    mergeDir->set_current_folder( moptions.rtSettings.mergePath );
+    mergeChanged ();
+
     clutsDir->set_current_folder( moptions.clutsDir );
 
     addc.block (true);
@@ -1749,6 +1786,7 @@ void Preferences::fillPreferences ()
     sconn.block (false);
     dfconn.block (false);
     ffconn.block (false);
+    mgconn.block (false);
     rpconn.block(true);
     ipconn.block(true);
     bpconn.block(false);
@@ -1959,8 +1997,10 @@ void Preferences::iccDirChanged ()
     monProfile->set_active (0);
 
     const std::vector<Glib::ustring> profiles = rtengine::ICCStore::getInstance ()->getProfilesFromDir (iccDir->get_filename ());
-    for (std::vector<Glib::ustring>::const_iterator profile = profiles.begin (); profile != profiles.end (); ++profile)
+
+    for (std::vector<Glib::ustring>::const_iterator profile = profiles.begin (); profile != profiles.end (); ++profile) {
         monProfile->append_text (*profile);
+    }
 
     monProfile->set_active_text (currentSelection);
 }
@@ -2131,12 +2171,16 @@ void Preferences::delExtPressed ()
 void Preferences::moveExtUpPressed ()
 {
     const Glib::RefPtr<Gtk::TreeSelection> selection = extensions->get_selection ();
-    if (!selection)
+
+    if (!selection) {
         return;
+    }
 
     const Gtk::TreeModel::iterator selected = selection->get_selected ();
-    if (!selected || selected == extensionModel->children ().begin ())
+
+    if (!selected || selected == extensionModel->children ().begin ()) {
         return;
+    }
 
     Gtk::TreeModel::iterator previous = selected;
     --previous;
@@ -2146,16 +2190,22 @@ void Preferences::moveExtUpPressed ()
 void Preferences::moveExtDownPressed ()
 {
     const Glib::RefPtr<Gtk::TreeSelection> selection = extensions->get_selection ();
-    if (!selection)
+
+    if (!selection) {
         return;
+    }
 
     const Gtk::TreeModel::iterator selected = selection->get_selected ();
-    if (!selected)
+
+    if (!selected) {
         return;
+    }
 
     Gtk::TreeModel::iterator next = selected;
-    if (++next)
+
+    if (++next) {
         extensionModel->iter_swap (selected, next);
+    }
 }
 
 void Preferences::clearProfilesPressed ()
@@ -2196,6 +2246,16 @@ void Preferences::flatFieldChanged ()
     //}
 }
 
+void Preferences::mergeChanged ()
+{
+    //Glib::ustring s(flatFieldDir->get_filename());
+    Glib::ustring s(mergeDir->get_current_folder());
+    //if( s.compare( rtengine::ffm.getPathname()) !=0 ){
+    rtengine::ffm.init( s );
+    updateMGinfos();
+    //}
+}
+
 void Preferences::updateDFinfos()
 {
     int t1, t2;
@@ -2210,6 +2270,14 @@ void Preferences::updateFFinfos()
     rtengine::ffm.getStat(t1, t2);
     Glib::ustring s = Glib::ustring::compose("%1: %2 %3, %4 %5", M("PREFERENCES_FLATFIELDFOUND"), t1, M("PREFERENCES_FLATFIELDSHOTS"), t2, M("PREFERENCES_FLATFIELDTEMPLATES"));
     ffLabel->set_text(s);
+}
+
+void Preferences::updateMGinfos()
+{
+    int t1, t2;
+//   rtengine::ffm.getStat(t1, t2);
+//   Glib::ustring s = Glib::ustring::compose("%1: %2 %3, %4 %5", M("PREFERENCES_MERGEFOUND"), t1, M("PREFERENCE_MERGEHOTS"), t2, M("PREFERENCES_MERGETEMPLATES"));
+    //  ffLabel->set_text(s);
 }
 
 bool Preferences::splashClosed(GdkEventAny* event)

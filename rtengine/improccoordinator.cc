@@ -23,6 +23,7 @@
 #include "../rtgui/ppversion.h"
 #include "colortemp.h"
 #include "improcfun.h"
+#include <fstream>
 
 namespace rtengine
 {
@@ -242,7 +243,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         }
     }
 
-    if ((todo & (M_RETINEX|M_INIT)) && params.retinex.enabled) {
+    if ((todo & (M_RETINEX | M_INIT)) && params.retinex.enabled) {
         bool dehacontlutili = false;
         bool mapcontlutili = false;
         bool useHsl = false;
@@ -671,15 +672,232 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         CurveFactory::curveWavContL(wavcontlutili, params.wavelet.wavclCurve, wavclCurve , /*lhist16CLlad, histCLurve,*/ scale == 1 ? 1 : 16);
 
 
+
+        //merge images
+        LabImage * mergelabpart;
+        LabImage * mergelab;
+        LabImage * cropmergelab;
+        int pos;
+        float maxx;
+        struct E {
+            int W, H, sk;
+        } e;
+        int disp;
+
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {//load Lab datas
+            bool toto = true;
+            bool merguez = false;
+            Glib::ustring  inpu;
+            inpu = params.wavelet.inpute;
+            printf("fichier improc=%s\n", inpu.c_str());
+            inpu = inpu.substr (5);
+            ofstream fout;
+            ifstream fin;
+            pos = inpu.find("mer");
+
+
+            if(pos > 2) {
+                fin.open(inpu.c_str(), ios::binary);
+                fin.read(reinterpret_cast<char *>(&e), sizeof(e));
+                printf("DW=%d DH=%d\n", e.W, e.H);
+                mergelabpart = new LabImage(e.W, e.H);
+
+
+                for(int ir = 0; ir < e.H; ir++)
+                    for(int jr = 0; jr < e.W; jr++) {
+                        struct X {
+                            float L, a, b, ma;
+                        } x;
+                        fin.read(reinterpret_cast<char *>(&x), sizeof(x));
+                        mergelabpart->L[ir][jr] = x.L;
+                        mergelabpart->a[ir][jr] = x.a;
+                        mergelabpart->b[ir][jr] = x.b;
+                        maxx = x.ma;
+
+                    }
+
+                //   printf("maxx=%f\n", maxx);
+                fin.close();
+
+                mergelab = new LabImage(fw, fh);
+                float LT = 0.f;
+                float aT = 0.f;
+                float bT = 0.f;
+
+                for(int ir = 0; ir < fh; ir++)
+                    for(int jr = 0; jr < fw; jr++) {//fill with color
+                        mergelab->L[ir][jr] = LT;
+                        mergelab->a[ir][jr] = aT;
+                        mergelab->b[ir][jr] = bT;
+
+                    }
+
+                //put  datas mergelab inside megelabtotal
+                float percenthig = (float) params.wavelet.balanhig;
+                float percentleft = (float) params.wavelet.balanleft;
+                int Lwa = e.W;
+                int Hwa = e.H;
+
+                if(Lwa > fw) {
+                    Lwa = fw;
+                }
+
+                if(Hwa > fh) {
+                    Hwa = fh;
+                }
+
+                int difwM = fw - Lwa;
+                int difw = (int)((percentleft * difwM) / 100.f);
+                //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+                int difhM = fh - Hwa;
+                int difh = (int)((percenthig * difhM) / 100.f);
+
+                for(int ir = difh ; ir < (difh + Hwa); ir++)
+                    for(int jr = difw ; jr < (difw + Lwa); jr++) {//
+                        mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
+                        mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
+                        mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
+                    }
+
+                delete mergelabpart;
+
+
+            }
+        }
+
+//end load Lab datas for merge
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
+
+            if(pos > 2) {
+                bool merguez = true;
+                cropmergelab = new LabImage(nprevl->W, nprevl->H);
+
+                if(merguez) {//merge images
+                    disp = 0;
+
+                    if(params.wavelet.mergevMethod == "first") {
+                        disp = 1;
+                    }
+
+                    //    if(params.wavelet.mergevMethod == "blend") {
+                    //        disp = 2;
+                    //    }
+
+                    float highl = 32768.f * (float) (params.wavelet.blend) / 100.f;
+                    float minhighl = 10000000.f;
+                    int pi, pj;
+                    float ref;
+
+                    for(int ir = 0; ir < (nprevl->H); ir++)
+                        for(int jr = 0; jr < (nprevl->W); jr++) {
+                            int irfull, jrfull;
+                            irfull = (ir) * scale;
+                            jrfull = (jr) * scale;
+                            irfull = LIM(irfull, 0, fh - 1);
+                            jrfull = LIM(jrfull, 0, fw - 1);
+
+                            cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
+                            cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
+                            cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+
+                            if(disp == 1) {
+                                nprevl->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
+                                nprevl->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
+                                nprevl->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                            }
+
+                        }
+                }
+
+                delete mergelab;
+            }
+        }
+
+//end threatment datas merge : only for histogram
+
+
+
         if((params.wavelet.enabled)) {
             WaveletParams WaveParams = params.wavelet;
             //      WaveParams.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY);
-            WaveParams.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
-
+            WaveParams.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             int kall = 0;
             progress ("Wavelet...", 100 * readyphase / numofphases);
-            //  ipf.ip_wavelet(nprevl, nprevl, kall, WaveParams, wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, scale);
-            ipf.ip_wavelet(nprevl, nprevl, kall, WaveParams, wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale);
+            LabImage *unshar;
+            Glib::ustring provis;
+            float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+
+            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+                unshar = new LabImage (pW, pH);
+
+                if(WaveParams.usharpmethod == "orig") {
+                    unshar->CopyFrom(nprevl);
+
+                } else if(WaveParams.usharpmethod == "wave") {
+                    provis = params.wavelet.CLmethod;
+                    params.wavelet.CLmethod = "all";
+
+                    ipf.ip_wavelet(nprevl, nprevl, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                    unshar->CopyFrom(nprevl);
+
+                    params.wavelet.CLmethod = provis;
+
+                }
+            }
+
+            ipf.ip_wavelet(nprevl, nprevl, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+
+
+            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+                float mL = (float) (WaveParams.mergeL / 100.f);
+                float mC = (float) (WaveParams.mergeC / 100.f);
+                float mL0;
+                float mC0;
+
+                if((WaveParams.CLmethod == "one" || WaveParams.CLmethod == "inf")  && WaveParams.Backmethod == "black") {
+                    mL0 = mC0 = 0.f;
+                    mL = -mL;
+                    mC = -mC;
+                } else if(WaveParams.CLmethod == "sup" && WaveParams.Backmethod == "resid") {
+                    mL0 = mL;
+                    mC0 = mC;
+                } else {
+                    mL0 = mL = mC0 = mC = 0.f;
+                }
+
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for (int x = 0; x < pH; x++)
+                    for (int y = 0; y < pW; y++) {
+                        nprevl->L[x][y] = (1.f + mL0) * (unshar->L[x][y]) - mL * nprevl->L[x][y];
+                        nprevl->a[x][y] = (1.f + mC0) * (unshar->a[x][y]) - mC * nprevl->a[x][y];
+                        nprevl->b[x][y] = (1.f + mC0) * (unshar->b[x][y]) - mC * nprevl->b[x][y];
+                    }
+
+                delete unshar;
+                unshar    = NULL;
+
+            }
+
+            if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
+
+                if(pos > 2) {
+
+                    float m_L = (float) (WaveParams.blend / 100.f);
+                    float m_C = (float) (WaveParams.blendc / 100.f);
+
+                    for (int x = 0; x < nprevl->H; x++)
+                        for (int y = 0; y < nprevl->W; y++) {
+                            nprevl->L[x][y] =  m_L * (cropmergelab->L[x][y]) + nprevl->L[x][y];
+                            nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + nprevl->a[x][y];
+                            nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + nprevl->b[x][y];
+                        }
+
+                    delete cropmergelab;
+                }
+            }
 
         }
 
@@ -782,6 +1000,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
         }
     }
+
     // Update the monitor color transform if necessary
     if (todo & M_MONITOR) {
         ipf.updateColorProfiles(params.icm, monitorProfile, monitorIntent);
