@@ -962,7 +962,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergeBox->pack_start(*mgbox);
 
 
-    blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 0));
+    blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 50));
     blend->setAdjusterListener (this);
     blend->set_tooltip_text (M("TP_WAVELET_BLEND_TOOLTIP"));
     mergeBox->pack_start(*blend);

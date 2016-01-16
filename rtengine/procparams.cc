@@ -700,7 +700,7 @@ void WaveletParams::setDefaults()
     balance = 0;
     balanleft = 0;
     balanhig = 0;
-    blend = 0;
+    blend = 50;
     blendc = 0;
 
     iter = 0;
