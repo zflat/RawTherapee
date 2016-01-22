@@ -482,11 +482,14 @@ enum ProcEvent {
     EvWavenamerge = 452,
     EvWaveinput = 453,
     EvWavmergevMethod = 454,
-    EvWavbalanlow = 455,
-    EvWavbalanhigh = 456,
-    EvWavblen = 457,
-    EvWavblenc = 458,
-    EvmFile = 459,
+    EvWavmergMethod = 455,
+    EvWavbalanlow = 456,
+    EvWavbalanhigh = 457,
+    EvWavblen = 458,
+    EvWavblenc = 459,
+    EvmFile = 460,
+    EvWavushamet = 461,
+    EvWavenareti = 462,
     NUMOFEVENTS
 };
 }

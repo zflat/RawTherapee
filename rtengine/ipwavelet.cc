@@ -146,6 +146,7 @@ struct cont_params {
     bool contena;
     bool chromena;
     bool edgeena;
+    bool retiena;
     bool mergeena;
     bool resena;
     bool finena;
@@ -276,6 +277,8 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
     cp.chromena = params->wavelet.expchroma;
     cp.edgeena = true;
     cp.edgeena = params->wavelet.expedge;
+    cp.retiena = true;
+    cp.retiena = params->wavelet.expreti;
     cp.resena = true;
     cp.resena = params->wavelet.expresid;
     cp.finena = true;
@@ -923,7 +926,8 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                 }
 
                 //  printf("LevwavL before: %d\n",levwavL);
-                if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && params->wavelet.retinexMethod == "none") { // no processing of residual L  or edge=> we probably can reduce the number of levels
+         //       if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && params->wavelet.retinexMethod == "none") { // no processing of residual L  or edge=> we probably can reduce the number of levels
+                if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && !cp.retiena) { // no processing of residual L  or edge=> we probably can reduce the number of levels
                     while(levwavL > 0 && cp.mul[levwavL - 1] == 0.f) { // cp.mul[level] == 0.f means no changes to level
                         levwavL--;
                     }
@@ -1116,8 +1120,9 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                 } else {// a and b
                     int levwavab = levwav;
 
-                    //  printf("Levwavab before: %d\n",levwavab);
-                    if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" && params->wavelet.retinexMethod == "none" && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
+                    //  printf("Levwavab before: %d\n",levwavab);cp.retiena
+              //      if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" && params->wavelet.retinexMethod == "none" && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
+                    if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" &&  !cp.retiena && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
                         while(levwavab > 0 && (((cp.CHmet == 2 && (cp.chro == 0.f || cp.mul[levwavab - 1] == 0.f )) || (cp.CHmet != 2 && (levwavab == 10 || (!cp.curv  || (cp.curv && cp.mulC[levwavab - 1] == 0.f)))))) && (!cp.opaRG || levwavab == 10 || (cp.opaRG && cp.mulopaRG[levwavab - 1] == 0.f)) && ((levwavab == 10 || (cp.CHSLmet == 1 && cp.mulC[levwavab - 1] == 0.f)))) {
                             levwavab--;
                         }
@@ -1329,8 +1334,9 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                     }
 
                     //dsttmp
-                    //imheight = lab->H, imwidth = lab->W;
-                    if(params->wavelet.retinexMethod != "none"  && params->wavelet.retinexMethodpro == "fina") {
+                    //imheight = lab->H, imwidth = lab->W;cp.retiena
+            //        if(params->wavelet.retinexMethod != "none"  && params->wavelet.retinexMethodpro == "fina") {
+                    if(cp.retiena  && params->wavelet.retinexMethodpro == "fina") {
                         int W_L =  imwidth;
                         int H_L =  imheight;
 
@@ -1469,18 +1475,20 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
             ofstream fout;
             ifstream fin;
             fout.open(inp.c_str(), ios::binary);
-            // fout.open("5477.mer", ios::binary);
+            int dpix = 4;//for alignment pixels
+            if(params->wavelet.mergMethod=="savwat") dpix=0;//0 if watermark
+
             struct D {
                 int W, H, sk;
             } d;
-            d.W = imwidth;
-            d.H = imheight;
+            d.W = imwidth - 2 * dpix;
+            d.H = imheight - 2 * dpix;
             d.sk = 1;//skip
             fout.write(reinterpret_cast<char *>(&d), sizeof(d));
             float maxx = 0.f;
 
-            for(int ir = 0; ir < imheight; ir++)
-                for(int jr = 0; jr < imwidth; jr++) {
+            for(int ir = dpix; ir < imheight - dpix; ir++)
+                for(int jr = dpix; jr < imwidth - dpix; jr++) {
                     struct X {
                         float L, a, b, ma;
                     } x;
@@ -2323,7 +2331,8 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
             // end
         }
 
-        if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.retinexMethodpro == "resid") {
+    //    if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.retinexMethodpro == "resid") {
+        if(cp.retiena && cp.resena && params->wavelet.retinexMethodpro == "resid") {
             //printf("RESID LUM\n");
             float *resid[H_L] ALIGNED16;
             float *residBuffer = new float[H_L * W_L];
@@ -2408,7 +2417,8 @@ void ImProcFunctions::WaveletAandBAllAB(LabImage * labco, float ** varhue, float
 
     //WavretiCurve wavRETCcurve;
 
-    if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
+    if(cp.retiena && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
+ //   if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
         //printf("RESID CHRO\n");
 
         float *resid[H_L] ALIGNED16;

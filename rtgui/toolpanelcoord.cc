@@ -206,9 +206,9 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
     exposurePanelSW    = Gtk::manage (new MyScrolledWindow ());
     detailsPanelSW     = Gtk::manage (new MyScrolledWindow ());
     colorPanelSW       = Gtk::manage (new MyScrolledWindow ());
+    waveletPanelSW     = Gtk::manage (new MyScrolledWindow ());
     transformPanelSW   = Gtk::manage (new MyScrolledWindow ());
     rawPanelSW         = Gtk::manage (new MyScrolledWindow ());
-    waveletPanelSW     = Gtk::manage (new MyScrolledWindow ());
     updateVScrollbars (options.hideTPVScrollbar);
 
     // load panel endings
@@ -234,15 +234,15 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
 
     waveletPanelSW->add       (*waveletPanel);
     waveletPanel->pack_start (*Gtk::manage(new Gtk::HSeparator), Gtk::PACK_SHRINK, 0);
-    waveletPanel->pack_start (*vbPanelEnd[5], Gtk::PACK_SHRINK, 0);
+    waveletPanel->pack_start (*vbPanelEnd[3], Gtk::PACK_SHRINK, 0);
 
     transformPanelSW->add (*transformPanel);
     transformPanel->pack_start (*Gtk::manage(new Gtk::HSeparator), Gtk::PACK_SHRINK, 0);
-    transformPanel->pack_start (*vbPanelEnd[3], Gtk::PACK_SHRINK, 4);
+    transformPanel->pack_start (*vbPanelEnd[4], Gtk::PACK_SHRINK, 4);
 
     rawPanelSW->add       (*rawPanel);
     rawPanel->pack_start (*Gtk::manage(new Gtk::HSeparator), Gtk::PACK_SHRINK, 0);
-    rawPanel->pack_start (*vbPanelEnd[4], Gtk::PACK_SHRINK, 0);
+    rawPanel->pack_start (*vbPanelEnd[5], Gtk::PACK_SHRINK, 0);
 
 
 
@@ -282,6 +282,7 @@ ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
     distortion->setLensGeomListener (this);
     crop->setCropPanelListener (this);
     icm->setICMPanelListener (this);
+    wavelet->setWavelListener (this);
 
     toolBar = new ToolBar ();
     toolBar->setToolBarListener(this);
@@ -724,6 +725,14 @@ void ToolPanelCoordinator::saveInputICCReference (Glib::ustring fname, bool appl
 
     if (ipc) {
         ipc->saveInputICCReference (fname, apply_wb);
+    }
+}
+
+void ToolPanelCoordinator::savelabReference (Glib::ustring fname)
+{
+
+    if (ipc) {
+        ipc->savelabReference (fname);
     }
 }
 

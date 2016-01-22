@@ -29,7 +29,7 @@ using namespace rtengine;
 using namespace rtengine::procparams;
 extern Options options;
 
-Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), true, true), walistener(NULL)
+Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), true, true), walistener(NULL), lastlabFilename("")
 {
     std::vector<GradientMilestone> milestones;
     CurveListener::setMulti(true);
@@ -106,6 +106,11 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     expedge->signal_button_release_event().connect_notify( sigc::bind ( sigc::mem_fun(this, &Wavelet::foldAllButMe), expedge) );
     enableEdgeConn = expedge->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Wavelet::enableToggled), expedge) );
 
+    expreti = new MyExpander (true, M("TP_WAVELET_RETI"));
+    expreti->signal_button_release_event().connect_notify( sigc::bind ( sigc::mem_fun(this, &Wavelet::foldAllButMe), expreti) );
+    enableretiConn = expreti->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Wavelet::enableToggled), expreti) );
+    expreti->set_tooltip_text (M("TP_WAVELET_RETI_TOOLTIP"));
+
     expgamut = new MyExpander (false, M("TP_WAVELET_CONTR"));
     expgamut->signal_button_release_event().connect_notify( sigc::bind ( sigc::mem_fun(this, &Wavelet::foldAllButMe), expgamut) );
 
@@ -116,6 +121,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     expmerge = new MyExpander (true, M("TP_WAVELET_MERGE"));
     expmerge->signal_button_release_event().connect_notify( sigc::bind ( sigc::mem_fun(this, &Wavelet::foldAllButMe), expmerge) );
     enableMergeConn = expmerge->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Wavelet::enableToggled), expmerge) );
+    expmerge->set_tooltip_text (M("TP_WAVELET_MERGE_TOOLTIP"));
 
     expfinal = new MyExpander (true, M("TP_WAVELET_FINAL"));
     expfinal->signal_button_release_event().connect_notify( sigc::bind ( sigc::mem_fun(this, &Wavelet::foldAllButMe), expfinal) );
@@ -168,7 +174,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     backgroundLabel = Gtk::manage (new Gtk::Label (M("TP_WAVELET_BACKGROUND") + ":"));
     backgroundHBox->pack_start(*backgroundLabel, Gtk::PACK_SHRINK, 4);
     backgroundHBox->pack_start(*Backmethod);
-    Backmethod->set_tooltip_text (M("TP_WAVELET_BACK_TOOLTIP"));
+    //Backmethod->set_tooltip_text (M("TP_WAVELET_BACK_TOOLTIP"));
 
     levdirMainHBox = Gtk::manage (new Gtk::HBox());
     CLmethod = Gtk::manage (new MyComboBoxText ());
@@ -208,23 +214,6 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     levdirSubHBox->pack_start(*Lmethod);
     levdirSubHBox->pack_start(*Dirmethod, Gtk::PACK_EXPAND_WIDGET, 2); // same, but 2 not 4?
 
-    usharpHBox = Gtk::manage (new Gtk::HBox());
-    usharpLabel = Gtk::manage (new Gtk::Label (M("TP_WAVELET_USHARP") + ":"));
-    //tilesizeLabel->set_alignment(Gtk::ALIGN_START);
-    usharpmethod = Gtk::manage (new MyComboBoxText ());
-    usharpmethod->append_text (M("TP_WAVELET_USHARNONE"));
-    usharpmethod->append_text (M("TP_WAVELET_USHARORIG"));
-    usharpmethod->append_text (M("TP_WAVELET_USHARWAVE"));
-    usharpmethodconn = usharpmethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::usharpmethodChanged) );
-    usharpmethod->set_tooltip_text (M("TP_WAVELET_USHARP_TOOLTIP"));
-    usharpHBox->pack_start(*usharpLabel, Gtk::PACK_SHRINK, 4);
-    usharpHBox->pack_start(*usharpmethod);
-
-    mergeL  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEL"), -50, 100, 1, 0));
-    mergeL->setAdjusterListener (this);
-    mergeC  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEC"), -50, 100, 1, 0));
-    mergeC->setAdjusterListener (this);
-
 
     settingsVBox->pack_start(*strength);
     settingsVBox->pack_start(*thres);
@@ -233,13 +222,6 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     settingsVBox->pack_start(*backgroundHBox);
     settingsVBox->pack_start(*levdirMainHBox);
     settingsVBox->pack_start(*levdirSubHBox);
-    settingsVBox->pack_start(*usharpHBox);
-    settingsVBox->pack_start(*mergeL);
-    settingsVBox->pack_start(*mergeC);
-
-
-    nextmergeL = mergeL->getValue();
-    nextmergeC = mergeC->getValue();
 
 // Contrast
     Gtk::VBox * levBox = Gtk::manage (new Gtk::VBox());
@@ -472,9 +454,18 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     noiseBox->pack_start( *level3noise, Gtk::PACK_SHRINK, 0);
 
 // Edge Sharpness
+
+    Glib::ustring titleLabel = (M("TP_WAVELET_EDSH"));
+    labedges = Gtk::manage (new Gtk::Label (M("TP_WAVELET_EDSH")));
+    labedges->set_alignment(Gtk::ALIGN_START);
+    labedges->set_markup(Glib::ustring("<b>") + escapeHtmlChars(titleLabel) + Glib::ustring("</b>"));
+    labedges->set_tooltip_text (M("TP_WAVELET_EDSH_TOOLTIP"));
+
     Gtk::VBox * edgBox = Gtk::manage (new Gtk::VBox());
     edgBox->set_border_width(4);
     edgBox->set_spacing(2);
+
+    edgBox->pack_start (*labedges, Gtk::PACK_SHRINK, 0);
 
     edgval = Gtk::manage ( new Adjuster (M("TP_WAVELET_EDVAL"), 0, 100, 1, 0) );
     edgval->setAdjusterListener(this);
@@ -614,6 +605,140 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     ctboxES->pack_start(*ctboxNP);
 
     edgBox->pack_start(*ctboxES);
+
+    Gtk::HSeparator *separatoredge = Gtk::manage (new Gtk::HSeparator());
+    edgBox->pack_start(*separatoredge, Gtk::PACK_SHRINK, 2);
+
+    labclari = Gtk::manage (new Gtk::Label (M("TP_WAVELET_CLAR")));
+    Glib::ustring titleLabel2 = (M("TP_WAVELET_CLAR"));
+    labclari->set_alignment(Gtk::ALIGN_START);
+    labclari->set_markup(Glib::ustring("<b>") + escapeHtmlChars(titleLabel2) + Glib::ustring("</b>"));
+    labclari->set_tooltip_text (M("TP_WAVELET_CLARI_TOOLTIP"));
+
+    usharpHBox = Gtk::manage (new Gtk::HBox());
+    usharpLabel = Gtk::manage (new Gtk::Label (M("TP_WAVELET_USHARP") + ":"));
+
+    ushamethod = Gtk::manage (new MyComboBoxText ());
+    ushamethod->append_text (M("TP_WAVELET_USH"));
+    ushamethod->append_text (M("TP_WAVELET_SHA"));
+    ushamethod->append_text (M("TP_WAVELET_CLA"));
+    ushamethodconn = ushamethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::ushamethodChanged) );
+    ushamethod->set_tooltip_text (M("TP_WAVELET_USH_TOOLTIP"));
+
+    usharpmethod = Gtk::manage (new MyComboBoxText ());
+    usharpmethod->append_text (M("TP_WAVELET_USHARORIG"));
+    usharpmethod->append_text (M("TP_WAVELET_USHARWAVE"));
+    usharpmethodconn = usharpmethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::usharpmethodChanged) );
+    usharpmethod->set_tooltip_text (M("TP_WAVELET_USHARP_TOOLTIP"));
+
+
+    usharpHBox->pack_start(*usharpLabel, Gtk::PACK_SHRINK, 0);
+    usharpHBox->pack_start(*ushamethod);
+    usharpHBox->pack_start(*usharpmethod);
+
+    mergeL  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEL"), -50, 100, 1, 40));
+    mergeL->setAdjusterListener (this);
+    mergeC  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEC"), -50, 100, 1, 20));
+    mergeC->setAdjusterListener (this);
+    edgBox->pack_start (*labclari, Gtk::PACK_SHRINK, 0);
+    edgBox->pack_start(*usharpHBox);
+    edgBox->pack_start(*mergeL);
+    edgBox->pack_start(*mergeC);
+    nextmergeL = mergeL->getValue();
+    nextmergeC = mergeC->getValue();
+
+//Retinex in Wavelet
+    Gtk::VBox * retiBox = Gtk::manage (new Gtk::VBox());
+    retiBox->set_border_width(4);
+    retiBox->set_spacing(2);
+
+    dhbox = Gtk::manage (new Gtk::HBox ());
+    labmdh = Gtk::manage (new Gtk::Label (M("TP_WAVRETI_METHOD") + ":"));
+    dhbox->pack_start (*labmdh, Gtk::PACK_SHRINK, 1);
+
+    retinexMethod = Gtk::manage (new MyComboBoxText ());
+//   retinexMethod->append_text (M("TP_WAVE_NONE"));
+    retinexMethod->append_text (M("TP_RETINEX_LOW"));
+    retinexMethod->append_text (M("TP_RETINEX_UNIFORM"));
+    retinexMethod->append_text (M("TP_RETINEX_HIGH"));
+    retinexMethod->set_active(0);
+    retinexMethodConn = retinexMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::retinexMethodChanged) );
+    retinexMethod->set_tooltip_markup (M("TP_WAVRETI_METHOD_TOOLTIP"));
+
+    dhboxpro = Gtk::manage (new Gtk::HBox ());
+    labmdhpro = Gtk::manage (new Gtk::Label (M("TP_WAVRETI_METHODPRO") + ":"));
+    dhboxpro->pack_start (*labmdhpro, Gtk::PACK_SHRINK, 1);
+
+    retinexMethodpro = Gtk::manage (new MyComboBoxText ());
+    retinexMethodpro->append_text (M("TP_WAVE_RESIDU"));
+    retinexMethodpro->append_text (M("TP_WAVE_FINA"));
+    retinexMethodpro->set_active(0);
+    retinexMethodproConn = retinexMethodpro->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::retinexMethodproChanged) );
+    retinexMethodpro->set_tooltip_markup (M("TP_WAVRETI_METHODPRO_TOOLTIP"));
+
+
+    mMLabels = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
+    mMLabels->set_tooltip_markup (M("TP_RETINEX_MLABEL_TOOLTIP"));
+
+    transLabels = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
+    transLabels->set_tooltip_markup (M("TP_RETINEX_TLABEL_TOOLTIP"));
+    transLabels2 = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
+
+    gain  = Gtk::manage (new Adjuster (M("TP_WAVELET_GAIN"), 0, 200, 1, 50));
+    gain->setAdjusterListener (this);
+    offs  = Gtk::manage (new Adjuster (M("TP_WAVELET_OFFS"), -10000, 10000, 1, 0));
+    offs->setAdjusterListener (this);
+    str  = Gtk::manage (new Adjuster (M("TP_WAVELET_STR"), 0, 100, 1, 20));
+    str->setAdjusterListener (this);
+    neigh  = Gtk::manage (new Adjuster (M("TP_WAVELET_NEIGH"), 6, 100, 1, 50));
+    neigh->setAdjusterListener (this);
+    vart  = Gtk::manage (new Adjuster (M("TP_WAVELET_VART"), 50, 500, 1, 200));
+    vart->setAdjusterListener (this);
+    limd  = Gtk::manage (new Adjuster (M("TP_WAVELET_LIMD"), 2, 100, 1, 8));
+    limd->setAdjusterListener (this);
+    chrrt  = Gtk::manage (new Adjuster (M("TP_WAVELET_CHRRT"), 0, 100, 1, 0));
+    chrrt->setAdjusterListener (this);
+
+    // <Retinex Transmission curve
+    CCWcurveEditorT = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_RETINEX_TRANSMISSION"));
+    CCWcurveEditorT->setCurveListener (this);
+
+    rtengine::WaveletParams::getDefaultCCWCurveT(defaultCurve);
+    cTshape = static_cast<FlatCurveEditor*>(CCWcurveEditorT->addCurve(CT_Flat, "", NULL, false));
+
+    cTshape->setIdentityValue(0.);
+    cTshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
+    cTshape->setTooltip(M("TP_RETINEX_TRANSMISSION_TOOLTIP"));
+
+    CCWcurveEditorT->curveListComplete();
+    CCWcurveEditorT->show();
+    // -->
+
+    //  retiBox->pack_start(*separatorRT, Gtk::PACK_SHRINK);
+
+    dhbox->pack_start(*retinexMethod);
+    retiBox->pack_start(*dhbox);
+    dhboxpro->pack_start(*retinexMethodpro);
+    retiBox->pack_start(*dhboxpro);
+
+    retiBox->pack_start (*mMLabels);
+    mMLabels->show ();
+
+    retiBox->pack_start (*transLabels);
+    transLabels->show ();
+
+    retiBox->pack_start (*transLabels2);
+    transLabels2->show ();
+
+    retiBox->pack_start(*str);
+    retiBox->pack_start(*chrrt);
+    retiBox->pack_start(*neigh);
+    retiBox->pack_start(*vart);
+    retiBox->pack_start(*gain);
+    retiBox->pack_start(*offs);
+    retiBox->pack_start(*limd);
+    retiBox->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
+
 
 // Gamut
     Gtk::VBox * conBox = Gtk::manage (new Gtk::VBox());
@@ -811,95 +936,6 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     resBox->pack_start(*chanMixerShadowsFrame, Gtk::PACK_SHRINK);
 
 
-    Gtk::HSeparator *separatorRT = Gtk::manage (new  Gtk::HSeparator());
-
-    dhbox = Gtk::manage (new Gtk::HBox ());
-    labmdh = Gtk::manage (new Gtk::Label (M("TP_WAVRETI_METHOD") + ":"));
-    dhbox->pack_start (*labmdh, Gtk::PACK_SHRINK, 1);
-
-    retinexMethod = Gtk::manage (new MyComboBoxText ());
-    retinexMethod->append_text (M("TP_WAVE_NONE"));
-    retinexMethod->append_text (M("TP_RETINEX_LOW"));
-    retinexMethod->append_text (M("TP_RETINEX_UNIFORM"));
-    retinexMethod->append_text (M("TP_RETINEX_HIGH"));
-    retinexMethod->set_active(0);
-    retinexMethodConn = retinexMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::retinexMethodChanged) );
-    retinexMethod->set_tooltip_markup (M("TP_WAVRETI_METHOD_TOOLTIP"));
-
-    dhboxpro = Gtk::manage (new Gtk::HBox ());
-    labmdhpro = Gtk::manage (new Gtk::Label (M("TP_WAVRETI_METHODPRO") + ":"));
-    dhboxpro->pack_start (*labmdhpro, Gtk::PACK_SHRINK, 1);
-
-    retinexMethodpro = Gtk::manage (new MyComboBoxText ());
-    retinexMethodpro->append_text (M("TP_WAVE_RESIDU"));
-    retinexMethodpro->append_text (M("TP_WAVE_FINA"));
-    retinexMethodpro->set_active(0);
-    retinexMethodproConn = retinexMethodpro->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::retinexMethodproChanged) );
-    retinexMethodpro->set_tooltip_markup (M("TP_WAVRETI_METHODPRO_TOOLTIP"));
-
-
-    mMLabels = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
-    mMLabels->set_tooltip_markup (M("TP_RETINEX_MLABEL_TOOLTIP"));
-
-    transLabels = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
-    transLabels->set_tooltip_markup (M("TP_RETINEX_TLABEL_TOOLTIP"));
-    transLabels2 = Gtk::manage(new Gtk::Label("---", Gtk::ALIGN_CENTER));
-
-    gain  = Gtk::manage (new Adjuster (M("TP_WAVELET_GAIN"), 0, 200, 1, 50));
-    gain->setAdjusterListener (this);
-    offs  = Gtk::manage (new Adjuster (M("TP_WAVELET_OFFS"), -10000, 10000, 1, 0));
-    offs->setAdjusterListener (this);
-    str  = Gtk::manage (new Adjuster (M("TP_WAVELET_STR"), 0, 100, 1, 20));
-    str->setAdjusterListener (this);
-    neigh  = Gtk::manage (new Adjuster (M("TP_WAVELET_NEIGH"), 6, 100, 1, 50));
-    neigh->setAdjusterListener (this);
-    vart  = Gtk::manage (new Adjuster (M("TP_WAVELET_VART"), 50, 500, 1, 200));
-    vart->setAdjusterListener (this);
-    limd  = Gtk::manage (new Adjuster (M("TP_WAVELET_LIMD"), 2, 100, 1, 8));
-    limd->setAdjusterListener (this);
-    chrrt  = Gtk::manage (new Adjuster (M("TP_WAVELET_CHRRT"), 0, 100, 1, 0));
-    chrrt->setAdjusterListener (this);
-
-    // <Retinex Transmission curve
-    CCWcurveEditorT = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_RETINEX_TRANSMISSION"));
-    CCWcurveEditorT->setCurveListener (this);
-
-    rtengine::WaveletParams::getDefaultCCWCurveT(defaultCurve);
-    cTshape = static_cast<FlatCurveEditor*>(CCWcurveEditorT->addCurve(CT_Flat, "", NULL, false));
-
-    cTshape->setIdentityValue(0.);
-    cTshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
-    cTshape->setTooltip(M("TP_RETINEX_TRANSMISSION_TOOLTIP"));
-
-    CCWcurveEditorT->curveListComplete();
-    CCWcurveEditorT->show();
-    // -->
-
-    resBox->pack_start(*separatorRT, Gtk::PACK_SHRINK);
-
-    dhbox->pack_start(*retinexMethod);
-    resBox->pack_start(*dhbox);
-    dhboxpro->pack_start(*retinexMethodpro);
-    resBox->pack_start(*dhboxpro);
-
-    resBox->pack_start (*mMLabels);
-    mMLabels->show ();
-
-    resBox->pack_start (*transLabels);
-    transLabels->show ();
-
-    resBox->pack_start (*transLabels2);
-    transLabels2->show ();
-
-    resBox->pack_start(*str);
-    resBox->pack_start(*chrrt);
-    resBox->pack_start(*neigh);
-    resBox->pack_start(*vart);
-    resBox->pack_start(*gain);
-    resBox->pack_start(*offs);
-    resBox->pack_start(*limd);
-    resBox->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
-
     // Reset sliders
     neutrHBox = Gtk::manage (new Gtk::HBox ());
     neutrHBox->set_border_width (2);
@@ -919,6 +955,21 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergeBox->set_border_width(4);
     mergeBox->set_spacing(2);
     oldip = "";
+
+    mg1box = Gtk::manage (new Gtk::HBox ());
+    labmmg1 = Gtk::manage (new Gtk::Label (M("TP_WAVELET_MERG_METHOD") + ":"));
+    mg1box->pack_start (*labmmg1, Gtk::PACK_SHRINK, 1);
+
+    mergMethod = Gtk::manage (new MyComboBoxText ());
+    mergMethod->append_text (M("TP_WAVELET_SAVE_WATER"));
+    mergMethod->append_text (M("TP_WAVELET_SAVE_HDR"));
+    mergMethod->append_text (M("TP_WAVELET_LOAD"));
+    mergMethod->set_active(0);
+    mergMethodConn = mergMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergMethodChanged) );
+    mergMethod->set_tooltip_markup (M("TP_WAVELET_VIEW_TOOLTIP"));
+    mg1box->pack_start(*mergMethod);
+    mergeBox->pack_start(*mg1box);
+
 
     hbin = Gtk::manage(new Gtk::HBox());
     hbin->set_spacing(2);
@@ -957,7 +1008,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergevMethod->append_text (M("TP_WAVELET_VIEW_SAVE"));
     mergevMethod->set_active(0);
     mergevMethodConn = mergevMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergevMethodChanged) );
-    mergevMethod->set_tooltip_markup (M("TP_WAVELET_VIEW_TOOLTIP"));
+    mergevMethod->set_tooltip_markup (M("TP_WAVELET_VIEW2_TOOLTIP"));
     mgbox->pack_start(*mergevMethod);
     mergeBox->pack_start(*mgbox);
 
@@ -972,15 +1023,25 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     blendc->set_tooltip_text (M("TP_WAVELET_BLENDC_TOOLTIP"));
     mergeBox->pack_start(*blendc);
 
-    balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 0));
+    balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 50));
     balanhig->setAdjusterListener (this);
     balanhig->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
     mergeBox->pack_start(*balanhig);
 
-    balanleft  = Gtk::manage (new Adjuster (M("TP_WAVELET_HORIZSH"), 0, 100, 1, 0));
+    balanleft  = Gtk::manage (new Adjuster (M("TP_WAVELET_HORIZSH"), 0, 100, 1, 50));
     balanleft->setAdjusterListener (this);
     balanleft->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
     mergeBox->pack_start(*balanleft);
+
+    savelab = Gtk::manage (new Gtk::Button (M("TP_WAVELET_SAVELAB")));
+    savelab->set_image (*Gtk::manage (new RTImage ("gtk-save-large.png")));
+    savelab->set_tooltip_markup (M("TP_WAVELET_SAVELAB_TOOLTIP"));
+    mergeBox->pack_start(*savelab);
+//   ipc = ipDialog->signal_selection_changed().connect( sigc::mem_fun(*this, &Wavelet::ipSelectionChanged) );
+
+    savelab->signal_pressed().connect( sigc::mem_fun(*this, &Wavelet::savelabPressed) );
+
+
 
 // Final Touchup
     Gtk::VBox * ctboxBA = Gtk::manage (new Gtk::VBox());
@@ -1104,6 +1165,9 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     expedge->add(*edgBox);
     pack_start (*expedge);
+
+    expreti->add(*retiBox);
+    pack_start (*expreti);
 
     expgamut->add(*conBox);
     pack_start (*expgamut);
@@ -1298,6 +1362,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     retinexMethodConn.block(true);
     retinexMethodproConn.block(true);
     usharpmethodconn.block(true);
+    ushamethodconn.block(true);
     daubcoeffmethodconn.block(true);
     Dirmethodconn.block(true);
     CHmethodconn.block(true);
@@ -1318,6 +1383,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableToningConn.block(true);
     enableMergeConn.block(true);
     mergevMethodConn.block(true);
+    mergMethodConn.block(true);
 
     /*****************************************************************************************************
      *
@@ -1376,6 +1442,14 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         NPmethod->set_active (1);
     } else if (pp->wavelet.NPmethod == "high") {
         NPmethod->set_active (2);
+    }
+
+    if (pp->wavelet.mergMethod == "savwat") {
+        mergMethod->set_active (0);
+    } else if (pp->wavelet.mergMethod == "savhdr") {
+        mergMethod->set_active (1);
+    } else if (pp->wavelet.mergMethod == "load") {
+        mergMethod->set_active (2);
     }
 
     if (pp->wavelet.mergevMethod == "curr") {
@@ -1458,23 +1532,30 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         Dirmethod->set_active (3);
     }
 
-    //usharpmethod
-    if (pp->wavelet.usharpmethod == "none") {
-        usharpmethod->set_active (0);
-    } else if (pp->wavelet.usharpmethod == "orig") {
-        usharpmethod->set_active (1);
-    } else if (pp->wavelet.usharpmethod == "wave") {
-        usharpmethod->set_active (2);
+    //ushamethod
+    if (pp->wavelet.ushamethod == "none") {
+        ushamethod->set_active (0);
+    } else if (pp->wavelet.ushamethod == "sharp") {
+        ushamethod->set_active (1);
+    } else if (pp->wavelet.ushamethod == "clari") {
+        ushamethod->set_active (2);
     }
 
-    if (pp->wavelet.retinexMethod == "none") {
+    //usharpmethod
+    if (pp->wavelet.usharpmethod == "orig") {
+        usharpmethod->set_active (0);
+    } else if (pp->wavelet.usharpmethod == "wave") {
+        usharpmethod->set_active (1);
+    }
+
+    if (pp->wavelet.retinexMethod == "low") {
         retinexMethod->set_active (0);
-    } else if (pp->wavelet.retinexMethod == "low") {
-        retinexMethod->set_active (1);
     } else if (pp->wavelet.retinexMethod == "uni") {
-        retinexMethod->set_active (2);
+        retinexMethod->set_active (1);
     } else if (pp->wavelet.retinexMethod == "high") {
-        retinexMethod->set_active (3);
+        retinexMethod->set_active (2);
+//    } else if (pp->wavelet.retinexMethod == "high") {
+//        retinexMethod->set_active (3);
     }
 
     if (pp->wavelet.retinexMethodpro == "resid") {
@@ -1499,6 +1580,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     expcontrast->setEnabled (pp->wavelet.expcontrast);
     expchroma->setEnabled (pp->wavelet.expchroma);
     expedge->setEnabled (pp->wavelet.expedge);
+    expreti->setEnabled (pp->wavelet.expreti);
     expresid->setEnabled (pp->wavelet.expresid);
     expmerge->setEnabled (pp->wavelet.expmerge);
     expfinal->setEnabled (pp->wavelet.expfinal);
@@ -1636,6 +1718,10 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
             usharpmethod->set_active_text(M("GENERAL_UNCHANGED"));
         }
 
+        if (!pedited->wavelet.ushamethod) {
+            ushamethod->set_active_text(M("GENERAL_UNCHANGED"));
+        }
+
         if (!pedited->wavelet.retinexMethod) {
             retinexMethod->set_active_text(M("GENERAL_UNCHANGED"));
         }
@@ -1690,6 +1776,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         expcontrast->set_inconsistent   (!pedited->wavelet.expcontrast);
         expchroma->set_inconsistent   (!pedited->wavelet.expchroma);
         expedge->set_inconsistent   (!pedited->wavelet.expedge);
+        expreti->set_inconsistent   (!pedited->wavelet.expreti);
         expresid->set_inconsistent   (!pedited->wavelet.expresid);
         expmerge->set_inconsistent   (!pedited->wavelet.expmerge);
         expfinal->set_inconsistent   (!pedited->wavelet.expfinal);
@@ -1831,6 +1918,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         BAmethodUpdateUI();
         TMmethodUpdateUI();
         //BackmethodUpdateUI();
+        CLmethodChanged();
         CLmethodUpdateUI();
         lipstUpdateUI ();
         //TilesmethodUpdateUI();
@@ -1843,6 +1931,9 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         retinexMethodChanged ();
         retinexMethodproChanged ();
         mergevMethodChanged ();
+        mergMethodChanged ();
+        ushamethodChanged ();
+        usharpmethodChanged ();
 
         if(z == 9) {
             sup->show();
@@ -1862,6 +1953,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     Backmethodconn.block(false);
     Tilesmethodconn.block(false);
     usharpmethodconn.block(false);
+    ushamethodconn.block(false);
     daubcoeffmethodconn.block(false);
     CHmethodconn.block(false);
     CHSLmethodconn.block(false);
@@ -1883,6 +1975,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     retinexMethodConn.block(false);
     retinexMethodproConn.block(false);
     mergevMethodConn.block(false);
+    mergMethodConn.block(false);
     enableListener ();
 
 }
@@ -1999,6 +2092,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.expcontrast    = expcontrast->getEnabled();
     pp->wavelet.expchroma      = expchroma->getEnabled();
     pp->wavelet.expedge        = expedge->getEnabled();
+    pp->wavelet.expreti        = expreti->getEnabled();
     pp->wavelet.expresid       = expresid->getEnabled();
     pp->wavelet.expmerge       = expmerge->getEnabled();
     pp->wavelet.expfinal       = expfinal->getEnabled();
@@ -2023,6 +2117,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.retinexMethod    = retinexMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.retinexMethodpro    = retinexMethodpro->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergevMethod    = mergevMethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->wavelet.mergMethod    = mergMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.avoid           = !avoid->get_inconsistent();
         pedited->wavelet.tmr             = !tmr->get_inconsistent();
         pedited->wavelet.median          = !median->get_inconsistent();
@@ -2036,6 +2131,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.Backmethod      = Backmethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.Tilesmethod     = Tilesmethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.usharpmethod     = usharpmethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->wavelet.ushamethod     = ushamethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.daubcoeffmethod = daubcoeffmethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.CHmethod        = CHmethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.CHSLmethod      = CHSLmethod->get_active_text() != M("GENERAL_UNCHANGED");
@@ -2114,6 +2210,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.expcontrast     = !expcontrast->get_inconsistent();
         pedited->wavelet.expchroma       = !expchroma->get_inconsistent();
         pedited->wavelet.expedge         = !expedge->get_inconsistent();
+        pedited->wavelet.expreti         = !expreti->get_inconsistent();
         pedited->wavelet.expresid        = !expresid->get_inconsistent();
         pedited->wavelet.expmerge        = !expmerge->get_inconsistent();
         pedited->wavelet.expfinal        = !expfinal->get_inconsistent();
@@ -2136,6 +2233,14 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pp->wavelet.CHmethod = "with";
     } else if (CHmethod->get_active_row_number() == 2) {
         pp->wavelet.CHmethod = "link";
+    }
+
+    if (mergMethod->get_active_row_number() == 0) {
+        pp->wavelet.mergMethod = "savwat";
+    } else if (mergMethod->get_active_row_number() == 1) {
+        pp->wavelet.mergMethod = "savhdr";
+    } else if (mergMethod->get_active_row_number() == 2) {
+        pp->wavelet.mergMethod = "load";
     }
 
     if (mergevMethod->get_active_row_number() == 0) {
@@ -2184,13 +2289,13 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     }
 
     if (retinexMethod->get_active_row_number() == 0) {
-        pp->wavelet.retinexMethod = "none";
-    } else if (retinexMethod->get_active_row_number() == 1) {
         pp->wavelet.retinexMethod = "low";
-    } else if (retinexMethod->get_active_row_number() == 2) {
+    } else if (retinexMethod->get_active_row_number() == 1) {
         pp->wavelet.retinexMethod = "uni";
-    } else if (retinexMethod->get_active_row_number() == 3) {
+    } else if (retinexMethod->get_active_row_number() == 2) {
         pp->wavelet.retinexMethod = "high";
+//   } else if (retinexMethod->get_active_row_number() == 3) {
+//       pp->wavelet.retinexMethod = "high";
     }
 
     if (retinexMethodpro->get_active_row_number() == 0) {
@@ -2264,11 +2369,17 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     }
 
     if (usharpmethod->get_active_row_number() == 0) {
-        pp->wavelet.usharpmethod = "none";
-    } else if (usharpmethod->get_active_row_number() == 1) {
         pp->wavelet.usharpmethod = "orig";
-    } else if (usharpmethod->get_active_row_number() == 2) {
+    } else if (usharpmethod->get_active_row_number() == 1) {
         pp->wavelet.usharpmethod = "wave";
+    }
+
+    if (ushamethod->get_active_row_number() == 0) {
+        pp->wavelet.ushamethod = "none";
+    } else if (ushamethod->get_active_row_number() == 1) {
+        pp->wavelet.ushamethod = "sharp";
+    } else if (ushamethod->get_active_row_number() == 2) {
+        pp->wavelet.ushamethod = "clari";
     }
 
     char lMethod[3]; // one additional char to avoid buffer overrun if someone increases number of levels > 9
@@ -2276,6 +2387,54 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.Lmethod = lMethod;
 }
 
+void Wavelet::mergMethodChanged()
+{
+    if(mergMethod->get_active_row_number() == 0) {
+        blend->hide();
+        blendc->hide();
+        balanhig->hide();
+        balanleft->hide();
+        hbin->hide();
+        savelab->show();
+        mergevMethod->set_active (2);
+        Backmethod->set_active (0);
+        CLmethod->set_active (1);
+        Lmethod->set_active (6);
+        Dirmethod->set_active (3);
+
+    } else if(mergMethod->get_active_row_number() == 1) {
+        blend->hide();
+        blendc->hide();
+        balanhig->hide();
+        balanleft->hide();
+        hbin->hide();
+        savelab->show();
+        mergevMethod->set_active (2);
+        Backmethod->set_active (2);
+        CLmethod->set_active (2);
+        Lmethod->set_active (2);
+        Dirmethod->set_active (3);
+
+    } else if(mergMethod->get_active_row_number() == 2) {
+        blend->show();
+        blendc->show();
+        balanhig->show();
+        balanleft->show();
+        hbin->show();
+        savelab->hide();
+        mergevMethod->set_active (0);
+        Dirmethod->set_active (3);
+        usharpmethod->set_active (0);
+        Backmethod->set_active (1);
+        CLmethod->set_active (3);
+        Lmethod->set_active (3);
+    }
+
+    if (listener) {
+        listener->panelChanged (EvWavmergMethod, mergMethod->get_active_text ());
+    }
+
+}
 
 
 
@@ -2289,39 +2448,8 @@ void Wavelet::mergevMethodChanged()
 
 void Wavelet::retinexMethodChanged()
 {
-    if (retinexMethod->get_active_row_number() == 0) {
-        gain->hide();
-        str->hide();
-        vart->hide();
-        limd->hide();
-        chrrt->hide();
-        neigh->hide();
-        offs->hide();
-        CCWcurveEditorT->hide();
-        mMLabels->hide();
-        transLabels->hide();
-        transLabels2->hide();
-        retinexMethodpro->hide();
-        labmdhpro->hide();
-        labretifin->set_sensitive(false);
-    } else if (retinexMethod->get_active_row_number() != 0) {
-        gain->show();
-        str->show();
-        vart->show();
-        limd->show();
-        chrrt->show();
-        neigh->show();
-        offs->show();
-        CCWcurveEditorT->show();
-        mMLabels->show();
-        transLabels->show();
-        transLabels2->show();
-        retinexMethodpro->show();
-        labmdhpro->show();
-
-        if (retinexMethodpro->get_active_row_number() == 1) {
-            labretifin->set_sensitive(true);
-        }
+    if (retinexMethodpro->get_active_row_number() == 1) {
+        labretifin->set_sensitive(true);
     }
 
     if (listener) {
@@ -2333,7 +2461,7 @@ void Wavelet::retinexMethodproChanged()
 {
     if (retinexMethodpro->get_active_row_number() == 0) {
         labretifin->set_sensitive(false);
-    } else if (retinexMethodpro->get_active_row_number() == 1 && retinexMethod->get_active_row_number() != 0) {
+    } else if (retinexMethodpro->get_active_row_number() == 1 /*&& retinexMethod->get_active_row_number() != 0*/) {
         labretifin->set_sensitive(true);
 
     }
@@ -2880,45 +3008,33 @@ void Wavelet::CLmethodUpdateUI()
 {
 
     if (!batchMode) {
+        usharpmethod->set_sensitive(true);
+        mergeL->setValue (nextmergeL);
+        mergeC->setValue (nextmergeC);
+        mergeL->set_sensitive(true);
+        mergeC->set_sensitive(true);
+
+
         if (CLmethod->get_active_row_number() == 0) {
             CLmethod->set_active (0);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
-            usharpmethod->set_sensitive(true);
-            mergeL->setValue (nextmergeL);
-            mergeC->setValue (nextmergeC);
-            mergeL->set_sensitive(true);
-            mergeC->set_sensitive(true);
+
         } else if (CLmethod->get_active_row_number() == 1) {
             CLmethod->set_active (1);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
-            usharpmethod->set_sensitive(true);
-            mergeL->setValue (nextmergeL);
-            mergeC->setValue (nextmergeC);
-            mergeL->set_sensitive(true);
-            mergeC->set_sensitive(true);
+
         } else if (CLmethod->get_active_row_number() == 2) {
             CLmethod->set_active (2);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
-            usharpmethod->set_sensitive(true);
-            mergeL->set_sensitive(true);
-            mergeC->set_sensitive(true);
-            mergeL->setValue (nextmergeL);
-            mergeC->setValue (nextmergeC);
+
         } else if (CLmethod->get_active_row_number() == 3) {
             CLmethod->set_active (3);
             Lmethod->set_sensitive(false);//false
             Dirmethod->set_sensitive(false);//false
-            usharpmethod->set_sensitive(false);//false
-            nextmergeL = mergeL->getValue();
-            nextmergeC = mergeC->getValue();
-            nextL = mergeL->getValue();
-            //  mergeL->setValue (0);
-            //  mergeC->setValue (0);
-            mergeL->set_sensitive(false);//false
-            mergeC->set_sensitive(false);//false
+
         }
     }
 }
@@ -2950,16 +3066,32 @@ void Wavelet::TilesmethodChanged()
 
 void Wavelet::usharpmethodChanged()
 {
-    if (usharpmethod->get_active_row_number() == 0) {
-        mergeL->hide();
-        mergeC->hide();
-    } else {
-        mergeL->show();
-        mergeC->show();
+    if (listener && (multiImage || getEnabled()) ) {
+        listener->panelChanged (EvWavusharpmet, usharpmethod->get_active_text ());
+    }
+}
+
+void Wavelet::ushamethodChanged()
+{
+    if (ushamethod->get_active_row_number() == 2  && expedge->getEnabled() == true) {
+        Backmethod->set_active (2);
+        CLmethod->set_active (2);
+        Lmethod->set_active (6);
+        Dirmethod->set_active (3);
+    } else if (ushamethod->get_active_row_number() == 1 && expedge->getEnabled() == true) {
+        Backmethod->set_active (0);
+        CLmethod->set_active (1);
+        Lmethod->set_active (2);
+        Dirmethod->set_active (3);
+    } else if (ushamethod->get_active_row_number() == 0 || expedge->getEnabled() == false ) {
+        Backmethod->set_active (1);
+        CLmethod->set_active (3);
+        Lmethod->set_active (3);
+        Dirmethod->set_active (3);
     }
 
     if (listener && (multiImage || getEnabled()) ) {
-        listener->panelChanged (EvWavusharpmet, usharpmethod->get_active_text ());
+        listener->panelChanged (EvWavushamet, ushamethod->get_active_text ());
     }
 }
 
@@ -3025,6 +3157,7 @@ void Wavelet::setBatchMode (bool batchMode)
     Backmethod->append_text (M("GENERAL_UNCHANGED"));
     Tilesmethod->append_text (M("GENERAL_UNCHANGED"));
     usharpmethod->append_text (M("GENERAL_UNCHANGED"));
+    ushamethod->append_text (M("GENERAL_UNCHANGED"));
     daubcoeffmethod->append_text (M("GENERAL_UNCHANGED"));
     CHmethod->append_text (M("GENERAL_UNCHANGED"));
     Medgreinf->append_text (M("GENERAL_UNCHANGED"));
@@ -3036,6 +3169,7 @@ void Wavelet::setBatchMode (bool batchMode)
     HSmethod->append_text (M("GENERAL_UNCHANGED"));
     Dirmethod->append_text (M("GENERAL_UNCHANGED"));
     mergevMethod->append_text (M("GENERAL_UNCHANGED"));
+    mergMethod->append_text (M("GENERAL_UNCHANGED"));
     CCWcurveEditorG->setBatchMode (batchMode);
     CCWcurveEditorT->setBatchMode (batchMode);
     opaCurveEditorG->setBatchMode (batchMode);
@@ -3095,6 +3229,7 @@ void Wavelet::setBatchMode (bool batchMode)
     level1noise->showEditedCB ();
     level2noise->showEditedCB ();
     level3noise->showEditedCB ();
+    removeIfThere (this, savelab);
 
     ToolPanel::setBatchMode (batchMode);
 
@@ -3106,6 +3241,57 @@ void Wavelet::setBatchMode (bool batchMode)
         correctionch[i]->showEditedCB();
     }
 }
+
+void Wavelet::savelabPressed ()
+{
+    if (!walistener) {
+        return;
+    }
+
+    Gtk::FileChooserDialog dialog(M("TP_WAVELET_SAVELAB"), Gtk::FILE_CHOOSER_ACTION_SAVE);
+    bindCurrentFolder (dialog, options.lastProfilingReferenceDir);
+    dialog.set_current_name (lastlabFilename);
+
+    dialog.add_button(Gtk::StockID("gtk-cancel"), Gtk::RESPONSE_CANCEL);
+    dialog.add_button(Gtk::StockID("gtk-save"), Gtk::RESPONSE_OK);
+
+
+    Gtk::FileFilter filter_mer;
+    filter_mer.set_name(M("FILECHOOSER_FILTER_MER"));
+    filter_mer.add_pattern("*.mer");
+    dialog.add_filter(filter_mer);
+
+    dialog.show_all_children();
+
+    bool done = false;
+    //activation watermark or HDR
+    CLmethod->set_active (2);
+    CLmethodUpdateUI() ;
+
+    do {
+        int result = dialog.run();
+
+        if (result != Gtk::RESPONSE_OK) {
+            done = true;
+        } else {
+            std::string fname = dialog.get_filename();
+            Glib::ustring ext = getExtension(fname);
+
+            if (ext != "mer") {
+                fname += ".mer";
+            }
+
+            if (confirmOverwrite(dialog, fname)) {
+                walistener->savelabReference (fname);
+                lastlabFilename = Glib::path_get_basename (fname);
+                done = true;
+            }
+        }
+    } while (!done);
+
+    return;
+}
+
 
 void Wavelet::adjusterUpdateUI (Adjuster* a)
 {
@@ -3564,32 +3750,6 @@ void Wavelet::lipstToggled ()
     }
 }
 
-/*
-void Wavelet::edgreinfToggled () {
-
-    if (batchMode) {
-        if (edgreinf->get_inconsistent()) {
-            edgreinf->set_inconsistent (false);
-            edgreinfConn.block (true);
-            edgreinf->set_active (false);
-            edgreinfConn.block (false);
-        }
-        else if (lastedgreinf)
-            edgreinf->set_inconsistent (true);
-
-        lastedgreinf = edgreinf->get_active ();
-    }
-
-    if (listener) {
-        if (enabled->get_inconsistent ())
-            listener->panelChanged (EvWavedgreinf, M("GENERAL_UNCHANGED"));
-        else if (enabled->get_active ())
-            listener->panelChanged (EvWavedgreinf, M("GENERAL_ENABLED"));
-        else
-            listener->panelChanged (EvWavedgreinf, M("GENERAL_DISABLED"));
-    }
-}
-*/
 void Wavelet::avoidToggled ()
 {
 
@@ -3764,6 +3924,7 @@ void Wavelet::foldAllButMe (GdkEventButton* event, MyExpander *expander)
         exptoning->set_expanded(exptoning == expander);
         expnoise->set_expanded(expnoise == expander);
         expedge->set_expanded(expedge == expander);
+        expreti->set_expanded(expreti == expander);
         expgamut->set_expanded(expgamut == expander);
         expresid->set_expanded(expresid == expander);
         expmerge->set_expanded(expmerge == expander);
@@ -3773,6 +3934,11 @@ void Wavelet::foldAllButMe (GdkEventButton* event, MyExpander *expander)
 
 void Wavelet::enableToggled(MyExpander *expander)
 {
+    if (expander == expedge) {
+        ushamethodChanged();
+    };
+
+
     if (listener) {
         rtengine::ProcEvent event = NUMOFEVENTS;
 
@@ -3786,6 +3952,8 @@ void Wavelet::enableToggled(MyExpander *expander)
             event = EvWavenanoise;
         } else if (expander == expedge) {
             event = EvWavenaedge;
+        } else if (expander == expreti) {
+            event = EvWavenareti;
         } else if (expander == expresid) {
             event = EvWavenares;
         } else if (expander == expmerge) {
@@ -3816,6 +3984,7 @@ void Wavelet::writeOptions(std::vector<int> &tpOpen)
     tpOpen.push_back (exptoning->get_expanded ());
     tpOpen.push_back (expnoise->get_expanded ());
     tpOpen.push_back (expedge->get_expanded ());
+    tpOpen.push_back (expreti->get_expanded ());
     tpOpen.push_back (expgamut->get_expanded ());
     tpOpen.push_back (expresid->get_expanded ());
     tpOpen.push_back (expmerge->get_expanded ());
@@ -3824,17 +3993,18 @@ void Wavelet::writeOptions(std::vector<int> &tpOpen)
 
 void Wavelet::updateToolState(std::vector<int> &tpOpen)
 {
-    if(tpOpen.size() == 10) {
+    if(tpOpen.size() == 11) {
         expsettings->set_expanded(tpOpen.at(0));
         expcontrast->set_expanded(tpOpen.at(1));
         expchroma->set_expanded(tpOpen.at(2));
         exptoning->set_expanded(tpOpen.at(3));
         expnoise->set_expanded(tpOpen.at(4));
         expedge->set_expanded(tpOpen.at(5));
-        expgamut->set_expanded(tpOpen.at(6));
-        expresid->set_expanded(tpOpen.at(7));
-        expmerge->set_expanded(tpOpen.at(8));
-        expfinal->set_expanded(tpOpen.at(9));
+        expreti->set_expanded(tpOpen.at(6));
+        expgamut->set_expanded(tpOpen.at(7));
+        expresid->set_expanded(tpOpen.at(8));
+        expmerge->set_expanded(tpOpen.at(9));
+        expfinal->set_expanded(tpOpen.at(10));
     }
 }
 

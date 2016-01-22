@@ -314,10 +314,13 @@ public:
     {
         dehaListener = adh;
     }
+
     void setWaveletListener  (WaveletListener* awa)
     {
         awavListener = awa;
     }
+
+    void savelabReference (const Glib::ustring& fname);
 
     void saveInputICCReference (const Glib::ustring& fname, bool apply_wb);
 

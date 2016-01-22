@@ -1141,7 +1141,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         Glib::ustring provis;
         float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-        if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+        if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             unshar = new LabImage (fw, fh);
 
             if(WaveParams.usharpmethod == "orig") {
@@ -1161,7 +1161,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         ipf.ip_wavelet(labView, labView, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
-        if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+        if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             float mL = (float) (WaveParams.mergeL / 100.f);
             float mC = (float) (WaveParams.mergeC / 100.f);
             float mL0;

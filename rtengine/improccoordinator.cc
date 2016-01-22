@@ -827,7 +827,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             Glib::ustring provis;
             float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+            if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 unshar = new LabImage (pW, pH);
 
                 if(WaveParams.usharpmethod == "orig") {
@@ -848,7 +848,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             ipf.ip_wavelet(nprevl, nprevl, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
 
-            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+            if(WaveParams.usharpmethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
                 float mL0;
@@ -1361,6 +1361,40 @@ void ImProcCoordinator::getMonitorProfile (Glib::ustring& profile, RenderingInte
 {
     profile = monitorProfile;
     intent = monitorIntent;
+}
+
+void ImProcCoordinator::savelabReference (const Glib::ustring& fname)
+{
+
+    MyMutex::MyLock lock(mProcessing);
+
+    int err;
+
+    if(!params.wavelet.enabled) {
+        // return;
+        params.wavelet.enabled = true;
+    }
+
+    if(!params.wavelet.expmerge) {
+        params.wavelet.expmerge = true;
+    }
+
+    // return;
+    params.wavelet.mergevMethod = "save";
+    params.wavelet.Backmethod = "resid";
+//   params.wavelet.CLmethod = "sup";
+//   pparams.wavelet.Lmethod = "6_";
+    params.wavelet.Dirmethod = "all";
+    params.wavelet.usharpmethod = "none";
+    //openThm->setProcParams (pparams, NULL, EDITOR);
+    params.wavelet.inpute = fname;
+    printf("save file improc=%s\n", fname.c_str());
+
+    // plistener pl;
+
+    rtengine::ProcessingJob* job = rtengine::ProcessingJob::create (getInitialImage(), params);
+    rtengine::IImage16* res = rtengine::processImage (job, err,  0);
+    printf("OK savelab\n");
 }
 
 void ImProcCoordinator::saveInputICCReference (const Glib::ustring& fname, bool apply_wb)

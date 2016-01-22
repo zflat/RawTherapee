@@ -585,6 +585,7 @@ public:
     bool CHmethod;
     bool CHSLmethod;
     bool mergevMethod;
+    bool mergMethod;
     bool EDmethod;
     bool BAmethod;
     bool NPmethod;
@@ -596,6 +597,7 @@ public:
     bool retinexMethodpro;
     bool Tilesmethod;
     bool usharpmethod;
+    bool ushamethod;
     bool daubcoeffmethod;
     bool Dirmethod;
     bool rescon;
@@ -657,6 +659,7 @@ public:
     bool exptoning;
     bool expnoise;
     bool expmerge;
+    bool expreti;
 
 };
 

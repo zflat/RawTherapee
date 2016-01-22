@@ -37,7 +37,9 @@ class WavelListener
 {
 
 public:
+    virtual ~WavelListener() {}
     virtual Glib::ustring GetCurrentImageFilePath() = 0;
+    virtual void savelabReference (Glib::ustring fname) {}
 };
 
 
@@ -50,6 +52,7 @@ protected:
     Glib::RefPtr<Gdk::Pixbuf> srPixbuf;
     CurveEditorGroup* curveEditorG;
     Gtk::Button *mFileReset;
+    Gtk::Button* savelab;
 
 
     CurveEditorGroup* CCWcurveEditorG;
@@ -178,6 +181,8 @@ protected:
     sigc::connection  Tilesmethodconn;
     MyComboBoxText*   usharpmethod;
     sigc::connection  usharpmethodconn;
+    MyComboBoxText*   ushamethod;
+    sigc::connection  ushamethodconn;
     MyComboBoxText*   daubcoeffmethod;
     sigc::connection  daubcoeffmethodconn;
     MyComboBoxText*   Dirmethod;
@@ -209,6 +214,11 @@ protected:
     Gtk::HBox* dhboxpro;
     Gtk::Label* labretifin;
     Gtk::HBox* labretifinbox;
+
+    Gtk::Label* labmmg1;
+    Gtk::HBox* mg1box;
+    MyComboBoxText*   mergMethod;
+    sigc::connection  mergMethodConn;
 
     Gtk::Label* labmmg;
     Gtk::HBox* mgbox;
@@ -244,6 +254,7 @@ protected:
     MyExpander* expchroma;
     MyExpander* expcontrast;
     MyExpander* expedge;
+    MyExpander* expreti;
     MyExpander* expfinal;
     MyExpander* expgamut;
     MyExpander* expnoise;
@@ -263,6 +274,9 @@ protected:
     Gtk::HBox* levdirSubHBox;
     Gtk::HBox* tilesizeHBox;
     Gtk::HBox* usharpHBox;
+    Gtk::Label* labclari;
+    Gtk::Label* labedges;
+
 
     Gtk::HBox* ctboxFI;
     Gtk::HBox* ctboxNP;
@@ -292,7 +306,7 @@ protected:
     WavelListener*  walistener;
 
     sigc::connection enableChromaConn, enableContrastConn, enableEdgeConn, enableFinalConn;
-    sigc::connection enableNoiseConn, enableResidConn, enableToningConn, enableMergeConn;
+    sigc::connection enableNoiseConn, enableResidConn, enableToningConn, enableMergeConn, enableretiConn;
     sigc::connection expConn,  medianConn, avoidConn, tmrConn, medianlevConn, linkedgConn, lipstConn, cbenabConn, neutralconn;
     sigc::connection neutralPressedConn;
     sigc::connection contrastPlusPressedConn;
@@ -343,6 +357,7 @@ public:
     }
     void inputeChanged ();
     void mFile_Reset        ();
+    void savelabPressed ();
 
 
 private:
@@ -355,6 +370,9 @@ private:
         Gtk::Button*        saveRef;
         Glib::ustring lastRefFilename;
     */
+    Glib::ustring lastlabFilename;
+    // sigc::connection   ipc;
+
     Glib::ustring      oldip;
 
     virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
@@ -369,11 +387,13 @@ private:
     void HSmethodChanged ();
     void LmethodChanged ();
     void mergevMethodChanged ();
+    void mergMethodChanged ();
 
     void MedgreinfChanged ();
     void TMmethodChanged ();
     void TilesmethodChanged ();
     void usharpmethodChanged ();
+    void ushamethodChanged ();
     void avoidToggled ();
     void cbenabToggled ();
     void contrastMinusPressed ();

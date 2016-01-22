@@ -418,6 +418,7 @@ void ParamsEdited::set (bool v)
     wavelet.retinexMethod = v;
     wavelet.retinexMethodpro = v;
     wavelet.mergevMethod = v;
+    wavelet.mergMethod = v;
     wavelet.Tilesmethod = v;
     wavelet.mergeL = v;
     wavelet.mergeC = v;
@@ -429,6 +430,7 @@ void ParamsEdited::set (bool v)
     wavelet.str = v;
     wavelet.neigh = v;
     wavelet.usharpmethod = v;
+    wavelet.ushamethod = v;
     wavelet.daubcoeffmethod = v;
     wavelet.CHmethod = v;
     wavelet.CHSLmethod = v;
@@ -454,6 +456,7 @@ void ParamsEdited::set (bool v)
     wavelet.edgesensi = v;
     wavelet.edgeampli = v;
     wavelet.expmerge = v;
+    wavelet.expreti = v;
     wavelet.inpute = v;
     wavelet.chroma = v;
     wavelet.chro = v;
@@ -936,9 +939,11 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.Backmethod = wavelet.Backmethod && p.wavelet.Backmethod == other.wavelet.Backmethod;
         wavelet.Tilesmethod = wavelet.Tilesmethod && p.wavelet.Tilesmethod == other.wavelet.Tilesmethod;
         wavelet.usharpmethod = wavelet.usharpmethod && p.wavelet.usharpmethod == other.wavelet.usharpmethod;
+        wavelet.ushamethod = wavelet.ushamethod && p.wavelet.ushamethod == other.wavelet.ushamethod;
         wavelet.daubcoeffmethod = wavelet.daubcoeffmethod && p.wavelet.daubcoeffmethod == other.wavelet.daubcoeffmethod;
         wavelet.CHmethod = wavelet.CHmethod && p.wavelet.CHmethod == other.wavelet.CHmethod;
         wavelet.mergevMethod = wavelet.mergevMethod && p.wavelet.mergevMethod == other.wavelet.mergevMethod;
+        wavelet.mergMethod = wavelet.mergMethod && p.wavelet.mergMethod == other.wavelet.mergMethod;
         wavelet.CHSLmethod = wavelet.CHSLmethod && p.wavelet.CHSLmethod == other.wavelet.CHSLmethod;
         wavelet.EDmethod = wavelet.EDmethod && p.wavelet.EDmethod == other.wavelet.EDmethod;
         wavelet.NPmethod = wavelet.NPmethod && p.wavelet.NPmethod == other.wavelet.NPmethod;
@@ -1001,6 +1006,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.exptoning = wavelet.exptoning && p.wavelet.exptoning == other.wavelet.exptoning;
         wavelet.expnoise = wavelet.expnoise && p.wavelet.expnoise == other.wavelet.expnoise;
         wavelet.expmerge = wavelet.expmerge && p.wavelet.expmerge == other.wavelet.expmerge;
+        wavelet.expreti = wavelet.expreti && p.wavelet.expreti == other.wavelet.expreti;
 
         for(int i = 0; i < 9; i++) {
             wavelet.c[i] = wavelet.c[i] && p.wavelet.c[i] == other.wavelet.c[i];
@@ -2521,6 +2527,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.retinexMethod        = mods.wavelet.retinexMethod;
     }
 
+    if (wavelet.mergMethod) {
+        toEdit.wavelet.mergMethod        = mods.wavelet.mergMethod;
+    }
+
     if (wavelet.mergevMethod) {
         toEdit.wavelet.mergevMethod        = mods.wavelet.mergevMethod;
     }
@@ -2543,6 +2553,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.usharpmethod) {
         toEdit.wavelet.usharpmethod        = mods.wavelet.usharpmethod;
+    }
+
+    if (wavelet.ushamethod) {
+        toEdit.wavelet.ushamethod        = mods.wavelet.ushamethod;
     }
 
     if (wavelet.daubcoeffmethod) {
@@ -2684,6 +2698,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.expedge) {
         toEdit.wavelet.expedge   = mods.wavelet.expedge;
+    }
+
+    if (wavelet.expreti) {
+        toEdit.wavelet.expreti   = mods.wavelet.expreti;
     }
 
     if (wavelet.expresid) {

@@ -935,6 +935,8 @@ void Crop::update (int todo)
             int W, H, sk;
         } e;
         int disp;
+        int newsizH, newsizW;
+        int deltapix = 0;
 
 
         if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
@@ -952,7 +954,9 @@ void Crop::update (int todo)
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
                 //   printf("DW=%d DH=%d\n", e.W, e.H);
-                mergelabpart = new LabImage(e.W, e.H);
+                newsizH = e.H;
+                newsizW = e.W;
+                mergelabpart = new LabImage(newsizW, newsizH);
 
                 for(int ir = 0; ir < e.H; ir++)
                     for(int jr = 0; jr < e.W; jr++) {
@@ -971,7 +975,7 @@ void Crop::update (int todo)
 
                 mergelab = new LabImage(widIm, heiIm);
                 //   float LT=3328.f; float aT=7936.f; float bT=4864.f;//red
-                float LT = 0.f;
+                float LT = 30000.f;
                 float aT = 0.f;
                 float bT = 0.f; //red
 
@@ -986,8 +990,8 @@ void Crop::update (int todo)
                 //put  datas mergelab inside megelabtotal
                 float percenthig = (float) params.wavelet.balanhig;
                 float percentleft = (float) params.wavelet.balanleft;
-                int Lwa = e.W;
-                int Hwa = e.H;
+                int Lwa = newsizW;
+                int Hwa = newsizH;
 
                 if(Lwa > widIm) {
                     Lwa = widIm;
@@ -1079,7 +1083,7 @@ void Crop::update (int todo)
             Glib::ustring provis;
             float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-            if(WaveParams.usharpmethod != "none" && WaveParams.CLmethod != "all") {
+            if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 unshar = new LabImage (labnCrop->W, labnCrop->H);
 
                 if(WaveParams.usharpmethod == "orig") {
@@ -1103,7 +1107,7 @@ void Crop::update (int todo)
                 parent->awavListener->minmaxChanged(maxCD, minCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
             }
 
-            if(WaveParams.usharpmethod != "none"  && WaveParams.CLmethod != "all") {
+            if(WaveParams.usharpmethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
                 float mL0;

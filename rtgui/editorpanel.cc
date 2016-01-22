@@ -219,7 +219,7 @@ public:
 };
 
 EditorPanel::EditorPanel (FilePanel* filePanel)
-    : realized(false), iHistoryShow(NULL), iHistoryHide(NULL), iTopPanel_1_Show(NULL), iTopPanel_1_Hide(NULL), iRightPanel_1_Show(NULL), iRightPanel_1_Hide(NULL), iBeforeLockON(NULL), iBeforeLockOFF(NULL), beforePreviewHandler(NULL), beforeIarea(NULL), beforeBox(NULL), afterBox(NULL), afterHeaderBox(NULL), parent(NULL), openThm(NULL), ipc(NULL), beforeIpc(NULL), isProcessing(false), catalogPane(NULL), lastRefFilename("")
+    : realized(false), iHistoryShow(NULL), iHistoryHide(NULL), iTopPanel_1_Show(NULL), iTopPanel_1_Hide(NULL), iRightPanel_1_Show(NULL), iRightPanel_1_Hide(NULL), iBeforeLockON(NULL), iBeforeLockOFF(NULL), beforePreviewHandler(NULL), beforeIarea(NULL), beforeBox(NULL), afterBox(NULL), afterHeaderBox(NULL), parent(NULL), openThm(NULL), ipc(NULL), beforeIpc(NULL), isProcessing(false), catalogPane(NULL)
 {
 
     epih = new EditorPanelIdleHelper;
@@ -384,11 +384,6 @@ EditorPanel::EditorPanel (FilePanel* filePanel)
     sendtogimp->add(*sendToEditorButtonImage);
     sendtogimp->set_tooltip_markup(M("MAIN_BUTTON_SENDTOEDITOR_TOOLTIP"));
 
-    Gtk::Image *sendTolabButtonImage = Gtk::manage (new RTImage ("wavelet.png"));
-    sendtolab = Gtk::manage (new Gtk::Button ());
-    sendtolab->add(*sendTolabButtonImage);
-    sendtolab->set_tooltip_markup(M("MAIN_BUTTON_SENDTOLAB_TOOLTIP"));
-
     iops->pack_start (*saveimgas, Gtk::PACK_SHRINK);
 
     if(!simpleEditor) {
@@ -396,7 +391,6 @@ EditorPanel::EditorPanel (FilePanel* filePanel)
     }
 
     iops->pack_start (*sendtogimp, Gtk::PACK_SHRINK);
-    iops->pack_start (*sendtolab, Gtk::PACK_SHRINK);
 
     // Status box
     statusBox = Gtk::manage (new Gtk::HBox ());
@@ -536,7 +530,6 @@ EditorPanel::EditorPanel (FilePanel* filePanel)
     saveimgas->signal_pressed().connect( sigc::mem_fun(*this, &EditorPanel::saveAsPressed) );
     queueimg->signal_pressed().connect( sigc::mem_fun(*this, &EditorPanel::queueImgPressed) );
     sendtogimp->signal_pressed().connect( sigc::mem_fun(*this, &EditorPanel::sendToGimpPressed) );
-    sendtolab->signal_pressed().connect( sigc::mem_fun(*this, &EditorPanel::sendTolabPressed) );
 
     if(navPrev) {
         navPrev->signal_pressed().connect( sigc::mem_fun(*this, &EditorPanel::openPreviousEditorImage) );
@@ -1488,7 +1481,6 @@ bool EditorPanel::idle_saveImage (ProgressConnector<rtengine::IImage16*> *pc, Gl
 
         saveimgas->set_sensitive(true);
         sendtogimp->set_sensitive(true);
-        sendtolab->set_sensitive(true);
         isProcessing = false;
 
     }
@@ -1520,7 +1512,6 @@ bool EditorPanel::idle_imageSaved(ProgressConnector<int> *pc, rtengine::IImage16
 
     saveimgas->set_sensitive(true);
     sendtogimp->set_sensitive(true);
-    sendtolab->set_sensitive(true);
 
     parent->setProgressStr("");
     parent->setProgress(0.);
@@ -1632,7 +1623,6 @@ void EditorPanel::saveAsPressed ()
                               sigc::bind(sigc::mem_fun( *this, &EditorPanel::idle_saveImage ), ld, fnameOut, sf ));
                 saveimgas->set_sensitive(false);
                 sendtogimp->set_sensitive(false);
-                sendtolab->set_sensitive(false);
             }
         } else {
             BatchQueueEntry* bqe = createBatchQueueEntry ();
@@ -1666,98 +1656,17 @@ void EditorPanel::sendToGimpPressed ()
         return;
     }
 
+    // develop image
     rtengine::procparams::ProcParams pparams;
     ipc->getParams (&pparams);
-
-    if(pparams.wavelet.enabled && pparams.wavelet.expmerge  && pparams.wavelet.mergevMethod == "save") {
-        return;
-    }
-
-    // develop image
     rtengine::ProcessingJob* job = rtengine::ProcessingJob::create (ipc->getInitialImage(), pparams);
     ProgressConnector<rtengine::IImage16*> *ld = new ProgressConnector<rtengine::IImage16*>();
     ld->startFunc(sigc::bind(sigc::ptr_fun(&rtengine::processImage), job, err, parent->getProgressListener(), options.tunnelMetaData, false ),
                   sigc::bind(sigc::mem_fun( *this, &EditorPanel::idle_sendToGimp ), ld, openThm->getFileName() ));
     saveimgas->set_sensitive(false);
     sendtogimp->set_sensitive(false);
-    sendtolab->set_sensitive(false);
 }
 
-void EditorPanel::sendTolabPressed ()
-{
-    if (!ipc || !openThm) {
-        return;
-    }
-
-    rtengine::procparams::ProcParams pparams;
-    ipc->getParams (&pparams);
-
-    if(!pparams.wavelet.enabled) {
-        return;
-    }
-
-    if(pparams.wavelet.mergevMethod != "save") {
-        return;
-    }
-
-    Gtk::FileChooserDialog dialog(M("TP_WAVELET_SAVELAB"), Gtk::FILE_CHOOSER_ACTION_SAVE);
-    bindCurrentFolder (dialog, options.lastProfilingReferenceDir);
-    dialog.set_current_name (lastRefFilename);
-    dialog.add_button(Gtk::StockID("gtk-cancel"), Gtk::RESPONSE_CANCEL);
-    dialog.add_button(Gtk::StockID("gtk-save"), Gtk::RESPONSE_OK);
-
-    Gtk::FileFilter filter_merg;
-    filter_merg.set_name(M("TP_WAVELET_FILTER_MERGE"));
-    filter_merg.add_pattern("*.dat");
-    filter_merg.add_pattern("*.mer");
-    dialog.add_filter(filter_merg);
-
-    Gtk::FileFilter filter_any;
-    filter_any.set_name(M("FILECHOOSER_FILTER_ANY"));
-    filter_any.add_pattern("*");
-    dialog.add_filter(filter_any);
-
-    dialog.show_all_children();
-    bool done = false;
-//   std::string fname2;// = dialog.get_filename();
-
-    do {
-        int result = dialog.run();
-
-        if (result != Gtk::RESPONSE_OK) {
-            done = true;
-        } else {
-            std::string fname = dialog.get_filename();
-            Glib::ustring ext = getExtension(fname);
-            fname2 = fname;
-
-            if (ext != "mer" && ext != "MER") {
-                fname += ".mer";
-            }
-
-            if (confirmOverwrite(dialog, fname)) {
-                // walistener->saveReference (fname);
-                //EditorPanel::sendToGimpPressed ();
-
-                lastRefFilename = Glib::path_get_basename (fname);
-                done = true;
-            }
-        }
-    } while (!done);
-
-    // develop image
-    //  pparams.wavelet.input=lastRefFilename;
-    pparams.wavelet.inpute = fname2;
-    printf("save file=%s\n", fname2.c_str());
-    rtengine::ProcessingJob* job = rtengine::ProcessingJob::create (ipc->getInitialImage(), pparams);
-    ProgressConnector<rtengine::IImage16*> *ld = new ProgressConnector<rtengine::IImage16*>();
-    ld->startFunc(sigc::bind(sigc::ptr_fun(&rtengine::processImage), job, err, parent->getProgressListener(), options.tunnelMetaData, false ),
-                  sigc::bind(sigc::mem_fun( *this, &EditorPanel::idle_sendToGimp ), ld, openThm->getFileName() ));
-    saveimgas->set_sensitive(false);
-    sendtogimp->set_sensitive(false);
-    sendtolab->set_sensitive(false);
-
-}
 
 void EditorPanel::openPreviousEditorImage()
 {
@@ -1822,54 +1731,6 @@ bool EditorPanel::idle_sendToGimp( ProgressConnector<rtengine::IImage16*> *pc, G
         msgd.run ();
         saveimgas->set_sensitive(true);
         sendtogimp->set_sensitive(true);
-        sendtolab->set_sensitive(true);
-    }
-
-    return false;
-}
-bool EditorPanel::idle_sendTolab( ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname)
-{
-
-    rtengine::IImage16* img = pc->returnValue();
-    delete pc;
-
-    if (img) {
-        // get file name base
-        Glib::ustring shortname = removeExtension (Glib::path_get_basename (fname));
-        Glib::ustring dirname = Glib::get_tmp_dir ();
-        Glib::ustring fname = Glib::build_filename (dirname, shortname);
-
-        SaveFormat sf;
-        sf.format = "tif";
-        sf.tiffBits = 16;
-        sf.tiffUncompressed = true;
-        sf.saveParams = true;
-
-        Glib::ustring fileName = Glib::ustring::compose ("%1.%2", fname, sf.format);
-
-        int tries = 1;
-
-        while (safe_file_test (fileName, Glib::FILE_TEST_EXISTS) && tries < 1000) {
-            fileName = Glib::ustring::compose("%1-%2.%3", fname, tries, sf.format);
-            tries++;
-        }
-
-        if (tries == 1000) {
-            img->free ();
-            return false;
-        }
-
-        ProgressConnector<int> *ld = new ProgressConnector<int>();
-        img->setSaveProgressListener (parent->getProgressListener());
-        ld->startFunc (sigc::bind(sigc::mem_fun(img, &rtengine::IImage16::saveAsTIFF), fileName, sf.tiffBits, sf.tiffUncompressed),
-                       sigc::bind(sigc::mem_fun(*this, &EditorPanel::idle_sentToGimp), ld, img, fileName));
-    } else {
-        Glib::ustring msg_ = Glib::ustring("<b> Error during image processing\n</b>");
-        Gtk::MessageDialog msgd (*parent, msg_, true, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
-        msgd.run ();
-        saveimgas->set_sensitive(true);
-        sendtogimp->set_sensitive(true);
-        sendtolab->set_sensitive(true);
     }
 
     return false;
@@ -1884,117 +1745,6 @@ bool EditorPanel::idle_sentToGimp(ProgressConnector<int> *pc, rtengine::IImage16
     if (!errore) {
         saveimgas->set_sensitive(true);
         sendtogimp->set_sensitive(true);
-        sendtolab->set_sensitive(true);
-        parent->setProgressStr("");
-        parent->setProgress(0.);
-        bool success = false;
-        Glib::ustring cmdLine;
-        Glib::ustring executable;
-
-        // start gimp
-        if (options.editorToSendTo == 1) {
-#ifdef WIN32
-            executable = Glib::build_filename (Glib::build_filename(options.gimpDir, "bin"), "gimp-win-remote");
-            cmdLine = Glib::ustring("\"") + executable + Glib::ustring("\" gimp-2.4.exe ") + Glib::ustring("\"") + filename + Glib::ustring("\"");
-
-            if ( safe_file_test(executable, (Glib::FILE_TEST_EXISTS | Glib::FILE_TEST_IS_EXECUTABLE)) ) {
-                success = safe_spawn_command_line_async (cmdLine);
-            }
-
-#elif defined __APPLE__
-            cmdLine = Glib::ustring("open -a /Applications/GIMP.app \'") + filename + Glib::ustring("\'");
-            success = safe_spawn_command_line_async (cmdLine);
-            std::cout << cmdLine << std::endl;
-#else
-            cmdLine = Glib::ustring("gimp \"") + filename + Glib::ustring("\"");
-            success = safe_spawn_command_line_async (cmdLine);
-            std::cout << cmdLine << std::endl;
-#endif
-
-            if (!success) {
-#ifdef WIN32
-                int ver = 12;
-
-                while (!success && ver) {
-                    executable = Glib::build_filename (Glib::build_filename(options.gimpDir, "bin"), Glib::ustring::compose(Glib::ustring("gimp-2.%1.exe"), ver));
-
-                    if ( safe_file_test(executable, (Glib::FILE_TEST_EXISTS | Glib::FILE_TEST_IS_EXECUTABLE)) ) {
-                        cmdLine = Glib::ustring("\"") + executable + Glib::ustring("\" \"") + filename + Glib::ustring("\"");
-                        success = safe_spawn_command_line_async (cmdLine);
-                    }
-
-                    ver--;
-                }
-
-#elif defined __APPLE__
-                cmdLine = Glib::ustring("open -a /Applications/Gimp.app/Contents/Resources/start \'") + filename + Glib::ustring("\'");
-                success = safe_spawn_command_line_async (cmdLine);
-                std::cout << cmdLine << std::endl;
-#else
-                cmdLine = Glib::ustring("gimp-remote \"") + filename + Glib::ustring("\"");
-                success = safe_spawn_command_line_async (cmdLine);
-                std::cout << cmdLine << std::endl;
-#endif
-            }
-        } else if (options.editorToSendTo == 2) {
-#ifdef WIN32
-            executable = Glib::build_filename(options.psDir, "Photoshop.exe");
-
-            if ( safe_file_test(executable, (Glib::FILE_TEST_EXISTS | Glib::FILE_TEST_IS_EXECUTABLE)) ) {
-                cmdLine = Glib::ustring("\"") + executable + Glib::ustring("\" \"") + filename + Glib::ustring("\"");
-                success = safe_spawn_command_line_async (cmdLine);
-            }
-
-#else
-#ifdef __APPLE__
-            cmdLine = Glib::ustring("open -a \'") + Glib::build_filename(options.psDir, "Photoshop.app\' ")  + Glib::ustring("\'") + filename + Glib::ustring("\'");
-#else
-            cmdLine = Glib::ustring("\"") + Glib::build_filename(options.psDir, "Photoshop.exe") + Glib::ustring("\" \"") + filename + Glib::ustring("\"");
-#endif
-            success = safe_spawn_command_line_async (cmdLine);
-            std::cout << cmdLine << std::endl;
-#endif
-        } else if (options.editorToSendTo == 3) {
-#ifdef WIN32
-
-            if ( safe_file_test(options.customEditorProg, (Glib::FILE_TEST_EXISTS | Glib::FILE_TEST_IS_EXECUTABLE)) ) {
-                cmdLine = Glib::ustring("\"") + options.customEditorProg + Glib::ustring("\" \"") + filename + Glib::ustring("\"");
-                success = safe_spawn_command_line_async (cmdLine);
-            }
-
-#else
-#ifdef __APPLE__
-            cmdLine = options.customEditorProg + Glib::ustring(" \"") + filename + Glib::ustring("\"");
-#else
-            cmdLine = Glib::ustring("\"") + options.customEditorProg + Glib::ustring("\" \"") + filename + Glib::ustring("\"");
-#endif
-            success = safe_spawn_command_line_async (cmdLine);
-            std::cout << cmdLine << std::endl;
-#endif
-        }
-
-        if (!success) {
-            Gtk::MessageDialog* msgd = new Gtk::MessageDialog (*parent, M("MAIN_MSG_CANNOTSTARTEDITOR"), false, Gtk::MESSAGE_ERROR, Gtk::BUTTONS_OK, true);
-            msgd->set_secondary_text (M("MAIN_MSG_CANNOTSTARTEDITOR_SECONDARY"));
-            msgd->set_title (M("MAIN_BUTTON_SENDTOEDITOR"));
-            msgd->run ();
-            delete msgd;
-        }
-
-    }
-
-    return false;
-}
-bool EditorPanel::idle_sentTolab(ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring filename)
-{
-    img->free ();
-    int errore = pc->returnValue();
-    delete pc;
-
-    if (!errore) {
-        saveimgas->set_sensitive(true);
-        sendtogimp->set_sensitive(true);
-        sendtolab->set_sensitive(true);
         parent->setProgressStr("");
         parent->setProgress(0.);
         bool success = false;

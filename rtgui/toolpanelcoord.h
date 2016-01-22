@@ -92,6 +92,7 @@ class ToolPanelCoordinator :    public ToolPanelListener,
     public SpotWBListener,
     public CropPanelListener,
     public ICMPanelListener,
+    public WavelListener,
     public ImageAreaToolListener
 {
 
@@ -285,6 +286,8 @@ public:
 
     // icmpanellistener interface
     void saveInputICCReference (Glib::ustring fname, bool apply_wb);
+
+    void savelabReference (Glib::ustring fname);
 
     // imageareatoollistener interface
     void spotWBselected (int x, int y, Thumbnail* thm = NULL);

@@ -1047,15 +1047,18 @@ public:
     bool exptoning;
     bool expnoise;
     bool expmerge;
+    bool expreti;
 
     Glib::ustring Lmethod;
     Glib::ustring CLmethod;
+    Glib::ustring mergMethod;
     Glib::ustring mergevMethod;
     Glib::ustring retinexMethod;
     Glib::ustring retinexMethodpro;
     Glib::ustring Backmethod;
     Glib::ustring Tilesmethod;
     Glib::ustring usharpmethod;
+    Glib::ustring ushamethod;
     Glib::ustring daubcoeffmethod;
     Glib::ustring CHmethod;
     Glib::ustring Medgreinf;
