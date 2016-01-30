@@ -3269,7 +3269,6 @@ void Wavelet::ushamethodChanged()
         Lmethod->set_active (6);
         Lmethod->set_sensitive(true);
         Dirmethod->set_sensitive(true);
-
         Dirmethod->set_active (3);
     } else if (ushamethod->get_active_row_number() == 1 && expedge->getEnabled() == true) {
         Backmethod->set_active (0);
@@ -3278,7 +3277,13 @@ void Wavelet::ushamethodChanged()
         Dirmethod->set_active (3);
         Lmethod->set_sensitive(true);
         Dirmethod->set_sensitive(true);
-
+    } else if (ushamethod->get_active_row_number() == 0 || expedge->getEnabled() == false) {
+        Backmethod->set_active (1);
+        CLmethod->set_active (3);
+        Lmethod->set_active (3);
+        Dirmethod->set_active (3);
+        Lmethod->set_sensitive(true);
+        Dirmethod->set_sensitive(true);
     }
 
     if (listener && (multiImage || getEnabled()) ) {
