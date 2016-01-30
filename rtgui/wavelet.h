@@ -124,6 +124,7 @@ protected:
     Adjuster* vart;
     Adjuster* limd;
     Adjuster* chrrt;
+    Adjuster* scale;
 
     Adjuster* balance;
     Adjuster* iter;
@@ -137,6 +138,7 @@ protected:
     Adjuster* balanhig;
     Adjuster* blend;
     Adjuster* blendc;
+    Adjuster* grad;
 
     ThresholdAdjuster* hueskin;
     ThresholdAdjuster* hueskin2;
@@ -157,6 +159,12 @@ protected:
     Adjuster* edgedetectthr2;
     Adjuster* edgesensi;
     Adjuster* edgeampli;
+    Adjuster* highlights;
+    Adjuster* h_tonalwidth;
+    Adjuster* shadows;
+    Adjuster* s_tonalwidth;
+    Adjuster* radius;
+
     MyComboBoxText*   Lmethod;
     sigc::connection  Lmethodconn;
     MyComboBoxText*   CHmethod;
@@ -225,6 +233,13 @@ protected:
     MyComboBoxText*   mergevMethod;
     sigc::connection  mergevMethodConn;
 
+
+    Gtk::Label* labmmgB;
+    Gtk::HBox* mgBbox;
+
+    MyComboBoxText*   mergBMethod;
+    sigc::connection  mergBMethodConn;
+
     Gtk::Label* mMLabels;
     Gtk::Label* transLabels;
     Gtk::Label* transLabels2;
@@ -262,6 +277,12 @@ protected:
     MyExpander* expmerge;
     MyExpander* expsettings;
     MyExpander* exptoning;
+    MyExpander* expsettingreti;
+    MyExpander* expTCresi;
+    MyExpander* expedg1;
+    MyExpander* expedg2;
+    MyExpander* expedg3;
+
     Gtk::HBox* ctboxCB;
     Gtk::HBox* ctboxCH;
     Gtk::HBox* ctboxED;
@@ -274,8 +295,6 @@ protected:
     Gtk::HBox* levdirSubHBox;
     Gtk::HBox* tilesizeHBox;
     Gtk::HBox* usharpHBox;
-    Gtk::Label* labclari;
-    Gtk::Label* labedges;
 
 
     Gtk::HBox* ctboxFI;
@@ -305,7 +324,7 @@ protected:
     bool israw;
     WavelListener*  walistener;
 
-    sigc::connection enableChromaConn, enableContrastConn, enableEdgeConn, enableFinalConn;
+    sigc::connection enableChromaConn, enableContrastConn, enableEdgeConn, enableEdge3Conn, enableFinalConn, enableTCConn;
     sigc::connection enableNoiseConn, enableResidConn, enableToningConn, enableMergeConn, enableretiConn;
     sigc::connection expConn,  medianConn, avoidConn, tmrConn, medianlevConn, linkedgConn, lipstConn, cbenabConn, neutralconn;
     sigc::connection neutralPressedConn;
@@ -388,6 +407,7 @@ private:
     void LmethodChanged ();
     void mergevMethodChanged ();
     void mergMethodChanged ();
+    void mergBMethodChanged ();
 
     void MedgreinfChanged ();
     void TMmethodChanged ();

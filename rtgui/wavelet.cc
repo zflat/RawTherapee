@@ -454,18 +454,36 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     noiseBox->pack_start( *level3noise, Gtk::PACK_SHRINK, 0);
 
 // Edge Sharpness
+    expedg1 = new MyExpander (false, M("TP_WAVELET_EDG1"));
+    expedg1->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Wavelet::foldAllButMe), expedg1) );
+    expedg1->set_tooltip_text (M("TP_WAVELET_EDSH_TOOLTIP"));
 
-    Glib::ustring titleLabel = (M("TP_WAVELET_EDSH"));
-    labedges = Gtk::manage (new Gtk::Label (M("TP_WAVELET_EDSH")));
-    labedges->set_alignment(Gtk::ALIGN_START);
-    labedges->set_markup(Glib::ustring("<b>") + escapeHtmlChars(titleLabel) + Glib::ustring("</b>"));
-    labedges->set_tooltip_text (M("TP_WAVELET_EDSH_TOOLTIP"));
+    expedg2 = new MyExpander (false, M("TP_WAVELET_EDG2"));
+    expedg2->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Wavelet::foldAllButMe), expedg2) );
+    expedg2->set_tooltip_text (M("TP_WAVELET_CLARI_TOOLTIP"));
+
+    expedg3 = new MyExpander (true, M("TP_WAVELET_EDG3"));
+    expedg3->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Wavelet::foldAllButMe), expedg3) );
+    enableEdge3Conn = expedg3->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Wavelet::enableToggled), expedg3) );
+    expedg3->set_tooltip_text (M("TP_WAVELET_MEDILEV_TOOLTIP"));
+
+    Gtk::VBox * edgBoxM = Gtk::manage (new Gtk::VBox());
+    edgBoxM->set_border_width(1);
+    edgBoxM->set_spacing(1);
+
 
     Gtk::VBox * edgBox = Gtk::manage (new Gtk::VBox());
-    edgBox->set_border_width(4);
-    edgBox->set_spacing(2);
+    edgBox->set_border_width(1);
+    edgBox->set_spacing(1);
 
-    edgBox->pack_start (*labedges, Gtk::PACK_SHRINK, 0);
+    Gtk::VBox * edgBoxdet = Gtk::manage (new Gtk::VBox());
+    edgBoxdet->set_border_width(1);
+    edgBoxdet->set_spacing(1);
+
+    Gtk::VBox * edgBoxS = Gtk::manage (new Gtk::VBox());
+    edgBoxS->set_border_width(1);
+    edgBoxS->set_spacing(1);
+
 
     edgval = Gtk::manage ( new Adjuster (M("TP_WAVELET_EDVAL"), 0, 100, 1, 0) );
     edgval->setAdjusterListener(this);
@@ -538,7 +556,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     medianlev = Gtk::manage (new Gtk::CheckButton (M("TP_WAVELET_MEDILEV")));
     medianlev->set_active (true);
     medianlevConn = medianlev->signal_toggled().connect( sigc::mem_fun(*this, &Wavelet::medianlevToggled) );
-    medianlev->set_tooltip_text (M("TP_WAVELET_MEDILEV_TOOLTIP"));
+//    medianlev->set_tooltip_text (M("TP_WAVELET_MEDILEV_TOOLTIP"));
 
     Gtk::HSeparator *separatored1 = Gtk::manage (new  Gtk::HSeparator());
     edgBox->pack_start(*separatored1, Gtk::PACK_SHRINK, 2);
@@ -546,42 +564,42 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     eddebox = Gtk::manage (new Gtk::HBox ());
 
     edgBox->pack_start (*eddebox);
-    edgBox->pack_start(*medianlev);
+//   edgBoxdet->pack_start(*medianlev);
 
     edgedetect = Gtk::manage (new Adjuster (M("TP_WAVELET_EDGEDETECT"), 0, 100, 1, 90));
     edgedetect->setAdjusterListener (this);
     edgedetect->set_tooltip_text (M("TP_WAVELET_EDGEDETECT_TOOLTIP"));
-    edgBox->pack_start(*edgedetect);
+    edgBoxdet->pack_start(*edgedetect);
 
     edgedetectthr = Gtk::manage (new Adjuster (M("TP_WAVELET_EDGEDETECTTHR"), 0, 100, 1, 20));
     edgedetectthr->setAdjusterListener (this);
     edgedetectthr->set_tooltip_text (M("TP_WAVELET_EDGEDETECTTHR_TOOLTIP"));
-    edgBox->pack_start(*edgedetectthr);
+    edgBoxdet->pack_start(*edgedetectthr);
 
 
     edgedetectthr2 = Gtk::manage (new Adjuster (M("TP_WAVELET_EDGEDETECTTHR2"), -10, 100, 1, 0));
     edgedetectthr2->setAdjusterListener (this);
-    edgBox->pack_start(*edgedetectthr2);
+    edgBoxdet->pack_start(*edgedetectthr2);
 
 
     separatoredge = Gtk::manage (new Gtk::HSeparator());
 
-    edgBox->pack_start(*separatoredge, Gtk::PACK_SHRINK, 2);
+    edgBoxdet->pack_start(*separatoredge, Gtk::PACK_SHRINK, 2);
 
     lipst = Gtk::manage (new Gtk::CheckButton (M("TP_WAVELET_LIPST")));
     lipst->set_active (true);
     lipstConn = lipst->signal_toggled().connect( sigc::mem_fun(*this, &Wavelet::lipstToggled) );
 //  lipst->set_tooltip_text (M("TP_WAVELET_LIPST_TOOLTIP"));
-    edgBox->pack_start(*lipst);
+    edgBoxdet->pack_start(*lipst);
 
     edgesensi = Gtk::manage (new Adjuster (M("TP_WAVELET_EDGESENSI"), 0, 100, 1, 60));
     edgesensi->setAdjusterListener (this);
-    edgBox->pack_start(*edgesensi);
+    edgBoxdet->pack_start(*edgesensi);
 
 
     edgeampli = Gtk::manage (new Adjuster (M("TP_WAVELET_EDGEAMPLI"), 0, 100, 1, 10));
     edgeampli->setAdjusterListener (this);
-    edgBox->pack_start(*edgeampli);
+    edgBoxdet->pack_start(*edgeampli);
 
 
     Gtk::VBox * ctboxES = Gtk::manage (new Gtk::VBox());
@@ -604,16 +622,10 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     ctboxNP->pack_start(*NPmethod);
     ctboxES->pack_start(*ctboxNP);
 
-    edgBox->pack_start(*ctboxES);
+    edgBoxdet->pack_start(*ctboxES);
 
-    Gtk::HSeparator *separatoredge = Gtk::manage (new Gtk::HSeparator());
-    edgBox->pack_start(*separatoredge, Gtk::PACK_SHRINK, 2);
-
-    labclari = Gtk::manage (new Gtk::Label (M("TP_WAVELET_CLAR")));
-    Glib::ustring titleLabel2 = (M("TP_WAVELET_CLAR"));
-    labclari->set_alignment(Gtk::ALIGN_START);
-    labclari->set_markup(Glib::ustring("<b>") + escapeHtmlChars(titleLabel2) + Glib::ustring("</b>"));
-    labclari->set_tooltip_text (M("TP_WAVELET_CLARI_TOOLTIP"));
+    expedg3->add(*edgBoxdet);
+    edgBox->pack_start (*expedg3);
 
     usharpHBox = Gtk::manage (new Gtk::HBox());
     usharpLabel = Gtk::manage (new Gtk::Label (M("TP_WAVELET_USHARP") + ":"));
@@ -640,17 +652,28 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergeL->setAdjusterListener (this);
     mergeC  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEC"), -50, 100, 1, 20));
     mergeC->setAdjusterListener (this);
-    edgBox->pack_start (*labclari, Gtk::PACK_SHRINK, 0);
-    edgBox->pack_start(*usharpHBox);
-    edgBox->pack_start(*mergeL);
-    edgBox->pack_start(*mergeC);
+    edgBoxS->pack_start(*usharpHBox);
+    edgBoxS->pack_start(*mergeL);
+    edgBoxS->pack_start(*mergeC);
     nextmergeL = mergeL->getValue();
     nextmergeC = mergeC->getValue();
+
+    expedg1->add(*edgBox);
+    edgBoxM->pack_start (*expedg1);
+
+    expedg2->add(*edgBoxS);
+    edgBoxM->pack_start (*expedg2);
+
+
 
 //Retinex in Wavelet
     Gtk::VBox * retiBox = Gtk::manage (new Gtk::VBox());
     retiBox->set_border_width(4);
     retiBox->set_spacing(2);
+
+    Gtk::VBox * retiBox2 = Gtk::manage (new Gtk::VBox());
+    retiBox2->set_border_width(1);
+    retiBox2->set_spacing(1);
 
     dhbox = Gtk::manage (new Gtk::HBox ());
     labmdh = Gtk::manage (new Gtk::Label (M("TP_WAVRETI_METHOD") + ":"));
@@ -694,6 +717,12 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     neigh->setAdjusterListener (this);
     vart  = Gtk::manage (new Adjuster (M("TP_WAVELET_VART"), 50, 500, 1, 200));
     vart->setAdjusterListener (this);
+    scale  = Gtk::manage (new Adjuster (M("TP_WAVELET_SCA"), 1, 8, 1, 3));
+    scale->setAdjusterListener (this);
+
+    expsettingreti = new MyExpander (false, M("TP_RETINEX_SETTINGS"));
+    expsettingreti->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Wavelet::foldAllButMe), expsettingreti) );
+
     limd  = Gtk::manage (new Adjuster (M("TP_WAVELET_LIMD"), 2, 100, 1, 8));
     limd->setAdjusterListener (this);
     chrrt  = Gtk::manage (new Adjuster (M("TP_WAVELET_CHRRT"), 0, 100, 1, 0));
@@ -712,9 +741,16 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     CCWcurveEditorT->curveListComplete();
     CCWcurveEditorT->show();
-    // -->
+    Gtk::HSeparator *separatorreti = Gtk::manage (new Gtk::HSeparator());
 
-    //  retiBox->pack_start(*separatorRT, Gtk::PACK_SHRINK);
+    // -->
+    highlights   = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_HIGHLIGHTS"), 0, 100, 1, 0));
+    h_tonalwidth = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_HLTONALW"), 10, 100, 1, 80));
+    shadows      = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_SHADOWS"), 0, 100, 1, 0));
+    s_tonalwidth = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_SHTONALW"), 10, 100, 1, 80));
+    radius = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_RADIUS"), 5, 100, 1, 40));
+
+    // retiBox->pack_start(*separatorRT, Gtk::PACK_SHRINK);
 
     dhbox->pack_start(*retinexMethod);
     retiBox->pack_start(*dhbox);
@@ -734,11 +770,30 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     retiBox->pack_start(*chrrt);
     retiBox->pack_start(*neigh);
     retiBox->pack_start(*vart);
-    retiBox->pack_start(*gain);
-    retiBox->pack_start(*offs);
-    retiBox->pack_start(*limd);
-    retiBox->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
 
+
+    retiBox2->pack_start(*gain);
+    retiBox2->pack_start(*offs);
+    retiBox2->pack_start(*limd);
+    retiBox2->pack_start(*scale);
+    retiBox2->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
+    retiBox2->pack_start(*separatorreti, Gtk::PACK_SHRINK);
+
+    retiBox2->pack_start(*highlights);
+    retiBox2->pack_start(*h_tonalwidth);
+    retiBox2->pack_start(*shadows);
+    retiBox2->pack_start(*s_tonalwidth);
+    retiBox2->pack_start(*radius);
+
+    highlights->setAdjusterListener (this);
+    h_tonalwidth->setAdjusterListener (this);
+    shadows->setAdjusterListener (this);
+    s_tonalwidth->setAdjusterListener (this);
+    radius->setAdjusterListener (this);
+
+
+    expsettingreti->add(*retiBox2);
+    retiBox->pack_start (*expsettingreti);
 
 // Gamut
     Gtk::VBox * conBox = Gtk::manage (new Gtk::VBox());
@@ -782,6 +837,10 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     Gtk::VBox * resBox = Gtk::manage (new Gtk::VBox());
     resBox->set_border_width(4);
     resBox->set_spacing(2);
+
+    Gtk::VBox * resBox2 = Gtk::manage (new Gtk::VBox());
+    resBox2->set_border_width(1);
+    resBox2->set_spacing(1);
 
     rescon  = Gtk::manage (new Adjuster (M("TP_WAVELET_RESCON"), -100, 100, 1, 0));
     rescon->setAdjusterListener (this);
@@ -873,6 +932,11 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     // Toning and Color Balance
     Gtk::HSeparator *separatorCB = Gtk::manage (new  Gtk::HSeparator());
 
+
+    expTCresi = new MyExpander (true, M("TP_WAVELET_TC"));
+    expTCresi->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Wavelet::foldAllButMe), expTCresi) );
+    enableTCConn = expTCresi->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Wavelet::enableToggled), expTCresi) );
+
     Gtk::VBox *chanMixerHLBox = Gtk::manage (new Gtk::VBox());
     Gtk::VBox *chanMixerMidBox = Gtk::manage (new Gtk::VBox());
     Gtk::VBox *chanMixerShadowsBox = Gtk::manage (new Gtk::VBox());
@@ -929,11 +993,11 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     chanMixerHLFrame->add(*chanMixerHLBox);
     chanMixerMidFrame->add(*chanMixerMidBox);
     chanMixerShadowsFrame->add(*chanMixerShadowsBox);
-    resBox->pack_start(*cbenab);
+//    resBox2->pack_start(*cbenab);
 
-    resBox->pack_start(*chanMixerHLFrame, Gtk::PACK_SHRINK);
-    resBox->pack_start(*chanMixerMidFrame, Gtk::PACK_SHRINK);
-    resBox->pack_start(*chanMixerShadowsFrame, Gtk::PACK_SHRINK);
+    resBox2->pack_start(*chanMixerHLFrame, Gtk::PACK_SHRINK);
+    resBox2->pack_start(*chanMixerMidFrame, Gtk::PACK_SHRINK);
+    resBox2->pack_start(*chanMixerShadowsFrame, Gtk::PACK_SHRINK);
 
 
     // Reset sliders
@@ -948,7 +1012,9 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     neutral->show();
     neutrHBox->pack_start (*neutral, Gtk::PACK_EXPAND_WIDGET);
 
-    resBox->pack_start (*neutrHBox);
+    resBox2->pack_start (*neutrHBox);
+    expTCresi->add(*resBox2);
+    resBox->pack_start (*expTCresi);
 
 // Merge files
     Gtk::VBox * mergeBox = Gtk::manage (new Gtk::VBox());
@@ -1004,6 +1070,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     mergevMethod = Gtk::manage (new MyComboBoxText ());
     mergevMethod->append_text (M("TP_WAVELET_VIEW_CURR"));
+    mergevMethod->append_text (M("TP_WAVELET_VIEW_CUNO"));
     mergevMethod->append_text (M("TP_WAVELET_VIEW_PREV"));
     mergevMethod->append_text (M("TP_WAVELET_VIEW_SAVE"));
     mergevMethod->set_active(0);
@@ -1012,16 +1079,34 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mgbox->pack_start(*mergevMethod);
     mergeBox->pack_start(*mgbox);
 
+    mgBbox = Gtk::manage (new Gtk::HBox ());
+    labmmgB = Gtk::manage (new Gtk::Label (M("TP_WAVELET_MERGEB_METHOD") + ":"));
+    mgBbox->pack_start (*labmmgB, Gtk::PACK_SHRINK, 1);
+
+    mergBMethod = Gtk::manage (new MyComboBoxText ());
+    mergBMethod->append_text (M("TP_WAVELET_BLEND_WAT"));
+    mergBMethod->append_text (M("TP_WAVELET_BLEND_HDR1"));
+    mergBMethod->append_text (M("TP_WAVELET_BLEND_HDR2"));
+    mergBMethod->set_active(0);
+    mergBMethodConn = mergBMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergBMethodChanged) );
+    //mergBMethod->set_tooltip_markup (M("TP_WAVELET_MERGEB_TOOLTIP"));
+    mgBbox->pack_start(*mergBMethod);
+    mergeBox->pack_start(*mgBbox);
 
     blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 50));
     blend->setAdjusterListener (this);
     blend->set_tooltip_text (M("TP_WAVELET_BLEND_TOOLTIP"));
     mergeBox->pack_start(*blend);
 
-    blendc  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLENDC"), -100, 100, 1, 0));
+    blendc  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLENDC"), -100, 100, 1, 30));
     blendc->setAdjusterListener (this);
     blendc->set_tooltip_text (M("TP_WAVELET_BLENDC_TOOLTIP"));
     mergeBox->pack_start(*blendc);
+
+    grad  = Gtk::manage (new Adjuster (M("TP_WAVELET_GRAD"), -20, 100, 1, 20));
+    grad->setAdjusterListener (this);
+    grad->set_tooltip_text (M("TP_WAVELET_GRAD_TOOLTIP"));
+    mergeBox->pack_start(*grad);
 
     balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 50));
     balanhig->setAdjusterListener (this);
@@ -1163,7 +1248,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     expnoise->add(*noiseBox);
     pack_start (*expnoise);
 
-    expedge->add(*edgBox);
+    expedge->add(*edgBoxM);
     pack_start (*expedge);
 
     expreti->add(*retiBox);
@@ -1377,13 +1462,16 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableChromaConn.block(true);
     enableContrastConn.block(true);
     enableEdgeConn.block(true);
+    enableEdge3Conn.block(true);
     enableFinalConn.block(true);
     enableNoiseConn.block(true);
     enableResidConn.block(true);
+    enableTCConn.block(true);
     enableToningConn.block(true);
     enableMergeConn.block(true);
     mergevMethodConn.block(true);
     mergMethodConn.block(true);
+    mergBMethodConn.block(true);
 
     /*****************************************************************************************************
      *
@@ -1454,10 +1542,20 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     if (pp->wavelet.mergevMethod == "curr") {
         mergevMethod->set_active (0);
-    } else if (pp->wavelet.mergevMethod == "first") {
+    } else if (pp->wavelet.mergevMethod == "cuno") {
         mergevMethod->set_active (1);
-    } else if (pp->wavelet.mergevMethod == "save") {
+    } else if (pp->wavelet.mergevMethod == "first") {
         mergevMethod->set_active (2);
+    } else if (pp->wavelet.mergevMethod == "save") {
+        mergevMethod->set_active (3);
+    }
+
+    if (pp->wavelet.mergBMethod == "water") {
+        mergBMethod->set_active (0);
+    } else if (pp->wavelet.mergBMethod == "hdr1") {
+        mergBMethod->set_active (1);
+    } else if (pp->wavelet.mergBMethod == "hdr2") {
+        mergBMethod->set_active (2);
     }
 
     //BAmethod->set_active (0);
@@ -1580,8 +1678,10 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     expcontrast->setEnabled (pp->wavelet.expcontrast);
     expchroma->setEnabled (pp->wavelet.expchroma);
     expedge->setEnabled (pp->wavelet.expedge);
+    expedg3->setEnabled (pp->wavelet.expedg3);
     expreti->setEnabled (pp->wavelet.expreti);
     expresid->setEnabled (pp->wavelet.expresid);
+    expTCresi->setEnabled (pp->wavelet.expTCresi);
     expmerge->setEnabled (pp->wavelet.expmerge);
     expfinal->setEnabled (pp->wavelet.expfinal);
     exptoning->setEnabled (pp->wavelet.exptoning);
@@ -1668,6 +1768,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     balance->setValue(pp->wavelet.balance);
     balanleft->setValue(pp->wavelet.balanleft);
     balanhig->setValue(pp->wavelet.balanhig);
+    grad->setValue(pp->wavelet.grad);
     blend->setValue(pp->wavelet.blend);
     blendc->setValue(pp->wavelet.blendc);
     iter->setValue(pp->wavelet.iter);
@@ -1681,7 +1782,13 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     neigh->setValue(pp->wavelet.neigh);
     vart->setValue(pp->wavelet.vart);
     limd->setValue(pp->wavelet.limd);
+    scale->setValue(pp->wavelet.scale);
     chrrt->setValue(pp->wavelet.chrrt);
+    radius->setValue        (pp->wavelet.radius);
+    highlights->setValue    (pp->wavelet.highlights);
+    h_tonalwidth->setValue  (pp->wavelet.htonalwidth);
+    shadows->setValue       (pp->wavelet.shadows);
+    s_tonalwidth->setValue  (pp->wavelet.stonalwidth);
 
     for (int i = 0; i < 9; i++) {
         correction[i]->setValue(pp->wavelet.c[i]);
@@ -1776,8 +1883,10 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         expcontrast->set_inconsistent   (!pedited->wavelet.expcontrast);
         expchroma->set_inconsistent   (!pedited->wavelet.expchroma);
         expedge->set_inconsistent   (!pedited->wavelet.expedge);
+        expedg3->set_inconsistent   (!pedited->wavelet.expedg3);
         expreti->set_inconsistent   (!pedited->wavelet.expreti);
         expresid->set_inconsistent   (!pedited->wavelet.expresid);
+        expTCresi->set_inconsistent   (!pedited->wavelet.expTCresi);
         expmerge->set_inconsistent   (!pedited->wavelet.expmerge);
         expfinal->set_inconsistent   (!pedited->wavelet.expfinal);
         exptoning->set_inconsistent   (!pedited->wavelet.exptoning);
@@ -1803,6 +1912,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         balance->setEditedState (pedited->wavelet.balance ? Edited : UnEdited);
         balanleft->setEditedState (pedited->wavelet.balanleft ? Edited : UnEdited);
         balanhig->setEditedState (pedited->wavelet.balanhig ? Edited : UnEdited);
+        grad->setEditedState (pedited->wavelet.grad ? Edited : UnEdited);
         blend->setEditedState (pedited->wavelet.blend ? Edited : UnEdited);
         blendc->setEditedState (pedited->wavelet.blendc ? Edited : UnEdited);
         iter->setEditedState (pedited->wavelet.iter ? Edited : UnEdited);
@@ -1855,7 +1965,13 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         neigh->setEditedState(pedited->wavelet.neigh ? Edited : UnEdited);
         vart->setEditedState(pedited->wavelet.vart ? Edited : UnEdited);
         limd->setEditedState(pedited->wavelet.limd ? Edited : UnEdited);
+        scale->setEditedState(pedited->wavelet.scale ? Edited : UnEdited);
         chrrt->setEditedState(pedited->wavelet.chrrt ? Edited : UnEdited);
+        radius->setEditedState       (pedited->wavelet.radius ? Edited : UnEdited);
+        highlights->setEditedState   (pedited->wavelet.highlights ? Edited : UnEdited);
+        h_tonalwidth->setEditedState (pedited->wavelet.htonalwidth ? Edited : UnEdited);
+        shadows->setEditedState      (pedited->wavelet.shadows ? Edited : UnEdited);
+        s_tonalwidth->setEditedState (pedited->wavelet.stonalwidth ? Edited : UnEdited);
 
         for(int i = 0; i < 9; i++) {
             correction[i]->setEditedState (pedited->wavelet.c[i] ? Edited : UnEdited);
@@ -1926,12 +2042,13 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         //DirmethodUpdateUI();
         //LmethodUpdateUI();
         enabledUpdateUI ();
-        medianlevUpdateUI ();
-        cbenabUpdateUI ();
+        // medianlevUpdateUI ();
+        // cbenabUpdateUI ();
         retinexMethodChanged ();
         retinexMethodproChanged ();
         mergevMethodChanged ();
         mergMethodChanged ();
+        mergBMethodChanged ();
         ushamethodChanged ();
         usharpmethodChanged ();
 
@@ -1967,15 +2084,18 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableChromaConn.block(false);
     enableContrastConn.block(false);
     enableEdgeConn.block(false);
+    enableEdge3Conn.block(false);
     enableFinalConn.block(false);
     enableNoiseConn.block(false);
     enableResidConn.block(false);
+    enableTCConn.block(false);
     enableMergeConn.block(false);
     enableToningConn.block(false);
     retinexMethodConn.block(false);
     retinexMethodproConn.block(false);
     mergevMethodConn.block(false);
     mergMethodConn.block(false);
+    mergBMethodConn.block(false);
     enableListener ();
 
 }
@@ -2069,6 +2189,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.balance        = (int) balance->getValue();
     pp->wavelet.balanleft        = (int) balanleft->getValue();
     pp->wavelet.balanhig        = (int) balanhig->getValue();
+    pp->wavelet.grad        = grad->getValue();
     pp->wavelet.blend        = (int) blend->getValue();
     pp->wavelet.blendc        = (int) blendc->getValue();
     pp->wavelet.mergeL       = (int) mergeL->getValue();
@@ -2081,7 +2202,13 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.neigh       = neigh->getValue();
     pp->wavelet.vart       = vart->getValue();
     pp->wavelet.limd       = limd->getValue();
+    pp->wavelet.scale       = (int)scale->getValue();
     pp->wavelet.chrrt       = chrrt->getValue();
+    pp->wavelet.radius        = (int)radius->getValue ();
+    pp->wavelet.highlights    = (int)highlights->getValue ();
+    pp->wavelet.htonalwidth   = (int)h_tonalwidth->getValue ();
+    pp->wavelet.shadows       = (int)shadows->getValue ();
+    pp->wavelet.stonalwidth   = (int)s_tonalwidth->getValue ();
 
     pp->wavelet.greenlow       = greenlow->getValue ();
     pp->wavelet.bluelow        = bluelow->getValue ();
@@ -2092,8 +2219,10 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.expcontrast    = expcontrast->getEnabled();
     pp->wavelet.expchroma      = expchroma->getEnabled();
     pp->wavelet.expedge        = expedge->getEnabled();
+    pp->wavelet.expedg3        = expedg3->getEnabled();
     pp->wavelet.expreti        = expreti->getEnabled();
     pp->wavelet.expresid       = expresid->getEnabled();
+    pp->wavelet.expTCresi    = expTCresi->getEnabled();
     pp->wavelet.expmerge       = expmerge->getEnabled();
     pp->wavelet.expfinal       = expfinal->getEnabled();
     pp->wavelet.exptoning      = exptoning->getEnabled();
@@ -2118,6 +2247,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.retinexMethodpro    = retinexMethodpro->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergevMethod    = mergevMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergMethod    = mergMethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->wavelet.mergBMethod    = mergBMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.avoid           = !avoid->get_inconsistent();
         pedited->wavelet.tmr             = !tmr->get_inconsistent();
         pedited->wavelet.median          = !median->get_inconsistent();
@@ -2191,9 +2321,16 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.offs        = offs->getEditedState ();
         pedited->wavelet.vart        = vart->getEditedState ();
         pedited->wavelet.limd        = limd->getEditedState ();
+        pedited->wavelet.scale        = scale->getEditedState ();
         pedited->wavelet.chrrt        = chrrt->getEditedState ();
         pedited->wavelet.str        = str->getEditedState ();
         pedited->wavelet.neigh        = neigh->getEditedState ();
+        pedited->wavelet.radius          = radius->getEditedState ();
+        pedited->wavelet.highlights      = highlights->getEditedState ();
+        pedited->wavelet.htonalwidth     = h_tonalwidth->getEditedState ();
+        pedited->wavelet.shadows         = shadows->getEditedState ();
+        pedited->wavelet.stonalwidth     = s_tonalwidth->getEditedState ();
+
         pedited->wavelet.greenlow        = greenlow->getEditedState ();
         pedited->wavelet.bluelow         = bluelow->getEditedState ();
         pedited->wavelet.greenmed        = greenmed->getEditedState ();
@@ -2203,6 +2340,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.balance         = balance->getEditedState ();
         pedited->wavelet.balanleft         = balanleft->getEditedState ();
         pedited->wavelet.balanhig        = balanhig->getEditedState ();
+        pedited->wavelet.grad        = grad->getEditedState ();
         pedited->wavelet.blend         = blend->getEditedState ();
         pedited->wavelet.blendc         = blendc->getEditedState ();
         pedited->wavelet.iter            = iter->getEditedState ();
@@ -2210,8 +2348,10 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.expcontrast     = !expcontrast->get_inconsistent();
         pedited->wavelet.expchroma       = !expchroma->get_inconsistent();
         pedited->wavelet.expedge         = !expedge->get_inconsistent();
+        pedited->wavelet.expedg3         = !expedg3->get_inconsistent();
         pedited->wavelet.expreti         = !expreti->get_inconsistent();
         pedited->wavelet.expresid        = !expresid->get_inconsistent();
+        pedited->wavelet.expTCresi     = !expTCresi->get_inconsistent();
         pedited->wavelet.expmerge        = !expmerge->get_inconsistent();
         pedited->wavelet.expfinal        = !expfinal->get_inconsistent();
         pedited->wavelet.exptoning       = !exptoning->get_inconsistent();
@@ -2246,9 +2386,19 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     if (mergevMethod->get_active_row_number() == 0) {
         pp->wavelet.mergevMethod = "curr";
     } else if (mergevMethod->get_active_row_number() == 1) {
-        pp->wavelet.mergevMethod = "first";
+        pp->wavelet.mergevMethod = "cuno";
     } else if (mergevMethod->get_active_row_number() == 2) {
+        pp->wavelet.mergevMethod = "first";
+    } else if (mergevMethod->get_active_row_number() == 3) {
         pp->wavelet.mergevMethod = "save";
+    }
+
+    if (mergBMethod->get_active_row_number() == 0) {
+        pp->wavelet.mergBMethod = "water";
+    } else if (mergBMethod->get_active_row_number() == 1) {
+        pp->wavelet.mergBMethod = "hdr1";
+    } else if (mergBMethod->get_active_row_number() == 2) {
+        pp->wavelet.mergBMethod = "hdr2";
     }
 
 
@@ -2389,42 +2539,53 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
 
 void Wavelet::mergMethodChanged()
 {
-    if(mergMethod->get_active_row_number() == 0) {
+    if(mergMethod->get_active_row_number() == 0 && expmerge->getEnabled() == true) {//save water
         blend->hide();
         blendc->hide();
         balanhig->hide();
+        grad->hide();
         balanleft->hide();
         hbin->hide();
+        mergBMethod->hide();
         savelab->show();
-        mergevMethod->set_active (2);
+        mergevMethod->set_active (3);
         Backmethod->set_active (0);
         CLmethod->set_active (1);
         Lmethod->set_active (6);
         Dirmethod->set_active (3);
+        Lmethod->set_sensitive(true);
+        Dirmethod->set_sensitive(true);
 
-    } else if(mergMethod->get_active_row_number() == 1) {
+
+    } else if(mergMethod->get_active_row_number() == 1   && expmerge->getEnabled() == true) {//save hdr
         blend->hide();
         blendc->hide();
         balanhig->hide();
+        grad->hide();
         balanleft->hide();
         hbin->hide();
         savelab->show();
-        mergevMethod->set_active (2);
+        mergBMethod->hide();
+        mergevMethod->set_active (3);
         Backmethod->set_active (2);
-        CLmethod->set_active (2);
+        CLmethod->set_active (1);//or zero if need
         Lmethod->set_active (2);
         Dirmethod->set_active (3);
+        Lmethod->set_sensitive(true);
+        Dirmethod->set_sensitive(true);
 
-    } else if(mergMethod->get_active_row_number() == 2) {
+
+    } else if(mergMethod->get_active_row_number() == 2) {//load
         blend->show();
         blendc->show();
         balanhig->show();
+        grad->show();
         balanleft->show();
         hbin->show();
         savelab->hide();
+        mergBMethod->show();
         mergevMethod->set_active (0);
         Dirmethod->set_active (3);
-        usharpmethod->set_active (0);
         Backmethod->set_active (1);
         CLmethod->set_active (3);
         Lmethod->set_active (3);
@@ -2442,6 +2603,20 @@ void Wavelet::mergevMethodChanged()
 {
     if (listener) {
         listener->panelChanged (EvWavmergevMethod, mergevMethod->get_active_text ());
+    }
+
+}
+
+void Wavelet::mergBMethodChanged()
+{
+    if(mergBMethod->get_active_row_number() == 2) {
+        grad->show();
+    } else {
+        grad->hide();
+    }
+
+    if (listener) {
+        listener->panelChanged (EvWavmergBMethod, mergBMethod->get_active_text ());
     }
 
 }
@@ -2530,12 +2705,20 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
     offs->setDefault(defParams->wavelet.offs );
     vart->setDefault(defParams->wavelet.vart );
     limd->setDefault(defParams->wavelet.limd );
+    scale->setDefault(defParams->wavelet.scale );
     chrrt->setDefault(defParams->wavelet.chrrt );
     str->setDefault(defParams->wavelet.str );
     neigh->setDefault(defParams->wavelet.neigh );
+    radius->setDefault (defParams->wavelet.radius);
+    highlights->setDefault (defParams->wavelet.highlights);
+    h_tonalwidth->setDefault (defParams->wavelet.htonalwidth);
+    shadows->setDefault (defParams->wavelet.shadows);
+    s_tonalwidth->setDefault (defParams->wavelet.stonalwidth);
+
     balance->setDefault(defParams->wavelet.balance );
     balanleft->setDefault(defParams->wavelet.balanleft );
     balanhig->setDefault(defParams->wavelet.balanhig );
+    grad->setDefault(defParams->wavelet.grad );
     blend->setDefault(defParams->wavelet.blend );
     blendc->setDefault(defParams->wavelet.blendc );
     iter->setDefault(defParams->wavelet.iter );
@@ -2627,12 +2810,20 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         offs->setDefaultEditedState(pedited->wavelet.offs ? Edited : UnEdited);
         vart->setDefaultEditedState(pedited->wavelet.vart ? Edited : UnEdited);
         limd->setDefaultEditedState(pedited->wavelet.limd ? Edited : UnEdited);
+        scale->setDefaultEditedState(pedited->wavelet.scale ? Edited : UnEdited);
         chrrt->setDefaultEditedState(pedited->wavelet.chrrt ? Edited : UnEdited);
         str->setDefaultEditedState(pedited->wavelet.str ? Edited : UnEdited);
         neigh->setDefaultEditedState(pedited->wavelet.neigh ? Edited : UnEdited);
+        radius->setDefaultEditedState       (pedited->wavelet.radius ? Edited : UnEdited);
+        highlights->setDefaultEditedState   (pedited->wavelet.highlights ? Edited : UnEdited);
+        h_tonalwidth->setDefaultEditedState (pedited->wavelet.htonalwidth ? Edited : UnEdited);
+        shadows->setDefaultEditedState      (pedited->wavelet.shadows ? Edited : UnEdited);
+        s_tonalwidth->setDefaultEditedState (pedited->wavelet.stonalwidth ? Edited : UnEdited);
+
         balance->setDefaultEditedState(pedited->wavelet.balance ? Edited : UnEdited);
         balanleft->setDefaultEditedState(pedited->wavelet.balanleft ? Edited : UnEdited);
         balanhig->setDefaultEditedState(pedited->wavelet.balanhig ? Edited : UnEdited);
+        grad->setDefaultEditedState(pedited->wavelet.grad ? Edited : UnEdited);
         blend->setDefaultEditedState(pedited->wavelet.blend ? Edited : UnEdited);
         blendc->setDefaultEditedState(pedited->wavelet.blendc ? Edited : UnEdited);
         iter->setDefaultEditedState(pedited->wavelet.iter ? Edited : UnEdited);
@@ -2691,6 +2882,7 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         offs->setDefaultEditedState (Irrelevant);
         vart->setDefaultEditedState (Irrelevant);
         limd->setDefaultEditedState (Irrelevant);
+        scale->setDefaultEditedState (Irrelevant);
         chrrt->setDefaultEditedState (Irrelevant);
         str->setDefaultEditedState (Irrelevant);
         neigh->setDefaultEditedState (Irrelevant);
@@ -2698,8 +2890,14 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         iter->setDefaultEditedState (Irrelevant);
         balanleft->setDefaultEditedState (Irrelevant);
         balanhig->setDefaultEditedState (Irrelevant);
+        grad->setDefaultEditedState (Irrelevant);
         blend->setDefaultEditedState (Irrelevant);
         blendc->setDefaultEditedState (Irrelevant);
+        radius->setDefaultEditedState       (Irrelevant);
+        highlights->setDefaultEditedState   (Irrelevant);
+        h_tonalwidth->setDefaultEditedState (Irrelevant);
+        shadows->setDefaultEditedState      (Irrelevant);
+        s_tonalwidth->setDefaultEditedState (Irrelevant);
 
         for (int i = 0; i < 9; i++) {
             correction[i]->setDefaultEditedState(Irrelevant);
@@ -3008,29 +3206,21 @@ void Wavelet::CLmethodUpdateUI()
 {
 
     if (!batchMode) {
-        usharpmethod->set_sensitive(true);
-        mergeL->setValue (nextmergeL);
-        mergeC->setValue (nextmergeC);
-        mergeL->set_sensitive(true);
-        mergeC->set_sensitive(true);
-
-
-        if (CLmethod->get_active_row_number() == 0) {
+        if (CLmethod->get_active_row_number() == 0  && expmerge->getEnabled() == false &&  ushamethod->get_active_row_number() == 0) {
             CLmethod->set_active (0);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
 
-        } else if (CLmethod->get_active_row_number() == 1) {
+        } else if (CLmethod->get_active_row_number() == 1 && expmerge->getEnabled() == false && ushamethod->get_active_row_number() == 0 ) {
             CLmethod->set_active (1);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
 
-        } else if (CLmethod->get_active_row_number() == 2) {
+        } else if (CLmethod->get_active_row_number() == 2 && expmerge->getEnabled() == false && ushamethod->get_active_row_number() == 0) {
             CLmethod->set_active (2);
             Lmethod->set_sensitive(true);
             Dirmethod->set_sensitive(true);
-
-        } else if (CLmethod->get_active_row_number() == 3) {
+        } else if (CLmethod->get_active_row_number() == 3 && expmerge->getEnabled() == false  && ushamethod->get_active_row_number() == 0) {
             CLmethod->set_active (3);
             Lmethod->set_sensitive(false);//false
             Dirmethod->set_sensitive(false);//false
@@ -3077,17 +3267,18 @@ void Wavelet::ushamethodChanged()
         Backmethod->set_active (2);
         CLmethod->set_active (2);
         Lmethod->set_active (6);
+        Lmethod->set_sensitive(true);
+        Dirmethod->set_sensitive(true);
+
         Dirmethod->set_active (3);
     } else if (ushamethod->get_active_row_number() == 1 && expedge->getEnabled() == true) {
         Backmethod->set_active (0);
         CLmethod->set_active (1);
         Lmethod->set_active (2);
         Dirmethod->set_active (3);
-    } else if (ushamethod->get_active_row_number() == 0 || expedge->getEnabled() == false ) {
-        Backmethod->set_active (1);
-        CLmethod->set_active (3);
-        Lmethod->set_active (3);
-        Dirmethod->set_active (3);
+        Lmethod->set_sensitive(true);
+        Dirmethod->set_sensitive(true);
+
     }
 
     if (listener && (multiImage || getEnabled()) ) {
@@ -3170,6 +3361,7 @@ void Wavelet::setBatchMode (bool batchMode)
     Dirmethod->append_text (M("GENERAL_UNCHANGED"));
     mergevMethod->append_text (M("GENERAL_UNCHANGED"));
     mergMethod->append_text (M("GENERAL_UNCHANGED"));
+    mergBMethod->append_text (M("GENERAL_UNCHANGED"));
     CCWcurveEditorG->setBatchMode (batchMode);
     CCWcurveEditorT->setBatchMode (batchMode);
     opaCurveEditorG->setBatchMode (batchMode);
@@ -3216,12 +3408,19 @@ void Wavelet::setBatchMode (bool batchMode)
     offs->showEditedCB ();
     vart->showEditedCB ();
     limd->showEditedCB ();
+    scale->showEditedCB ();
+    radius->showEditedCB ();
+    highlights->showEditedCB ();
+    h_tonalwidth->showEditedCB ();
+    shadows->showEditedCB ();
+    s_tonalwidth->showEditedCB ();
     chrrt->showEditedCB ();
     str->showEditedCB ();
     neigh->showEditedCB ();
     balance->showEditedCB ();
     balanleft->showEditedCB ();
     balanhig->showEditedCB ();
+    grad->showEditedCB ();
     blend->showEditedCB ();
     blendc->showEditedCB ();
     iter->showEditedCB ();
@@ -3265,8 +3464,8 @@ void Wavelet::savelabPressed ()
 
     bool done = false;
     //activation watermark or HDR
-    CLmethod->set_active (2);
-    CLmethodUpdateUI() ;
+    //CLmethod->set_active (2);
+    //CLmethodUpdateUI() ;
 
     do {
         int result = dialog.run();
@@ -3415,8 +3614,20 @@ void Wavelet::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (EvWavoffs, offs->getTextValue());
         } else if (a == vart) {
             listener->panelChanged (EvWavvart, vart->getTextValue());
+        } else if (a == radius) {
+            listener->panelChanged (EvWavradius, radius->getTextValue());
+        } else if (a == highlights) {
+            listener->panelChanged (EvWavhighlights, highlights->getTextValue());
+        } else if (a == h_tonalwidth) {
+            listener->panelChanged (EWavh_tonalwidth, h_tonalwidth->getTextValue());
+        } else if (a == shadows) {
+            listener->panelChanged (EvWavshadows, shadows->getTextValue());
+        } else if (a ==  s_tonalwidth) {
+            listener->panelChanged (EvWavs_tonalwidth,  s_tonalwidth->getTextValue());
         } else if (a == limd) {
             listener->panelChanged (EvWavlimd, limd->getTextValue());
+        } else if (a == scale) {
+            listener->panelChanged (EvWavscale, scale->getTextValue());
         } else if (a == chrrt) {
             listener->panelChanged (EvWavchrrt, chrrt->getTextValue());
         } else if (a == str) {
@@ -3429,6 +3640,8 @@ void Wavelet::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (EvWavbalanlow, balanleft->getTextValue());
         } else if (a == balanhig) {
             listener->panelChanged (EvWavbalanhigh, balanhig->getTextValue());
+        } else if (a == grad) {
+            listener->panelChanged (EvWavgrad, grad->getTextValue());
         } else if (a == blend) {
             listener->panelChanged (EvWavblen, blend->getTextValue());
         } else if (a == blendc) {
@@ -3601,31 +3814,32 @@ void Wavelet::medianlevUpdateUI ()
 
 void Wavelet::medianlevToggled ()
 {
+    /*
+        if (multiImage) {
+            if (medianlev->get_inconsistent()) {
+                medianlev->set_inconsistent (false);
+                medianlevConn.block (true);
+                medianlev->set_active (false);
+                medianlevConn.block (false);
+            } else if (lastmedianlev) {
+                medianlev->set_inconsistent (true);
+            }
 
-    if (multiImage) {
-        if (medianlev->get_inconsistent()) {
-            medianlev->set_inconsistent (false);
-            medianlevConn.block (true);
-            medianlev->set_active (false);
-            medianlevConn.block (false);
-        } else if (lastmedianlev) {
-            medianlev->set_inconsistent (true);
+            lastmedianlev = medianlev->get_active ();
         }
 
-        lastmedianlev = medianlev->get_active ();
-    }
+        medianlevUpdateUI();
 
-    medianlevUpdateUI();
-
-    if (listener && (multiImage || getEnabled ())) {
-        if (medianlev->get_inconsistent()) {
-            listener->panelChanged (EvWavmedianlev, M("GENERAL_UNCHANGED"));
-        } else if (medianlev->get_active () ) {
-            listener->panelChanged (EvWavmedianlev, M("GENERAL_ENABLED"));
-        } else {
-            listener->panelChanged (EvWavmedianlev, M("GENERAL_DISABLED"));
+        if (listener && (multiImage || getEnabled ())) {
+            if (medianlev->get_inconsistent()) {
+                listener->panelChanged (EvWavmedianlev, M("GENERAL_UNCHANGED"));
+            } else if (medianlev->get_active () ) {
+                listener->panelChanged (EvWavmedianlev, M("GENERAL_ENABLED"));
+            } else {
+                listener->panelChanged (EvWavmedianlev, M("GENERAL_DISABLED"));
+            }
         }
-    }
+        */
 }
 
 void Wavelet::linkedgToggled ()
@@ -3674,6 +3888,7 @@ void Wavelet::cbenabUpdateUI ()
 
 void Wavelet::cbenabToggled ()
 {
+    /*
     if (multiImage) {
         if (cbenab->get_inconsistent()) {
             cbenab->set_inconsistent (false);
@@ -3698,6 +3913,7 @@ void Wavelet::cbenabToggled ()
             listener->panelChanged (EvWavcbenab, M("GENERAL_DISABLED"));
         }
     }
+    */
 }
 
 
@@ -3929,6 +4145,12 @@ void Wavelet::foldAllButMe (GdkEventButton* event, MyExpander *expander)
         expresid->set_expanded(expresid == expander);
         expmerge->set_expanded(expmerge == expander);
         expfinal->set_expanded(expfinal == expander);
+        expsettingreti->set_expanded(expsettingreti == expander);
+        expTCresi->set_expanded(expTCresi == expander);
+        expedg1->set_expanded(expedg1 == expander);
+        expedg2->set_expanded(expedg2 == expander);
+        expedg3->set_expanded(expedg3 == expander);
+
     }
 }
 
@@ -3938,6 +4160,10 @@ void Wavelet::enableToggled(MyExpander *expander)
         ushamethodChanged();
     };
 
+
+    if (expander == expmerge) {
+        mergMethodChanged();
+    }
 
     if (listener) {
         rtengine::ProcEvent event = NUMOFEVENTS;
@@ -3952,8 +4178,12 @@ void Wavelet::enableToggled(MyExpander *expander)
             event = EvWavenanoise;
         } else if (expander == expedge) {
             event = EvWavenaedge;
+        } else if (expander == expedg3) {
+            event = EvWavenaedge3;
         } else if (expander == expreti) {
             event = EvWavenareti;
+        } else if (expander == expTCresi) {
+            event = EvWavenaTCresi;
         } else if (expander == expresid) {
             event = EvWavenares;
         } else if (expander == expmerge) {
@@ -3989,11 +4219,17 @@ void Wavelet::writeOptions(std::vector<int> &tpOpen)
     tpOpen.push_back (expresid->get_expanded ());
     tpOpen.push_back (expmerge->get_expanded ());
     tpOpen.push_back (expfinal->get_expanded ());
+    tpOpen.push_back (expsettingreti->get_expanded ());
+    tpOpen.push_back (expTCresi->get_expanded ());
+    tpOpen.push_back (expedg1->get_expanded ());
+    tpOpen.push_back (expedg2->get_expanded ());
+    tpOpen.push_back (expedg3->get_expanded ());
+
 }
 
 void Wavelet::updateToolState(std::vector<int> &tpOpen)
 {
-    if(tpOpen.size() == 11) {
+    if(tpOpen.size() == 16) {
         expsettings->set_expanded(tpOpen.at(0));
         expcontrast->set_expanded(tpOpen.at(1));
         expchroma->set_expanded(tpOpen.at(2));
@@ -4005,6 +4241,12 @@ void Wavelet::updateToolState(std::vector<int> &tpOpen)
         expresid->set_expanded(tpOpen.at(8));
         expmerge->set_expanded(tpOpen.at(9));
         expfinal->set_expanded(tpOpen.at(10));
+        expsettingreti->set_expanded(tpOpen.at(11));
+        expTCresi->set_expanded(tpOpen.at(12));
+        expedg1->set_expanded(tpOpen.at(13));
+        expedg2->set_expanded(tpOpen.at(14));
+        expedg3->set_expanded(tpOpen.at(15));
+
     }
 }
 

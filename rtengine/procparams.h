@@ -1026,15 +1026,22 @@ public:
     double offs;
     double vart;
     double limd;
+    int scale;
     double str;
     double neigh;
     double chrrt;
+    int     highlights;
+    int     htonalwidth;
+    int     shadows;
+    int     stonalwidth;
+    int     radius;
 
     int balance;
     int balanleft;
     int balanhig;
     int blend;
     int blendc;
+    double grad;
 
     int iter;
     bool expcontrast;
@@ -1042,7 +1049,9 @@ public:
     int c[9];
     int ch[9];
     bool expedge;
+    bool expedg3;
     bool expresid;
+    bool expTCresi;
     bool expfinal;
     bool exptoning;
     bool expnoise;
@@ -1053,6 +1062,7 @@ public:
     Glib::ustring CLmethod;
     Glib::ustring mergMethod;
     Glib::ustring mergevMethod;
+    Glib::ustring mergBMethod;
     Glib::ustring retinexMethod;
     Glib::ustring retinexMethodpro;
     Glib::ustring Backmethod;

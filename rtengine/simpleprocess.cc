@@ -1008,7 +1008,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     struct E {
         int W, H, sk;
     } e;
-    int disp;
+    int disp = 0;
 
     if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {//load Lab datas
         bool toto = true;
@@ -1104,30 +1104,37 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     disp = 1;
                 }
 
+                if(params.wavelet.mergevMethod == "cuno") {//current image no merge
+                    disp = 2;
+                }
+
                 float highl = 32768.f * (float) (params.wavelet.blend) / 100.f;
                 float minhighl = 10000000.f;
                 int pi, pj;
                 float ref;
 
-                for(int ir = 0; ir < (labView->H); ir++)
-                    for(int jr = 0; jr < (labView->W); jr++) {
-                        int irfull, jrfull;
-                        irfull = (ir) * 1;
-                        jrfull = (jr) * 1;
-                        irfull = LIM(irfull, 0, fh - 1);
-                        jrfull = LIM(jrfull, 0, fw - 1);
+                if(disp != 2) {
 
-                        cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
-                        cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
-                        cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+                    for(int ir = 0; ir < (labView->H); ir++)
+                        for(int jr = 0; jr < (labView->W); jr++) {
+                            int irfull, jrfull;
+                            irfull = (ir) * 1;
+                            jrfull = (jr) * 1;
+                            irfull = LIM(irfull, 0, fh - 1);
+                            jrfull = LIM(jrfull, 0, fw - 1);
 
-                        if(disp == 1) {
-                            labView->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
-                            labView->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
-                            labView->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                            cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
+                            cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
+                            cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+
+                            if(disp == 1) {
+                                labView->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
+                                labView->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
+                                labView->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                            }
+
                         }
-
-                    }
+                }
             }
 
             delete mergelab;
@@ -1200,13 +1207,29 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 float m_L = (float) (WaveParams.blend / 100.f);
                 float m_C = (float) (WaveParams.blendc / 100.f);
+                float gra = WaveParams.grad / 150.f;
 
-                for (int x = 0; x < labView->H; x++)
-                    for (int y = 0; y < labView->W; y++) {
-                        labView->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labView->L[x][y];
-                        labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
-                        labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
-                    }
+                if(params.wavelet.mergBMethod == "water"  || params.wavelet.mergBMethod == "hdr1") {
+
+                    for (int x = 0; x < labView->H; x++)
+                        for (int y = 0; y < labView->W; y++) {
+                            labView->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labView->L[x][y];
+                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
+                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
+                        }
+                }
+
+                if(params.wavelet.mergBMethod == "hdr2") {
+                    float Mlv;
+
+                    for (int x = 0; x < labView->H; x++)
+                        for (int y = 0; y < labView->W; y++) {
+                            Mlv = (m_L / 33000.f) * (gra - 1.f) * cropmergelab->L[x][y] + m_L;
+                            labView->L[x][y] =  Mlv * (cropmergelab->L[x][y]) + labView->L[x][y];
+                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
+                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
+                        }
+                }
 
                 delete cropmergelab;
             }

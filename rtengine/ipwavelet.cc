@@ -152,6 +152,7 @@ struct cont_params {
     bool finena;
     bool toningena;
     bool noiseena;
+    bool TCresiena;
     int maxilev;
     float edgsens;
     float edgampl;
@@ -364,7 +365,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
         cp.EDmet = 2;
     }
 
-    cp.cbena = params->wavelet.cbenab;
+    cp.cbena = params->wavelet.expTCresi;
     cp.blhigh = (float)params->wavelet.bluehigh;
     cp.grhigh = (float)params->wavelet.greenhigh;
     cp.blmed = (float)params->wavelet.bluemed;
@@ -549,7 +550,9 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
     cp.lev3n = static_cast<float>(params->wavelet.level3noise.value[1]);
 
     cp.detectedge   = false;
-    cp.detectedge = params->wavelet.medianlev;
+    // cp.detectedge = params->wavelet.medianlev;
+    cp.detectedge = params->wavelet.expedg3;
+
     //printf("low=%f mean=%f sd=%f max=%f\n",cp.edg_low,cp.edg_mean,cp.edg_sd,cp.edg_max);
     int minwin = min(imwidth, imheight);
     int maxlevelcrop = 9;
@@ -926,7 +929,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                 }
 
                 //  printf("LevwavL before: %d\n",levwavL);
-         //       if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && params->wavelet.retinexMethod == "none") { // no processing of residual L  or edge=> we probably can reduce the number of levels
+                //       if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && params->wavelet.retinexMethod == "none") { // no processing of residual L  or edge=> we probably can reduce the number of levels
                 if(cp.contrast == 0.f && cp.tonemap == false && cp.conres == 0.f && cp.conresH == 0.f && cp.val == 0  && !ref0  && params->wavelet.CLmethod == "all"  && !cp.retiena) { // no processing of residual L  or edge=> we probably can reduce the number of levels
                     while(levwavL > 0 && cp.mul[levwavL - 1] == 0.f) { // cp.mul[level] == 0.f means no changes to level
                         levwavL--;
@@ -1121,7 +1124,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                     int levwavab = levwav;
 
                     //  printf("Levwavab before: %d\n",levwavab);cp.retiena
-              //      if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" && params->wavelet.retinexMethod == "none" && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
+                    //      if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" && params->wavelet.retinexMethod == "none" && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
                     if(cp.chrores == 0.f && !hhutili && params->wavelet.CLmethod == "all" &&  !cp.retiena && params->wavelet.chrrt == 0.) { // no processing of residual ab => we probably can reduce the number of levels
                         while(levwavab > 0 && (((cp.CHmet == 2 && (cp.chro == 0.f || cp.mul[levwavab - 1] == 0.f )) || (cp.CHmet != 2 && (levwavab == 10 || (!cp.curv  || (cp.curv && cp.mulC[levwavab - 1] == 0.f)))))) && (!cp.opaRG || levwavab == 10 || (cp.opaRG && cp.mulopaRG[levwavab - 1] == 0.f)) && ((levwavab == 10 || (cp.CHSLmet == 1 && cp.mulC[levwavab - 1] == 0.f)))) {
                             levwavab--;
@@ -1335,7 +1338,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
 
                     //dsttmp
                     //imheight = lab->H, imwidth = lab->W;cp.retiena
-            //        if(params->wavelet.retinexMethod != "none"  && params->wavelet.retinexMethodpro == "fina") {
+                    //        if(params->wavelet.retinexMethod != "none"  && params->wavelet.retinexMethodpro == "fina") {
                     if(cp.retiena  && params->wavelet.retinexMethodpro == "fina") {
                         int W_L =  imwidth;
                         int H_L =  imheight;
@@ -1476,14 +1479,23 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
             ifstream fin;
             fout.open(inp.c_str(), ios::binary);
             int dpix = 4;//for alignment pixels
-            if(params->wavelet.mergMethod=="savwat") dpix=0;//0 if watermark
+            int wat_or_hdr = 0;
+
+            if(params->wavelet.mergMethod == "savwat") {
+                dpix = 0;    //0 if watermark
+            }
+
+            if(params->wavelet.mergBMethod == "water") {
+                wat_or_hdr = 1;
+            }
 
             struct D {
                 int W, H, sk;
             } d;
+
             d.W = imwidth - 2 * dpix;
             d.H = imheight - 2 * dpix;
-            d.sk = 1;//skip
+            d.sk = wat_or_hdr;
             fout.write(reinterpret_cast<char *>(&d), sizeof(d));
             float maxx = 0.f;
 
@@ -2331,7 +2343,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
             // end
         }
 
-    //    if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.retinexMethodpro == "resid") {
+        //    if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.retinexMethodpro == "resid") {
         if(cp.retiena && cp.resena && params->wavelet.retinexMethodpro == "resid") {
             //printf("RESID LUM\n");
             float *resid[H_L] ALIGNED16;
@@ -2418,7 +2430,7 @@ void ImProcFunctions::WaveletAandBAllAB(LabImage * labco, float ** varhue, float
     //WavretiCurve wavRETCcurve;
 
     if(cp.retiena && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
- //   if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
+//   if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.chrrt > 0. && params->wavelet.retinexMethodpro == "resid") {
         //printf("RESID CHRO\n");
 
         float *resid[H_L] ALIGNED16;
@@ -2927,6 +2939,7 @@ void ImProcFunctions::finalContAllL (float ** WavCoeffs_L, float * WavCoeffs_L0,
     int dir1 = (choiceDir == 2) ? 1 : 2;
     int dir2 = (choiceDir == 3) ? 1 : 3;
 
+//printf("Bacm=%d\n",cp.backm);
     if(choiceClevel < 3) { // not all levels visible, paint residual
         if(level == 0) {
             if(cp.backm != 2) { // nothing to change when residual is used as background
@@ -2939,6 +2952,7 @@ void ImProcFunctions::finalContAllL (float ** WavCoeffs_L, float * WavCoeffs_L0,
         }
     }
 
+//printf("chlev=%d\n",choiceClevel);
     if(choiceClevel == 0) { // Only one level
 
         if(choiceDir == 0) { // All directions
@@ -2981,7 +2995,7 @@ void ImProcFunctions::finalContAllL (float ** WavCoeffs_L, float * WavCoeffs_L0,
         }
     } else if(choiceClevel == 2) { // Only above level
         if(choiceDir == 0) { // All directions
-            if(level <= choicelevel) {
+            if(level < choicelevel) {//<=
                 for (int dir = 1; dir < 4; dir++) {
                     for (int i = 0; i < W_L * H_L; i++) {
                         WavCoeffs_L[dir][i] = 0.f;
@@ -4092,7 +4106,7 @@ void ImProcFunctions::ContAllAB (LabImage * labco, int maxlvl, float ** varhue, 
         }
     } else if(choiceClevel == 2) { // Only above level
         if(choiceDir == 0) { // All directions
-            if(level <= choicelevel) {
+            if(level < choicelevel) {//<=
                 for (int dir = 1; dir < 4; dir++) {
                     for (int i = 0; i < W_ab * H_ab; i++) {
                         WavCoeffs_ab[dir][i] = 0.f;

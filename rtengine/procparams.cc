@@ -3,7 +3,7 @@
  *
  *  Copyright (c) 2004-2010 Gabor Horvath <hgabor@rawtherapee.com>
  *
- *  RawTherapee is free software: you can redistribute it and/or modify
+ *  RawTherapee is free software: you can redistribute it and/or modifygain
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -691,7 +691,7 @@ void WaveletParams::setDefaults()
     median = false;
     medianlev = false;
     linkedg = true;
-    cbenab = false;
+    cbenab = true;
     lipst = false;
     Medgreinf = "less"; //"none";
     avoid = false;
@@ -701,8 +701,8 @@ void WaveletParams::setDefaults()
     balanleft = 50;
     balanhig = 50;
     blend = 50;
-    blendc = 0;
-
+    blendc = 30;
+    grad = 20;
     iter = 0;
     wavclCurve.clear ();
     wavclCurve.push_back(DCT_Linear);
@@ -714,10 +714,11 @@ void WaveletParams::setDefaults()
     EDmethod         = "CU";
     NPmethod         = "none";
     BAmethod         = "none";
-    retinexMethod   = "none";
-    retinexMethodpro   = "resid";
+    retinexMethod   = "uni";
+    retinexMethodpro   = "fina";
     mergevMethod = "curr";
     mergMethod = "load";
+    mergBMethod = "hdr2";
 
     TMmethod         = "cont";
     HSmethod         = "with";
@@ -735,8 +736,14 @@ void WaveletParams::setDefaults()
     str = 20;
     neigh = 50;
     vart = 200;
+    scale = 3;
     limd = 10;
     chrrt = 0;
+    highlights    = 0;
+    htonalwidth   = 80;
+    shadows       = 0;
+    stonalwidth   = 80;
+    radius        = 40;
 
     rescon      = 0;
     resconH      = 0;
@@ -780,10 +787,12 @@ void WaveletParams::setDefaults()
     Chcurve.push_back(FCT_Linear);
     expcontrast = true;
     expchroma = true;
-    expedge = true;
+    expedge = false;
+    expedg3 = false;
     expresid = true;
     expfinal = true;
     exptoning = true;
+    expTCresi = false;
     expnoise = true;
     expmerge = false;
     expreti = false;
@@ -2720,6 +2729,10 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         keyFile.set_integer ("Wavelet", "Balanhig", wavelet.balanhig);
     }
 
+    if (!pedited || pedited->wavelet.grad) {
+        keyFile.set_double ("Wavelet", "Grad", wavelet.grad);
+    }
+
 
     if (!pedited || pedited->wavelet.blend) {
         keyFile.set_integer ("Wavelet", "Blend", wavelet.blend);
@@ -2742,8 +2755,9 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         keyFile.set_string  ("Wavelet", "TilesMethod",  wavelet.Tilesmethod);
     }
 
-    if (!pedited || pedited->wavelet.mergevMethod) {
-        keyFile.set_string  ("Wavelet", "MergevMethod",  wavelet.mergevMethod);
+
+    if (!pedited || pedited->wavelet.mergBMethod) {
+        keyFile.set_string  ("Wavelet", "MergBMethod",  wavelet.mergBMethod);
     }
 
     if (!pedited || pedited->wavelet.mergMethod) {
@@ -2815,12 +2829,20 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         keyFile.set_boolean ("Wavelet", "Expcontrast", wavelet.expcontrast);
     }
 
+    if (!pedited || pedited->wavelet.expTCresi) {
+        keyFile.set_boolean ("Wavelet", "ExpTCresi", wavelet.expTCresi);
+    }
+
     if (!pedited || pedited->wavelet.expchroma) {
         keyFile.set_boolean ("Wavelet", "Expchroma", wavelet.expchroma);
     }
 
     if (!pedited || pedited->wavelet.expedge) {
         keyFile.set_boolean ("Wavelet", "Expedge", wavelet.expedge);
+    }
+
+    if (!pedited || pedited->wavelet.expedg3) {
+        keyFile.set_boolean ("Wavelet", "Expedg3", wavelet.expedg3);
     }
 
     if (!pedited || pedited->wavelet.expresid) {
@@ -3106,8 +3128,32 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         keyFile.set_double  ("Wavelet", "vart",  wavelet.vart);
     }
 
+    if (!pedited || pedited->wavelet.scale) {
+        keyFile.set_integer  ("Wavelet", "Scale",  wavelet.scale);
+    }
+
     if (!pedited || pedited->wavelet.limd) {
         keyFile.set_double  ("Wavelet", "limd",  wavelet.limd);
+    }
+
+    if (!pedited || pedited->wavelet.highlights) {
+        keyFile.set_integer ("Wavelet", "Highlights",          wavelet.highlights);
+    }
+
+    if (!pedited || pedited->wavelet.htonalwidth) {
+        keyFile.set_integer ("Wavelet", "HighlightTonalWidth", wavelet.htonalwidth);
+    }
+
+    if (!pedited || pedited->wavelet.shadows) {
+        keyFile.set_integer ("Wavelet", "Shadows",             wavelet.shadows);
+    }
+
+    if (!pedited || pedited->wavelet.stonalwidth) {
+        keyFile.set_integer ("Wavelet", "ShadowTonalWidth",    wavelet.stonalwidth);
+    }
+
+    if (!pedited || pedited->wavelet.radius) {
+        keyFile.set_integer ("Wavelet", "Radius",    wavelet.radius);
     }
 
     if (!pedited || pedited->wavelet.chrrt) {
@@ -4255,7 +4301,7 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
 
             if (keyFile.has_key ("Retinex", "Radius"))                {
-                sh.radius        = keyFile.get_integer ("Retinex", "Radius");
+                retinex.radius        = keyFile.get_integer ("Retinex", "Radius");
 
                 if (pedited) {
                     pedited->retinex.radius = true;
@@ -6090,6 +6136,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "Grad"))   {
+                wavelet.grad = keyFile.get_double ("Wavelet", "Grad");
+
+                if (pedited) {
+                    pedited->wavelet.grad = true;
+                }
+            }
+
 
             if (keyFile.has_key ("Wavelet", "Blend"))   {
                 wavelet.blend = keyFile.get_integer ("Wavelet", "Blend");
@@ -6235,6 +6289,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->wavelet.mergevMethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "MergBMethod"))     {
+                wavelet.mergBMethod  = keyFile.get_string  ("Wavelet", "MergBMethod");
+
+                if (pedited) {
+                    pedited->wavelet.mergBMethod = true;
                 }
             }
 
@@ -6430,6 +6492,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "Scale"))     {
+                wavelet.scale  = keyFile.get_integer  ("Wavelet", "Scale");
+
+                if (pedited) {
+                    pedited->wavelet.scale = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "limd"))     {
                 wavelet.limd  = keyFile.get_double  ("Wavelet", "limd");
 
@@ -6437,6 +6507,48 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                     pedited->wavelet.limd = true;
                 }
             }
+
+            if (keyFile.has_key ("Wavelet", "Highlights"))            {
+                wavelet.highlights    = keyFile.get_integer ("Wavelet", "Highlights");
+
+                if (pedited) {
+                    pedited->wavelet.highlights = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "HighlightTonalWidth"))   {
+                wavelet.htonalwidth   = keyFile.get_integer ("Wavelet", "HighlightTonalWidth");
+
+                if (pedited) {
+                    pedited->wavelet.htonalwidth = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "Shadows"))               {
+                wavelet.shadows       = keyFile.get_integer ("Wavelet", "Shadows");
+
+                if (pedited) {
+                    pedited->wavelet.shadows = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "ShadowTonalWidth"))      {
+                wavelet.stonalwidth   = keyFile.get_integer ("Wavelet", "ShadowTonalWidth");
+
+                if (pedited) {
+                    pedited->wavelet.stonalwidth = true;
+                }
+            }
+
+
+            if (keyFile.has_key ("Wavelet", "Radius"))                {
+                wavelet.radius        = keyFile.get_integer ("Wavelet", "Radius");
+
+                if (pedited) {
+                    pedited->wavelet.radius = true;
+                }
+            }
+
 
             if (keyFile.has_key ("Wavelet", "chrrt"))     {
                 wavelet.chrrt  = keyFile.get_double  ("Wavelet", "chrrt");
@@ -6827,6 +6939,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "ExpTCresi")) {
+                wavelet.expTCresi = keyFile.get_boolean ("Wavelet", "ExpTCresi");
+
+                if (pedited) {
+                    pedited->wavelet.expTCresi = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "Expchroma")) {
                 wavelet.expchroma = keyFile.get_boolean ("Wavelet", "Expchroma");
 
@@ -6866,6 +6986,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->wavelet.expedge = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "Expedg3")) {
+                wavelet.expedg3 = keyFile.get_boolean ("Wavelet", "Expedg3");
+
+                if (pedited) {
+                    pedited->wavelet.expedg3 = true;
                 }
             }
 
@@ -8128,6 +8256,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.inpute == other.wavelet.inpute
         && wavelet.mergevMethod == other.wavelet.mergevMethod
         && wavelet.mergMethod == other.wavelet.mergMethod
+        && wavelet.mergBMethod == other.wavelet.mergBMethod
         && wavelet.Lmethod == other.wavelet.Lmethod
         && wavelet.CLmethod == other.wavelet.CLmethod
         && wavelet.Backmethod == other.wavelet.Backmethod
@@ -8151,10 +8280,16 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.gain == other.wavelet.gain
         && wavelet.offs == other.wavelet.offs
         && wavelet.vart == other.wavelet.vart
+        && wavelet.scale == other.wavelet.scale
         && wavelet.limd == other.wavelet.limd
         && wavelet.chrrt == other.wavelet.chrrt
         && wavelet.str == other.wavelet.str
         && wavelet.neigh == other.wavelet.neigh
+        && wavelet.highlights == other.wavelet.highlights
+        && wavelet.htonalwidth == other.wavelet.htonalwidth
+        && wavelet.shadows == other.wavelet.shadows
+        && wavelet.stonalwidth == other.wavelet.stonalwidth
+        && wavelet.radius == other.wavelet.radius
         && wavelet.resconH == other.wavelet.resconH
         && wavelet.reschro == other.wavelet.reschro
         && wavelet.tmrs == other.wavelet.tmrs
@@ -8169,8 +8304,10 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.contrast == other.wavelet.contrast
         && wavelet.median == other.wavelet.median
         && wavelet.expcontrast == other.wavelet.expcontrast
+        && wavelet.expTCresi == other.wavelet.expTCresi
         && wavelet.expchroma == other.wavelet.expchroma
         && wavelet.expedge == other.wavelet.expedge
+        && wavelet.expedg3 == other.wavelet.expedg3
         && wavelet.expresid == other.wavelet.expresid
         && wavelet.expfinal == other.wavelet.expfinal
         && wavelet.exptoning == other.wavelet.exptoning
@@ -8198,6 +8335,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.hueskin2 == other.wavelet.hueskin2
         && wavelet.balanleft == other.wavelet.balanleft
         && wavelet.balanhig == other.wavelet.balanhig
+        && wavelet.grad == other.wavelet.grad
         && wavelet.blend == other.wavelet.blend
         && wavelet.blendc == other.wavelet.blendc
         && wavelet.hllev == other.wavelet.hllev

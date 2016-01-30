@@ -684,6 +684,7 @@ HISTORY_MSG_448;W - Reti - threshold
 HISTORY_MSG_449;W - Retinex method
 HISTORY_MSG_450;W - Reti - transmission
 HISTORY_MSG_451;W - Reti - chroma
+HISTORY_MSG_452;W - Reti - process
 HISTORY_MSG_453;W - merge - enabled
 HISTORY_MSG_454;W - merge - file
 HISTORY_MSG_455;W - merge - type
@@ -693,6 +694,18 @@ HISTORY_MSG_458;W - merge - V shift
 HISTORY_MSG_459;W - merge - blend L
 HISTORY_MSG_460;W - merge - blend C
 HISTORY_MSG_461;W - merge - reset
+HISTORY_MSG_462;W - es - sharp method
+HISTORY_MSG_463;W - Reti - enabled
+HISTORY_MSG_464;W - merge - method
+HISTORY_MSG_465;W - Reti - radius
+HISTORY_MSG_466;W - Reti - highlight
+HISTORY_MSG_467;W - Reti - H tonal width
+HISTORY_MSG_468;W - Reti - shadows
+HISTORY_MSG_469;W - Reti - S tonal width
+HISTORY_MSG_470;W - Reti - Scale
+HISTORY_MSG_471;W - Residual - Toning color bal
+HISTORY_MSG_472;W - es - Edge detection
+HISTORY_MSG_473;W - merge - gradient luma
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1896,6 +1909,9 @@ TP_WAVELET_EDCU;Curve
 TP_WAVELET_EDGCONT;Local contrast
 TP_WAVELET_EDGCONT_TOOLTIP;Adjusting the points to the left decreases contrast, and to the right increases it.\nBottom-left, Top-Left, Top-Right, Bottom-right represent respectively local contast for low values, mean, mean+stdev, maxima
 TP_WAVELET_EDGE;Edge Sharpness and Clarity
+TP_WAVELET_EDG1;Edge Sharpness
+TP_WAVELET_EDG2;Sharp-mask and Clarity
+TP_WAVELET_EDG3;Edge detection
 TP_WAVELET_EDGEAMPLI;Base amplification
 TP_WAVELET_EDGEDETECT;Gradient sensitivity
 TP_WAVELET_EDGEDETECTTHR;Threshold low (noise)
@@ -1931,7 +1947,7 @@ TP_WAVELET_LEVCH;Chroma
 TP_WAVELET_LEVDIR_ALL;All levels in all directions
 TP_WAVELET_LEVDIR_INF;Below or equal the level
 TP_WAVELET_LEVDIR_ONE;One level
-TP_WAVELET_LEVDIR_SUP;Above the level
+TP_WAVELET_LEVDIR_SUP;Above or equal the level
 TP_WAVELET_LEVELS;Wavelet levels
 TP_WAVELET_LEVELS_TOOLTIP;Choose the number of detail levels the image is to be decomposed into. More levels require more RAM and require a longer processing time.
 TP_WAVELET_LEVF;Contrast
@@ -1946,10 +1962,13 @@ TP_WAVELET_LOAD;Load L*a*b and Merge
 TP_WAVELET_LOWLIGHT;Shadow luminance range
 TP_WAVELET_MEDGREINF;First level
 TP_WAVELET_MEDI;Reduce artifacts in blue sky
-TP_WAVELET_MEDILEV;Edge detection
 TP_WAVELET_MEDILEV_TOOLTIP;When you enable Edge Detection, it is recommanded:\n- to disabled low contrast levels to avoid artifacts,\n- to use high values of gradient sensitivity.\n\nYou can modulate the strength with 'refine' from Denoise and Refine.
 TP_WAVELET_MERGE;Merge files and Watermark
-TP_WAVELET_MERGE_TOOLTIP;Can be used for create Watermak or to merge 2 files (HDR).\nThis second possibility is currently limited by the lack of local control. In addition the algorithm must be greatly improved
+TP_WAVELET_MERGEB_METHOD;Merge method
+TP_WAVELET_BLEND_WAT;Watermark
+TP_WAVELET_BLEND_HDR1;Hdr one
+TP_WAVELET_BLEND_HDR2;Hdr two
+TP_WAVELET_MERGE_TOOLTIP;Can be used for create Watermak or to merge 2 files (HDR).\nThis second possibility is currently limited by the lack of local control. In addition the algorithm must be greatly improved.\nI recommand:a) threat 'first' image overexposed (neutral) and Save L*a*b* for HDR, and then open current image underexposed (neutral), and then merge.
 TP_WAVELET_MERG_METHOD;Merge type
 TP_WAVELET_MERGEINPUTLABEL;Select file to merge
 TP_WAVELET_MERGEINPUT_TOOLTIP;Select file data
@@ -1987,18 +2006,22 @@ TP_WAVE_FINA;Final Touchup
 TP_WAVRETI_METHOD_TOOLTIP;Low = Reinforce low light,\nUniform = Equalize action,\nHigh = Reinforce high light.
 TP_WAVRETI_METHODPRO_TOOLTIP;Locate the Retinex Process either in Residual or in Final touchup
 TP_WAVELET_VIEW_METHOD;Preview and Save Method
-TP_WAVELET_VIEW_TOOLTIP;This method allows to:\n*Save datas for Watermark - Wavelet settings will be automatically positionned (Background=black, Process=below, level=7), you can change Level.\n*Save datas for HDR - Wavelet settings will be automatically positionned (Background=residual, Process=above, level=3), you can change Level.\n*Load datas and merge - load *.mer and present sliders menu
-TP_WAVELET_VIEW_CURR;Current image
+TP_WAVELET_VIEW_TOOLTIP;This method allows to:\n*Save datas for Watermark - Wavelet settings will be automatically positionned (Background=black, Process=below, level=7), you can change Level.\n*Save datas for HDR - Wavelet settings will be automatically positionned (Background=residual, Process=above, level=2), you can change Level, level=1 produce no blur.\n*Load datas and merge - load *.mer and present sliders menu
+TP_WAVELET_VIEW_CURR;Merge image
+TP_WAVELET_VIEW_CUNO;Current image
 TP_WAVELET_VIEW_PREV;First image
 TP_WAVELET_VIEW_SAVE;Save data
-TP_WAVELET_VIEW2_TOOLTIP;First image is the image load with L*a*b* datas before merging.\nSave data, position to allow saving datas in the process.
+TP_WAVELET_VIEW2_TOOLTIP;First image is the image load with L*a*b* datas before merging.\nSave data, position to allow saving datas in the process.\nMerge image, is the current image merge with first.\n
 TP_WAVELET_SAVE_WATER;Save L*a*b for Watermark
 TP_WAVELET_SAVE_HDR;Save L*a*b for HDR
+TP_WAVELET_SCA;Scale
 TP_WAVELET_STR;Strength
 TP_WAVELET_CHRRT;Chroma
 TP_WAVELET_NEIGH;Radius
 TP_WAVELET_VART;Contrast
 TP_WAVELET_GAIN;Gain
+TP_WAVELET_GRAD;Gradient luma
+TP_WAVELET_GRAD_TOOLTIP;Change luma merge variation
 TP_WAVELET_OFFS;Brightness
 TP_WAVELET_LIMD;Threshold
 TP_WAVELET_SAT;Saturated chroma
@@ -2012,6 +2035,7 @@ TP_WAVELET_SKY_TOOLTIP;At -100 sky-tones are targetted.\nAt 0 all tones are trea
 TP_WAVELET_STREN;Strength
 TP_WAVELET_STRENGTH;Strength
 TP_WAVELET_SUPE;Extra
+TP_WAVELET_TC;Toning and color balance
 TP_WAVELET_THR;Shadows threshold
 TP_WAVELET_THRESHOLD;Highlight levels
 TP_WAVELET_THRESHOLD2;Shadow levels

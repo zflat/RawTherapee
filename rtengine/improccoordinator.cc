@@ -682,7 +682,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         struct E {
             int W, H, sk;
         } e;
-        int disp;
+        int disp = 0;
 
         if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {//load Lab datas
             bool toto = true;
@@ -699,7 +699,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             if(pos > 2) {
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
-                printf("DW=%d DH=%d\n", e.W, e.H);
+                printf("DWimp mergelapart=%d DH=%d\n", e.W, e.H);
                 mergelabpart = new LabImage(e.W, e.H);
 
 
@@ -752,6 +752,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 int difhM = fh - Hwa;
                 int difh = (int)((percenthig * difhM) / 100.f);
 
+                // printf("improc difh + Hwa=%d difw + Lwa=%d\n",difh + Hwa,difw + Lwa);
                 for(int ir = difh ; ir < (difh + Hwa); ir++)
                     for(int jr = difw ; jr < (difw + Lwa); jr++) {//
                         mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
@@ -760,7 +761,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     }
 
                 delete mergelabpart;
-
 
             }
         }
@@ -779,34 +779,38 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         disp = 1;
                     }
 
-                    //    if(params.wavelet.mergevMethod == "blend") {
-                    //        disp = 2;
-                    //    }
+                    if(params.wavelet.mergevMethod == "cuno") {//current image no merge
+                        disp = 2;
+                    }
+
 
                     float highl = 32768.f * (float) (params.wavelet.blend) / 100.f;
                     float minhighl = 10000000.f;
                     int pi, pj;
                     float ref;
 
-                    for(int ir = 0; ir < (nprevl->H); ir++)
-                        for(int jr = 0; jr < (nprevl->W); jr++) {
-                            int irfull, jrfull;
-                            irfull = (ir) * scale;
-                            jrfull = (jr) * scale;
-                            irfull = LIM(irfull, 0, fh - 1);
-                            jrfull = LIM(jrfull, 0, fw - 1);
+                    if(disp != 2) {
 
-                            cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
-                            cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
-                            cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+                        for(int ir = 0; ir < (nprevl->H); ir++)
+                            for(int jr = 0; jr < (nprevl->W); jr++) {
+                                int irfull, jrfull;
+                                irfull = (ir) * scale;
+                                jrfull = (jr) * scale;
+                                irfull = LIM(irfull, 0, fh - 1);
+                                jrfull = LIM(jrfull, 0, fw - 1);
 
-                            if(disp == 1) {
-                                nprevl->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
-                                nprevl->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
-                                nprevl->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                                cropmergelab->L[ir][jr] = mergelab->L[irfull][jrfull];
+                                cropmergelab->a[ir][jr] = mergelab->a[irfull][jrfull];
+                                cropmergelab->b[ir][jr] = mergelab->b[irfull][jrfull];
+
+                                if(disp == 1) {
+                                    nprevl->L[ir][jr] = cropmergelab->L[ir][jr];    //merge 100%
+                                    nprevl->a[ir][jr] = cropmergelab->a[ir][jr];    //merge 100%
+                                    nprevl->b[ir][jr] = cropmergelab->b[ir][jr];    //merge 100%
+                                }
+
                             }
-
-                        }
+                    }
                 }
 
                 delete mergelab;
@@ -882,21 +886,59 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
             if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
+                unshar = new LabImage (pW, pH);
+                unshar->CopyFrom(nprevl);
 
                 if(pos > 2) {
+                    float mLY, mCY;
 
                     float m_L = (float) (WaveParams.blend / 100.f);
                     float m_C = (float) (WaveParams.blendc / 100.f);
+                    float gra = WaveParams.grad / 150.f;
+                    mLY = m_L;
+                    mCY = m_C;
 
-                    for (int x = 0; x < nprevl->H; x++)
-                        for (int y = 0; y < nprevl->W; y++) {
-                            nprevl->L[x][y] =  m_L * (cropmergelab->L[x][y]) + nprevl->L[x][y];
-                            nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + nprevl->a[x][y];
-                            nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + nprevl->b[x][y];
-                        }
+                    if(params.wavelet.mergBMethod == "water") {
+
+                        for (int x = 0; x < nprevl->H; x++)
+                            for (int y = 0; y < nprevl->W; y++) {
+                                nprevl->L[x][y] =  m_L * (cropmergelab->L[x][y]) + (1.f) * nprevl->L[x][y];
+                                nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + (1.f) * nprevl->a[x][y];
+                                nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + (1.f) * nprevl->b[x][y];
+
+
+                            }
+                    }
+
+                    if(params.wavelet.mergBMethod == "hdr1") {
+                        for (int x = 0; x < nprevl->H; x++)
+                            for (int y = 0; y < nprevl->W; y++) {
+                                nprevl->L[x][y] =  m_L * (cropmergelab->L[x][y]) + nprevl->L[x][y];
+                                nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + nprevl->a[x][y];
+                                nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + nprevl->b[x][y];
+                            }
+
+
+                    }
+
+                    if(params.wavelet.mergBMethod == "hdr2") { //
+                        float Mlv;
+
+                        for (int x = 0; x < nprevl->H; x++)
+                            for (int y = 0; y < nprevl->W; y++) {
+                                Mlv = (m_L / 33000.f) * (gra - 1.f) * cropmergelab->L[x][y] + m_L;
+                                nprevl->L[x][y] =  Mlv * (cropmergelab->L[x][y]) + nprevl->L[x][y];
+                                nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + nprevl->a[x][y];
+                                nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + nprevl->b[x][y];
+                            }
+                    }
 
                     delete cropmergelab;
                 }
+
+                delete unshar;
+                unshar    = NULL;
+
             }
 
         }

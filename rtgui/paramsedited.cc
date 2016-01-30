@@ -395,6 +395,7 @@ void ParamsEdited::set (bool v)
     wavelet.balance = v;
     wavelet.balanleft = v;
     wavelet.balanhig = v;
+    wavelet.grad = v;
     wavelet.blend = v;
     wavelet.blendc = v;
     wavelet.iter = v;
@@ -419,16 +420,23 @@ void ParamsEdited::set (bool v)
     wavelet.retinexMethodpro = v;
     wavelet.mergevMethod = v;
     wavelet.mergMethod = v;
+    wavelet.mergBMethod = v;
     wavelet.Tilesmethod = v;
     wavelet.mergeL = v;
     wavelet.mergeC = v;
     wavelet.gain = v;
     wavelet.offs = v;
     wavelet.vart = v;
+    wavelet.scale = v;
     wavelet.limd = v;
     wavelet.chrrt = v;
     wavelet.str = v;
     wavelet.neigh = v;
+    wavelet.highlights    = v;
+    wavelet.htonalwidth   = v;
+    wavelet.shadows       = v;
+    wavelet.stonalwidth   = v;
+    wavelet.radius        = v;
     wavelet.usharpmethod = v;
     wavelet.ushamethod = v;
     wavelet.daubcoeffmethod = v;
@@ -493,8 +501,10 @@ void ParamsEdited::set (bool v)
 //  wavelet.enares = v;
     wavelet.expfinal = v;
     wavelet.expcontrast = v;
+    wavelet.expTCresi = v;
     wavelet.expchroma = v;
     wavelet.expedge = v;
+    wavelet.expedg3 = v;
     wavelet.expresid = v;
     wavelet.exptoning = v;
     wavelet.expnoise = v;
@@ -910,13 +920,20 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.gain = wavelet.gain && p.wavelet.gain == other.wavelet.gain;
         wavelet.offs = wavelet.offs && p.wavelet.offs == other.wavelet.offs;
         wavelet.vart = wavelet.vart && p.wavelet.vart == other.wavelet.vart;
+        wavelet.scale = wavelet.scale && p.wavelet.scale == other.wavelet.scale;
         wavelet.limd = wavelet.limd && p.wavelet.limd == other.wavelet.limd;
+        wavelet.highlights = wavelet.highlights && p.wavelet.highlights == other.wavelet.highlights;
+        wavelet.htonalwidth = wavelet.htonalwidth && p.wavelet.htonalwidth == other.wavelet.htonalwidth;
+        wavelet.shadows = wavelet.shadows && p.wavelet.shadows == other.wavelet.shadows;
+        wavelet.stonalwidth = wavelet.stonalwidth && p.wavelet.stonalwidth == other.wavelet.stonalwidth;
+        wavelet.radius = wavelet.radius && p.wavelet.radius == other.wavelet.radius;
         wavelet.chrrt = wavelet.chrrt && p.wavelet.chrrt == other.wavelet.chrrt;
         wavelet.str = wavelet.str && p.wavelet.str == other.wavelet.str;
         wavelet.neigh = wavelet.neigh && p.wavelet.neigh == other.wavelet.neigh;
         wavelet.balance = wavelet.balance && p.wavelet.balance == other.wavelet.balance;
         wavelet.balanleft = wavelet.balanleft && p.wavelet.balanleft == other.wavelet.balanleft;
         wavelet.balanhig = wavelet.balanhig && p.wavelet.balanhig == other.wavelet.balanhig;
+        wavelet.grad = wavelet.grad && p.wavelet.grad == other.wavelet.grad;
         wavelet.blend = wavelet.blend && p.wavelet.blend == other.wavelet.blend;
         wavelet.blendc = wavelet.blendc && p.wavelet.blendc == other.wavelet.blendc;
         wavelet.iter = wavelet.iter && p.wavelet.iter == other.wavelet.iter;
@@ -944,6 +961,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.CHmethod = wavelet.CHmethod && p.wavelet.CHmethod == other.wavelet.CHmethod;
         wavelet.mergevMethod = wavelet.mergevMethod && p.wavelet.mergevMethod == other.wavelet.mergevMethod;
         wavelet.mergMethod = wavelet.mergMethod && p.wavelet.mergMethod == other.wavelet.mergMethod;
+        wavelet.mergBMethod = wavelet.mergBMethod && p.wavelet.mergBMethod == other.wavelet.mergBMethod;
         wavelet.CHSLmethod = wavelet.CHSLmethod && p.wavelet.CHSLmethod == other.wavelet.CHSLmethod;
         wavelet.EDmethod = wavelet.EDmethod && p.wavelet.EDmethod == other.wavelet.EDmethod;
         wavelet.NPmethod = wavelet.NPmethod && p.wavelet.NPmethod == other.wavelet.NPmethod;
@@ -1001,7 +1019,9 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.expcontrast = wavelet.expcontrast && p.wavelet.expcontrast == other.wavelet.expcontrast;
         wavelet.expchroma = wavelet.expchroma && p.wavelet.expchroma == other.wavelet.expchroma;
         wavelet.expedge = wavelet.expedge && p.wavelet.expedge == other.wavelet.expedge;
+        wavelet.expedg3 = wavelet.expedg3 && p.wavelet.expedg3 == other.wavelet.expedg3;
         wavelet.expresid = wavelet.expresid && p.wavelet.expresid == other.wavelet.expresid;
+        wavelet.expTCresi = wavelet.expTCresi && p.wavelet.expTCresi == other.wavelet.expTCresi;
         wavelet.expfinal = wavelet.expfinal && p.wavelet.expfinal == other.wavelet.expfinal;
         wavelet.exptoning = wavelet.exptoning && p.wavelet.exptoning == other.wavelet.exptoning;
         wavelet.expnoise = wavelet.expnoise && p.wavelet.expnoise == other.wavelet.expnoise;
@@ -2423,8 +2443,33 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.vart   = mods.wavelet.vart;
     }
 
+    if (wavelet.scale) {
+        toEdit.wavelet.scale   = mods.wavelet.scale;
+    }
+
     if (wavelet.limd) {
         toEdit.wavelet.limd   = mods.wavelet.limd;
+    }
+
+    if (retinex.highlights) {
+        toEdit.retinex.highlights     = mods.retinex.highlights;
+    }
+
+    if (retinex.htonalwidth) {
+        toEdit.retinex.htonalwidth     = mods.retinex.htonalwidth;
+    }
+
+    if (wavelet.shadows) {
+        toEdit.wavelet.shadows     = mods.wavelet.shadows;
+
+    }
+
+    if (wavelet.stonalwidth) {
+        toEdit.wavelet.stonalwidth     = mods.wavelet.stonalwidth;
+    }
+
+    if (wavelet.radius) {
+        toEdit.wavelet.radius      = mods.wavelet.radius;
     }
 
     if (wavelet.chrrt) {
@@ -2449,6 +2494,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.balanhig) {
         toEdit.wavelet.balanhig   = mods.wavelet.balanhig;
+    }
+
+    if (wavelet.grad) {
+        toEdit.wavelet.grad   = mods.wavelet.grad;
     }
 
     if (wavelet.blend) {
@@ -2533,6 +2582,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.mergevMethod) {
         toEdit.wavelet.mergevMethod        = mods.wavelet.mergevMethod;
+    }
+
+    if (wavelet.mergBMethod) {
+        toEdit.wavelet.mergBMethod        = mods.wavelet.mergBMethod;
     }
 
     if (wavelet.retinexMethodpro) {
@@ -2692,12 +2745,20 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.expcontrast   = mods.wavelet.expcontrast;
     }
 
+    if (wavelet.expTCresi) {
+        toEdit.wavelet.expTCresi   = mods.wavelet.expTCresi;
+    }
+
     if (wavelet.expchroma) {
         toEdit.wavelet.expchroma   = mods.wavelet.expchroma;
     }
 
     if (wavelet.expedge) {
         toEdit.wavelet.expedge   = mods.wavelet.expedge;
+    }
+
+    if (wavelet.expedg3) {
+        toEdit.wavelet.expedg3   = mods.wavelet.expedg3;
     }
 
     if (wavelet.expreti) {

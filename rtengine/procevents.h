@@ -490,6 +490,17 @@ enum ProcEvent {
     EvmFile = 460,
     EvWavushamet = 461,
     EvWavenareti = 462,
+    EvWavmergBMethod = 463,
+    EvWavradius = 464,
+    EvWavhighlights = 465,
+    EWavh_tonalwidth = 466,
+    EvWavshadows = 467,
+    EvWavs_tonalwidth = 468,
+    EvWavscale = 469,
+    EvWavenaTCresi = 470,
+    EvWavenaedge3 = 471,
+    EvWavgrad = 472,
+
     NUMOFEVENTS
 };
 }

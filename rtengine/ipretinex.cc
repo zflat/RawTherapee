@@ -867,7 +867,8 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
         float offse = (float) deh.offs;
         float chrT = deh.chrrt / 100.f;
         int scal ;
-        scal = scall;//disabled scal
+        //scal = scall;//disabled scal
+        scal = deh.scale;//enable scale
         int nei = (int) krad * deh.neigh;
         float vart = (float)deh.vart / 100.f;//variance
         float strength = (float) deh.str / 100.f; // Blend with original L channel data
@@ -927,6 +928,14 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
             src[i] = &srcBuffer[i * W_L];
         }
 
+        int h_th, s_th;
+
+        int shHighlights = deh.highlights;
+        int shShadows = deh.shadows;
+        int mapmet = 4;
+        double shradius = (double) deh.radius;
+        int viewmet = 1;
+        int it = 1;
 #ifdef _OPENMP
         #pragma omp parallel for
 #endif
@@ -951,6 +960,8 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
             pond /= log(elogt);
         }
 
+        auto shmap = mapmet > 1 ? new SHMap (W_L, H_L, true) : nullptr;
+
         float *buffer = new float[W_L * H_L];;
 
 #ifdef _OPENMP
@@ -964,12 +975,57 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
                     gaussianBlur<float> (out, out, W_L, H_L, sqrtf(SQR(RetinexScales[scale]) - SQR(RetinexScales[scale + 1])), buffer);
                 }
 
+                //here only gaussian without dispaly mask
+                if(mapmet == 4) {
+                    shradius /= 1.;
+                } else {
+                    shradius = 40.;
+                }
+
+                if(mapmet == 4) if(it == 1) {
+                        shmap->updateL (out, shradius, false, 1);    //gauss
+                    }
+
+                if (shmap) {
+                    h_th = shmap->max_f - deh.htonalwidth * (shmap->max_f - shmap->avg) / 100;
+                    s_th = deh.stonalwidth * (shmap->avg - shmap->min_f) / 100;
+                }
+
 #ifdef __SSE2__
                 vfloat pondv = F2V(pond);
                 vfloat limMinv = F2V(ilimD);
                 vfloat limMaxv = F2V(limD);
 
 #endif
+
+                if(((mapmet == 2 && scale > 2) || mapmet == 3 || mapmet == 4) && it == 1) {
+
+
+#ifdef _OPENMP
+                    #pragma omp for
+#endif
+
+                    for (int i = 0; i < H_L; i++) {
+                        int j = 0;
+
+                        for (; j < W_L; j++) {
+                            double mapval = 1.0 + shmap->map[i][j];
+                            double factor = 1.0;
+
+                            if (mapval > h_th) {
+                                factor = (h_th + (100.0 - shHighlights) * (mapval - h_th) / 100.0) / mapval;
+                            } else if (mapval < s_th) {
+                                factor = (s_th - (100.0 - shShadows) * (s_th - mapval) / 100.0) / mapval;
+                            }
+
+                            out[i][j] *= factor;
+
+                        }
+                    }
+                }
+
+
+
 #ifdef _OPENMP
                 #pragma omp for
 #endif

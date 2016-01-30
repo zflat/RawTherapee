@@ -561,13 +561,20 @@ public:
     bool gain;
     bool offs;
     bool vart;
+    bool scale;
     bool limd;
+    bool highlights;
+    bool htonalwidth;
+    bool shadows;
+    bool stonalwidth;
+    bool radius;
     bool chrrt;
     bool str;
     bool neigh;
     bool balance;
     bool balanleft;
     bool balanhig;
+    bool grad;
     bool blend;
     bool blendc;
     bool iter;
@@ -586,6 +593,7 @@ public:
     bool CHSLmethod;
     bool mergevMethod;
     bool mergMethod;
+    bool mergBMethod;
     bool EDmethod;
     bool BAmethod;
     bool NPmethod;
@@ -654,7 +662,9 @@ public:
     bool expcontrast;
     bool expchroma;
     bool expedge;
+    bool expedg3;
     bool expresid;
+    bool expTCresi;
     bool expfinal;
     bool exptoning;
     bool expnoise;
