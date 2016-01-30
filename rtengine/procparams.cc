@@ -736,7 +736,7 @@ void WaveletParams::setDefaults()
     str = 20;
     neigh = 50;
     vart = 200;
-    scale = 3;
+    scale = 5;
     limd = 10;
     chrrt = 0;
     highlights    = 0;

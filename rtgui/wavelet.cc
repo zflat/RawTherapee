@@ -2568,8 +2568,8 @@ void Wavelet::mergMethodChanged()
         mergBMethod->hide();
         mergevMethod->set_active (3);
         Backmethod->set_active (2);
-        CLmethod->set_active (1);//or zero if need
-        Lmethod->set_active (2);
+        CLmethod->set_active (2);
+        Lmethod->set_active (1);//or zero if need
         Dirmethod->set_active (3);
         Lmethod->set_sensitive(true);
         Dirmethod->set_sensitive(true);
