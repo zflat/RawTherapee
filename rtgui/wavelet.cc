@@ -2562,6 +2562,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
 
 void Wavelet::mergMethodChanged()
 {
+
     if(mergMethod->get_active_row_number() == 0 && expmerge->getEnabled() == true) {//save water
         blend->hide();
         blendc->hide();
@@ -2607,7 +2608,7 @@ void Wavelet::mergMethodChanged()
         blendc->show();
         balanhig->show();
         labmmgB->show();
-        CCWcurveEditormerg->hide();
+        CCWcurveEditormerg->show();
         grad->show();
         balanleft->show();
         hbin->show();
@@ -2619,6 +2620,8 @@ void Wavelet::mergMethodChanged()
         CLmethod->set_active (3);
         Lmethod->set_active (3);
     }
+
+    //mergBMethodChanged();
 
     if (listener) {
         listener->panelChanged (EvWavmergMethod, mergMethod->get_active_text ());
