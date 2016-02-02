@@ -37,6 +37,7 @@ class OpacityCurve;
 class NoiseCurve;
 class WavCurve;
 class WavretiCurve;
+class WavmergCurve;
 class WavOpacityCurveRG;
 class WavOpacityCurveBY;
 class WavOpacityCurveW;
@@ -996,6 +997,7 @@ public:
     Glib::ustring inpute;
     std::vector<double>   ccwcurve;
     std::vector<double>   ccwTcurve;
+    std::vector<double>   ccwmergcurve;
     std::vector<double> opacityCurveRG;
     std::vector<double> opacityCurveBY;
     std::vector<double> opacityCurveW;
@@ -1118,13 +1120,14 @@ public:
 
     WaveletParams ();
     void setDefaults();
-    void getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
+    void getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavmergCurve &cmergCurve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
     static void getDefaultCCWCurve(std::vector<double> &curve);
     static void getDefaultCCWCurveT(std::vector<double> &curve);
     static void getDefaultOpacityCurveRG(std::vector<double> &curve);
     static void getDefaultOpacityCurveBY(std::vector<double> &curve);
     static void getDefaultOpacityCurveW(std::vector<double> &curve);
     static void getDefaultOpacityCurveWL(std::vector<double> &curve);
+    static void getDefaultmergCurveT(std::vector<double> &curve);
 
 };
 

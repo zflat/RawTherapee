@@ -982,12 +982,13 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     WaveletParams WaveParams = params.wavelet;
     WavCurve wavCLVCurve;
     WavretiCurve wavRETCurve;
+    WavmergCurve wavMERCurve;
     WavOpacityCurveRG waOpacityCurveRG;
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;
     WavOpacityCurveWL waOpacityCurveWL;
 
-    params.wavelet.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
+    params.wavelet.getCurves(wavCLVCurve, wavRETCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
 
     // directional pyramid wavelet
     if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
@@ -1148,27 +1149,28 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         Glib::ustring provis;
         float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-        if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
+        if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             unshar = new LabImage (fw, fh);
 
-            if(WaveParams.usharpmethod == "orig") {
-                unshar->CopyFrom(labView);//same time as with pragma for..but more 'clean'
+            //    if(WaveParams.usharpmethod == "orig") {
+            //        unshar->CopyFrom(labView);//same time as with pragma for..but more 'clean'
 
-            } else if(WaveParams.usharpmethod == "wave") {
-                provis = params.wavelet.CLmethod;
-                params.wavelet.CLmethod = "all";
-                ipf.ip_wavelet(labView, labView, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-                unshar->CopyFrom(labView);
+            //    } else
+            //   if(WaveParams.usharpmethod == "wave") {
+            provis = params.wavelet.CLmethod;
+            params.wavelet.CLmethod = "all";
+            ipf.ip_wavelet(labView, labView, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            unshar->CopyFrom(labView);
 
-                params.wavelet.CLmethod = provis;
+            params.wavelet.CLmethod = provis;
 
-            }
+            //   }
 
         }
 
         ipf.ip_wavelet(labView, labView, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
-        if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
+        if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             float mL = (float) (WaveParams.mergeL / 100.f);
             float mC = (float) (WaveParams.mergeC / 100.f);
             float mL0;
@@ -1210,10 +1212,12 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 float gra = WaveParams.grad / 150.f;
 
                 if(params.wavelet.mergBMethod == "water"  || params.wavelet.mergBMethod == "hdr1") {
+                    float Mlc;
 
                     for (int x = 0; x < labView->H; x++)
                         for (int y = 0; y < labView->W; y++) {
-                            labView->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labView->L[x][y];
+                            Mlc = 1.4f * wavMERCurve[cropmergelab->L[x][y] / 65.f] - 0.5f;
+                            labView->L[x][y] =  Mlc * (cropmergelab->L[x][y]) + labView->L[x][y];
                             labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
                             labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
                         }

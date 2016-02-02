@@ -1535,6 +1535,47 @@ void WavretiCurve::Set(const std::vector<double> &curvePoints)
     }
 }
 
+WavmergCurve::WavmergCurve() : sum(0.f) {};
+
+void WavmergCurve::Reset()
+{
+    lutWavmergCurve.reset();
+    sum = 0.f;
+}
+
+void WavmergCurve::Set(const Curve &pCurve)
+{
+    if (pCurve.isIdentity()) {
+        Reset(); // raise this value if the quality suffers from this number of samples
+        return;
+    }
+
+    lutWavmergCurve(501); // raise this value if the quality suffers from this number of samples
+    sum = 0.f;
+
+    for (int i = 0; i < 501; i++) {
+        lutWavmergCurve[i] = pCurve.getVal(double(i) / 500.);
+
+        if(lutWavmergCurve[i] < 0.02f) {
+            lutWavmergCurve[i] = 0.02f;    //avoid 0.f for wavelet : under 0.01f quasi no action for each value
+        }
+
+        sum += lutWavmergCurve[i];
+    }
+
+    //lutWavCurve.dump("wav");
+}
+void WavmergCurve::Set(const std::vector<double> &curvePoints)
+{
+
+    if (!curvePoints.empty() && curvePoints[0] > FCT_Linear && curvePoints[0] < FCT_Unchanged) {
+        FlatCurve tcurve(curvePoints, false, CURVES_MIN_POLY_POINTS / 2);
+        tcurve.setIdentityValue(0.);
+        Set(tcurve);
+    } else {
+        Reset();
+    }
+}
 
 
 

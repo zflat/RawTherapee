@@ -1076,6 +1076,7 @@ void Crop::update (int todo)
         if((params.wavelet.enabled)) {
             WavCurve wavCLVCurve;
             WavretiCurve wavRETCurve;
+            WavmergCurve wavMERCurve;
 
             WavOpacityCurveRG waOpacityCurveRG;
             WavOpacityCurveBY waOpacityCurveBY;
@@ -1084,27 +1085,28 @@ void Crop::update (int todo)
             LUTf wavclCurve;
             LUTu dummy;
 
-            params.wavelet.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            params.wavelet.getCurves(wavCLVCurve, wavRETCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             LabImage *unshar;
             Glib::ustring provis;
             float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
             minCD = maxCD = maxi = mini = Tmean = Tsigma = Tmin = Tmax = 0.f;
 
-            if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
+            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 unshar = new LabImage (labnCrop->W, labnCrop->H);
 
-                if(WaveParams.usharpmethod == "orig") {
-                    unshar->CopyFrom(labnCrop);
+                //     if(WaveParams.usharpmethod == "orig") {
+                //         unshar->CopyFrom(labnCrop);
 
-                }  else if(WaveParams.usharpmethod == "wave") {
-                    provis = params.wavelet.CLmethod;
-                    params.wavelet.CLmethod = "all";
+                //    }  else
+                //    if(WaveParams.usharpmethod == "wave") {
+                provis = params.wavelet.CLmethod;
+                params.wavelet.CLmethod = "all";
 
-                    parent->ipf.ip_wavelet(labnCrop, labnCrop, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-                    unshar->CopyFrom(labnCrop);
+                parent->ipf.ip_wavelet(labnCrop, labnCrop, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                unshar->CopyFrom(labnCrop);
 
-                    params.wavelet.CLmethod = provis;
-                }
+                params.wavelet.CLmethod = provis;
+                //   }
 
             }
 
@@ -1114,7 +1116,7 @@ void Crop::update (int todo)
                 parent->awavListener->minmaxChanged(maxCD, minCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
             }
 
-            if(WaveParams.usharpmethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
+            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
 
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
@@ -1170,11 +1172,14 @@ void Crop::update (int todo)
 
                             }
                     }
+//wavMERCurve
+                    else if(params.wavelet.mergBMethod == "hdr1" && wavMERCurve) {
+                        float Mlc;
 
-                    else if(params.wavelet.mergBMethod == "hdr1") {
                         for (int x = 0; x < labnCrop->H; x++)
                             for (int y = 0; y < labnCrop->W; y++) {
-                                labnCrop->L[x][y] =  m_L * (cropmergelab->L[x][y]) + labnCrop->L[x][y];
+                                Mlc = 1.4f * wavMERCurve[cropmergelab->L[x][y] / 65.f] - 0.5f;
+                                labnCrop->L[x][y] =  Mlc * (cropmergelab->L[x][y]) + labnCrop->L[x][y];
                                 labnCrop->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labnCrop->a[x][y];
                                 labnCrop->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labnCrop->b[x][y];
                             }

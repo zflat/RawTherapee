@@ -1487,7 +1487,12 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
 
             if(params->wavelet.mergBMethod == "water") {
                 wat_or_hdr = 1;
+                dpix = 0;
             }
+
+//    if(params->wavelet.Backmethod == "black") { printf("black\n");}
+//    if(params->wavelet.Backmethod == "grey") { printf("grey\n");}
+//    if(params->wavelet.Backmethod == "resid") { printf("resid\n");}
 
             struct D {
                 int W, H, sk;

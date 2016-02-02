@@ -132,6 +132,7 @@ protected:
     NoiseCurve noiseCCurve;
     WavCurve wavCLVCurve;
     WavretiCurve wavRETCurve;
+    WavmergCurve wavMERCurve;
     WavOpacityCurveRG waOpacityCurveRG;
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;

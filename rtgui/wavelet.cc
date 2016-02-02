@@ -646,7 +646,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     usharpHBox->pack_start(*usharpLabel, Gtk::PACK_SHRINK, 0);
     usharpHBox->pack_start(*ushamethod);
-    usharpHBox->pack_start(*usharpmethod);
+//    usharpHBox->pack_start(*usharpmethod);
 
     mergeL  = Gtk::manage (new Adjuster (M("TP_WAVELET_MERGEL"), -50, 100, 1, 40));
     mergeL->setAdjusterListener (this);
@@ -1093,6 +1093,22 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mgBbox->pack_start(*mergBMethod);
     mergeBox->pack_start(*mgBbox);
 
+
+    // Wavelet merge curve
+    CCWcurveEditormerg = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_MCURVE"));
+    CCWcurveEditormerg->setCurveListener (this);
+
+    rtengine::WaveletParams::getDefaultmergCurveT(defaultCurve);
+    cmergshape = static_cast<FlatCurveEditor*>(CCWcurveEditormerg->addCurve(CT_Flat, "", NULL, false));
+
+    cmergshape->setIdentityValue(0.);
+    cmergshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
+    cmergshape->setTooltip(M("TP_WAVELET_MCURVE_TOOLTIP"));
+
+    CCWcurveEditormerg->curveListComplete();
+    CCWcurveEditormerg->show();
+    mergeBox->pack_start(*CCWcurveEditormerg, Gtk::PACK_SHRINK, 4);
+
     blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 50));
     blend->setAdjusterListener (this);
     blend->set_tooltip_text (M("TP_WAVELET_BLEND_TOOLTIP"));
@@ -1274,6 +1290,7 @@ Wavelet::~Wavelet ()
     delete opaCurveEditorG;
     delete opacityCurveEditorG;
     delete CCWcurveEditorG;
+    delete CCWcurveEditormerg;
     delete CCWcurveEditorT;
     delete curveEditorRES;
     delete curveEditorGAM;
@@ -1668,6 +1685,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     ccshape->setCurve (pp->wavelet.ccwcurve);
     cTshape->setCurve (pp->wavelet.ccwTcurve);
+    cmergshape->setCurve (pp->wavelet.ccwmergcurve);
     opacityShapeRG->setCurve (pp->wavelet.opacityCurveRG);
     opacityShapeBY->setCurve (pp->wavelet.opacityCurveBY);
     opacityShape->setCurve (pp->wavelet.opacityCurveW);
@@ -1880,6 +1898,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         set_inconsistent (multiImage && !pedited->wavelet.enabled);
         ccshape->setUnChanged  (!pedited->wavelet.ccwcurve);
         cTshape->setUnChanged  (!pedited->wavelet.ccwTcurve);
+        cmergshape->setUnChanged  (!pedited->wavelet.ccwmergcurve);
         expcontrast->set_inconsistent   (!pedited->wavelet.expcontrast);
         expchroma->set_inconsistent   (!pedited->wavelet.expchroma);
         expedge->set_inconsistent   (!pedited->wavelet.expedge);
@@ -2104,6 +2123,7 @@ void Wavelet::setEditProvider  (EditDataProvider *provider)
 {
     ccshape->setEditProvider(provider);
     cTshape->setEditProvider(provider);
+    cmergshape->setEditProvider(provider);
     opacityShapeRG->setEditProvider(provider);
     opacityShapeBY->setEditProvider(provider);
     opacityShape->setEditProvider(provider);
@@ -2117,6 +2137,7 @@ void Wavelet::autoOpenCurve ()
 {
     ccshape->openIfNonlinear();
     cTshape->openIfNonlinear();
+    cmergshape->openIfNonlinear();
     //opacityShapeRG->openIfNonlinear();
     //opacityShapeBY->openIfNonlinear();
 }
@@ -2177,6 +2198,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.level3noise    = level3noise->getValue<double> ();
     pp->wavelet.ccwcurve       = ccshape->getCurve ();
     pp->wavelet.ccwTcurve       = cTshape->getCurve ();
+    pp->wavelet.ccwmergcurve       = cmergshape->getCurve ();
     pp->wavelet.opacityCurveRG = opacityShapeRG->getCurve ();
     pp->wavelet.opacityCurveBY = opacityShapeBY->getCurve ();
     pp->wavelet.opacityCurveW  = opacityShape->getCurve ();
@@ -2300,6 +2322,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.hllev           = hllev->getEditedState ();
         pedited->wavelet.ccwcurve        = !ccshape->isUnChanged ();
         pedited->wavelet.ccwTcurve        = !cTshape->isUnChanged ();
+        pedited->wavelet.ccwmergcurve        = !cmergshape->isUnChanged ();
         pedited->wavelet.edgcont         = edgcont->getEditedState ();
         pedited->wavelet.level0noise     = level0noise->getEditedState ();
         pedited->wavelet.level1noise     = level1noise->getEditedState ();
@@ -2543,6 +2566,8 @@ void Wavelet::mergMethodChanged()
         blend->hide();
         blendc->hide();
         balanhig->hide();
+        CCWcurveEditormerg->hide();
+        labmmgB->hide();
         grad->hide();
         balanleft->hide();
         hbin->hide();
@@ -2560,6 +2585,8 @@ void Wavelet::mergMethodChanged()
     } else if(mergMethod->get_active_row_number() == 1   && expmerge->getEnabled() == true) {//save hdr
         blend->hide();
         blendc->hide();
+        CCWcurveEditormerg->hide();
+        labmmgB->hide();
         balanhig->hide();
         grad->hide();
         balanleft->hide();
@@ -2579,6 +2606,8 @@ void Wavelet::mergMethodChanged()
         blend->show();
         blendc->show();
         balanhig->show();
+        labmmgB->show();
+        CCWcurveEditormerg->hide();
         grad->show();
         balanleft->show();
         hbin->show();
@@ -2609,10 +2638,18 @@ void Wavelet::mergevMethodChanged()
 
 void Wavelet::mergBMethodChanged()
 {
-    if(mergBMethod->get_active_row_number() == 2) {
+    if(mergBMethod->get_active_row_number() == 2) {//slider HDR
         grad->show();
-    } else {
+        blend->show();
+        CCWcurveEditormerg->hide();
+    } else if(mergBMethod->get_active_row_number() == 1) { //curve HDR
         grad->hide();
+        blend->hide();
+        CCWcurveEditormerg->show();
+    } else {//watermark
+        blend->show();
+        grad->hide();
+        CCWcurveEditormerg->hide();
     }
 
     if (listener) {
@@ -2669,6 +2706,8 @@ void Wavelet::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvWavCCCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == cTshape) {
             listener->panelChanged (EvWavCTCurve, M("HISTORY_CUSTOMCURVE"));
+        } else if (ce == cmergshape) {
+            listener->panelChanged (EvWavmergCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == opacityShapeRG) {
             listener->panelChanged (EvWavColor, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == opacityShapeBY) {
@@ -3368,6 +3407,7 @@ void Wavelet::setBatchMode (bool batchMode)
     mergMethod->append_text (M("GENERAL_UNCHANGED"));
     mergBMethod->append_text (M("GENERAL_UNCHANGED"));
     CCWcurveEditorG->setBatchMode (batchMode);
+    CCWcurveEditormerg->setBatchMode (batchMode);
     CCWcurveEditorT->setBatchMode (batchMode);
     opaCurveEditorG->setBatchMode (batchMode);
     opacityCurveEditorG->setBatchMode (batchMode);

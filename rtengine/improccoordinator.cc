@@ -824,35 +824,36 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         if((params.wavelet.enabled)) {
             WaveletParams WaveParams = params.wavelet;
             //      WaveParams.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY);
-            WaveParams.getCurves(wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             int kall = 0;
             progress ("Wavelet...", 100 * readyphase / numofphases);
             LabImage *unshar;
             Glib::ustring provis;
             float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-            if(WaveParams.usharpmethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
+            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 unshar = new LabImage (pW, pH);
 
-                if(WaveParams.usharpmethod == "orig") {
-                    unshar->CopyFrom(nprevl);
+                //   if(WaveParams.usharpmethod == "orig") {
+                //       unshar->CopyFrom(nprevl);
 
-                } else if(WaveParams.usharpmethod == "wave") {
-                    provis = params.wavelet.CLmethod;
-                    params.wavelet.CLmethod = "all";
+                //   } else
+                //   if(WaveParams.usharpmethod == "wave") {
+                provis = params.wavelet.CLmethod;
+                params.wavelet.CLmethod = "all";
 
-                    ipf.ip_wavelet(nprevl, nprevl, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-                    unshar->CopyFrom(nprevl);
+                ipf.ip_wavelet(nprevl, nprevl, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                unshar->CopyFrom(nprevl);
 
-                    params.wavelet.CLmethod = provis;
+                params.wavelet.CLmethod = provis;
 
-                }
+                //     }
             }
 
             ipf.ip_wavelet(nprevl, nprevl, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
 
-            if(WaveParams.usharpmethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
+            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
                 float mL0;
@@ -910,10 +911,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             }
                     }
 
-                    if(params.wavelet.mergBMethod == "hdr1") {
+                    if(params.wavelet.mergBMethod == "hdr1"  && wavMERCurve) {
+                        float Mlc;
+
                         for (int x = 0; x < nprevl->H; x++)
                             for (int y = 0; y < nprevl->W; y++) {
-                                nprevl->L[x][y] =  m_L * (cropmergelab->L[x][y]) + nprevl->L[x][y];
+                                Mlc = 1.4f * wavMERCurve[cropmergelab->L[x][y] / 65.f] - 0.5f;
+                                nprevl->L[x][y] =  Mlc * (cropmergelab->L[x][y]) + nprevl->L[x][y];
                                 nprevl->a[x][y] =  m_C * (cropmergelab->a[x][y]) + nprevl->a[x][y];
                                 nprevl->b[x][y] =  m_C * (cropmergelab->b[x][y]) + nprevl->b[x][y];
                             }
@@ -1421,18 +1425,11 @@ void ImProcCoordinator::savelabReference (const Glib::ustring& fname)
         params.wavelet.expmerge = true;
     }
 
-    // return;
     params.wavelet.mergevMethod = "save";
-    params.wavelet.Backmethod = "resid";
-//   params.wavelet.CLmethod = "sup";
-//   pparams.wavelet.Lmethod = "6_";
     params.wavelet.Dirmethod = "all";
-    params.wavelet.usharpmethod = "none";
-    //openThm->setProcParams (pparams, NULL, EDITOR);
     params.wavelet.inpute = fname;
     printf("save file improc=%s\n", fname.c_str());
 
-    // plistener pl;
 
     rtengine::ProcessingJob* job = rtengine::ProcessingJob::create (getInitialImage(), params);
     rtengine::IImage16* res = rtengine::processImage (job, err,  0);

@@ -57,6 +57,7 @@ protected:
 
     CurveEditorGroup* CCWcurveEditorG;
     CurveEditorGroup* CCWcurveEditorT;
+    CurveEditorGroup* CCWcurveEditormerg;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
     Gtk::HSeparator* colorSep;
@@ -81,6 +82,7 @@ protected:
 
     FlatCurveEditor* ccshape;
     FlatCurveEditor* cTshape;
+    FlatCurveEditor* cmergshape;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;
     Gtk::CheckButton * displaychro;

@@ -706,6 +706,7 @@ HISTORY_MSG_470;W - Reti - Scale
 HISTORY_MSG_471;W - Residual - Toning color bal
 HISTORY_MSG_472;W - es - Edge detection
 HISTORY_MSG_473;W - merge - gradient luma
+HISTORY_MSG_474;W - merge - merge curve
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1966,9 +1967,11 @@ TP_WAVELET_MEDILEV_TOOLTIP;When you enable Edge Detection, it is recommanded:\n-
 TP_WAVELET_MERGE;Merge files and Watermark
 TP_WAVELET_MERGEB_METHOD;Merge method
 TP_WAVELET_BLEND_WAT;Watermark
-TP_WAVELET_BLEND_HDR1;Hdr one
-TP_WAVELET_BLEND_HDR2;Hdr two
-TP_WAVELET_MERGE_TOOLTIP;Can be used for create Watermak or to merge 2 files (HDR).\nThis second possibility is currently limited by the lack of local control. In addition the algorithm must be greatly improved.\nI recommand:a) threat 'first' image overexposed (neutral) and Save L*a*b* for HDR, and then open current image underexposed (neutral), and then merge.
+TP_WAVELET_BLEND_HDR1;Curve
+TP_WAVELET_BLEND_HDR2;Sliders
+TP_WAVELET_MCURVE;Merge luma curve
+TP_WAVELET_MCURVE_TOOLTIP;Merge luminance between current and first image in function luma first image
+TP_WAVELET_MERGE_TOOLTIP;*Can be used for create Watermark (or Sharp-mask with the same file) or merge 2 files (HDR).\n*This second possibility is currently limited by the lack of local control. In addition the algorithm must be greatly improved.\nI recommand:a) threat 'first' image overexposed (neutral) and Save L*a*b* HDR, and then open current image underexposed, and then merge.
 TP_WAVELET_MERG_METHOD;Merge type
 TP_WAVELET_MERGEINPUTLABEL;Select file to merge
 TP_WAVELET_MERGEINPUT_TOOLTIP;Select file data
@@ -2006,7 +2009,7 @@ TP_WAVE_FINA;Final Touchup
 TP_WAVRETI_METHOD_TOOLTIP;Low = Reinforce low light,\nUniform = Equalize action,\nHigh = Reinforce high light.
 TP_WAVRETI_METHODPRO_TOOLTIP;Locate the Retinex Process either in Residual or in Final touchup
 TP_WAVELET_VIEW_METHOD;Preview and Save Method
-TP_WAVELET_VIEW_TOOLTIP;This method allows to:\n*Save datas for Watermark - Wavelet settings will be automatically positionned (Background=black, Process=below, level=7), you can change Level.\n*Save datas for HDR - Wavelet settings will be automatically positionned (Background=residual, Process=above, level=2), you can change Level, level=1 produce no blur.\n*Load datas and merge - load *.mer and present sliders menu
+TP_WAVELET_VIEW_TOOLTIP;This method allows to:\n*Save datas for Watermark (or Sharp mask)- Wavelet settings will be automatically positionned (Background=black, Process=below, level=7), you can change Level (sharp-mask about 3).\n*Save datas for HDR - Wavelet settings will be automatically positionned (Background=residual, Process=above, level=2), you can change Level, level=1 produce no blur.\n*Load datas and merge - load *.mer and present merge menu
 TP_WAVELET_VIEW_CURR;Merge image
 TP_WAVELET_VIEW_CUNO;Current image
 TP_WAVELET_VIEW_PREV;First image

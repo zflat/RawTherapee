@@ -565,7 +565,6 @@ void ColorToningParams::getCurves(ColorGradientCurve &colorCurveLUT, OpacityCurv
         opacityCurveLUT.Set(oCurve, opautili);
     }
 }
-//WaveletParams::WaveletParams (): hueskin(-5, 25, 170, 120, false), hueskin2(-260, -250, -130, -140, false), hllev(50, 75, 100, 98, false), bllev(0, 2, 50, 25, false), pastlev(0, 2, 30, 20, false), satlev(30, 45, 130, 100, false), edgcont(0, 20, 100, 75, false){
 
 WaveletParams::WaveletParams (): hueskin(-5, 25, 170, 120, false), hueskin2(-260, -250, -130, -140, false), hllev(50, 75, 100, 98, false), bllev(0, 2, 50, 25, false),
     pastlev(0, 2, 30, 20, false), satlev(30, 45, 130, 100, false),  edgcont(bl, tl, br, tr, false), /* edgcont(0, 10, 75, 40, false),*/level0noise(0, 0, false), level1noise(0, 0, false), level2noise(0, 0, false), level3noise(0, 0, false)
@@ -665,11 +664,29 @@ void WaveletParams::getDefaultCCWCurveT(std::vector<double> &curve)
     }
 
 }
+//TCurve=1;0;0.34000000000000002;0.34999999999999998;0.34999999999999998;0.59999999999999998;0.75;0.34999999999999998;0.34999999999999998;1;0.5;0.34999999999999998;0.34999999999999998;
+//MCurve=1;0;0.91414448669201631;0.34999999999999998;0.34999999999999998;0.588593155893536;0.84885931558935446;0.34999999999999998;0.34999999999999998;1;0.093155893536122525;0.34999999999999998;0.34999999999999998;
 
-void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
+void WaveletParams::getDefaultmergCurveT(std::vector<double> &curve)
+{
+    double v[8] =   {   0.00, 0.70, 0.35, 0.35,
+                        1.00, 0.55, 0.35, 0.35,
+                    };
+
+    curve.resize(9);
+    curve.at(0 ) = double(FCT_MinMaxCPoints);
+
+    for (size_t i = 1; i < curve.size(); ++i) {
+        curve.at(i) = v[i - 1];
+    }
+
+}
+
+void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavmergCurve &cmergCurve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
 {
     cCurve.Set(this->ccwcurve);
     cTCurve.Set(this->ccwTcurve);
+    cmergCurve.Set(this->ccwmergcurve);
     opacityCurveLUTRG.Set(this->opacityCurveRG);
     opacityCurveLUTBY.Set(this->opacityCurveBY);
     opacityCurveLUTW.Set(this->opacityCurveW);
@@ -682,6 +699,7 @@ void WaveletParams::setDefaults()
 {
     getDefaultCCWCurve(ccwcurve);
     getDefaultCCWCurveT(ccwTcurve);
+    getDefaultmergCurveT(ccwmergcurve);
 
     getDefaultOpacityCurveRG(opacityCurveRG);
     getDefaultOpacityCurveBY(opacityCurveBY);
@@ -718,7 +736,7 @@ void WaveletParams::setDefaults()
     retinexMethodpro   = "fina";
     mergevMethod = "curr";
     mergMethod = "load";
-    mergBMethod = "hdr2";
+    mergBMethod = "hdr1";
 
     TMmethod         = "cont";
     HSmethod         = "with";
@@ -726,7 +744,7 @@ void WaveletParams::setDefaults()
     Backmethod           = "grey";
     Dirmethod        = "all";
     Tilesmethod          = "full";
-    usharpmethod          = "orig";
+    usharpmethod          = "wave";
     ushamethod          = "none";
     daubcoeffmethod          = "4_";
     mergeL = 40;
@@ -3003,6 +3021,11 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
     if (!pedited || pedited->wavelet.ccwTcurve)  {
         Glib::ArrayHandle<double> ccwTcurve = wavelet.ccwTcurve;
         keyFile.set_double_list("Wavelet", "TCurve", ccwTcurve);
+    }
+
+    if (!pedited || pedited->wavelet.ccwmergcurve)  {
+        Glib::ArrayHandle<double> ccwmergcurve = wavelet.ccwmergcurve;
+        keyFile.set_double_list("Wavelet", "MCurve", ccwmergcurve);
     }
 
     if (!pedited || pedited->wavelet.pastlev) {
@@ -6766,6 +6789,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "MCurve")) {
+                wavelet.ccwmergcurve = keyFile.get_double_list ("Wavelet", "MCurve");
+
+                if (pedited) {
+                    pedited->wavelet.ccwmergcurve = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "OpacityCurveRG"))    {
                 wavelet.opacityCurveRG = keyFile.get_double_list ("Wavelet", "OpacityCurveRG");
 
@@ -8355,6 +8386,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.Chcurve == other.wavelet.Chcurve
         && wavelet.ccwcurve == other.wavelet.ccwcurve
         && wavelet.ccwTcurve == other.wavelet.ccwTcurve
+        && wavelet.ccwmergcurve == other.wavelet.ccwmergcurve
         && wavelet.wavclCurve == other.wavelet.wavclCurve
         && wavelet.skinprotect == other.wavelet.skinprotect
         && wavelet.strength == other.wavelet.strength
