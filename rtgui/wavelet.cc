@@ -1079,6 +1079,10 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mgbox->pack_start(*mergevMethod);
     mergeBox->pack_start(*mgbox);
 
+    mgVBox = Gtk::manage (new Gtk::VBox());
+    mgVBox->set_border_width(1);
+    mgVBox->set_spacing(1);
+
     mgBbox = Gtk::manage (new Gtk::HBox ());
     labmmgB = Gtk::manage (new Gtk::Label (M("TP_WAVELET_MERGEB_METHOD") + ":"));
     mgBbox->pack_start (*labmmgB, Gtk::PACK_SHRINK, 1);
@@ -1091,7 +1095,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergBMethodConn = mergBMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergBMethodChanged) );
     //mergBMethod->set_tooltip_markup (M("TP_WAVELET_MERGEB_TOOLTIP"));
     mgBbox->pack_start(*mergBMethod);
-    mergeBox->pack_start(*mgBbox);
+    mgVBox->pack_start(*mgBbox);
 
 
     // Wavelet merge curve
@@ -1107,38 +1111,40 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     CCWcurveEditormerg->curveListComplete();
     CCWcurveEditormerg->show();
-    mergeBox->pack_start(*CCWcurveEditormerg, Gtk::PACK_SHRINK, 4);
+    mgVBox->pack_start(*CCWcurveEditormerg, Gtk::PACK_SHRINK, 4);
 
     blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 50));
     blend->setAdjusterListener (this);
     blend->set_tooltip_text (M("TP_WAVELET_BLEND_TOOLTIP"));
-    mergeBox->pack_start(*blend);
+    mgVBox->pack_start(*blend);
 
     blendc  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLENDC"), -100, 100, 1, 30));
     blendc->setAdjusterListener (this);
     blendc->set_tooltip_text (M("TP_WAVELET_BLENDC_TOOLTIP"));
-    mergeBox->pack_start(*blendc);
+    mgVBox->pack_start(*blendc);
 
     grad  = Gtk::manage (new Adjuster (M("TP_WAVELET_GRAD"), -20, 100, 1, 20));
     grad->setAdjusterListener (this);
     grad->set_tooltip_text (M("TP_WAVELET_GRAD_TOOLTIP"));
-    mergeBox->pack_start(*grad);
+    mgVBox->pack_start(*grad);
 
     balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 50));
     balanhig->setAdjusterListener (this);
     balanhig->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
-    mergeBox->pack_start(*balanhig);
+    mgVBox->pack_start(*balanhig);
 
     balanleft  = Gtk::manage (new Adjuster (M("TP_WAVELET_HORIZSH"), 0, 100, 1, 50));
     balanleft->setAdjusterListener (this);
     balanleft->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
-    mergeBox->pack_start(*balanleft);
+    mgVBox->pack_start(*balanleft);
+
 
     savelab = Gtk::manage (new Gtk::Button (M("TP_WAVELET_SAVELAB")));
     savelab->set_image (*Gtk::manage (new RTImage ("gtk-save-large.png")));
     savelab->set_tooltip_markup (M("TP_WAVELET_SAVELAB_TOOLTIP"));
     mergeBox->pack_start(*savelab);
 //   ipc = ipDialog->signal_selection_changed().connect( sigc::mem_fun(*this, &Wavelet::ipSelectionChanged) );
+    mergeBox->pack_start(*mgVBox);
 
     savelab->signal_pressed().connect( sigc::mem_fun(*this, &Wavelet::savelabPressed) );
 
@@ -2633,6 +2639,13 @@ void Wavelet::mergMethodChanged()
 
 void Wavelet::mergevMethodChanged()
 {
+
+    if(mergevMethod->get_active_row_number() != 0) {
+        mgVBox->hide();
+    } else {
+        mgVBox->show();
+    }
+
     if (listener) {
         listener->panelChanged (EvWavmergevMethod, mergevMethod->get_active_text ());
     }

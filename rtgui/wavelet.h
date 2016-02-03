@@ -313,6 +313,7 @@ protected:
     Gtk::Label* backgroundLabel;
     Gtk::Button* neutral;
     Gtk::HBox* neutrHBox;
+    Gtk::VBox* mgVBox;
 
     Gtk::Button* load;
     MyFileChooserButton *inputeFile;
