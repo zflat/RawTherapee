@@ -166,13 +166,14 @@ struct cont_params {
 int wavNestedLevels = 1;
 
 
-SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int ush, int kall, const procparams::WaveletParams & waparams, const WavCurve & wavCLVCcurve, const WavretiCurve & wavRETCcurve, const WavOpacityCurveRG & waOpacityCurveRG, const WavOpacityCurveBY & waOpacityCurveBY,  const WavOpacityCurveW & waOpacityCurveW, const WavOpacityCurveWL & waOpacityCurveWL, LUTf &wavclCurve, bool wavcontlutili, int skip,
+SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int mtwo, int merge_two[6], int ush, int kall, const procparams::WaveletParams & waparams, const WavCurve & wavCLVCcurve, const WavretiCurve & wavRETCcurve, const WavOpacityCurveRG & waOpacityCurveRG, const WavOpacityCurveBY & waOpacityCurveBY,  const WavOpacityCurveW & waOpacityCurveW, const WavOpacityCurveWL & waOpacityCurveWL, LUTf &wavclCurve, bool wavcontlutili, int skip,
         float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax
                                             )
 
 
 {
     MyTime t1e, t2e ;
+    t1e.set();
     t1e.set();
 
 #ifdef _DEBUG
@@ -1473,7 +1474,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
         }
 
         if(merg)   {
-            printf("Generate file L*a*b after Wavelet=%s\n", inp.c_str());
+            //  printf("Generate file L*a*b after Wavelet=%s\n", inp.c_str());
 
             ofstream fout;
             ifstream fin;
@@ -1485,14 +1486,6 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                 dpix = 0;    //0 if watermark
             }
 
-            if(params->wavelet.mergBMethod == "water") {
-                wat_or_hdr = 1;
-                dpix = 0;
-            }
-
-//    if(params->wavelet.Backmethod == "black") { printf("black\n");}
-//    if(params->wavelet.Backmethod == "grey") { printf("grey\n");}
-//    if(params->wavelet.Backmethod == "resid") { printf("resid\n");}
 
             struct D {
                 int W, H, sk;
@@ -1522,7 +1515,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                 }
 
             fout.close();
-            printf("DWwav=%d DHwav=%d ski=%d\n", d.W, d.H, d.sk);
+            //    printf("DWwav=%d DHwav=%d ski=%d\n", d.W, d.H, d.sk);
         }
     }
 

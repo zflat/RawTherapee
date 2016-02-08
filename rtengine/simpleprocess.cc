@@ -1011,6 +1011,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     } e;
     int disp = 0;
 
+
     if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {//load Lab datas
         bool toto = true;
         bool merguez = false;
@@ -1143,32 +1144,67 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     }
 
 
-
     if((params.wavelet.enabled)) {
         LabImage *unshar;
         Glib::ustring provis;
         float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
 
-        if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
-            unshar = new LabImage (fw, fh);
+        if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
 
-            //    if(WaveParams.usharpmethod == "orig") {
-            //        unshar->CopyFrom(labView);//same time as with pragma for..but more 'clean'
+            if(pos > 2) {
 
-            //    } else
-            //   if(WaveParams.usharpmethod == "wave") {
-            provis = params.wavelet.CLmethod;
-            params.wavelet.CLmethod = "all";
-            ipf.ip_wavelet(labView, labView, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-            unshar->CopyFrom(labView);
+                float m_L = (float) (WaveParams.blend / 100.f);
+                float m_C = (float) (WaveParams.blendc / 100.f);
+                float gra = WaveParams.grad / 150.f;
 
-            params.wavelet.CLmethod = provis;
+                if(params.wavelet.mergBMethod == "hdr1" && wavMERCurve) {
+                    float Mlc;
+#ifdef _OPENMP
+                    #pragma omp parallel for
+#endif
 
-            //   }
+                    for (int x = 0; x < labView->H; x++)
+                        for (int y = 0; y < labView->W; y++) {
+                            Mlc = 1.4f * wavMERCurve[cropmergelab->L[x][y] / 65.f] - 0.5f;
+                            labView->L[x][y] =  Mlc * (cropmergelab->L[x][y]) + labView->L[x][y];
+                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
+                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
+                        }
+                }
 
+                if(params.wavelet.mergBMethod == "hdr2") {
+                    float Mlv;
+#ifdef _OPENMP
+                    #pragma omp parallel for
+#endif
+
+                    for (int x = 0; x < labView->H; x++)
+                        for (int y = 0; y < labView->W; y++) {
+                            Mlv = (m_L / 33000.f) * (gra - 1.f) * cropmergelab->L[x][y] + m_L;
+                            labView->L[x][y] =  Mlv * (cropmergelab->L[x][y]) + labView->L[x][y];
+                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
+                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
+                        }
+                }
+
+                delete cropmergelab;
+            }
         }
 
-        ipf.ip_wavelet(labView, labView, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        int merge_two[6] = {0, 0, 0, 0, 0, 0};
+        int mtwo;
+
+
+        if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
+            unshar = new LabImage (fw, fh);
+            provis = params.wavelet.CLmethod;
+            params.wavelet.CLmethod = "all";
+            ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            unshar->CopyFrom(labView);
+            params.wavelet.CLmethod = provis;
+        }
+
+        ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
         if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             float mL = (float) (WaveParams.mergeL / 100.f);
@@ -1203,41 +1239,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         }
 
-        if(params.wavelet.expmerge && params.wavelet.mergevMethod == "curr") { //merge datas for Watermark if not preview old datas
-
-            if(pos > 2) {
-
-                float m_L = (float) (WaveParams.blend / 100.f);
-                float m_C = (float) (WaveParams.blendc / 100.f);
-                float gra = WaveParams.grad / 150.f;
-
-                if(params.wavelet.mergBMethod == "water"  || params.wavelet.mergBMethod == "hdr1") {
-                    float Mlc;
-
-                    for (int x = 0; x < labView->H; x++)
-                        for (int y = 0; y < labView->W; y++) {
-                            Mlc = 1.4f * wavMERCurve[cropmergelab->L[x][y] / 65.f] - 0.5f;
-                            labView->L[x][y] =  Mlc * (cropmergelab->L[x][y]) + labView->L[x][y];
-                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
-                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
-                        }
-                }
-
-                if(params.wavelet.mergBMethod == "hdr2") {
-                    float Mlv;
-
-                    for (int x = 0; x < labView->H; x++)
-                        for (int y = 0; y < labView->W; y++) {
-                            Mlv = (m_L / 33000.f) * (gra - 1.f) * cropmergelab->L[x][y] + m_L;
-                            labView->L[x][y] =  Mlv * (cropmergelab->L[x][y]) + labView->L[x][y];
-                            labView->a[x][y] =  m_C * (cropmergelab->a[x][y]) + labView->a[x][y];
-                            labView->b[x][y] =  m_C * (cropmergelab->b[x][y]) + labView->b[x][y];
-                        }
-                }
-
-                delete cropmergelab;
-            }
-        }
     }
 
     wavCLVCurve.Reset();

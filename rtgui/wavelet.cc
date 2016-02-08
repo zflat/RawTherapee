@@ -1088,7 +1088,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mgBbox->pack_start (*labmmgB, Gtk::PACK_SHRINK, 1);
 
     mergBMethod = Gtk::manage (new MyComboBoxText ());
-    mergBMethod->append_text (M("TP_WAVELET_BLEND_WAT"));
+//   mergBMethod->append_text (M("TP_WAVELET_BLEND_WAT"));
     mergBMethod->append_text (M("TP_WAVELET_BLEND_HDR1"));
     mergBMethod->append_text (M("TP_WAVELET_BLEND_HDR2"));
     mergBMethod->set_active(0);
@@ -1573,12 +1573,13 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         mergevMethod->set_active (3);
     }
 
-    if (pp->wavelet.mergBMethod == "water") {
+//    if (pp->wavelet.mergBMethod == "water") {
+//        mergBMethod->set_active (0);
+//    } else
+    if (pp->wavelet.mergBMethod == "hdr1") {
         mergBMethod->set_active (0);
-    } else if (pp->wavelet.mergBMethod == "hdr1") {
-        mergBMethod->set_active (1);
     } else if (pp->wavelet.mergBMethod == "hdr2") {
-        mergBMethod->set_active (2);
+        mergBMethod->set_active (1);
     }
 
     //BAmethod->set_active (0);
@@ -2422,11 +2423,12 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pp->wavelet.mergevMethod = "save";
     }
 
+//   if (mergBMethod->get_active_row_number() == 0) {
+//       pp->wavelet.mergBMethod = "water";
+//   } else
     if (mergBMethod->get_active_row_number() == 0) {
-        pp->wavelet.mergBMethod = "water";
-    } else if (mergBMethod->get_active_row_number() == 1) {
         pp->wavelet.mergBMethod = "hdr1";
-    } else if (mergBMethod->get_active_row_number() == 2) {
+    } else if (mergBMethod->get_active_row_number() == 1) {
         pp->wavelet.mergBMethod = "hdr2";
     }
 
@@ -2610,12 +2612,9 @@ void Wavelet::mergMethodChanged()
 
 
     } else if(mergMethod->get_active_row_number() == 2) {//load
-        blend->show();
         blendc->show();
         balanhig->show();
         labmmgB->show();
-        CCWcurveEditormerg->show();
-        grad->show();
         balanleft->show();
         hbin->show();
         savelab->hide();
@@ -2625,6 +2624,18 @@ void Wavelet::mergMethodChanged()
         Backmethod->set_active (1);
         CLmethod->set_active (3);
         Lmethod->set_active (3);
+
+        if(mergBMethod->get_active_row_number() == 1) {//slider HDR
+            blend->show();
+            CCWcurveEditormerg->hide();
+            grad->show();
+        }
+
+        if(mergBMethod->get_active_row_number() == 0) {//curve HDR
+            blend->hide();
+            CCWcurveEditormerg->show();
+            grad->hide();
+        }
     }
 
     //mergBMethodChanged();
@@ -2654,18 +2665,18 @@ void Wavelet::mergevMethodChanged()
 
 void Wavelet::mergBMethodChanged()
 {
-    if(mergBMethod->get_active_row_number() == 2) {//slider HDR
+    if(mergBMethod->get_active_row_number() == 1) {//slider HDR
         grad->show();
         blend->show();
         CCWcurveEditormerg->hide();
-    } else if(mergBMethod->get_active_row_number() == 1) { //curve HDR
+    } else if(mergBMethod->get_active_row_number() == 0) { //curve HDR
         grad->hide();
         blend->hide();
         CCWcurveEditormerg->show();
     } else {//watermark
-        blend->show();
-        grad->hide();
-        CCWcurveEditormerg->hide();
+        //   blend->show();
+        //   grad->hide();
+        //   CCWcurveEditormerg->hide();
     }
 
     if (listener) {
@@ -3337,8 +3348,8 @@ void Wavelet::ushamethodChanged()
         CLmethod->set_active (3);
         Lmethod->set_active (3);
         Dirmethod->set_active (3);
-        Lmethod->set_sensitive(true);
-        Dirmethod->set_sensitive(true);
+        Lmethod->set_sensitive(false);
+        Dirmethod->set_sensitive(false);
     }
 
     if (listener && (multiImage || getEnabled()) ) {
