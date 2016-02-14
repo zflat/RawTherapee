@@ -39,7 +39,8 @@
 #include "opthelper.h"
 #include "EdgePreservingDecomposition.h"
 #include <fstream>
-
+#define BENCHMARK
+#include "StopWatch.h"
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -172,6 +173,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
 
 
 {
+    BENCHFUN
 #ifdef _DEBUG
     // init variables to display Munsell corrections
     MunsellDebugInfo* MunsDebugInfo = new MunsellDebugInfo();
@@ -1329,87 +1331,6 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
                         }
                     }
 
-                    //dsttmp
-                    //imheight = lab->H, imwidth = lab->W;cp.retiena
-                    //        if(params->wavelet.retinexMethod != "none"  && params->wavelet.retinexMethodpro == "fina") {
-                    if(cp.retiena  && params->wavelet.retinexMethodpro == "fina") {
-                        int W_L =  imwidth;
-                        int H_L =  imheight;
-
-                        float *resid[H_L] ALIGNED16;
-                        float *residBuffer = new float[H_L * W_L];
-
-                        for (int i = 0; i < H_L; i++) {
-                            resid[i] = &residBuffer[i * W_L];
-                        }
-
-                        float *orig[H_L] ALIGNED16;
-                        float *origBuffer = new float[H_L * W_L];
-
-                        for (int i = 0; i < H_L; i++) {
-                            orig[i] = &origBuffer[i * W_L];
-                        }
-
-                        int skip = 2;
-
-                        float *HHH[H_L] ALIGNED16;
-                        float *HHHBuffer = new float[H_L * W_L];
-
-                        for (int i = 0; i < H_L; i++) {
-                            HHH[i] = &HHHBuffer[i * W_L];
-                        }
-
-
-
-#ifdef _RT_NESTED_OPENMP
-                        #pragma omp parallel for schedule(dynamic,16)
-#endif
-
-                        for(int ir = 0; ir < imheight; ir += 1)
-                            for(int jr = 0; jr < imwidth; jr += 1) {
-                                resid[ir][jr] = dsttmp->L[ir][jr];
-                                orig[ir][jr] = dsttmp->L[ir][jr];
-                            }
-
-                        ImProcFunctions::MSRWav(resid, orig, resid, resid, imwidth, imheight, params->wavelet, wavRETCcurve, skip, 0, 4, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-#ifdef _RT_NESTED_OPENMP
-                        #pragma omp parallel for schedule(dynamic,16)
-#endif
-
-                        for(int ir = 0; ir < imheight; ir += 1)
-                            for(int jr = 0; jr < imwidth; jr += 1) {
-                                dsttmp->L[ir][jr] = resid[ir][jr];
-                            }
-
-                        if(params->wavelet.chrrt > 0.) {
-#ifdef _RT_NESTED_OPENMP
-                            #pragma omp parallel for schedule(dynamic,16)
-#endif
-
-                            for(int ir = 0; ir < imheight; ir += 1)
-                                for(int jr = 0; jr < imwidth; jr += 1) {
-                                    resid[ir][jr] = sqrt(SQR(dsttmp->a[ir][jr]) + SQR(dsttmp->b[ir][jr]));
-                                    orig[ir][jr] = resid[ir][jr];
-                                    HHH[ir][jr] = xatan2f(dsttmp->b[ir][jr], dsttmp->a[ir][jr]);
-                                }
-
-                            ImProcFunctions::MSRWav(resid, orig, resid, resid, imwidth, imheight, params->wavelet, wavRETCcurve, skip, 1, 3, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-#ifdef _RT_NESTED_OPENMP
-                            #pragma omp parallel for schedule(dynamic,16)
-#endif
-
-                            for(int ir = 0; ir < imheight; ir += 1)
-                                for(int jr = 0; jr < imwidth; jr += 1) {
-                                    float2 sincosval = xsincosf(HHH[ir][jr]);
-                                    dsttmp->a[ir][jr] = resid[ir][jr] * sincosval.y;
-                                    dsttmp->b[ir][jr] = resid[ir][jr] * sincosval.x;
-                                }
-                        }
-
-                        delete [] residBuffer;
-                        delete [] origBuffer;
-                        delete [] HHHBuffer;
-                    }
                 }
 
                 if(LoldBuffer != NULL) {
@@ -1446,9 +1367,72 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
     omp_set_nested(oldNested);
 #endif
 
+
     if(numtiles > 1) {
         dst->CopyFrom(dsttmp);
         delete dsttmp;
+    }
+
+    if(cp.retiena  && params->wavelet.retinexMethodpro == "fina") {
+        int W_L =  imwidth;
+        int H_L =  imheight;
+
+        float *resid[H_L] ALIGNED16;
+        float *residBuffer = new float[H_L * W_L];
+
+        for (int i = 0; i < H_L; i++) {
+            resid[i] = &residBuffer[i * W_L];
+        }
+
+        float *orig[H_L] ALIGNED16;
+        float *origBuffer = new float[H_L * W_L];
+
+        for (int i = 0; i < H_L; i++) {
+            orig[i] = &origBuffer[i * W_L];
+        }
+
+        int skip = 2;
+
+#ifdef _OPENMP
+        #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+        for(int ir = 0; ir < imheight; ir += 1)
+            for(int jr = 0; jr < imwidth; jr += 1) {
+                orig[ir][jr] = dst->L[ir][jr];
+            }
+
+        ImProcFunctions::MSRWav(dst->L, orig, imwidth, imheight, params->wavelet, wavRETCcurve, skip, 0, 4, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+
+        if(params->wavelet.chrrt > 0.) {
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < imheight; ir += 1)
+                for(int jr = 0; jr < imwidth; jr += 1) {
+                    resid[ir][jr] = orig[ir][jr] = sqrt(SQR(dst->a[ir][jr]) + SQR(dst->b[ir][jr]));
+                }
+
+            ImProcFunctions::MSRWav(resid, orig, imwidth, imheight, params->wavelet, wavRETCcurve, skip, 1, 3, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < imheight; ir++)
+                for(int jr = 0; jr < imwidth; jr++) {
+                    float Chprov = orig[ir][jr];
+                    float2 sincosval;
+                    sincosval.y = Chprov == 0.0f ? 1.f : dst->a[ir][jr] / Chprov;
+                    sincosval.x = Chprov == 0.0f ? 0.f : dst->b[ir][jr] / Chprov;
+
+                    dst->a[ir][jr] = resid[ir][jr] * sincosval.y;
+                    dst->b[ir][jr] = resid[ir][jr] * sincosval.x;
+                }
+        }
+
+        delete [] residBuffer;
+        delete [] origBuffer;
     }
 
     //save merge Lab file
@@ -2325,7 +2309,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
                 orig[ii][jj] = WavCoeffs_L0[i];
             }
 
-            ImProcFunctions::MSRWav(resid, orig, resid, resid, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 5, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            ImProcFunctions::MSRWav(resid, orig, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 5, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 #ifdef _RT_NESTED_OPENMP
             //    #pragma omp for nowait
 #endif
@@ -2423,7 +2407,7 @@ void ImProcFunctions::WaveletAandBAllAB(LabImage * labco, float ** varhue, float
             HHH[ii][jj] = xatan2f(WavCoeffs_b0[i], WavCoeffs_a0[i]);
         }
 
-        ImProcFunctions::MSRWav(resid, orig, resid, resid, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 4, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        ImProcFunctions::MSRWav(resid, orig, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 4, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 #ifdef _RT_NESTED_OPENMP
         //    #pragma omp for nowait
 #endif

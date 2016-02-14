@@ -39,7 +39,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <string.h>
 #include "rtengine.h"
 #include "gauss.h"
 #include "rawimagesource.h"
@@ -49,26 +48,9 @@
 #include "StopWatch.h"
 
 #define MAX_RETINEX_SCALES   8
-#define clipretinex( val, minv, maxv )    (( val = (val < minv ? minv : val ) ) > maxv ? maxv : val )
 
-#define med3(a0,a1,a2,a3,a4,a5,a6,a7,a8,median) { \
-pp[0]=a0; pp[1]=a1; pp[2]=a2; pp[3]=a3; pp[4]=a4; pp[5]=a5; pp[6]=a6; pp[7]=a7; pp[8]=a8; \
-PIX_SORT(pp[1],pp[2]); PIX_SORT(pp[4],pp[5]); PIX_SORT(pp[7],pp[8]); \
-PIX_SORT(pp[0],pp[1]); PIX_SORT(pp[3],pp[4]); PIX_SORT(pp[6],pp[7]); \
-PIX_SORT(pp[1],pp[2]); PIX_SORT(pp[4],pp[5]); PIX_SORT(pp[7],pp[8]); \
-PIX_SORT(pp[0],pp[3]); PIX_SORT(pp[5],pp[8]); PIX_SORT(pp[4],pp[7]); \
-PIX_SORT(pp[3],pp[6]); PIX_SORT(pp[1],pp[4]); PIX_SORT(pp[2],pp[5]); \
-PIX_SORT(pp[4],pp[7]); PIX_SORT(pp[4],pp[2]); PIX_SORT(pp[6],pp[4]); \
-PIX_SORT(pp[4],pp[2]); median=pp[4];} //pp4 = median
-
-namespace rtengine
-{
-
-extern const Settings* settings;
-
-static float RetinexScales[MAX_RETINEX_SCALES];
-
-void retinex_scales( float* scales, int nscales, int mode, int s, float high)
+namespace {
+void retinex_scales( float* scales, const int nscales, const int mode, const int s, const float high)
 {
     if ( nscales == 1 ) {
         scales[0] =  (float)s / 2.f;
@@ -103,7 +85,7 @@ void retinex_scales( float* scales, int nscales, int mode, int s, float high)
         }
     }
 }
-void mean_stddv2( float **dst, float &mean, float &stddv, int W_L, int H_L, float &maxtr, float &mintr)
+void mean_stddv2( const float * const *dst, float &mean, float &stddv, const int W_L, const int H_L, float &maxtr, float &mintr)
 {
     // summation using double precision to avoid too large summation error for large pictures
     double vsquared = 0.f;
@@ -154,7 +136,7 @@ void mean_stddv2( float **dst, float &mean, float &stddv, int W_L, int H_L, floa
 
 
 
-void mean_stddv( float **dst, float &mean, float &stddv, int W_L, int H_L, const float factor, float &maxtr, float &mintr)
+void mean_stddv( const float * const *dst, float &mean, float &stddv, const int W_L, const int H_L, const float factor, float &maxtr, float &mintr)
 
 {
     // summation using double precision to avoid too large summation error for large pictures
@@ -206,8 +188,14 @@ void mean_stddv( float **dst, float &mean, float &stddv, int W_L, int H_L, const
     stddv = ( vsquared - (mean * mean) );
     stddv = (float)sqrt(stddv);
 }
+}
 
-void RawImageSource::MSR(float** luminance, float** originalLuminance, float **exLuminance,  LUTf & mapcurve, bool &mapcontlutili, int width, int height, RetinexParams deh, const RetinextransmissionCurve & dehatransmissionCurve, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
+namespace rtengine
+{
+
+
+
+void RawImageSource::MSR(float** luminance, const float* const * originalLuminance, const float * const *exLuminance,  const LUTf &mapcurve, const bool mapcontlutili, const int width, const int height, const RetinexParams &deh, const RetinextransmissionCurve &dehatransmissionCurve, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
 {
 
     if (deh.enabled) {//enabled
@@ -252,7 +240,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
         int viewmet = 0;
 
         elogt = 2.71828f;//disabled baselog
-        FlatCurve* shcurve = NULL;//curve L=f(H)
+        FlatCurve* shcurve = nullptr;//curve L=f(H)
         bool lhutili = false;
 
         if (deh.enabled) {
@@ -261,7 +249,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
             if (!shcurve || shcurve->isIdentity()) {
                 if (shcurve) {
                     delete shcurve;
-                    shcurve = NULL;
+                    shcurve = nullptr;
                 }
             } else {
                 lhutili = true;
@@ -398,6 +386,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
 
             strengthx = ks * strength;
 
+            float RetinexScales[MAX_RETINEX_SCALES];
             retinex_scales( RetinexScales, scal, moderetinex, nei / grad, high );
 
             float *src[H_L] ALIGNED16;
@@ -612,7 +601,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
                 }
             }
 
-            shmap = NULL;
+            shmap = nullptr;
 
             delete [] buffer;
             //delete [] outBuffer;
@@ -788,7 +777,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
                         }
 
                         if(viewmet == 0) {
-                            luminance[i][j] = clipretinex( cd, 0.f, 32768.f ) * str + (1.f - str) * originalLuminance[i][j];
+                            luminance[i][j] = LIM( cd, 0.f, 32768.f ) * str + (1.f - str) * originalLuminance[i][j];
                         }
 
                         if(viewmet == 1) {
@@ -823,7 +812,7 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
 
             }
             delete [] outBuffer;
-            outBuffer = NULL;
+            outBuffer = nullptr;
             //printf("cdmin=%f cdmax=%f\n",minCD, maxCD);
             Tmean = mean;
             Tsigma = stddv;
@@ -838,14 +827,15 @@ void RawImageSource::MSR(float** luminance, float** originalLuminance, float **e
 
         if(viewmet == 3 || viewmet == 2) {
             delete [] tranBuffer;
-            tranBuffer = NULL;
+            tranBuffer = nullptr;
         }
 
     }
 }
 
-void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float **ushar, float **lum, int width, int height, WaveletParams deh, const WavretiCurve & wavRETCcurve, int skip, int chrome,  int scall, float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
+void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLuminance, const int width, const int height, const WaveletParams &deh, const WavretiCurve &wavRETCcurve, const int skip, const int chrome, const int scall, const float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
 {
+    BENCHFUN
     bool py = true;
 
     if (py) {//enabled
@@ -909,6 +899,7 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
         float bbhi = 1.f - aahi;
         float high;
         //high =  bbhi + aahi * (float) deh.highl;
+        float RetinexScales[MAX_RETINEX_SCALES];
         retinex_scales( RetinexScales, scal, moderetinex, nei, high );
 
         int H_L = height;
@@ -920,14 +911,12 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
             src[i] = &srcBuffer[i * W_L];
         }
 
-        int h_th, s_th;
-
-        int shHighlights = deh.highlights;
-        int shShadows = deh.shadows;
+        const float shHighlights = (100.f - deh.highlights) / 100.f;
+        const float shShadows = (100.f - deh.shadows) / 100.f;
         int mapmet = 0;
 
         //double shradius = (double) deh.radius;
-        if(shHighlights > 0 || shShadows > 0) {
+        if(deh.highlights > 0 || deh.shadows > 0) {
             mapmet = 4;
         }
 
@@ -1004,10 +993,35 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
                 }
             }
 
+            float h_th, s_th;
+            float h_thcomp, s_thcomp;
+
             if((mapmet == 4) && it == 1) {
                 shmap->updateL (out, shradius, true, 1);
-                h_th = shmap->max_f - deh.htonalwidth * (shmap->max_f - shmap->avg) / 100;
-                s_th = deh.stonalwidth * (shmap->avg - shmap->min_f) / 100;
+                h_thcomp = shmap->max_f - deh.htonalwidth * (shmap->max_f - shmap->avg) / 100.f;
+                h_th = h_thcomp - (shHighlights * h_thcomp);
+                s_thcomp = deh.stonalwidth * (shmap->avg - shmap->min_f) / 100.f;
+                s_th = s_thcomp - (shShadows * s_thcomp);
+            }
+
+            if((mapmet == 4) && it == 1) {
+
+StopWatch Stop1("factor loop");
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for (int i = 0; i < H_L; i++) {
+                    for (int j = 0; j < W_L; j++) {
+                        float mapval = 1.f + shmap->map[i][j];
+                        if (mapval > h_thcomp) {
+                            out[i][j] *= h_th / mapval + shHighlights;
+                        } else if (mapval < s_thcomp) {
+                            out[i][j] *= s_th / mapval + shShadows;
+                        }
+                    }
+                }
+Stop1.stop();
             }
 
 #ifdef __SSE2__
@@ -1016,32 +1030,6 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
             vfloat limMaxv = F2V(limD);
 
 #endif
-
-            if((mapmet == 4) && it == 1) {
-
-
-#ifdef _OPENMP
-                #pragma omp parallel for
-#endif
-
-                for (int i = 0; i < H_L; i++) {
-                    for (int j = 0; j < W_L; j++) {
-                        double mapval = 1.0 + shmap->map[i][j];
-                        double factor = 1.0;
-
-                        if (mapval > h_th) {
-                            factor = (h_th + (100.0 - shHighlights) * (mapval - h_th) / 100.0) / mapval;
-                        } else if (mapval < s_th) {
-                            factor = (s_th - (100.0 - shShadows) * (s_th - mapval) / 100.0) / mapval;
-                        }
-
-                        out[i][j] *= factor;
-
-                    }
-                }
-            }
-
-
 
 #ifdef _OPENMP
             #pragma omp for
@@ -1076,13 +1064,11 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
             }
         }
 
-        if(mapmet > 1) {
-            if(shmap) {
-                delete shmap;
-            }
+        if(shmap) {
+            delete shmap;
         }
 
-        shmap = NULL;
+        shmap = nullptr;
 
         delete [] buffer;
         //delete [] outBuffer;
@@ -1240,7 +1226,7 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
 
                     //str = strength;
 
-                    luminance[i][j] = clipretinex( cd, 0.f, maxclip ) * str + (1.f - str) * originalLuminance[i][j];
+                    luminance[i][j] = LIM( cd, 0.f, maxclip ) * str + (1.f - str) * originalLuminance[i][j];
                 }
 
 #ifdef _OPENMP
@@ -1253,7 +1239,7 @@ void ImProcFunctions::MSRWav(float** luminance, float** originalLuminance, float
 
         }
         delete [] outBuffer;
-        outBuffer = NULL;
+        outBuffer = nullptr;
 
         Tmean = mean;
         Tsigma = stddv;
