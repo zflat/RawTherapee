@@ -73,6 +73,7 @@ class ImProcFunctions
     void transformLuminanceOnly (Imagefloat* original, Imagefloat* transformed, int cx, int cy, int oW, int oH, int fW, int fH);
     void transformHighQuality   (Imagefloat* original, Imagefloat* transformed, int cx, int cy, int sx, int sy, int oW, int oH, int fW, int fH, const LCPMapper *pLCPMap, bool fullImage);
 
+    void sharpenHaloCtrl    (float** luminance, float** blurmap, float** base, int W, int H, const SharpeningParams &sharpenParam);
     void sharpenHaloCtrl    (LabImage* lab, float** blurmap, float** base, int W, int H, SharpeningParams &sharpenParam);
     void sharpenHaloCtrlcam (CieImage* ncie, float** blurmap, float** base, int W, int H);
     void firstAnalysisThread(Imagefloat* original, Glib::ustring wprofile, unsigned int* histogram, int row_from, int row_to);
@@ -271,9 +272,9 @@ public:
     void Lanczos (const LabImage* src, LabImage* dst, float scale);
     void Lanczos (const Image16* src, Image16* dst, float scale);
 
-    void deconvsharpening (LabImage* lab, float** buffer, SharpeningParams &sharpenParam);
-    void deconvsharpeningcam (CieImage* ncie, float** buffer);
+    void deconvsharpening (float** luminance, float** buffer, int W, int H, const SharpeningParams &sharpenParam);
     void MLsharpen (LabImage* lab);// Manuel's clarity / sharpening
+    void MLmicrocontrast(float** luminance, int W, int H ); //Manuel's microcontrast
     void MLmicrocontrast(LabImage* lab ); //Manuel's microcontrast
     void MLmicrocontrastcam(CieImage* ncie ); //Manuel's microcontrast
 
@@ -285,14 +286,13 @@ public:
     void dirpyrdenoise    (LabImage* src);//Emil's pyramid denoise
     void dirpyrequalizer  (LabImage* lab, int scale);//Emil's wavelet
 
-    void EPDToneMapResid(float * WavCoeffs_L0, unsigned int Iterates,  int skip, struct cont_params cp, int W_L, int H_L, float max0, float min0);
+    void EPDToneMapResid(float * WavCoeffs_L0, unsigned int Iterates,  int skip, struct cont_params& cp, int W_L, int H_L, float max0, float min0);
     float *CompressDR(float *Source, int skip, struct cont_params &cp, int W_L, int H_L, float Compression, float DetailBoost, float max0, float min0, float ave, float ah, float bh, float al, float bl, float factorx, float *Compressed);
     void ContrastResid(float * WavCoeffs_L0, unsigned int Iterates,  int skip, struct cont_params &cp, int W_L, int H_L, float max0, float min0, float ave, float ah, float bh, float al, float bl, float factorx);
     float *ContrastDR(float *Source, int skip, struct cont_params &cp, int W_L, int H_L, float Compression, float DetailBoost, float max0, float min0, float ave, float ah, float bh, float al, float bl, float factorx, float *Contrast = NULL);
 
     void EPDToneMap(LabImage *lab, unsigned int Iterates = 0, int skip = 1);
     void EPDToneMapCIE(CieImage *ncie, float a_w, float c_, float w_h, int Wid, int Hei, int begh, int endh, float minQ, float maxQ, unsigned int Iterates = 0, int skip = 1);
-    //  void CAT02 (Imagefloat* baseImg, const ProcParams* params);
 
     // pyramid denoise
     procparams::DirPyrDenoiseParams dnparams;
@@ -309,6 +309,7 @@ public:
 
 //    void MSR(LabImage* lab, int width, int height, int skip);
     void MSRWav(float** luminance, float** originalLuminance, float **ushar, float **lum, int width, int height, WaveletParams deh, const WavretiCurve & wavRETCcurve, int skip, int chrome, int scall, float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax);
+
 
     void Tile_calc (int tilesize, int overlap, int kall, int imwidth, int imheight, int &numtiles_W, int &numtiles_H, int &tilewidth, int &tileheight, int &tileWskip, int &tileHskip);
     void ip_wavelet(LabImage * lab, LabImage * dst, int mtwo, int merge_two[6], int ush, int kall, const procparams::WaveletParams & waparams, const WavCurve & wavCLVCcurve, const WavretiCurve & wavRETCcurve, const WavOpacityCurveRG & waOpacityCurveRG, const WavOpacityCurveBY & waOpacityCurveBY,  const WavOpacityCurveW & waOpacityCurveW, const WavOpacityCurveWL & waOpacityCurveWL, LUTf &wavclCurve, bool wavcontlutili, int skip,
@@ -335,13 +336,13 @@ public:
     void ContAllAB (LabImage * lab, int maxlvl, float **varhue, float **varchrom, float ** WavCoeffs_a, float * WavCoeffs_a0, int level, int dir, const WavOpacityCurveW & waOpacityCurveW, struct cont_params &cp,
                     int W_ab, int H_ab, const bool useChannelA);
     void Evaluate2(wavelet_decomposition &WaveletCoeffs_L,
-                   struct cont_params cp, int ind, float *mean, float *meanN, float *sigma, float *sigmaN, float *MaxP, float *MaxN, float madL[8][3]);
-    void Eval2 (float ** WavCoeffs_L, int level, struct cont_params cp,
+                   const struct cont_params& cp, int ind, float *mean, float *meanN, float *sigma, float *sigmaN, float *MaxP, float *MaxN, float madL[8][3]);
+    void Eval2 (float ** WavCoeffs_L, int level, const struct cont_params& cp,
                 int W_L, int H_L, int skip_L, int ind, float *mean, float *meanN, float *sigma, float *sigmaN, float *MaxP, float *MaxN, float *madL);
 
     void Aver(float * HH_Coeffs, int datalen, float &averagePlus, float &averageNeg, float &max, float &min);
     void Sigma(float * HH_Coeffs, int datalen, float averagePlus, float averageNeg, float &sigmaPlus, float &sigmaNeg);
-    void calckoe(float ** WavCoeffs_LL, struct cont_params cp, float ** koeLi, int level, int dir, int W_L, int H_L, float edd, float *maxkoeLi, float **tmC = NULL);
+    void calckoe(float ** WavCoeffs_LL, const struct cont_params& cp, float ** koeLi, int level, int dir, int W_L, int H_L, float edd, float *maxkoeLi, float **tmC = NULL);
 
 
 

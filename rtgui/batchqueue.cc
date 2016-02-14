@@ -39,51 +39,50 @@
 using namespace std;
 using namespace rtengine;
 
-BatchQueue::BatchQueue (FileCatalog* aFileCatalog) : processing(NULL), fileCatalog(aFileCatalog), sequence(0), listener(NULL),
-    pmenu (new Gtk::Menu ())
+BatchQueue::BatchQueue (FileCatalog* aFileCatalog) : processing(NULL), fileCatalog(aFileCatalog), sequence(0), listener(NULL)
 {
 
     location = THLOC_BATCHQUEUE;
 
     int p = 0;
 
-    pmenu->attach (*Gtk::manage(open = new Gtk::MenuItem (M("FILEBROWSER_POPUPOPENINEDITOR"))), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(open = new Gtk::MenuItem (M("FILEBROWSER_POPUPOPENINEDITOR"))), 0, 1, p, p + 1);
     p++;
-    pmenu->attach (*Gtk::manage(selall = new Gtk::MenuItem (M("FILEBROWSER_POPUPSELECTALL"))), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(selall = new Gtk::MenuItem (M("FILEBROWSER_POPUPSELECTALL"))), 0, 1, p, p + 1);
     p++;
-    pmenu->attach (*Gtk::manage(new Gtk::SeparatorMenuItem ()), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(new Gtk::SeparatorMenuItem ()), 0, 1, p, p + 1);
     p++;
 
-    pmenu->attach (*Gtk::manage(head = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPMOVEHEAD"))), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(head = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPMOVEHEAD"))), 0, 1, p, p + 1);
     p++;
     head->set_image(*Gtk::manage(new RTImage ("toleftend.png")));
 
-    pmenu->attach (*Gtk::manage(tail = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPMOVEEND"))), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(tail = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPMOVEEND"))), 0, 1, p, p + 1);
     p++;
     tail->set_image(*Gtk::manage(new RTImage ("torightend.png")));
 
-    pmenu->attach (*Gtk::manage(new Gtk::SeparatorMenuItem ()), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(new Gtk::SeparatorMenuItem ()), 0, 1, p, p + 1);
     p++;
 
-    pmenu->attach (*Gtk::manage(cancel = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPCANCELJOB"))), 0, 1, p, p + 1);
+    pmenu.attach (*Gtk::manage(cancel = new Gtk::ImageMenuItem (M("FILEBROWSER_POPUPCANCELJOB"))), 0, 1, p, p + 1);
     p++;
     cancel->set_image(*Gtk::manage(new RTImage ("gtk-close.png")));
 
-    pmenu->show_all ();
+    pmenu.show_all ();
 
     // Accelerators
     pmaccelgroup = Gtk::AccelGroup::create ();
-    pmenu->set_accel_group (pmaccelgroup);
-    open->add_accelerator ("activate", pmenu->get_accel_group(), GDK_e, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
-    selall->add_accelerator ("activate", pmenu->get_accel_group(), GDK_a, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
-    head->add_accelerator ("activate", pmenu->get_accel_group(), GDK_Home, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
-    tail->add_accelerator ("activate", pmenu->get_accel_group(), GDK_End, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
-    cancel->add_accelerator ("activate", pmenu->get_accel_group(), GDK_Delete, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
+    pmenu.set_accel_group (pmaccelgroup);
+    open->add_accelerator ("activate", pmaccelgroup, GDK_e, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
+    selall->add_accelerator ("activate", pmaccelgroup, GDK_a, Gdk::CONTROL_MASK, Gtk::ACCEL_VISIBLE);
+    head->add_accelerator ("activate", pmaccelgroup, GDK_Home, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
+    tail->add_accelerator ("activate", pmaccelgroup, GDK_End, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
+    cancel->add_accelerator ("activate", pmaccelgroup, GDK_Delete, (Gdk::ModifierType)0, Gtk::ACCEL_VISIBLE);
 
     open->signal_activate().connect(sigc::mem_fun(*this, &BatchQueue::openLastSelectedItemInEditor));
-    cancel->signal_activate().connect (std::bind (&BatchQueue::cancelItems, this, selected));
-    head->signal_activate().connect (std::bind (&BatchQueue::headItems, this, selected));
-    tail->signal_activate().connect (std::bind (&BatchQueue::tailItems, this, selected));
+    cancel->signal_activate().connect (std::bind (&BatchQueue::cancelItems, this, std::ref (selected)));
+    head->signal_activate().connect (std::bind (&BatchQueue::headItems, this, std::ref (selected)));
+    tail->signal_activate().connect (std::bind (&BatchQueue::tailItems, this, std::ref (selected)));
     selall->signal_activate().connect (sigc::mem_fun(*this, &BatchQueue::selectAll));
 
     setArrangement (ThumbBrowserBase::TB_Vertical);
@@ -91,9 +90,7 @@ BatchQueue::BatchQueue (FileCatalog* aFileCatalog) : processing(NULL), fileCatal
 
 BatchQueue::~BatchQueue ()
 {
-#if PROTECT_VECTORS
     MYWRITERLOCK(l, entryRW);
-#endif
 
     // The listener merges parameters with old values, so delete afterwards
     for (size_t i = 0; i < fd.size(); i++) {
@@ -105,9 +102,7 @@ BatchQueue::~BatchQueue ()
 
 void BatchQueue::resizeLoadedQueue()
 {
-#if PROTECT_VECTORS
     MYWRITERLOCK(l, entryRW);
-#endif
 
     const auto height = getThumbnailHeight ();
 
@@ -141,8 +136,7 @@ int BatchQueue::getThumbnailHeight ()
 
 void BatchQueue::rightClicked (ThumbBrowserEntryBase* entry)
 {
-
-    pmenu->popup (3, this->eventTime);
+    pmenu.popup (3, this->eventTime);
 }
 
 void BatchQueue::doubleClicked(ThumbBrowserEntryBase* entry)
@@ -177,9 +171,7 @@ bool BatchQueue::keyPressed (GdkEventKey* event)
 void BatchQueue::addEntries (const std::vector<BatchQueueEntry*>& entries, bool head, bool save)
 {
     {
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         for (const auto entry : entries) {
 
@@ -225,15 +217,14 @@ bool BatchQueue::saveBatchQueue ()
 {
     const auto fileName = Glib::build_filename (options.rtdir, "batch", "queue.csv");
 
-    std::ofstream file (fileName, std::ios::trunc);
+    std::ofstream file (fileName, std::ios::binary | std::ios::trunc);
 
     if (!file.is_open ())
         return false;
 
     {
-#if PROTECT_VECTORS
         MYREADERLOCK(l, entryRW);
-#endif
+
         if (fd.empty ())
             return true;
 
@@ -265,14 +256,12 @@ bool BatchQueue::loadBatchQueue ()
 {
     const auto fileName = Glib::build_filename (options.rtdir, "batch", "queue.csv");
 
-    std::ifstream file (fileName);
+    std::ifstream file (fileName, std::ios::binary);
 
     if (file.is_open ()) {
         // Yes, it's better to get the lock for the whole file reading,
         // to update the list in one shot without any other concurrent access!
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         std::string row, column;
         std::vector<std::string> values;
@@ -404,9 +393,7 @@ int cancelItemUI (void* data)
 void BatchQueue::cancelItems (const std::vector<ThumbBrowserEntryBase*>& items)
 {
     {
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         for (const auto item : items) {
 
@@ -446,9 +433,8 @@ void BatchQueue::cancelItems (const std::vector<ThumbBrowserEntryBase*>& items)
 void BatchQueue::headItems (const std::vector<ThumbBrowserEntryBase*>& items)
 {
     {
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
+
         for (auto item = items.rbegin(); item != items.rend(); ++item) {
 
             const auto entry = static_cast<BatchQueueEntry*> (*item);
@@ -478,9 +464,7 @@ void BatchQueue::headItems (const std::vector<ThumbBrowserEntryBase*>& items)
 void BatchQueue::tailItems (const std::vector<ThumbBrowserEntryBase*>& items)
 {
     {
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         for (const auto item : items) {
 
@@ -508,10 +492,7 @@ void BatchQueue::tailItems (const std::vector<ThumbBrowserEntryBase*>& items)
 void BatchQueue::selectAll ()
 {
     {
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         lastClicked = NULL;
         selected.clear ();
@@ -531,10 +512,7 @@ void BatchQueue::selectAll ()
 void BatchQueue::openLastSelectedItemInEditor()
 {
     {
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYREADERLOCK(l, entryRW);
-#endif
 
         if (selected.size() > 0) {
             openItemInEditor(selected.back());
@@ -556,10 +534,7 @@ void BatchQueue::startProcessing ()
 {
 
     if (!processing) {
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         if (!fd.empty()) {
             BatchQueueEntry* next;
@@ -581,9 +556,7 @@ void BatchQueue::startProcessing ()
                 processing->selected = false;
             }
 
-#if PROTECT_VECTORS
             MYWRITERLOCK_RELEASE(l);
-#endif
 
             // remove button set
             next->removeButtonSet ();
@@ -659,10 +632,7 @@ rtengine::ProcessingJob* BatchQueue::imageReady (rtengine::IImage16* img)
     bool remove_button_set = false;
 
     {
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYWRITERLOCK(l, entryRW);
-#endif
 
         delete processing;
         processing = NULL;
@@ -706,15 +676,11 @@ rtengine::ProcessingJob* BatchQueue::imageReady (rtengine::IImage16* img)
         // Delete all files in directory \batch when finished, just to be sure to remove zombies
 
         // Not sure that locking is necessary, but it should be safer
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYREADERLOCK(l, entryRW);
-#endif
 
         if( fd.empty() ) {
-#if PROTECT_VECTORS
             MYREADERLOCK_RELEASE(l);
-#endif
+
             std::vector<Glib::ustring> names;
             Glib::ustring batchdir = Glib::build_filename(options.rtdir, "batch");
             Glib::RefPtr<Gio::File> dir = Gio::File::create_for_path (batchdir);
@@ -957,10 +923,7 @@ void BatchQueue::notifyListener (bool queueEmptied)
         NLParams* params = new NLParams;
         params->listener = listener;
         {
-            // TODO: Check for Linux
-#if PROTECT_VECTORS
             MYREADERLOCK(l, entryRW);
-#endif
             params->qsize = fd.size();
         }
         params->queueEmptied = queueEmptied;

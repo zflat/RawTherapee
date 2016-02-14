@@ -57,9 +57,8 @@ protected:
     Gtk::ImageMenuItem* tail;
     Gtk::MenuItem* selall;
     Gtk::MenuItem* open;
-    std::unique_ptr<Gtk::Menu> pmenu;
-
     Glib::RefPtr<Gtk::AccelGroup> pmaccelgroup;
+    Gtk::Menu pmenu;
 
     BatchQueueListener* listener;
 
@@ -84,11 +83,7 @@ public:
 
     bool hasJobs ()
     {
-        // not sure that this lock is necessary, but it's safer to keep it...
-        // TODO: Check for Linux
-#if PROTECT_VECTORS
         MYREADERLOCK(l, entryRW);
-#endif
         return (!fd.empty());
     }
 
