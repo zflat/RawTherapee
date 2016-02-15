@@ -49,7 +49,8 @@
 
 #define MAX_RETINEX_SCALES   8
 
-namespace {
+namespace
+{
 void retinex_scales( float* scales, const int nscales, const int mode, const int s, const float high)
 {
     if ( nscales == 1 ) {
@@ -1006,7 +1007,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
 
             if((mapmet == 4) && it == 1) {
 
-StopWatch Stop1("factor loop");
+                StopWatch Stop1("factor loop");
 #ifdef _OPENMP
                 #pragma omp parallel for schedule(dynamic,16)
 #endif
@@ -1014,6 +1015,7 @@ StopWatch Stop1("factor loop");
                 for (int i = 0; i < H_L; i++) {
                     for (int j = 0; j < W_L; j++) {
                         float mapval = 1.f + shmap->map[i][j];
+
                         if (mapval > h_thcomp) {
                             out[i][j] *= h_th / mapval + shHighlights;
                         } else if (mapval < s_thcomp) {
@@ -1021,7 +1023,8 @@ StopWatch Stop1("factor loop");
                         }
                     }
                 }
-Stop1.stop();
+
+                Stop1.stop();
             }
 
 #ifdef __SSE2__

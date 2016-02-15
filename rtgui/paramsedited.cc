@@ -2453,12 +2453,12 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.limd   = mods.wavelet.limd;
     }
 
-    if (retinex.highlights) {
-        toEdit.retinex.highlights     = mods.retinex.highlights;
+    if (wavelet.highlights) {
+        toEdit.wavelet.highlights     = mods.wavelet.highlights;
     }
 
-    if (retinex.htonalwidth) {
-        toEdit.retinex.htonalwidth     = mods.retinex.htonalwidth;
+    if (wavelet.htonalwidth) {
+        toEdit.wavelet.htonalwidth     = mods.wavelet.htonalwidth;
     }
 
     if (wavelet.shadows) {

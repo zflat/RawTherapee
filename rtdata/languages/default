@@ -1934,6 +1934,8 @@ TP_WAVELET_EDTYPE;Local contrast method
 TP_WAVELET_EDVAL;Strength
 TP_WAVELET_FINAL;Final Touchup
 TP_WAVELET_FINEST;Finest
+TP_WAVELET_GAINF;Gain and offset (brightness)
+TP_WAVELET_GAUSF;Gaussian mask
 TP_WAVELET_HIGHLIGHT;Highlight luminance range
 TP_WAVELET_HS1;Whole luminance range
 TP_WAVELET_HS2;Shadows/Highlights
@@ -2027,7 +2029,7 @@ TP_WAVELET_VART;Contrast
 TP_WAVELET_GAIN;Gain
 TP_WAVELET_GRAD;Gradient luma
 TP_WAVELET_GRAD_TOOLTIP;Change luma merge variation
-TP_WAVELET_OFFS;Brightness
+TP_WAVELET_OFFS;Offset (brightness)
 TP_WAVELET_LIMD;Threshold
 TP_WAVELET_SAT;Saturated chroma
 TP_WAVELET_SAVELAB;Save L*a*b datas (*.mer)
@@ -2056,6 +2058,7 @@ TP_WAVELET_TMSTRENGTH;Compression strength
 TP_WAVELET_TMSTRENGTH_TOOLTIP;Control the strength of tone mapping or contrast compression of the residual image. When the value is different from 0, the Strength and Gamma sliders of the Tone Mapping tool in the Exposure tab will become grayed out.
 TP_WAVELET_TMTYPE;Compression method
 TP_WAVELET_TON;Toning
+TP_WAVELET_TRANF;Transmission
 TP_WBALANCE_AUTO;Auto
 TP_WAVELET_USH;None
 TP_WAVELET_USH_TOOLTIP;If you select Sharp-mask, wavelet settings will be automatically positioned :\nBackground=black, Process=below, level=3...you can change level\nIf you select Clarity, wavelet settings will be automatically positioned :\nBackground=residual, Process=above, level=7..you can change level and wavelet levels

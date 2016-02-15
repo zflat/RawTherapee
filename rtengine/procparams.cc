@@ -651,7 +651,7 @@ void WaveletParams::getDefaultCCWCurve(std::vector<double> &curve)
 
 void WaveletParams::getDefaultCCWCurveT(std::vector<double> &curve)
 {
-    double v[12] =   {   0.00, 0.34, 0.35, 0.35,
+    double v[12] =   {   0.00, 0.50, 0.35, 0.35,
                          0.60, 0.75, 0.35, 0.35,
                          1.00, 0.50, 0.35, 0.35,
                      };
@@ -6532,7 +6532,7 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("Wavelet", "Highlights"))            {
-                wavelet.highlights    = keyFile.get_integer ("Wavelet", "Highlights");
+                wavelet.highlights  = keyFile.get_integer ("Wavelet", "Highlights");
 
                 if (pedited) {
                     pedited->wavelet.highlights = true;

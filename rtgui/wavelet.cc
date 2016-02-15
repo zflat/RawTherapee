@@ -771,19 +771,34 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     retiBox->pack_start(*neigh);
     retiBox->pack_start(*vart);
 
+    Gtk::VBox *gainVBox = Gtk::manage (new Gtk::VBox());
+    gainFrame = Gtk::manage (new Gtk::Frame(M("TP_WAVELET_GAINF")));
 
-    retiBox2->pack_start(*gain);
-    retiBox2->pack_start(*offs);
-    retiBox2->pack_start(*limd);
-    retiBox2->pack_start(*scale);
-    retiBox2->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
-    retiBox2->pack_start(*separatorreti, Gtk::PACK_SHRINK);
+    gainVBox->pack_start(*gain);
+    gainVBox->pack_start(*offs);
+    gainFrame->add(*gainVBox);
+    retiBox2->pack_start (*gainFrame);
 
-    retiBox2->pack_start(*highlights);
-    retiBox2->pack_start(*h_tonalwidth);
-    retiBox2->pack_start(*shadows);
-    retiBox2->pack_start(*s_tonalwidth);
-    retiBox2->pack_start(*radius);
+    Gtk::VBox *tranVBox = Gtk::manage (new Gtk::VBox());
+    tranFrame = Gtk::manage (new Gtk::Frame(M("TP_WAVELET_TRANF")));
+
+    tranVBox->pack_start(*CCWcurveEditorT, Gtk::PACK_SHRINK, 4);
+    tranVBox->pack_start(*scale);
+    tranVBox->pack_start(*limd);
+    tranFrame->add(*tranVBox);
+    retiBox2->pack_start (*tranFrame);
+
+    gaussFrame = Gtk::manage (new Gtk::Frame(M("TP_WAVELET_GAUSF")));
+    Gtk::VBox *gaussVBox = Gtk::manage (new Gtk::VBox());
+
+    gaussVBox->pack_start(*highlights);
+    gaussVBox->pack_start(*h_tonalwidth);
+    gaussVBox->pack_start(*shadows);
+    gaussVBox->pack_start(*s_tonalwidth);
+    gaussVBox->pack_start(*radius);
+    gaussFrame->add(*gaussVBox);
+
+    retiBox2->pack_start (*gaussFrame);
 
     highlights->setAdjusterListener (this);
     h_tonalwidth->setAdjusterListener (this);

@@ -215,6 +215,9 @@ protected:
     Gtk::Frame *chanMixerMidFrame;
     Gtk::Frame *chanMixerShadowsFrame;
     Gtk::Frame *dFrame;
+    Gtk::Frame *gainFrame;
+    Gtk::Frame *tranFrame;
+    Gtk::Frame *gaussFrame;
 
     MyComboBoxText*   retinexMethod;
     Gtk::Label* labmdh;
