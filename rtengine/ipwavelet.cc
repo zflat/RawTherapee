@@ -2280,6 +2280,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
             // end
         }
 
+    }
         //    if(params->wavelet.retinexMethod != "none" && cp.resena && params->wavelet.retinexMethodpro == "resid") {
         if(cp.retiena && cp.resena && params->wavelet.retinexMethodpro == "resid") {
             //printf("RESID LUM\n");
@@ -2299,7 +2300,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
 
             int chrome = 0;
 #ifdef _RT_NESTED_OPENMP
-            //    #pragma omp for nowait
+            #pragma omp parallel for num_threads(wavNestedLevels) if(wavNestedLevels>1)
 #endif
 
             for (int i = 0; i < W_L * H_L; i++) {
@@ -2311,7 +2312,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
 
             ImProcFunctions::MSRWav(resid, orig, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 5, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 #ifdef _RT_NESTED_OPENMP
-            //    #pragma omp for nowait
+            #pragma omp parallel for num_threads(wavNestedLevels) if(wavNestedLevels>1)
 #endif
 
             for (int i = 0; i < W_L * H_L; i++) {
@@ -2324,6 +2325,10 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float ** varhue, float *
 
             delete [] origBuffer;
         }
+#ifdef _RT_NESTED_OPENMP
+    #pragma omp parallel num_threads(wavNestedLevels) if(wavNestedLevels>1)
+#endif
+    {
 
 
 #ifdef _RT_NESTED_OPENMP
@@ -2386,45 +2391,37 @@ void ImProcFunctions::WaveletAandBAllAB(LabImage * labco, float ** varhue, float
 
         int skip = 2;
 
-        float *HHH[H_L] ALIGNED16;
-        float *HHHBuffer = new float[H_L * W_L];
-
-        for (int i = 0; i < H_L; i++) {
-            HHH[i] = &HHHBuffer[i * W_L];
-        }
-
         int chrome = 1;
         float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;//here no take into account of these parameters ==> only for luma
 #ifdef _RT_NESTED_OPENMP
-        //    #pragma omp for nowait
+        #pragma omp parallel for num_threads(wavNestedLevels) if(wavNestedLevels>1)
 #endif
 
         for (int i = 0; i < W_L * H_L; i++) {
             int ii = i / W_L;
             int jj = i - ii * W_L;
-            resid[ii][jj] = sqrt(SQR(WavCoeffs_a0[i]) + SQR(WavCoeffs_b0[i]));
-            orig[ii][jj] = resid[ii][jj];
-            HHH[ii][jj] = xatan2f(WavCoeffs_b0[i], WavCoeffs_a0[i]);
+            orig[ii][jj] = resid[ii][jj] = sqrt(SQR(WavCoeffs_a0[i]) + SQR(WavCoeffs_b0[i]));
         }
 
         ImProcFunctions::MSRWav(resid, orig, W_L, H_L, params->wavelet, wavRETCcurve, skip, chrome, 4, 2.f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 #ifdef _RT_NESTED_OPENMP
-        //    #pragma omp for nowait
+        #pragma omp parallel for num_threads(wavNestedLevels) if(wavNestedLevels>1)
 #endif
 
         for (int i = 0; i < W_L * H_L; i++) {
             int ii = i / W_L;
             int jj = i - ii * W_L;
-            float2 sincosval = xsincosf(HHH[ii][jj]);
+            float Chprov = orig[ii][jj];
+            float2 sincosval;
+            sincosval.y = Chprov == 0.0f ? 1.f : WavCoeffs_a0[i] / Chprov;
+            sincosval.x = Chprov == 0.0f ? 0.f : WavCoeffs_b0[i] / Chprov;
 
             WavCoeffs_a0[i] = resid[ii][jj] * sincosval.y;
             WavCoeffs_b0[i] = resid[ii][jj] * sincosval.x;
         }
 
         delete [] residBuffer;
-
         delete [] origBuffer;
-        delete [] HHHBuffer;
     }
 
     // hhutili=false;

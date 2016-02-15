@@ -44,7 +44,6 @@
 #include "rawimagesource.h"
 #include "improcfun.h"
 #include "opthelper.h"
-#define BENCHMARK
 #include "StopWatch.h"
 
 #define MAX_RETINEX_SCALES   8
@@ -397,10 +396,9 @@ void RawImageSource::MSR(float** luminance, const float* const * originalLuminan
                 src[i] = &srcBuffer[i * W_L];
             }
 
-            int h_th, s_th;
 
-            int shHighlights = deh.highlights;
-            int shShadows = deh.shadows;
+            const float shHighlights = (100.f - deh.highlights) / 100.f;
+            const float shShadows = (100.f - deh.shadows) / 100.f;
             int mapmet = 0;
 
             if(deh.mapMethod == "map") {
@@ -512,11 +510,15 @@ void RawImageSource::MSR(float** luminance, const float* const * originalLuminan
                         }
                     }
                 }
+                float h_th, s_th;
+                float h_thcomp, s_thcomp;
 
                 if(((mapmet == 2 && scale > 2) || mapmet == 3 || mapmet == 4) && it == 1) {
                     shmap->updateL (out, shradius, true, 1);
-                    h_th = shmap->max_f - deh.htonalwidth * (shmap->max_f - shmap->avg) / 100;
-                    s_th = deh.stonalwidth * (shmap->avg - shmap->min_f) / 100;
+                    h_thcomp = shmap->max_f - deh.htonalwidth * (shmap->max_f - shmap->avg) / 100.f;
+                    h_th = h_thcomp - (shHighlights * h_thcomp);
+                    s_thcomp = deh.stonalwidth * (shmap->avg - shmap->min_f) / 100.f;
+                    s_th = s_thcomp - (shShadows * s_thcomp);
                 }
 
 #ifdef __SSE2__
@@ -543,22 +545,18 @@ void RawImageSource::MSR(float** luminance, const float* const * originalLuminan
 
 
 #ifdef _OPENMP
-                    #pragma omp parallel for
+                    #pragma omp parallel for schedule(dynamic,16)
 #endif
 
                     for (int i = 0; i < H_L; i++) {
                         for (int j = 0; j < W_L; j++) {
-                            double mapval = 1.0 + shmap->map[i][j];
-                            double factor = 1.0;
+                            float mapval = 1.f + shmap->map[i][j];
 
-                            if (mapval > h_th) {
-                                factor = (h_th + (100.0 - shHighlights) * (mapval - h_th) / 100.0) / mapval;
-                            } else if (mapval < s_th) {
-                                factor = (s_th - (100.0 - shShadows) * (s_th - mapval) / 100.0) / mapval;
+                            if (mapval > h_thcomp) {
+                                out[i][j] *= h_th / mapval + shHighlights;
+                            } else if (mapval < s_thcomp) {
+                                out[i][j] *= s_th / mapval + shShadows;
                             }
-
-                            out[i][j] *= factor;
-
                         }
                     }
                 }
@@ -1007,7 +1005,6 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
 
             if((mapmet == 4) && it == 1) {
 
-                StopWatch Stop1("factor loop");
 #ifdef _OPENMP
                 #pragma omp parallel for schedule(dynamic,16)
 #endif
@@ -1024,7 +1021,6 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
                     }
                 }
 
-                Stop1.stop();
             }
 
 #ifdef __SSE2__
