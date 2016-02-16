@@ -46,7 +46,7 @@
 #include "opthelper.h"
 #include "StopWatch.h"
 
-#define MAX_RETINEX_SCALES   8
+#define MAX_RETINEX_SCALES 8
 
 namespace
 {
@@ -87,6 +87,7 @@ void retinex_scales( float* scales, const int nscales, const int mode, const int
 }
 void mean_stddv2( const float * const *dst, float &mean, float &stddv, const int W_L, const int H_L, float &maxtr, float &mintr)
 {
+    BENCHFUN
     // summation using double precision to avoid too large summation error for large pictures
     double vsquared = 0.f;
     double sum = 0.f;
@@ -98,22 +99,16 @@ void mean_stddv2( const float * const *dst, float &mean, float &stddv, const int
     {
         float lmax = -999999.f, lmin = 999999.f;
 #ifdef _OPENMP
-        #pragma omp for reduction(+:sum,vsquared) nowait // this leads to differences, but parallel summation is more accurate
+        #pragma omp for reduction(+:sum,vsquared) schedule(dynamic,16) nowait // this leads to differences, but parallel summation is more accurate
 #endif
 
         for (int i = 0; i < H_L; i++ )
             for (int j = 0; j < W_L; j++) {
-                sum += dst[i][j];
-                vsquared += (dst[i][j] * dst[i][j]);
-
-                if ( dst[i][j] > lmax) {
-                    lmax = dst[i][j] ;
-                }
-
-                if ( dst[i][j] < lmin) {
-                    lmin = dst[i][j] ;
-                }
-
+                float val = dst[i][j];
+                sum += val;
+                vsquared += (val * val);
+                lmax = val > lmax ? val : lmax;
+                lmin = val < lmin ? val : lmin;
             }
 
 #ifdef _OPENMP
@@ -125,16 +120,11 @@ void mean_stddv2( const float * const *dst, float &mean, float &stddv, const int
         }
 
     }
-    mean = sum / (double) (W_L * H_L);
-    vsquared /= (double) W_L * H_L;
-    stddv = ( vsquared - (mean * mean) );
-    stddv = (float)sqrt(stddv);
+    mean = sum / (W_L * H_L);
+    vsquared = vsquared / (W_L * H_L);
+    stddv =  vsquared - (mean * mean);
+    stddv = sqrt(stddv);
 }
-
-
-
-
-
 
 void mean_stddv( const float * const *dst, float &mean, float &stddv, const int W_L, const int H_L, const float factor, float &maxtr, float &mintr)
 
@@ -832,7 +822,7 @@ void RawImageSource::MSR(float** luminance, const float* const * originalLuminan
     }
 }
 
-void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLuminance, const int width, const int height, const WaveletParams &deh, const WavretiCurve &wavRETCcurve,  const WavretigainCurve &wavRETgainCcurve, const int skip, const int chrome, const int scall, const float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
+void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLuminance, const int width, const int height, const WaveletParams &deh, const WavretiCurve &wavRETCcurve, const WavretigainCurve &wavRETgainCcurve, const int skip, const int chrome, const int scall, const float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
 {
     BENCHFUN
     bool py = true;
@@ -840,69 +830,44 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
     if (py) {//enabled
         float         mean, stddv, maxtr, mintr;
         float         delta;
-        float eps = 2.f;
-        bool useHsl = false; //never used
-        bool useHslLin = false;//never used
-        float gain2 = (float) deh.gain / 100.f;
-        //gain2 = useHslLin ? gain2 * 0.5f : gain2;
-        float offse = (float) deh.offs;
-        float chrT = deh.chrrt / 100.f;
-        int scal ;
-        //scal = scall;//disabled scal
-        scal = deh.scale;//enable scale
-        int nei = (int) krad * deh.neigh;
-        float vart = (float)deh.vart / 100.f;//variance
-        float strength = (float) deh.str / 100.f; // Blend with original L channel data
+        constexpr float eps = 2.f;
+        constexpr bool useHsl = false; //never used
+        constexpr bool useHslLin = false;//never used
+        const float offse = deh.offs;
+        const float chrT = deh.chrrt / 100.f;
+        const int scal = deh.scale;;
+        const float vart = deh.vart / 100.f;//variance
+        const float strength = deh.str / 100.f; // Blend with original L channel data
         float limD = (float) deh.limd;
         limD = pow(limD, 1.7f);//about 2500 enough
         //limD *= useHslLin ? 10.f : 1.f;
         float ilimD = 1.f / limD;
-        int moderetinex = 2; // default to 2 ( deh.retinexMethod == "high" )
-        float hig;// = ((float) deh.highl) / 100.f;
-        bool higplus = false ;//not used
-        float elogt;
-        float hl ;//= deh.baselog;
-
-        if(hl >= 2.71828f) {
-            elogt = 2.71828f + SQR(SQR(hl - 2.71828f));
-        } else {
-            elogt = hl;
-        }
+        const float elogt = 2.71828f;
 
         //empirical skip evaluation : very difficult  because quasi all parameters interfere
         //to test on several images
+        int nei = (int) krad * deh.neigh;
         if(skip >= 4) {
             nei = (int) (0.1f * nei + 2.f);    //not too bad
-        }
-
-        if(skip > 1 && skip < 4) {
+        } else if(skip > 1 && skip < 4) {
             nei = (int) (0.3f * nei + 2.f);
         }
 
-        //
-        elogt = 2.71828f;//disabled baselog
-
+        int moderetinex;
         if (deh.retinexMethod == "uni") {
             moderetinex = 0;
-        }
-
-        if (deh.retinexMethod == "low") {
+        } else if (deh.retinexMethod == "low") {
             moderetinex = 1;
-        }
-
-        if (deh.retinexMethod == "high") {
+        } else /*if (deh.retinexMethod == "high") */ { // default to 2 ( deh.retinexMethod == "high" )
             moderetinex = 2;
         }
 
-        float aahi = 49.f / 99.f; ////reduce sensibility 50%
-        float bbhi = 1.f - aahi;
-        float high;
-        //high =  bbhi + aahi * (float) deh.highl;
+        const float high = 0.f; // Dummy to pass to retinex_scales(...)
         float RetinexScales[MAX_RETINEX_SCALES];
         retinex_scales( RetinexScales, scal, moderetinex, nei, high );
 
-        int H_L = height;
-        int W_L = width;
+        const int H_L = height;
+        const int W_L = width;
         float *src[H_L] ALIGNED16;
         float *srcBuffer = new float[H_L * W_L];
 
@@ -912,17 +877,10 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
 
         const float shHighlights = (100.f - deh.highlights) / 100.f;
         const float shShadows = (100.f - deh.shadows) / 100.f;
-        int mapmet = 0;
+        const int mapmet = (deh.highlights > 0 || deh.shadows > 0) ? 4 : 0;
+        const double shradius = mapmet == 4 ? deh.radius : 40.;
+        constexpr int it = 1;//in case of !!
 
-        //double shradius = (double) deh.radius;
-        if(deh.highlights > 0 || deh.shadows > 0) {
-            mapmet = 4;
-        }
-
-        const double shradius = mapmet == 4 ? (double) deh.radius : 40.;
-
-        int viewmet = 1;
-        int it = 1;//in case of !!
 #ifdef _OPENMP
         #pragma omp parallel for
 #endif
@@ -1029,9 +987,8 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             vfloat limMaxv = F2V(limD);
 
 #endif
-
 #ifdef _OPENMP
-            #pragma omp for
+            #pragma omp parallel for
 #endif
 
             for (int i = 0; i < H_L; i++) {
@@ -1070,7 +1027,8 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         shmap = nullptr;
 
         delete [] buffer;
-        //delete [] outBuffer;
+        delete [] outBuffer;
+        outBuffer = nullptr;
         delete [] srcBuffer;
 
         mean = 0.f;
@@ -1094,28 +1052,24 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             bmax *= 500.f;
             amin *= 500.f;
             bmin *= 500.f;
+
 #ifdef _OPENMP
-            #pragma omp parallel
-#endif
-            {
-                float absciss;
-#ifdef _OPENMP
-                #pragma omp for schedule(dynamic,16)
+            #pragma omp parallel for schedule(dynamic,16)
 #endif
 
-                for (int i = 0; i < H_L; i++ )
-                    for (int j = 0; j < W_L; j++) { //for mintr to maxtr evalate absciss in function of original transmission
-                        if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
-                            absciss = asig * luminance[i][j] + bsig;
-                        } else if (luminance[i][j] >= mean) {
-                            absciss = amax * luminance[i][j] + bmax;
-                        } else {
-                            absciss = amin * luminance[i][j] + bmin;
-                        }
-
-                        luminance[i][j] *= (-1.f + 4.f * wavRETCcurve[absciss]); //new transmission
+            for (int i = 0; i < H_L; i++ )
+                for (int j = 0; j < W_L; j++) { //for mintr to maxtr evalate absciss in function of original transmission
+                    float absciss;
+                    if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
+                        absciss = asig * luminance[i][j] + bsig;
+                    } else if (luminance[i][j] >= mean) {
+                        absciss = amax * luminance[i][j] + bmax;
+                    } else {
+                        absciss = amin * luminance[i][j] + bmin;
                     }
-            }
+
+                    luminance[i][j] *= (-1.f + 4.f * wavRETCcurve[absciss]); //new transmission
+                }
 
             // median filter on transmission  ==> reduce artifacts
             bool ty = false;
@@ -1184,7 +1138,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             delta = 1.0f;
         }
 
-        float cdfactor = gain2 * 32768.f / delta;
+        float cdfactor = 32768.f / delta;
         maxCD = -9999999.f;
         minCD = 9999999.f;
 
@@ -1206,7 +1160,8 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         mean_stddv2( luminance, mean, stddv, W_L, H_L, maxtr, mintr);
         float asig, bsig, amax, bmax, amin, bmin;
 
-        if (wavRETgainCcurve && mean != 0.f && stddv != 0.f) { //if curve
+        const bool hasWavRetGainCurve = wavRETgainCcurve && mean != 0.f && stddv != 0.f;
+        if (hasWavRetGainCurve) { //if curve
             asig = 0.166666f / stddv;
             bsig = 0.5f - asig * mean;
             amax = 0.333333f / (maxtr - mean - stddv);
@@ -1220,27 +1175,27 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             bmax *= 500.f;
             amin *= 500.f;
             bmin *= 500.f;
+            cdfactor *= 2.f;
         }
 
 
-
+        const float maxclip = (chrome == 0 ? 32768.f : 50000.f);
+        const float str = strength * (chrome == 0 ? 1.f : chrT);
 #ifdef _OPENMP
         #pragma omp parallel
 #endif
         {
-            float absciss;
+//            float absciss;
             float cdmax = -999999.f, cdmin = 999999.f;
-
+            float gan = 0.5f;
 #ifdef _OPENMP
-            #pragma omp for
+            #pragma omp for schedule(dynamic,16)
 #endif
 
             for ( int i = 0; i < H_L; i ++ )
                 for (int j = 0; j < W_L; j++) {
-                    float gan;
-
-                    if (wavRETgainCcurve && mean != 0.f && stddv != 0.f) {
-
+                    if (hasWavRetGainCurve) {
+                        float absciss;
                         if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
                             absciss = asig * luminance[i][j] + bsig;
                         } else if (luminance[i][j] >= mean) {
@@ -1248,34 +1203,13 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
                         } else { /*if(luminance[i][j] <= mean - stddv)*/
                             absciss = amin * luminance[i][j] + bmin;
                         }
-
-//                   float cd = cdfactor * ( luminance[i][j]  - mini ) + offse;
-                        gan = 2.f * (wavRETgainCcurve[absciss]); //new gain function transmission
-                    } else {
-                        gan = 0.5f;
+                        gan = wavRETgainCcurve[absciss]; //new gain function transmission
                     }
 
-                    float cd = gan * cdfactor * ( luminance[i][j] ) + offse;
+                    float cd = gan * cdfactor * luminance[i][j] + offse;
 
-                    if(cd > cdmax) {
-                        cdmax = cd;
-                    }
-
-                    if(cd < cdmin) {
-                        cdmin = cd;
-                    }
-
-                    float str;
-                    float maxclip = 32768.f;
-
-                    if(chrome == 0) {
-                        str = strength;
-                    } else {
-                        str = strength * (chrT);
-                        maxclip = 50000.f;
-                    }
-
-                    //str = strength;
+                    cdmax = cd > cdmax ? cd : cdmax;
+                    cdmin = cd < cdmin ? cd : cdmin;
 
                     luminance[i][j] = LIM( cd, 0.f, maxclip ) * str + (1.f - str) * originalLuminance[i][j];
                 }
@@ -1289,8 +1223,6 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             }
 
         }
-        delete [] outBuffer;
-        outBuffer = nullptr;
 
         Tmean = mean;
         Tsigma = stddv;
