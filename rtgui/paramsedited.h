@@ -643,6 +643,7 @@ public:
     bool level3noise;
     bool ccwcurve;
     bool ccwTcurve;
+    bool ccwTgaincurve;
     bool ccwmergcurve;
     bool opacityCurveBY;
     bool opacityCurveRG;

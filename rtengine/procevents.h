@@ -501,6 +501,7 @@ enum ProcEvent {
     EvWavenaedge3 = 471,
     EvWavgrad = 472,
     EvWavmergCurve = 473,
+    EvWavCTgainCurve = 474,
     NUMOFEVENTS
 };
 }

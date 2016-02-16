@@ -982,13 +982,14 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     WaveletParams WaveParams = params.wavelet;
     WavCurve wavCLVCurve;
     WavretiCurve wavRETCurve;
+    WavretigainCurve wavRETgainCurve;
     WavmergCurve wavMERCurve;
     WavOpacityCurveRG waOpacityCurveRG;
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;
     WavOpacityCurveWL waOpacityCurveWL;
 
-    params.wavelet.getCurves(wavCLVCurve, wavRETCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
+    params.wavelet.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
 
     // directional pyramid wavelet
     if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
@@ -1199,12 +1200,12 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             unshar = new LabImage (fw, fh);
             provis = params.wavelet.CLmethod;
             params.wavelet.CLmethod = "all";
-            ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams,  wavCLVCurve, wavRETCurve, wavRETgainCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
             unshar->CopyFrom(labView);
             params.wavelet.CLmethod = provis;
         }
 
-        ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        ipf.ip_wavelet(labView, labView, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW,  waOpacityCurveWL, wavclCurve, wavcontlutili, 1, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
         if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all") {
             float mL = (float) (WaveParams.mergeL / 100.f);

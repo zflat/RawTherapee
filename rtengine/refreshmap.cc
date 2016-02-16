@@ -500,7 +500,7 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     DIRPYREQUALIZER,     //EvWavenaTCresi
     DIRPYREQUALIZER,      //EvWavenaedge3
     DIRPYREQUALIZER,      //EvWavgrad
-    DIRPYREQUALIZER      //EvWavmergCurve
-
+    DIRPYREQUALIZER,      //EvWavmergCurve
+    DIRPYREQUALIZER     //EvWavCTgainCurve
 };
 

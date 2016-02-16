@@ -57,6 +57,7 @@ protected:
 
     CurveEditorGroup* CCWcurveEditorG;
     CurveEditorGroup* CCWcurveEditorT;
+    CurveEditorGroup* CCWcurveEditorgainT;
     CurveEditorGroup* CCWcurveEditormerg;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
@@ -82,6 +83,7 @@ protected:
 
     FlatCurveEditor* ccshape;
     FlatCurveEditor* cTshape;
+    FlatCurveEditor* cTgainshape;
     FlatCurveEditor* cmergshape;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;

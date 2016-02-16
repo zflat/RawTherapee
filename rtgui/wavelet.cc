@@ -709,7 +709,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     gain  = Gtk::manage (new Adjuster (M("TP_WAVELET_GAIN"), 0, 200, 1, 50));
     gain->setAdjusterListener (this);
-    offs  = Gtk::manage (new Adjuster (M("TP_WAVELET_OFFS"), -10000, 10000, 1, 0));
+    offs  = Gtk::manage (new Adjuster (M("TP_WAVELET_OFFS"), -1000, 5000, 1, 0));
     offs->setAdjusterListener (this);
     str  = Gtk::manage (new Adjuster (M("TP_WAVELET_STR"), 0, 100, 1, 20));
     str->setAdjusterListener (this);
@@ -743,6 +743,21 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     CCWcurveEditorT->show();
     Gtk::HSeparator *separatorreti = Gtk::manage (new Gtk::HSeparator());
 
+    // <Retinex Transmission gain curve
+    CCWcurveEditorgainT = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_TRANSMISSIONGAIN"));
+    CCWcurveEditorgainT->setCurveListener (this);
+
+    rtengine::WaveletParams::getDefaultCCWgainCurveT(defaultCurve);
+    cTgainshape = static_cast<FlatCurveEditor*>(CCWcurveEditorgainT->addCurve(CT_Flat, "", NULL, false));
+
+    cTgainshape->setIdentityValue(0.);
+    cTgainshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
+    cTgainshape->setTooltip(M("TP_RETINEX_TRANSMISSIONGAIN_TOOLTIP"));
+
+    CCWcurveEditorgainT->curveListComplete();
+    CCWcurveEditorgainT->show();
+
+
     // -->
     highlights   = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_HIGHLIGHTS"), 0, 100, 1, 0));
     h_tonalwidth = Gtk::manage (new Adjuster (M("TP_SHADOWSHLIGHTS_HLTONALW"), 10, 100, 1, 80));
@@ -774,7 +789,9 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     Gtk::VBox *gainVBox = Gtk::manage (new Gtk::VBox());
     gainFrame = Gtk::manage (new Gtk::Frame(M("TP_WAVELET_GAINF")));
 
-    gainVBox->pack_start(*gain);
+//    gainVBox->pack_start(*gain);
+    gainVBox->pack_start(*CCWcurveEditorgainT, Gtk::PACK_SHRINK, 4);
+
     gainVBox->pack_start(*offs);
     gainFrame->add(*gainVBox);
     retiBox2->pack_start (*gainFrame);
@@ -1313,6 +1330,7 @@ Wavelet::~Wavelet ()
     delete CCWcurveEditorG;
     delete CCWcurveEditormerg;
     delete CCWcurveEditorT;
+    delete CCWcurveEditorgainT;
     delete curveEditorRES;
     delete curveEditorGAM;
     delete curveEditorG;
@@ -1707,6 +1725,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     ccshape->setCurve (pp->wavelet.ccwcurve);
     cTshape->setCurve (pp->wavelet.ccwTcurve);
+    cTgainshape->setCurve (pp->wavelet.ccwTgaincurve);
     cmergshape->setCurve (pp->wavelet.ccwmergcurve);
     opacityShapeRG->setCurve (pp->wavelet.opacityCurveRG);
     opacityShapeBY->setCurve (pp->wavelet.opacityCurveBY);
@@ -1920,6 +1939,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         set_inconsistent (multiImage && !pedited->wavelet.enabled);
         ccshape->setUnChanged  (!pedited->wavelet.ccwcurve);
         cTshape->setUnChanged  (!pedited->wavelet.ccwTcurve);
+        cTgainshape->setUnChanged  (!pedited->wavelet.ccwTgaincurve);
         cmergshape->setUnChanged  (!pedited->wavelet.ccwmergcurve);
         expcontrast->set_inconsistent   (!pedited->wavelet.expcontrast);
         expchroma->set_inconsistent   (!pedited->wavelet.expchroma);
@@ -2145,6 +2165,7 @@ void Wavelet::setEditProvider  (EditDataProvider *provider)
 {
     ccshape->setEditProvider(provider);
     cTshape->setEditProvider(provider);
+    cTgainshape->setEditProvider(provider);
     cmergshape->setEditProvider(provider);
     opacityShapeRG->setEditProvider(provider);
     opacityShapeBY->setEditProvider(provider);
@@ -2159,6 +2180,7 @@ void Wavelet::autoOpenCurve ()
 {
     ccshape->openIfNonlinear();
     cTshape->openIfNonlinear();
+    cTgainshape->openIfNonlinear();
     cmergshape->openIfNonlinear();
     //opacityShapeRG->openIfNonlinear();
     //opacityShapeBY->openIfNonlinear();
@@ -2219,6 +2241,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.level2noise    = level2noise->getValue<double> ();
     pp->wavelet.level3noise    = level3noise->getValue<double> ();
     pp->wavelet.ccwcurve       = ccshape->getCurve ();
+    pp->wavelet.ccwTgaincurve       = cTgainshape->getCurve ();
     pp->wavelet.ccwTcurve       = cTshape->getCurve ();
     pp->wavelet.ccwmergcurve       = cmergshape->getCurve ();
     pp->wavelet.opacityCurveRG = opacityShapeRG->getCurve ();
@@ -2344,6 +2367,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.hllev           = hllev->getEditedState ();
         pedited->wavelet.ccwcurve        = !ccshape->isUnChanged ();
         pedited->wavelet.ccwTcurve        = !cTshape->isUnChanged ();
+        pedited->wavelet.ccwTgaincurve        = !cTgainshape->isUnChanged ();
         pedited->wavelet.ccwmergcurve        = !cmergshape->isUnChanged ();
         pedited->wavelet.edgcont         = edgcont->getEditedState ();
         pedited->wavelet.level0noise     = level0noise->getEditedState ();
@@ -2748,6 +2772,8 @@ void Wavelet::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvWavCCCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == cTshape) {
             listener->panelChanged (EvWavCTCurve, M("HISTORY_CUSTOMCURVE"));
+        } else if (ce == cTgainshape) {
+            listener->panelChanged (EvWavCTgainCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == cmergshape) {
             listener->panelChanged (EvWavmergCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == opacityShapeRG) {
@@ -3451,6 +3477,7 @@ void Wavelet::setBatchMode (bool batchMode)
     CCWcurveEditorG->setBatchMode (batchMode);
     CCWcurveEditormerg->setBatchMode (batchMode);
     CCWcurveEditorT->setBatchMode (batchMode);
+    CCWcurveEditorgainT->setBatchMode (batchMode);
     opaCurveEditorG->setBatchMode (batchMode);
     opacityCurveEditorG->setBatchMode (batchMode);
     opacityCurveEditorW->setBatchMode (batchMode);

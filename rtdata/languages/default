@@ -707,6 +707,7 @@ HISTORY_MSG_471;W - Residual - Toning color bal
 HISTORY_MSG_472;W - es - Edge detection
 HISTORY_MSG_473;W - merge - gradient luma
 HISTORY_MSG_474;W - merge - merge curve
+HISTORY_MSG_475;W - Reti - gain curve
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -2044,6 +2045,7 @@ TP_WAVELET_STRENGTH;Strength
 TP_WAVELET_SUPE;Extra
 TP_WAVELET_TC;Toning and color balance
 TP_WAVELET_THR;Shadows threshold
+TP_WAVELET_TRANSMISSIONGAIN;Transmission
 TP_WAVELET_THRESHOLD;Highlight levels
 TP_WAVELET_THRESHOLD2;Shadow levels
 TP_WAVELET_THRESHOLD2_TOOLTIP;Only levels between 9 and 9 minus the value will be affected by the shadow luminance range. Other levels will be fully treated. The highest level possible is limited by the highlight level value (9 minus highlight level value).

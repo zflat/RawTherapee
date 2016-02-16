@@ -824,7 +824,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
         if((params.wavelet.enabled)) {
             WaveletParams WaveParams = params.wavelet;
-            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             int kall = 0;
             progress ("Wavelet...", 100 * readyphase / numofphases);
             LabImage *unshar;
@@ -888,14 +888,14 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 provis = params.wavelet.CLmethod;
                 params.wavelet.CLmethod = "all";
 
-                ipf.ip_wavelet(nprevl, nprevl, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                ipf.ip_wavelet(nprevl, nprevl, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                 unshar->CopyFrom(nprevl);
 
                 params.wavelet.CLmethod = provis;
 
             }
 
-            ipf.ip_wavelet(nprevl, nprevl, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            ipf.ip_wavelet(nprevl, nprevl, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
 
             if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all") {

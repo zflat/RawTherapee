@@ -529,6 +529,36 @@ public:
     }
 };
 
+class WavretigainCurve
+{
+private:
+    LUTf lutWavretigainCurve;  // 0xffff range
+    void Set(const Curve &pCurve);
+
+public:
+    float sum;
+
+    virtual ~WavretigainCurve() {};
+    WavretigainCurve();
+    void Reset();
+    void Set(const std::vector<double> &curvePoints);
+    float getSum() const
+    {
+        return sum;
+    }
+
+    float operator[](float index) const
+    {
+        return lutWavretigainCurve[index];
+    }
+    operator bool (void) const
+    {
+        return lutWavretigainCurve;
+    }
+};
+
+
+
 class WavmergCurve
 {
 private:

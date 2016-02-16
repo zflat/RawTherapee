@@ -486,6 +486,7 @@ void ParamsEdited::set (bool v)
     wavelet.level3noise = v;
     wavelet.ccwcurve = v;
     wavelet.ccwTcurve = v;
+    wavelet.ccwTgaincurve = v;
     wavelet.ccwmergcurve = v;
     wavelet.opacityCurveRG   = v;
     wavelet.opacityCurveBY   = v;
@@ -1008,6 +1009,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.satlev = wavelet.satlev && p.wavelet.satlev == other.wavelet.satlev;
         wavelet.ccwcurve = wavelet.ccwcurve && p.wavelet.ccwcurve == other.wavelet.ccwcurve;
         wavelet.ccwTcurve = wavelet.ccwTcurve && p.wavelet.ccwTcurve == other.wavelet.ccwTcurve;
+        wavelet.ccwTgaincurve = wavelet.ccwTgaincurve && p.wavelet.ccwTgaincurve == other.wavelet.ccwTgaincurve;
         wavelet.ccwmergcurve = wavelet.ccwmergcurve && p.wavelet.ccwmergcurve == other.wavelet.ccwmergcurve;
         wavelet.opacityCurveRG = wavelet.opacityCurveRG && p.wavelet.opacityCurveRG == other.wavelet.opacityCurveRG;
         wavelet.opacityCurveBY = wavelet.opacityCurveBY && p.wavelet.opacityCurveBY == other.wavelet.opacityCurveBY;
@@ -2712,6 +2714,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.ccwTcurve) {
         toEdit.wavelet.ccwTcurve   = mods.wavelet.ccwTcurve;
+    }
+
+    if (wavelet.ccwTgaincurve) {
+        toEdit.wavelet.ccwTgaincurve   = mods.wavelet.ccwTgaincurve;
     }
 
     if (wavelet.ccwmergcurve) {

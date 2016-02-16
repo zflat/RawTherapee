@@ -832,7 +832,7 @@ void RawImageSource::MSR(float** luminance, const float* const * originalLuminan
     }
 }
 
-void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLuminance, const int width, const int height, const WaveletParams &deh, const WavretiCurve &wavRETCcurve, const int skip, const int chrome, const int scall, const float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
+void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLuminance, const int width, const int height, const WaveletParams &deh, const WavretiCurve &wavRETCcurve,  const WavretigainCurve &wavRETgainCcurve, const int skip, const int chrome, const int scall, const float krad, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax)
 {
     BENCHFUN
     bool py = true;
@@ -1188,6 +1188,39 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         maxCD = -9999999.f;
         minCD = 9999999.f;
 
+//prepare work for curve gain
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = 0; i < H_L; i++) {
+            for (int j = 0; j < W_L; j++) {
+                luminance[i][j] = luminance[i][j] - mini;
+            }
+        }
+
+        mean = 0.f;
+        stddv = 0.f;
+        // I call mean_stddv2 instead of mean_stddv ==> logBetaGain
+
+        mean_stddv2( luminance, mean, stddv, W_L, H_L, maxtr, mintr);
+        float asig, bsig, amax, bmax, amin, bmin;
+
+        if (wavRETgainCcurve && mean != 0.f && stddv != 0.f) { //if curve
+            asig = 0.166666f / stddv;
+            bsig = 0.5f - asig * mean;
+            amax = 0.333333f / (maxtr - mean - stddv);
+            bmax = 1.f - amax * maxtr;
+            amin = 0.333333f / (mean - stddv - mintr);
+            bmin = -amin * mintr;
+
+            asig *= 500.f;
+            bsig *= 500.f;
+            amax *= 500.f;
+            bmax *= 500.f;
+            amin *= 500.f;
+            bmin *= 500.f;
+        }
 
 
 
@@ -1195,6 +1228,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         #pragma omp parallel
 #endif
         {
+            float absciss;
             float cdmax = -999999.f, cdmin = 999999.f;
 
 #ifdef _OPENMP
@@ -1203,7 +1237,25 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
 
             for ( int i = 0; i < H_L; i ++ )
                 for (int j = 0; j < W_L; j++) {
-                    float cd = cdfactor * ( luminance[i][j]  - mini ) + offse;
+                    float gan;
+
+                    if (wavRETgainCcurve && mean != 0.f && stddv != 0.f) {
+
+                        if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
+                            absciss = asig * luminance[i][j] + bsig;
+                        } else if (luminance[i][j] >= mean) {
+                            absciss = amax * luminance[i][j] + bmax;
+                        } else { /*if(luminance[i][j] <= mean - stddv)*/
+                            absciss = amin * luminance[i][j] + bmin;
+                        }
+
+//                   float cd = cdfactor * ( luminance[i][j]  - mini ) + offse;
+                        gan = 2.f * (wavRETgainCcurve[absciss]); //new gain function transmission
+                    } else {
+                        gan = 0.5f;
+                    }
+
+                    float cd = gan * cdfactor * ( luminance[i][j] ) + offse;
 
                     if(cd > cdmax) {
                         cdmax = cd;
