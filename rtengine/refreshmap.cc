@@ -119,8 +119,8 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     ALLNORAW,         // EvDPDNLuma,
     ALLNORAW,         // EvDPDNChroma,
     ALLNORAW,         // EvDPDNGamma,
-    DIRPYREQUALIZER,  // EvDirPyrEqualizer,
-    DIRPYREQUALIZER,  // EvDirPyrEqlEnabled,
+    ALLNORAW,         // EvDirPyrEqualizer,
+    ALLNORAW,         // EvDirPyrEqlEnabled,
     LUMINANCECURVE,   // EvLSaturation,
     LUMINANCECURVE,   // EvLaCurve,
     LUMINANCECURVE,   // EvLbCurve,
@@ -200,7 +200,7 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     LUMINANCECURVE,   // EvLLCCurve
     LUMINANCECURVE,   // EvLLCredsk
     ALLNORAW,         // EvDPDNLdetail
-    LUMINANCECURVE,   // EvCATEnabled
+    ALLNORAW,         // EvCATEnabled
     LUMINANCECURVE,   // EvCATDegree
     LUMINANCECURVE,   // EvCATMethodsur
     LUMINANCECURVE,   // EvCATAdapscen
@@ -275,12 +275,12 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     LUMINANCECURVE,   // EvLCLCurve
     LUMINANCECURVE,   // EvLLHCurve
     LUMINANCECURVE,   // EvLHHCurve
-    DIRPYREQUALIZER,  // EvDirPyrEqualizerThreshold
+    ALLNORAW,         // EvDirPyrEqualizerThreshold
     ALLNORAW,         // EvDPDNenhance
     RGBCURVE,         // EvBWMethodalg
-    DIRPYREQUALIZER,  // EvDirPyrEqualizerSkin
-    DIRPYREQUALIZER,  // EvDirPyrEqlgamutlab
-    DIRPYREQUALIZER,  // EvDirPyrEqualizerHueskin
+    ALLNORAW,         // EvDirPyrEqualizerSkin
+    ALLNORAW,         // EvDirPyrEqlgamutlab
+    ALLNORAW,         // EvDirPyrEqualizerHueskin
     ALLNORAW,         // EvDPDNmedian
     ALLNORAW,         // EvDPDNmedmet
     RGBCURVE,         // EvColorToningEnabled
@@ -465,42 +465,43 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     RETINEX,          // EvLradius
     RETINEX,          // EvmapMethod
     DEMOSAIC,         // EvRetinexmapcurve
-    DEMOSAIC,          // EvviewMethod
-    DIRPYREQUALIZER,   // EvWavusharpmet
-    DIRPYREQUALIZER,   //  EvWavmergeL
-    DIRPYREQUALIZER,   // EvWavmergeC
-    DIRPYREQUALIZER,   //  EvWavgain
-    DIRPYREQUALIZER,   // EvWavoffs
-    DIRPYREQUALIZER,   //  EvWavstr
-    DIRPYREQUALIZER,   // EvWavneigh
-    DIRPYREQUALIZER,   //  EvWavvart
-    DIRPYREQUALIZER,   // EvWavlimd
-    DIRPYREQUALIZER,   // EvWavretinexMethod
-    DIRPYREQUALIZER,     //EvWavCTCurve
-    DIRPYREQUALIZER,     //EvWavchrrt
-    DIRPYREQUALIZER,     // EvWavretinexMethodpro
+    DEMOSAIC,         // EvviewMethod
+    DIRPYREQUALIZER,  // EvWavusharpmet
+    DIRPYREQUALIZER,  // EvWavmergeL
+    DIRPYREQUALIZER,  // EvWavmergeC
+    DIRPYREQUALIZER,  // EvWavgain
+    DIRPYREQUALIZER,  // EvWavoffs
+    DIRPYREQUALIZER,  // EvWavstr
+    DIRPYREQUALIZER,  // EvWavneigh
+    DIRPYREQUALIZER,  // EvWavvart
+    DIRPYREQUALIZER,  // EvWavlimd
+    DIRPYREQUALIZER,  // EvWavretinexMethod
+    DIRPYREQUALIZER,  // EvWavCTCurve
+    DIRPYREQUALIZER,  // EvWavchrrt
+    DIRPYREQUALIZER,  // EvWavretinexMethodpro
     DIRPYREQUALIZER,  // EvWavenamerge
     DIRPYREQUALIZER,  // EvWaveinput
-    DIRPYREQUALIZER,     //EvWavmergevMethod
-    DIRPYREQUALIZER,     //EvWavmergMethod
-    DIRPYREQUALIZER,     //EvWavbalanlow
-    DIRPYREQUALIZER,     //EvWavbalanhigh
-    DIRPYREQUALIZER,     //EvWavblend
-    DIRPYREQUALIZER,     //EvWavblendc
-    DIRPYREQUALIZER,     //EvmFile
-    DIRPYREQUALIZER,     // EvWavushamet
-    DIRPYREQUALIZER,     //EvWavenareti
-    DIRPYREQUALIZER,     //EvWavmergBMethod
-    DIRPYREQUALIZER,     //EvWavradius
-    DIRPYREQUALIZER,     //EvWavhighlights
-    DIRPYREQUALIZER,     //EvWavh_tonalwidth
-    DIRPYREQUALIZER,     //EvWavshadows
-    DIRPYREQUALIZER,     //EvWavs_tonalwidth
-    DIRPYREQUALIZER,     //EvWavscale
-    DIRPYREQUALIZER,     //EvWavenaTCresi
-    DIRPYREQUALIZER,      //EvWavenaedge3
-    DIRPYREQUALIZER,      //EvWavgrad
-    DIRPYREQUALIZER,      //EvWavmergCurve
-    DIRPYREQUALIZER     //EvWavCTgainCurve
+    DIRPYREQUALIZER,  // EvWavmergevMethod
+    DIRPYREQUALIZER,  // EvWavmergMethod
+    DIRPYREQUALIZER,  // EvWavbalanlow
+    DIRPYREQUALIZER,  // EvWavbalanhigh
+    DIRPYREQUALIZER,  // EvWavblend
+    DIRPYREQUALIZER,  // EvWavblendc
+    DIRPYREQUALIZER,  // EvmFile
+    DIRPYREQUALIZER,  // EvWavushamet
+    DIRPYREQUALIZER,  // EvWavenareti
+    DIRPYREQUALIZER,  // EvWavmergBMethod
+    DIRPYREQUALIZER,  // EvWavradius
+    DIRPYREQUALIZER,  // EvWavhighlights
+    DIRPYREQUALIZER,  // EvWavh_tonalwidth
+    DIRPYREQUALIZER,  // EvWavshadows
+    DIRPYREQUALIZER,  // EvWavs_tonalwidth
+    DIRPYREQUALIZER,  // EvWavscale
+    DIRPYREQUALIZER,  // EvWavenaTCresi
+    DIRPYREQUALIZER,  // EvWavenaedge3
+    DIRPYREQUALIZER,  // EvWavgrad
+    DIRPYREQUALIZER,  // EvWavmergCurve
+    DIRPYREQUALIZER,  // EvWavCTgainCurve
+    ALLNORAW          // EvcbdlMethod
 };
 

@@ -21,7 +21,6 @@
 #include <cmath>
 #include "edit.h"
 #include "guiutils.h"
-#include "../rtengine/safegtk.h"
 #include "options.h"
 #include "rtimage.h"
 
@@ -2190,7 +2189,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
 {
 
     //  pp->wavelet.input = inputFile->get_filename();
-    if (safe_file_test (inputeFile->get_filename (), Glib::FILE_TEST_EXISTS) && !safe_file_test (inputeFile->get_filename (), Glib::FILE_TEST_IS_DIR)) {
+    if (Glib::file_test (inputeFile->get_filename (), Glib::FILE_TEST_EXISTS) && !Glib::file_test (inputeFile->get_filename (), Glib::FILE_TEST_IS_DIR)) {
         pp->wavelet.inpute = "file:" + inputeFile->get_filename ();
     } else {
         pp->wavelet.inpute = "file:lab.dat";    // just a directory

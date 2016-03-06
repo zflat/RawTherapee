@@ -741,6 +741,16 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         baseImg = trImg;
     }
 
+
+    if (params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled) {
+        const int W = baseImg->getWidth();
+        const int H = baseImg->getHeight();
+        LabImage labcbdl(W, H);
+        ipf.rgb2lab(*baseImg, labcbdl, params.icm.working);
+        ipf.dirpyrequalizer (&labcbdl, 1);
+        ipf.lab2rgb(labcbdl, *baseImg, params.icm.working);
+    }
+
     // update blurmap
     SHMap* shmap = NULL;
 
@@ -991,9 +1001,12 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
     params.wavelet.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
 
+
     // directional pyramid wavelet
-    if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
-        ipf.dirpyrequalizer (labView, 1);    //TODO: this is the luminance tonecurve, not the RGB one
+    if(params.dirpyrequalizer.cbdlMethod == "aft") {
+        if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
+            ipf.dirpyrequalizer (labView, 1);    //TODO: this is the luminance tonecurve, not the RGB one
+        }
     }
 
     int kall = 2;
