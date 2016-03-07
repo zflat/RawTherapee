@@ -34,6 +34,7 @@
 #include "curves.h"
 #include "opthelper.h"
 #include "ciecam02.h"
+#include "color.h"
 #undef CLIPD
 #define CLIPD(a) ((a)>0.0f?((a)<1.0f?(a):1.0f):0.0f)
 
@@ -503,6 +504,82 @@ void CurveFactory::curveCL ( bool & clcutili, const std::vector<double>& clcurve
         dCurve = NULL;
     }
 }
+
+void CurveFactory::mapcurve ( bool & mapcontlutili, const std::vector<double>& mapcurvePoints, LUTf & mapcurve, int skip, LUTu & histogram, LUTu & outBeforeCurveHistogram)
+{
+    bool needed = false;
+    DiagonalCurve* dCurve = NULL;
+    outBeforeCurveHistogram.clear();
+    bool histNeeded = false;
+
+    if (!mapcurvePoints.empty() && mapcurvePoints[0] != 0) {
+        dCurve = new DiagonalCurve (mapcurvePoints, CURVES_MIN_POLY_POINTS / skip);
+
+        if (outBeforeCurveHistogram) {
+            histNeeded = true;
+        }
+
+        if (dCurve && !dCurve->isIdentity()) {
+            needed = true;
+            mapcontlutili = true;
+        }
+    }
+
+    if (histNeeded) {
+        for (int i = 0; i < 32768; i++) {
+            double hval = CLIPD((double)i / 32767.0);
+            int hi = (int)(255.0 * hval);
+            outBeforeCurveHistogram[hi] += histogram[i] ;
+        }
+    }
+
+    fillCurveArray(dCurve, mapcurve, skip, needed);
+
+    if (dCurve) {
+        delete dCurve;
+        dCurve = NULL;
+    }
+}
+
+
+
+
+void CurveFactory::curveDehaContL ( bool & dehacontlutili, const std::vector<double>& dehaclcurvePoints, LUTf & dehaclCurve, int skip, LUTu & histogram, LUTu & outBeforeCurveHistogram)
+{
+    bool needed = false;
+    DiagonalCurve* dCurve = NULL;
+    outBeforeCurveHistogram.clear();
+    bool histNeeded = false;
+
+    if (!dehaclcurvePoints.empty() && dehaclcurvePoints[0] != 0) {
+        dCurve = new DiagonalCurve (dehaclcurvePoints, CURVES_MIN_POLY_POINTS / skip);
+
+        if (outBeforeCurveHistogram) {
+            histNeeded = true;
+        }
+
+        if (dCurve && !dCurve->isIdentity()) {
+            needed = true;
+            dehacontlutili = true;
+        }
+    }
+
+    if (histNeeded) {
+        for (int i = 0; i < 32768; i++) {
+            double hval = CLIPD((double)i / 32767.0);
+            int hi = (int)(255.0 * hval);
+            outBeforeCurveHistogram[hi] += histogram[i] ;
+        }
+    }
+
+    fillCurveArray(dCurve, dehaclCurve, skip, needed);
+
+    if (dCurve) {
+        delete dCurve;
+        dCurve = NULL;
+    }
+}
+
 // add curve Lab wavelet : Cont=f(L)
 void CurveFactory::curveWavContL ( bool & wavcontlutili, const std::vector<double>& wavclcurvePoints, LUTf & wavclCurve, /*LUTu & histogramwavcl, LUTu & outBeforeWavCLurveHistogram,*/int skip)
 {
@@ -1317,6 +1394,39 @@ void ColorAppearance::Set(Curve *pCurve)
 
     for (int i = 0; i < 65536; i++) {
         lutColCurve[i] = pCurve->getVal(double(i) / 65535.) * 65535.;
+    }
+}
+
+//
+RetinextransmissionCurve::RetinextransmissionCurve() {};
+
+void RetinextransmissionCurve::Reset()
+{
+    luttransmission.reset();
+}
+
+void RetinextransmissionCurve::Set(const Curve &pCurve)
+{
+    if (pCurve.isIdentity()) {
+        luttransmission.reset(); // raise this value if the quality suffers from this number of samples
+        return;
+    }
+
+    luttransmission(501); // raise this value if the quality suffers from this number of samples
+
+    for (int i = 0; i < 501; i++) {
+        luttransmission[i] = pCurve.getVal(double(i) / 500.);
+    }
+}
+
+void RetinextransmissionCurve::Set(const std::vector<double> &curvePoints)
+{
+    if (!curvePoints.empty() && curvePoints[0] > FCT_Linear && curvePoints[0] < FCT_Unchanged) {
+        FlatCurve tcurve(curvePoints, false, CURVES_MIN_POLY_POINTS / 2);
+        tcurve.setIdentityValue(0.);
+        Set(tcurve);
+    } else {
+        Reset();
     }
 }
 
@@ -2184,7 +2294,7 @@ void PerceptualToneCurve::Apply(float &r, float &g, float &b, PerceptualToneCurv
 
     {
         // increase chroma scaling slightly of shadows
-        float nL = gamma2curve[newLuminance]; // apply gamma so we make comparison and transition with a more perceptual lightness scale
+        float nL = Color::gamma2curve[newLuminance]; // apply gamma so we make comparison and transition with a more perceptual lightness scale
         float dark_scale_factor = 1.20f;
         //float dark_scale_factor = 1.0 + state.debug.p2 / 100.0f;
         const float lolim = 0.15f;
@@ -2318,7 +2428,6 @@ void PerceptualToneCurve::Apply(float &r, float &g, float &b, PerceptualToneCurv
 
 float PerceptualToneCurve::cf_range[2];
 float PerceptualToneCurve::cf[1000];
-LUTf PerceptualToneCurve::gamma2curve;
 float PerceptualToneCurve::f, PerceptualToneCurve::c, PerceptualToneCurve::nc, PerceptualToneCurve::yb, PerceptualToneCurve::la, PerceptualToneCurve::xw, PerceptualToneCurve::yw, PerceptualToneCurve::zw, PerceptualToneCurve::gamut;
 float PerceptualToneCurve::n, PerceptualToneCurve::d, PerceptualToneCurve::nbb, PerceptualToneCurve::ncb, PerceptualToneCurve::cz, PerceptualToneCurve::aw, PerceptualToneCurve::wh, PerceptualToneCurve::pfl, PerceptualToneCurve::fl, PerceptualToneCurve::pow1;
 
@@ -2381,12 +2490,6 @@ void PerceptualToneCurve::init()
         cf_range[0] = in_x[0];
         cf_range[1] = in_x[in_len - 1];
     }
-    gamma2curve(65536, 0);
-
-    for (int i = 0; i < 65536; i++) {
-        gamma2curve[i] = CurveFactory::gamma2(i / 65535.0);
-    }
-
 }
 
 void PerceptualToneCurve::initApplyState(PerceptualToneCurveState & state, Glib::ustring workingSpace) const

@@ -21,6 +21,7 @@
 
 #include "rawimagesource.h"
 #include "rawimagesource_i.h"
+#include "jaggedarray.h"
 #include "median.h"
 #include "rawimage.h"
 #include "mytime.h"
@@ -89,45 +90,17 @@ void RawImageSource::eahd_demosaic ()
     threshold = (int)(0.008856 * MAXVALD);
 
     for (int i = 0; i < maxindex; i++) {
-        cache[i] = exp(1.0 / 3.0 * log(double(i) / MAXVALD));
+        cache[i] = std::cbrt(double(i) / MAXVALD);
     }
 
     // end of cielab preparation
 
-    float* rh[3];
-    float* gh[4];
-    float* bh[3];
-    float* rv[3];
-    float* gv[4];
-    float* bv[3];
-    float* lLh[3];
-    float* lah[3];
-    float* lbh[3];
-    float* lLv[3];
-    float* lav[3];
-    float* lbv[3];
-    float* homh[3];
-    float* homv[3];
-
-    for (int i = 0; i < 4; i++) {
-        gh[i] = new float[W];
-        gv[i] = new float[W];
-    }
-
-    for (int i = 0; i < 3; i++) {
-        rh[i] = new float[W];
-        bh[i] = new float[W];
-        rv[i] = new float[W];
-        bv[i] = new float[W];
-        lLh[i] = new float[W];
-        lah[i] = new float[W];
-        lbh[i] = new float[W];
-        lLv[i] = new float[W];
-        lav[i] = new float[W];
-        lbv[i] = new float[W];
-        homh[i] = new float[W];
-        homv[i] = new float[W];
-    }
+    const JaggedArray<float>
+    rh (W, 3), gh (W, 4), bh (W, 3),
+    rv (W, 3), gv (W, 4), bv (W, 3),
+    lLh (W, 3), lah (W, 3), lbh (W, 3),
+    lLv (W, 3), lav (W, 3), lbv (W, 3),
+    homh (W, 3), homv (W, 3);
 
     // interpolate first two lines
     interpolate_row_g (gh[0], gv[0], 0);
@@ -311,27 +284,9 @@ void RawImageSource::eahd_demosaic ()
             }
         }
 
-    freeArray2<float>(rh, 3);
-    freeArray2<float>(gh, 4);
-    freeArray2<float>(bh, 3);
-    freeArray2<float>(rv, 3);
-    freeArray2<float>(gv, 4);
-    freeArray2<float>(bv, 3);
-    freeArray2<float>(lLh, 3);
-    freeArray2<float>(lah, 3);
-    freeArray2<float>(lbh, 3);
-    freeArray2<float>(homh, 3);
-    freeArray2<float>(lLv, 3);
-    freeArray2<float>(lav, 3);
-    freeArray2<float>(lbv, 3);
-    freeArray2<float>(homv, 3);
-
     // Interpolate R and B
     for (int i = 0; i < H; i++) {
-        if (i == 0)
-            // rm, gm, bm must be recovered
-            //interpolate_row_rb_mul_pp (red, blue, NULL, green[i], green[i+1], i, rm, gm, bm, 0, W, 1);
-        {
+        if (i == 0) {
             interpolate_row_rb_mul_pp (red[i], blue[i], NULL, green[i], green[i + 1], i, 1.0, 1.0, 1.0, 0, W, 1);
         } else if (i == H - 1) {
             interpolate_row_rb_mul_pp (red[i], blue[i], green[i - 1], green[i], NULL, i, 1.0, 1.0, 1.0, 0, W, 1);
@@ -545,7 +500,7 @@ void RawImageSource::hphd_demosaic ()
         plistener->setProgress (0.0);
     }
 
-    float** hpmap = allocArray< float >(W, H, true);
+    const JaggedArray<float> hpmap (W, H, true);
 
 #ifdef _OPENMP
     #pragma omp parallel
@@ -590,17 +545,13 @@ void RawImageSource::hphd_demosaic ()
 #endif
 
     hphd_green (hpmap);
-    freeArray<float>(hpmap, H);//TODO: seems to cause sigabrt ???  why???
 
     if (plistener) {
         plistener->setProgress (0.66);
     }
 
     for (int i = 0; i < H; i++) {
-        if (i == 0)
-            // rm, gm, bm must be recovered
-            //interpolate_row_rb_mul_pp (red, blue, NULL, green[i], green[i+1], i, rm, gm, bm, 0, W, 1);
-        {
+        if (i == 0) {
             interpolate_row_rb_mul_pp (red[i], blue[i], NULL, green[i], green[i + 1], i, 1.0, 1.0, 1.0, 0, W, 1);
         } else if (i == H - 1) {
             interpolate_row_rb_mul_pp (red[i], blue[i], green[i - 1], green[i], NULL, i, 1.0, 1.0, 1.0, 0, W, 1);
@@ -1242,7 +1193,7 @@ void RawImageSource::border_interpolate2( int winw, int winh, int lborders)
 // Joint Demosaicing and Denoising using High Order Interpolation Techniques
 // Revision 0.9.1a - 09/02/2010 - Contact info: luis.sanz.rodriguez@gmail.com
 // Copyright Luis Sanz Rodriguez 2010
-// Adapted to RT by Jacques Desmis 3/2013
+// Adapted to RawTherapee by Jacques Desmis 3/2013
 
 void RawImageSource::jdl_interpolate_omp()  // from "Lassus"
 {
@@ -1367,7 +1318,7 @@ void RawImageSource::jdl_interpolate_omp()  // from "Lassus"
 // Color demozaicing via directional Linear Minimum Mean Square-error Estimation,
 // IEEE Trans. on Image Processing, vol. 14, pp. 2167-2178,
 // Dec. 2005.
-// Adapted to RT by Jacques Desmis 3/2013
+// Adapted to RawTherapee by Jacques Desmis 3/2013
 // Improved speed and reduced memory consumption by Ingo Weyrich 2/2015
 //TODO Tiles to reduce memory consumption
 SSEFUNCTION void RawImageSource::lmmse_interpolate_omp(int winw, int winh, int iterations)
@@ -2041,7 +1992,7 @@ SSEFUNCTION void RawImageSource::lmmse_interpolate_omp(int winw, int winh, int i
 *   Visit <http://www.gnu.org/licenses/> for more information.
 *
 ***/
-// Adapted to RT by Jacques Desmis 3/2013
+// Adapted to RawTherapee by Jacques Desmis 3/2013
 // SSE version by Ingo Weyrich 5/2013
 #ifdef __SSE2__
 #define CLIPV(a) LIMV(a,zerov,c65535v)
@@ -2752,7 +2703,7 @@ void RawImageSource::ahd_demosaic(int winx, int winy, int winw, int winh)
 
     for (i = 0; i < 0x10000; i++) {
         r = (double)i / 65535.0;
-        cbrt[i] = r > 0.008856 ? pow(r, 0.333333333) : 7.787 * r + 16 / 116.0;
+        cbrt[i] = r > 0.008856 ? std::cbrt(r) : 7.787 * r + 16 / 116.0;
     }
 
     for (i = 0; i < 3; i++)
@@ -2965,7 +2916,7 @@ void RawImageSource::nodemosaic(bool bw)
 /*
    Refinement based on EECI demosaicing algorithm by L. Chang and Y.P. Tan
    Paul Lee
-   Adapted for Rawtherapee - Jacques Desmis 04/2013
+   Adapted for RawTherapee - Jacques Desmis 04/2013
 */
 
 #ifdef __SSE2__
@@ -3959,7 +3910,7 @@ void RawImageSource::cielab (const float (*rgb)[3], float* l, float* a, float *b
 
     for(int i = 0; i < height; i++) {
         for(int j = 0; j < labWidth; j++) {
-            float xyz[3] = {0.5f};
+            float xyz[3] = {0.5f, 0.5f, 0.5f};
             int c;
             FORC3 {
                 xyz[0] += xyz_cam[0][c] * rgb[i * width + j][c];

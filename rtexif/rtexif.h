@@ -29,7 +29,6 @@
 #include <cmath>
 #include <glibmm.h>
 #include "../rtengine/procparams.h"
-#include "../rtengine/safekeyfile.h"
 
 class CacheImageData;
 
@@ -156,7 +155,7 @@ public:
 
     virtual void     printAll      (unsigned  int level = 0) const; // reentrant debug function, keep level=0 on first call !
     virtual bool     CPBDump       (const Glib::ustring &commFName, const Glib::ustring &imageFName, const Glib::ustring &profileFName, const Glib::ustring &defaultPParams,
-                                    const CacheImageData* cfs, const bool flagMode, rtengine::SafeKeyFile *keyFile = NULL, Glib::ustring tagDirName = "") const;
+                                    const CacheImageData* cfs, const bool flagMode, Glib::KeyFile *keyFile = NULL, Glib::ustring tagDirName = "") const;
     virtual void     sort     ();
 };
 
@@ -306,8 +305,6 @@ public:
 class ExifManager
 {
 
-    static std::vector<Tag*> defTags;
-
     static Tag* saveCIFFMNTag (FILE* f, TagDirectory* root, int len, const char* name);
 public:
     static TagDirectory* parse (FILE*f, int base, bool skipIgnored = true);
@@ -316,7 +313,10 @@ public:
     static TagDirectory* parseCIFF (FILE* f, int base, int length);
     static void          parseCIFF (FILE* f, int base, int length, TagDirectory* root);
 
-    static const std::vector<Tag*>& getDefaultTIFFTags (TagDirectory* forthis);
+    /// @brief Get default tag for TIFF
+    /// @param forthis The byte order will be taken from the given directory.
+    /// @return The ownership of the return tags is passed to the caller.
+    static std::vector<Tag*> getDefaultTIFFTags (TagDirectory* forthis);
     static int    createJPEGMarker (const TagDirectory* root, const rtengine::procparams::ExifPairs& changeList, int W, int H, unsigned char* buffer);
     static int    createTIFFHeader (const TagDirectory* root, const rtengine::procparams::ExifPairs& changeList, int W, int H, int bps, const char* profiledata, int profilelen, const char* iptcdata, int iptclen, unsigned char* buffer);
 };

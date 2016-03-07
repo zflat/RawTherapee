@@ -52,6 +52,44 @@ void ToneCurveParamsEdited::set (bool v)
     method    = v;
 }
 
+void RetinexParamsEdited::set (bool v)
+{
+    enabled     = v;
+    str         = v;
+    scal        = v;
+    iter        = v;
+    grad        = v;
+    grads       = v;
+    gam         = v;
+    slope       = v;
+    neigh       = v;
+    gain        = v;
+    offs        = v;
+    retinexMethod   = v;
+    mapMethod       = v;
+    viewMethod      = v;
+    retinexcolorspace   = v;
+    gammaretinex    = v;
+    vart            = v;
+    limd            = v;
+    highl           = v;
+    baselog         = v;
+    method          = v;
+    transmissionCurve   = v;
+    cdcurve         = v;
+    mapcurve        = v;
+    cdHcurve        = v;
+    lhcurve         = v;
+    retinex         = v;
+    //grbl          = v;
+    medianmap       = v;
+    highlights      = v;
+    htonalwidth     = v;
+    shadows         = v;
+    stonalwidth     = v;
+    radius          = v;
+}
+
 void LCurveParamsEdited::set (bool v)
 {
     lcurve      = v;
@@ -662,6 +700,47 @@ void ToneCurveParamsEdited::initFrom (std::vector<const void*> elems)
     }
 }
 
+void RetinexParamsEdited::initFrom (std::vector<const void*> elems)
+{
+    const RetinexParams *e0 = static_cast< const LCurveParams* >(elems.at(0));
+    size_t size = elems.size();
+    for (size_t i = 1; i < size; ++i) {
+        const RetinexParams* e = static_cast< const LCurveParams* >(elems.at(i));
+        cdcurve = cdcurve && e0->cdcurve == e->cdcurve;
+        mapcurve = mapcurve && e0->mapcurve == e->mapcurve;
+        cdHcurve = cdHcurve && e0->cdHcurve == e->cdHcurve;
+        lhcurve = lhcurve && e0->lhcurve == e->lhcurve;
+        transmissionCurve = transmissionCurve && e0->transmissionCurve == e->transmissionCurve;
+        retinexMethod = retinexMethod && e0->retinexMethod == e->retinexMethod;
+        mapMethod = mapMethod && e0->mapMethod == e->mapMethod;
+        viewMethod = viewMethod && e0->viewMethod == e->viewMethod;
+        retinexcolorspace = retinexcolorspace && e0->retinexcolorspace == e->retinexcolorspace;
+        gammaretinex = gammaretinex && e0->gammaretinex == e->gammaretinex;
+        str = str && e0->str == e->str;
+        scal = scal && e0->scal == e->scal;
+        iter = iter && e0->iter == e->iter;
+        grad = grad && e0->grad == e->grad;
+        grads = grads && e0->grads == e->grads;
+        gam = gam && e0->gam == e->gam;
+        slope = slope && e0->slope == e->slope;
+        neigh = neigh && e0->neigh == e->neigh;
+        gain = gain && e0->gain == e->gain;
+        offs = offs && e0->offs == e->offs;
+        vart = vart && e0->vart == e->vart;
+        limd = limd && e0->limd == e->limd;
+        highl = highl && e0->highl == e->highl;
+        baselog = baselog && e0->baselog == e->baselog;
+        //grbl = grbl && e0->grbl == e->grbl;
+        medianmap = medianmap && e0->medianmap == e->medianmap;
+        highlights = highlights && e0->highlights == e->highlights;
+        htonalwidth = htonalwidth && e0->htonalwidth == e->htonalwidth;
+        shadows = shadows && e0->shadows == e->shadows;
+        stonalwidth = stonalwidth && e0->stonalwidth == e->stonalwidth;
+        radius = radius && e0->radius == e->radius;
+
+        enabled = enabled && e0->enabled == e->enabled;
+    }
+}
 void LCurveParamsEdited::initFrom (std::vector<const void*> elems)
 {
     const LCurveParams *e0 = static_cast< const LCurveParams* >(elems.at(0));
@@ -1503,6 +1582,45 @@ void ToneCurveParamsEdited::combine (ToneCurveParams* toEdit, const ToneCurvePar
     if (hlcomprthresh) toEdit->hlcomprthresh = dontforceSet && options.baBehav[ADDSET_TC_HLCOMPTHRESH] ? toEdit->hlcomprthresh + mods->hlcomprthresh : mods->hlcomprthresh;
     if (hrenabled) toEdit->hrenabled = mods->hrenabled;
     if (method) toEdit->method = mods->method;
+    // *INDENT-ON*
+}
+
+void RetinexParamsEdited::combine (RetinexParams* toEdit, const RetinexParams* mods, bool dontforceSet)
+{
+    // *INDENT-OFF*
+    if (enabled) toEdit->enabled = mods->enabled;
+    if (cdcurve) toEdit->cdcurve = mods->cdcurve;
+    if (mapcurve) toEdit->mapcurve = mods->mapcurve;
+    if (cdHcurve) toEdit->cdHcurve = mods->cdHcurve;
+    if (lhcurve) toEdit->lhcurve = mods->lhcurve;
+    if (transmissionCurve) toEdit->transmissionCurve = mods->transmissionCurve;
+    if (retinexMethod) toEdit->retinexMethod = mods->retinexMethod;
+    if (mapMethod) toEdit->mapMethod = mods->mapMethod;
+    if (viewMethod) toEdit->viewMethod = mods->viewMethod;
+    if (retinexcolorspace) toEdit->retinexcolorspace = mods->retinexcolorspace;
+    if (gammaretinex) toEdit->gammaretinex = mods->gammaretinex;
+    if (gam) toEdit->gam = dontforceSet && options.baBehav[ADDSET_RETI_GAM] ? toEdit->gam + mods->gam : mods->gam;
+    if (slope) toEdit->slope = dontforceSet && options.baBehav[ADDSET_RETI_SLO] ? toEdit->slope + mods->slope : mods->slope;
+    if (str) toEdit->str = dontforceSet && options.baBehav[ADDSET_RETI_STR] ? toEdit->str + mods->str : mods->str;
+    if (scal) toEdit->scal = mods->scal;
+    // if (scal) toEdit->scal = dontforceSet && options.baBehav[ADDSET_RETI_SCAL] ? toEdit->scal + mods->scal : mods->scal;
+    if (iter) toEdit->iter = mods->iter;
+    if (grad) toEdit->grad = mods->grad;
+    if (grads) toEdit->grads = mods->grads;
+    if (medianmap) toEdit->medianmap = mods->medianmap;
+    if (neigh) toEdit->neigh = dontforceSet && options.baBehav[ADDSET_RETI_NEIGH] ? toEdit->neigh + mods->neigh : mods->neigh;
+    if (limd) toEdit->limd = dontforceSet && options.baBehav[ADDSET_RETI_LIMD] ? toEdit->limd + mods->limd : mods->limd;
+    if (highl) toEdit->highl = mods->highl;
+    if (baselog) toEdit->baselog = mods->baselog;
+    // if (grbl) toEdit->grbl = mods->grbl;
+    if (gain) toEdit->gain = dontforceSet && options.baBehav[ADDSET_RETI_GAIN] ? toEdit->gain + mods->gain : mods->gain;
+    if (offs) toEdit->offs = dontforceSet && options.baBehav[ADDSET_RETI_OFFS] ? toEdit->offs + mods->offs : mods->offs;
+    if (vart) toEdit->vart = dontforceSet && options.baBehav[ADDSET_RETI_VART] ? toEdit->vart + mods->vart : mods->vart;
+    if (highlights) toEdit->highlights = mods->highlights;
+    if (htonalwidth) toEdit->htonalwidth = mods->htonalwidth;
+    if (shadows) toEdit->shadows = mods->shadows;
+    if (stonalwidth) toEdit->stonalwidth = mods->stonalwidth;
+    if (radius) toEdit->radius = mods->radius;
     // *INDENT-ON*
 }
 

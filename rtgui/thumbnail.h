@@ -78,7 +78,7 @@ class Thumbnail
     void            loadThumbnail (bool firstTrial = true);
     void            generateExifDateTimeStrings ();
 
-    Glib::ustring    getCacheFileName (Glib::ustring subdir);
+    Glib::ustring    getCacheFileName (const Glib::ustring& subdir, const Glib::ustring& fext) const;
     Glib::ustring    getTempFileName ();
 
 public:

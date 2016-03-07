@@ -19,7 +19,6 @@
 #include <cstring>
 
 #include "dcp.h"
-#include "safegtk.h"
 #include "iccmatrices.h"
 #include "iccstore.h"
 #include "rawimagesource.h"
@@ -814,7 +813,7 @@ const DCPProfile::HSBModify* DCPProfile::MakeHueSatMap(ColorTemp &wb, int prefer
     return aDeltas;
 }
 
-DCPProfile::DCPProfile(Glib::ustring fname, bool isRTProfile)
+DCPProfile::DCPProfile(Glib::ustring fname)
 {
     const int TIFFFloatSize = 4;
     const int TagColorMatrix1 = 50721, TagColorMatrix2 = 50722, TagProfileHueSatMapDims = 50937;
@@ -828,7 +827,7 @@ DCPProfile::DCPProfile(Glib::ustring fname, bool isRTProfile)
 
     aDeltas1 = aDeltas2 = aLookTable = NULL;
 
-    FILE *pFile = safe_g_fopen(fname, "rb");
+    FILE *pFile = g_fopen(fname.c_str (), "rb");
 
     TagDirectory *tagDir = ExifManager::parseTIFF(pFile, false);
 
@@ -989,7 +988,7 @@ DCPProfile::DCPProfile(Glib::ustring fname, bool isRTProfile)
     // Read tone curve points, if any, but disable to RTs own profiles
     tag = tagDir->getTag(TagProfileToneCurve);
 
-    if (tag != NULL && !isRTProfile) {
+    if (tag != NULL) {
         std::vector<double> cPoints;
         cPoints.push_back(double(DCT_Spline));  // The first value is the curve type
 
@@ -1691,18 +1690,8 @@ void DCPProfile::step2ApplyTile(float *rc, float *gc, float *bc, int width, int 
 // Generates as singleton
 DCPStore* DCPStore::getInstance()
 {
-    static DCPStore* instance_ = 0;
-
-    if ( instance_ == 0 ) {
-        static MyMutex smutex_;
-        MyMutex::MyLock lock(smutex_);
-
-        if ( instance_ == 0 ) {
-            instance_ = new DCPStore();
-        }
-    }
-
-    return instance_;
+    static DCPStore instance_;
+    return &instance_;
 }
 
 // Reads all profiles from the given profiles dir
@@ -1727,7 +1716,7 @@ void DCPStore::init (Glib::ustring rtProfileDir)
             Glib::Dir* dir = NULL;
 
             try {
-                if (!safe_file_test (dirname, Glib::FILE_TEST_IS_DIR)) {
+                if (!Glib::file_test (dirname, Glib::FILE_TEST_IS_DIR)) {
                     return;
                 }
 
@@ -1743,7 +1732,7 @@ void DCPStore::init (Glib::ustring rtProfileDir)
                 Glib::ustring sname = *i;
 
                 // ignore directories
-                if (!safe_file_test (fname, Glib::FILE_TEST_IS_DIR)) {
+                if (!Glib::file_test (fname, Glib::FILE_TEST_IS_DIR)) {
                     size_t lastdot = sname.find_last_of ('.');
 
                     if (lastdot != Glib::ustring::npos && lastdot <= sname.size() - 4 && (!sname.casefold().compare (lastdot, 4, ".dcp"))) {
@@ -1760,7 +1749,7 @@ void DCPStore::init (Glib::ustring rtProfileDir)
     }
 }
 
-DCPProfile* DCPStore::getProfile (Glib::ustring filename, bool isRTProfile)
+DCPProfile* DCPStore::getProfile (Glib::ustring filename)
 {
     MyMutex::MyLock lock(mtx);
 
@@ -1771,7 +1760,7 @@ DCPProfile* DCPStore::getProfile (Glib::ustring filename, bool isRTProfile)
     }
 
     // Add profile
-    profileCache[filename] = new DCPProfile(filename, isRTProfile);
+    profileCache[filename] = new DCPProfile(filename);
 
     return profileCache[filename];
 }
@@ -1783,7 +1772,7 @@ DCPProfile* DCPStore::getStdProfile(Glib::ustring camShortName)
     // Warning: do NOT use map.find(), since it does not seem to work reliably here
     for (std::map<Glib::ustring, Glib::ustring>::iterator i = fileStdProfiles.begin(); i != fileStdProfiles.end(); i++)
         if (name2 == (*i).first) {
-            return getProfile((*i).second, true);
+            return getProfile((*i).second);
         }
 
     return NULL;
@@ -1791,7 +1780,7 @@ DCPProfile* DCPStore::getStdProfile(Glib::ustring camShortName)
 
 bool DCPStore::isValidDCPFileName(Glib::ustring filename) const
 {
-    if (!safe_file_test (filename, Glib::FILE_TEST_EXISTS) || safe_file_test (filename, Glib::FILE_TEST_IS_DIR)) {
+    if (!Glib::file_test (filename, Glib::FILE_TEST_EXISTS) || Glib::file_test (filename, Glib::FILE_TEST_IS_DIR)) {
         return false;
     }
 

@@ -29,7 +29,7 @@
 #include "guiutils.h"
 #include "profilestore.h"
 #include "batchqueue.h"
-#include "../rtengine/safegtk.h"
+#include "extprog.h"
 
 using namespace rtengine::procparams;
 
@@ -148,7 +148,7 @@ void Thumbnail::_generateThumbnailImage ()
         cfs.supported = true;
         needsReProcessing = true;
 
-        cfs.save (getCacheFileName ("data") + ".txt");
+        cfs.save (getCacheFileName ("data", ".txt"));
 
         generateExifDateTimeStrings ();
     }
@@ -292,7 +292,7 @@ rtengine::procparams::ProcParams* Thumbnail::createProcParamsForUpdate(bool retu
                 if (options.paramsLoadLocation == PLL_Input) {
                     outFName = fname + paramFileExtension;
                 } else {
-                    outFName = getCacheFileName("profiles") + paramFileExtension;
+                    outFName = getCacheFileName("profiles", paramFileExtension);
                 }
             } else {
                 // create a temporary file
@@ -312,7 +312,7 @@ rtengine::procparams::ProcParams* Thumbnail::createProcParamsForUpdate(bool retu
             printf("Custom profile builder's command line: %s\n", Glib::ustring(cmdLine).c_str());
         }
 
-        bool success = safe_spawn_command_line_sync (cmdLine);
+        bool success = ExtProgStore::spawnCommandSync (cmdLine);
 
         // Now they SHOULD be there (and potentially "partial"), so try to load them and store it as a full procparam
         if (success) {
@@ -320,17 +320,13 @@ rtengine::procparams::ProcParams* Thumbnail::createProcParamsForUpdate(bool retu
         }
 
         // cleanup
-        if (safe_file_test(tmpFileName, Glib::FILE_TEST_EXISTS )) {
-            safe_g_remove (tmpFileName);
-        }
+        g_remove (tmpFileName.c_str ());
 
-        if (!forceCPB && !outFName.empty() && safe_file_test(outFName, Glib::FILE_TEST_EXISTS )) {
+        if (!forceCPB && !outFName.empty() && Gtlib::file_test(outFName, Glib::FILE_TEST_EXISTS )) {
             safe_g_remove (outFName);
         }
 
-        if (imageMetaData) {
-            delete imageMetaData;
-        }
+        delete imageMetaData;
     }
 
     if (returnParams && (hasToolParamsSet() || hasExifParamsSet() || hasIptcParamsSet() )) {
@@ -398,11 +394,11 @@ void Thumbnail::loadProcParams (Glib::ustring fileName)
 
         // if no success, try to load the cached version of the procparams
         if (!pparamsValid) {
-            pparamsValid = !pparams.load (getCacheFileName ("profiles") + paramFileExtension, &pe);
+            pparamsValid = !pparams.load (getCacheFileName ("profiles", paramFileExtension, &pe);
         }
     } else {
         // try to load it from cache
-        pparamsValid = !pparams.load (getCacheFileName ("profiles") + paramFileExtension, &pe);
+        pparamsValid = !pparams.load (getCacheFileName ("profiles", paramFileExtension), &pe);
 
         // if no success, try to load it from params file next to the image file
         if (!pparamsValid) {
@@ -466,29 +462,19 @@ void Thumbnail::clearProcParams (int ppSubPart, int whoClearedIt)
 
             // params could get validated by rank/inTrash values restored above
             // remove param file from cache
-            Glib::ustring fname_ = getCacheFileName ("profiles") + paramFileExtension;
-
-            if (safe_file_test (fname_, Glib::FILE_TEST_EXISTS)) {
-                safe_g_remove (fname_);
-            }
+            Glib::ustring fname_ = getCacheFileName ("profiles", paramFileExtension);
+            g_remove (fname_.c_str ());
 
             // remove param file located next to the file
-            //fname_ = removeExtension(fname) + paramFileExtension;
             fname_ = fname + paramFileExtension;
-
-            if (safe_file_test(fname_, Glib::FILE_TEST_EXISTS)) {
-                safe_g_remove (fname_);
-            }
+            g_remove (fname_.c_str ());
 
             // WARNING: [HOMBRE] removing IMGP1102.pp3 might be dangerous, since RT doesn't create this
             //          files anymore and since a long time now, but users can manually save with this pattern.
             //          So I'm removing this part of the code
             /*
             fname_ = removeExtension(fname) + paramFileExtension;
-
-            if (safe_file_test (fname_, Glib::FILE_TEST_EXISTS)) {
-                safe_g_remove (fname_);
-            }
+            g_remove (fname_);
             */
         }
 
@@ -574,10 +560,10 @@ void Thumbnail::imageDeveloped ()
 {
 
     cfs.recentlySaved = true;
-    cfs.save (getCacheFileName ("data") + ".txt");
+    cfs.save (getCacheFileName ("data", ".txt"));
 
     if (options.saveParamsCache) {
-        pparams.save (getCacheFileName ("profiles") + paramFileExtension);
+        pparams.save (getCacheFileName ("profiles", paramFileExtension));
     }
 }
 
@@ -895,14 +881,14 @@ void Thumbnail::_loadThumbnail(bool firstTrial)
     tpp->isRaw = (cfs.format == (int) FT_Raw);
 
     // load supplementary data
-    bool succ = tpp->readData (getCacheFileName ("data") + ".txt");
+    bool succ = tpp->readData (getCacheFileName ("data", ".txt"));
 
     if (succ) {
         tpp->getAutoWBMultipliers(cfs.redAWBMul, cfs.greenAWBMul, cfs.blueAWBMul);
     }
 
     // thumbnail image
-    succ = succ && tpp->readImage (getCacheFileName ("images"));
+    succ = succ && tpp->readImage (getCacheFileName ("images", ""));
 
     if (!succ && firstTrial) {
         _generateThumbnailImage ();
@@ -922,10 +908,10 @@ void Thumbnail::_loadThumbnail(bool firstTrial)
 
     if ( cfs.thumbImgType == CacheImageData::FULL_THUMBNAIL ) {
         // load aehistogram
-        tpp->readAEHistogram (getCacheFileName ("aehistograms"));
+        tpp->readAEHistogram (getCacheFileName ("aehistograms", ""));
 
         // load embedded profile
-        tpp->readEmbProfile (getCacheFileName ("embprofiles") + ".icc");
+        tpp->readEmbProfile (getCacheFileName ("embprofiles", ".icc"));
 
         tpp->init ();
     }
@@ -964,24 +950,24 @@ void Thumbnail::_saveThumbnail ()
         return;
     }
 
-    if (safe_g_remove (getCacheFileName ("images") + ".rtti") == -1) {
+    if (g_remove (getCacheFileName ("images", ".rtti").c_str ()) != 0) {
         // No file deleted, so we try to deleted obsolete files, if any
-        safe_g_remove (getCacheFileName ("images") + ".cust");
-        safe_g_remove (getCacheFileName ("images") + ".cust16");
-        safe_g_remove (getCacheFileName ("images") + ".jpg");
+        g_remove (getCacheFileName ("images", ".cust").c_str ());
+        g_remove (getCacheFileName ("images", ".cust16").c_str ());
+        g_remove (getCacheFileName ("images", ".jpg").c_str ());
     }
 
     // save thumbnail image
-    tpp->writeImage (getCacheFileName ("images"), 1);
+    tpp->writeImage (getCacheFileName ("images", ""), 1);
 
     // save aehistogram
-    tpp->writeAEHistogram (getCacheFileName ("aehistograms"));
+    tpp->writeAEHistogram (getCacheFileName ("aehistograms", ""));
 
     // save embedded profile
-    tpp->writeEmbProfile (getCacheFileName ("embprofiles") + ".icc");
+    tpp->writeEmbProfile (getCacheFileName ("embprofiles", ".icc"));
 
     // save supplementary data
-    tpp->writeData (getCacheFileName ("data") + ".txt");
+    tpp->writeData (getCacheFileName ("data", ".txt"));
 }
 
 /*
@@ -1024,12 +1010,12 @@ void Thumbnail::updateCache (bool updatePParams, bool updateCacheImageData)
     if (updatePParams) {
         // if tagsSet, paramsSet, exifSet and iptcSet are all false, the procparams will only contain RT's version !
         Glib::ustring file1(options.saveParamsFile  ? fname + paramFileExtension : "");
-        Glib::ustring file2(options.saveParamsCache ? getCacheFileName ("profiles") + paramFileExtension : "");
+        Glib::ustring file2(options.saveParamsCache ? getCacheFileName ("profiles", paramFileExtension) : "");
         pparams.save (file1, file2, true, &pe);
     }
 
     if (updateCacheImageData) {
-        cfs.save (getCacheFileName ("data") + ".txt");
+        cfs.save (getCacheFileName ("data", ".txt"));
     }
 }
 
@@ -1042,10 +1028,9 @@ Thumbnail::~Thumbnail ()
     mutex.unlock();
 }
 
-Glib::ustring Thumbnail::getCacheFileName (Glib::ustring subdir)
+Glib::ustring Thumbnail::getCacheFileName (const Glib::ustring& subdir, const Glib::ustring& fext) const
 {
-
-    return cachemgr->getCacheFileName (subdir, fname, cfs.md5);
+    return cachemgr->getCacheFileName (subdir, fname, fext, cfs.md5);
 }
 
 Glib::ustring Thumbnail::getTempFileName ()
@@ -1092,7 +1077,7 @@ bool Thumbnail::openDefaultViewer(int destination)
     if (destination == 1) {
         openFName = Glib::ustring::compose ("%1.%2", BatchQueue::calcAutoFileNameBase(fname), options.saveFormatBatch.format);
 
-        if (safe_file_test (openFName, Glib::FILE_TEST_EXISTS)) {
+        if (Glib::file_test (openFName, Glib::FILE_TEST_EXISTS)) {
             wchar_t *wfilename = (wchar_t*)g_utf8_to_utf16 (openFName.c_str(), -1, NULL, NULL, NULL);
             ShellExecuteW(NULL, L"open", wfilename, NULL, NULL, SW_SHOWMAXIMIZED );
             g_free(wfilename);
@@ -1106,7 +1091,7 @@ bool Thumbnail::openDefaultViewer(int destination)
 
         printf("Opening %s\n", openFName.c_str());
 
-        if (safe_file_test (openFName, Glib::FILE_TEST_EXISTS)) {
+        if (Glib::file_test (openFName, Glib::FILE_TEST_EXISTS)) {
             // Output file exists, so open explorer and select output file
             wchar_t* org = (wchar_t*)g_utf8_to_utf16 (Glib::ustring::compose("/select,\"%1\"", openFName).c_str(), -1, NULL, NULL, NULL);
             wchar_t* par = new wchar_t[wcslen(org) + 1];
@@ -1127,7 +1112,7 @@ bool Thumbnail::openDefaultViewer(int destination)
 
             delete[] par;
             g_free(org);
-        } else if (safe_file_test (Glib::path_get_dirname(openFName), Glib::FILE_TEST_EXISTS)) {
+        } else if (Glib::file_test (Glib::path_get_dirname(openFName), Glib::FILE_TEST_EXISTS)) {
             // Out file does not exist, but directory
             wchar_t *wfilename = (wchar_t*)g_utf8_to_utf16 (Glib::path_get_dirname(openFName).c_str(), -1, NULL, NULL, NULL);
             ShellExecuteW(NULL, L"explore", wfilename, NULL, NULL, SW_SHOWNORMAL );

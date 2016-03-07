@@ -71,6 +71,64 @@ public:
     void combine (rtengine::procparams::ToneCurveParams* toEdit, const rtengine::procparams::ToneCurveParams* mods, bool dontforceSet);
 };
 
+class RetinexParamsEdited
+{
+public:
+    bool enabled;
+    bool str;
+    bool scal;
+    bool iter;
+    bool grad;
+    bool grads;
+    bool gam;
+    bool slope;
+    bool neigh;
+    bool gain;
+    bool offs;
+    bool retinexMethod;
+    bool mapMethod;
+    bool viewMethod;
+    bool retinexcolorspace;
+    bool gammaretinex;
+    bool vart;
+    bool limd;
+    bool highl;
+    bool baselog;
+//    bool grbl;
+    bool method;
+    bool transmissionCurve;
+    bool cdcurve;
+    bool mapcurve;
+    bool cdHcurve;
+    bool lhcurve;
+    bool retinex;
+    bool medianmap;
+    bool highlights;
+    bool htonalwidth;
+    bool shadows;
+    bool stonalwidth;
+    bool radius;
+
+    operator bool (void) const
+    {
+        //printf("bool: %d\n", enabled|str|scal|iter|grad|grads|gam|slope|neigh|gain|offs|retinexMethod|mapMethod|viewMethod|retinexcolorspace|gammaretinex|vart|limd|highl|baselog|method|
+        //transmissionCurve|cdcurve|mapcurve|cdHcurve|lhcurve|retinex|medianmap|highlights|htonalwidth|shadows|stonalwidth|radius);
+        return enabled|str|scal|iter|grad|grads|gam|slope|neigh|gain|offs|retinexMethod|mapMethod|viewMethod|retinexcolorspace|gammaretinex|vart|limd|highl|baselog|method|
+               transmissionCurve|cdcurve|mapcurve|cdHcurve|lhcurve|retinex|medianmap|highlights|htonalwidth|shadows|stonalwidth|radius;
+    }
+    void set(bool v);
+    void initFrom (std::vector<const void*> elems);
+    void combine (rtengine::procparams::RetinexParams* toEdit, const rtengine::procparams::RetinexParams* mods, bool dontforceSet);
+
+    //HOMBRE: isUnchanged should be replaced by the bool operator, but the purpose of both functions seem to be different...
+    /*
+    bool isUnchanged() const {
+        return enabled && retinexcolorspace && gammaretinex && gam && slope;
+    }
+    */
+};
+
+
 class LCurveParamsEdited
 {
 public:
@@ -89,7 +147,6 @@ public:
     bool hhcurve;
     bool lccurve;
     bool clcurve;
-
     bool enabled;
     bool method;
 
@@ -730,6 +787,7 @@ public:
     bool dcpIlluminant;
     bool working;
     bool output;
+    bool outputIntent;
     bool gamma;
     bool gampos;
     bool slpos;
@@ -856,7 +914,7 @@ public:
     bool enabled;
     bool gamutlab;
     bool mult[6];
-
+    bool cbdlMethod;
     bool threshold;
     bool skinprotect;
     bool hueskin;
@@ -961,6 +1019,7 @@ public:
     XTransSensor xtranssensor;
 
     bool caCorrection;
+    bool caAutoStrength;
     bool caRed;
     bool caBlue;
     bool hotPixelFilter;
@@ -996,6 +1055,7 @@ public:
     LCurveParamsEdited            labCurve;
     RGBCurvesParamsEdited         rgbCurves;
     ColorToningEdited             colorToning;
+    RetinexParamsEdited             retinex;
     SharpeningParamsEdited        sharpening;
     SharpeningParamsEdited        prsharpening;
     SharpenEdgeParamsEdited       sharpenEdge;

@@ -77,6 +77,14 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         params.crop.w = fw;
         params.crop.h = fh;
     } else {
+        if (params.crop.x < 0) {
+            params.crop.x = 0;
+        }
+
+        if (params.crop.y < 0) {
+            params.crop.y = 0;
+        }
+
         if ((params.crop.x + params.crop.w) > fw) {
             // crop overflow in the width dimension ; we trim it
             params.crop.w = fw - params.crop.x;
@@ -116,10 +124,31 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         pl->setProgress (0.30);
     }
 
-    imgsrc->HLRecovery_Global( params.toneCurve );
+    if(params.retinex.enabled) { //enabled Retinex
+        LUTf cdcurve (65536, 0);
+        LUTf mapcurve (65536, 0);
+        LUTu dummy;
+        RetinextransmissionCurve dehatransmissionCurve;
+        bool dehacontlutili = false;
+        bool mapcontlutili = false;
+        bool useHsl = false;
+//        multi_array2D<float, 3> conversionBuffer(1, 1);
+        multi_array2D<float, 4> conversionBuffer(1, 1);
+        imgsrc->retinexPrepareBuffers(params.icm, params.retinex, conversionBuffer, dummy);
+        imgsrc->retinexPrepareCurves(params.retinex, cdcurve, mapcurve, dehatransmissionCurve, dehacontlutili, mapcontlutili, useHsl, dummy, dummy );
+        float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+        imgsrc->retinex( params.icm, params.retinex, params.toneCurve, cdcurve, mapcurve, dehatransmissionCurve, conversionBuffer, dehacontlutili, mapcontlutili, useHsl, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax, dummy);
+    }
 
     if (pl) {
         pl->setProgress (0.40);
+    }
+
+    imgsrc->HLRecovery_Global( params.toneCurve );
+
+
+    if (pl) {
+        pl->setProgress (0.45);
     }
 
     // set the color temperature
@@ -172,8 +201,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     float *ry = new float [nbtl];
     float *sk = new float [nbtl];
     float *pcsk = new float [nbtl];
-    float *Max_R_ = new float [nbtl];
-    float *Max_B_ = new float [nbtl];
 
     //  printf("expert=%d\n",settings->leveldnautsimpl);
     if(settings->leveldnautsimpl == 1 && params.dirpyrDenoise.Cmethod == "PON") {
@@ -352,11 +379,11 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     MaxRMoy += max_r[k];
 
                     if(max_r[k] > MaxR) {
-                        MaxR = Max_R_[k];
+                        MaxR = max_r[k];
                     }
 
                     if(max_b[k] > MaxB) {
-                        MaxB = Max_B_[k];
+                        MaxB = max_b[k];
                     }
 
                 }
@@ -610,7 +637,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     imgsrc->getImage (currWB, tr, baseImg, pp, params.toneCurve, params.icm, params.raw);
 
     if (pl) {
-        pl->setProgress (0.45);
+        pl->setProgress (0.50);
     }
 
 //  LUTf Noisecurve (65536,0);
@@ -694,8 +721,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     delete [] ry;
     delete [] sk;
     delete [] pcsk;
-    delete [] Max_R_;
-    delete [] Max_B_;
 
     imgsrc->convertColorSpace(baseImg, params.icm, currWB);
 
@@ -712,6 +737,16 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                        imgsrc->getMetaData()->getFocusDist(), imgsrc->getRotateDegree(), true);
         delete baseImg;
         baseImg = trImg;
+    }
+
+
+    if (params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled) {
+        const int W = baseImg->getWidth();
+        const int H = baseImg->getHeight();
+        LabImage labcbdl(W, H);
+        ipf.rgb2lab(*baseImg, labcbdl, params.icm.working);
+        ipf.dirpyrequalizer (&labcbdl, 1);
+        ipf.lab2rgb(labcbdl, *baseImg, params.icm.working);
     }
 
     // update blurmap
@@ -797,7 +832,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         float moyS = 0.f;
         float eqty = 0.f;
         ipf.moyeqt (baseImg, moyS, eqty);//return image : mean saturation and standard dev of saturation
-        //printf("moy=%f ET=%f\n", moyS,eqty);
         float satp = ((moyS + 1.5f * eqty) - 0.3f) / 0.7f; //1.5 sigma ==> 93% pixels with high saturation -0.3 / 0.7 convert to Hombre scale
 
         if(satp >= 0.92f) {
@@ -847,7 +881,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     shmap = NULL;
 
     if (pl) {
-        pl->setProgress (0.5);
+        pl->setProgress (0.55);
     }
 
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -901,6 +935,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                                    params.labCurve.acurve, params.labCurve.bcurve, params.labCurve.cccurve, params.labCurve.lccurve, curve1, curve2, satcurve, lhskcurve,
                                    hist16C, hist16C, dummy, dummy,
                                    1);
+//   ipf.MSR(labView, labView->W, labView->H, 1);
 
     ipf.chromiLuminanceCurve (NULL, 1, labView, labView, curve1, curve2, satcurve, lhskcurve, clcurve, lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy, dummy, dummy);
 
@@ -957,9 +992,12 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
     params.wavelet.getCurves(wavCLVCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL );
 
+
     // directional pyramid wavelet
-    if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
-        ipf.dirpyrequalizer (labView, 1);    //TODO: this is the luminance tonecurve, not the RGB one
+    if(params.dirpyrequalizer.cbdlMethod == "aft") {
+        if((params.colorappearance.enabled && !settings->autocielab)  || !params.colorappearance.enabled) {
+            ipf.dirpyrequalizer (labView, 1);    //TODO: this is the luminance tonecurve, not the RGB one
+        }
     }
 
     int kall = 2;
@@ -1132,7 +1170,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         cmsFloat64Number Parameters[7];
         double ga0, ga1, ga2, ga3, ga4, ga5, ga6;
         //  if(params.blackwhite.enabled) params.toneCurve.hrenabled=false;
-        readyImg = ipf.lab2rgb16b (labView, cx, cy, cw, ch, params.icm.output, params.icm.working, params.icm.gamma, params.icm.freegamma, params.icm.gampos, params.icm.slpos, ga0, ga1, ga2, ga3, ga4, ga5, ga6, params.blackwhite.enabled );
+        readyImg = ipf.lab2rgb16b (labView, cx, cy, cw, ch, params.icm.output, params.icm.outputIntent, params.icm.working, params.icm.gamma, params.icm.freegamma, params.icm.gampos, params.icm.slpos, ga0, ga1, ga2, ga3, ga4, ga5, ga6, params.blackwhite.enabled );
         customGamma = true;
 
         //or selected Free gamma
@@ -1140,7 +1178,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         bool pro = false;
         Glib::ustring chpro, outProfile;
         bool present_space[9] = {false, false, false, false, false, false, false, false, false};
-        std::vector<Glib::ustring> opnames = iccStore->getOutputProfiles ();
+        std::vector<Glib::ustring> opnames = iccStore->getProfiles ();
 
         //test if files are in system
         for (int j = 0; j < 9; j++) {
@@ -1324,7 +1362,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             bwonly = false;
         }
 
-        readyImg = ipf.lab2rgb16 (labView, cx, cy, cw, ch, params.icm.output, bwonly);
+        readyImg = ipf.lab2rgb16 (labView, cx, cy, cw, ch, params.icm.output, params.icm.outputIntent, bwonly);
 
         if (settings->verbose) {
             printf("Output profile_: \"%s\"\n", params.icm.output.c_str());

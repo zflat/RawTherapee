@@ -22,17 +22,14 @@
 #include "rtengine.h"
 #include "rawimagesource.h"
 #include "rawimagesource_i.h"
+#include "jaggedarray.h"
 #include "median.h"
 #include "rawimage.h"
 #include "mytime.h"
-#include "iccmatrices.h"
 #include "iccstore.h"
-#include "image8.h"
 #include "curves.h"
 #include "dfmanager.h"
 #include "ffmanager.h"
-#include "slicer.h"
-#include "../rtgui/options.h"
 #include "dcp.h"
 #include "rt_math.h"
 #include "improcfun.h"
@@ -40,6 +37,377 @@
 #include <omp.h>
 #endif
 #include "opthelper.h"
+#define clipretinex( val, minv, maxv )    (( val = (val < minv ? minv : val ) ) > maxv ? maxv : val )
+#undef CLIPD
+#define CLIPD(a) ((a)>0.0f?((a)<1.0f?(a):1.0f):0.0f)
+
+namespace
+{
+
+void rotateLine (const float* const line, rtengine::PlanarPtr<float> &channel, const int tran, const int i, const int w, const int h)
+{
+    switch(tran & TR_ROT) {
+    case TR_R180:
+        for (int j = 0; j < w; j++) {
+            channel(h - 1 - i, w - 1 - j) = line[j];
+        }
+
+        break;
+
+    case TR_R90:
+        for (int j = 0; j < w; j++) {
+            channel(j, h - 1 - i) = line[j];
+        }
+
+        break;
+
+    case TR_R270:
+        for (int j = 0; j < w; j++) {
+            channel(w - 1 - j, i) = line[j];
+        }
+
+        break;
+
+    case TR_NONE:
+    default:
+        for (int j = 0; j < w; j++) {
+            channel(i, j) = line[j];
+        }
+    }
+}
+
+void transLineStandard (const float* const red, const float* const green, const float* const blue, const int i, rtengine::Imagefloat* const image, const int tran, const int imwidth, const int imheight)
+{
+    // conventional CCD coarse rotation
+    rotateLine (red, image->r, tran, i, imwidth, imheight);
+    rotateLine (green, image->g, tran, i, imwidth, imheight);
+    rotateLine (blue, image->b, tran, i, imwidth, imheight);
+}
+
+void transLineFuji (const float* const red, const float* const green, const float* const blue, const int i, rtengine::Imagefloat* const image, const int tran, const int imwidth, const int imheight, const int fw)
+{
+
+    // Fuji SuperCCD rotation + coarse rotation
+    int start = ABS(fw - i);
+    int w = fw * 2 + 1;
+    int h = (imheight - fw) * 2 + 1;
+    int end = min(h + fw - i, w - fw + i);
+
+    switch(tran & TR_ROT) {
+    case TR_R180:
+        for (int j = start; j < end; j++) {
+            int y = i + j - fw;
+            int x = fw - i + j;
+
+            if (x >= 0 && y < image->height && y >= 0 && x < image->width) {
+                image->r(image->height - 1 - y, image->width - 1 - x) = red[j];
+                image->g(image->height - 1 - y, image->width - 1 - x) = green[j];
+                image->b(image->height - 1 - y, image->width - 1 - x) = blue[j];
+            }
+        }
+
+        break;
+
+    case TR_R270:
+        for (int j = start; j < end; j++) {
+            int y = i + j - fw;
+            int x = fw - i + j;
+
+            if (x >= 0 && x < image->height && y >= 0 && y < image->width) {
+                image->r(image->height - 1 - x, y) = red[j];
+                image->g(image->height - 1 - x, y) = green[j];
+                image->b(image->height - 1 - x, y) = blue[j];
+            }
+        }
+
+        break;
+
+    case TR_R90:
+        for (int j = start; j < end; j++) {
+            int y = i + j - fw;
+            int x = fw - i + j;
+
+            if (x >= 0 && y < image->width && y >= 0 && x < image->height) {
+                image->r(x, image->width - 1 - y) = red[j];
+                image->g(x, image->width - 1 - y) = green[j];
+                image->b(x, image->width - 1 - y) = blue[j];
+            }
+        }
+
+        break;
+
+    case TR_NONE:
+    default:
+        for (int j = start; j < end; j++) {
+            int y = i + j - fw;
+            int x = fw - i + j;
+
+            if (x >= 0 && y < image->height && y >= 0 && x < image->width) {
+                image->r(y, x) = red[j];
+                image->g(y, x) = green[j];
+                image->b(y, x) = blue[j];
+            }
+        }
+    }
+}
+
+void transLineD1x (const float* const red, const float* const green, const float* const blue, const int i, rtengine::Imagefloat* const image, const int tran, const int imwidth, const int imheight, const bool oddHeight, const bool clip)
+{
+    // Nikon D1X has an uncommon sensor with 4028 x 1324 sensels.
+    // Vertical sensel size is 2x horizontal sensel size
+    // We have to do vertical interpolation for the 'missing' rows
+    // We do that in combination with coarse rotation
+
+    switch(tran & TR_ROT) {
+    case TR_R180: // rotate 180 degree
+        for (int j = 0; j < imwidth; j++) {
+            image->r(2 * (imheight - 1 - i), imwidth - 1 - j) = red[j];
+            image->g(2 * (imheight - 1 - i), imwidth - 1 - j) = green[j];
+            image->b(2 * (imheight - 1 - i), imwidth - 1 - j) = blue[j];
+        }
+
+        if (i == 0) {
+            for (int j = 0; j < imwidth; j++) {
+                image->r(2 * imheight - 1, imwidth - 1 - j) = red[j];
+                image->g(2 * imheight - 1, imwidth - 1 - j) = green[j];
+                image->b(2 * imheight - 1, imwidth - 1 - j) = blue[j];
+            }
+        }
+
+        if (i == 1 || i == 2) { // linear interpolation
+            int row = 2 * imheight - 1 - 2 * i;
+
+            for (int j = 0; j < imwidth; j++) {
+                int col = imwidth - 1 - j;
+                image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
+                image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
+                image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
+            }
+
+            if(i == 2 && oddHeight) {
+                int row = 2 * imheight;
+
+                for (int j = 0; j < imwidth; j++) {
+                    int col = imwidth - 1 - j;
+                    image->r(row, col) = (red[j] + image->r(row - 2, col)) / 2;
+                    image->g(row, col) = (green[j] + image->g(row - 2, col)) / 2;
+                    image->b(row, col) = (blue[j] + image->b(row - 2, col)) / 2;
+                }
+            }
+        } else if (i == imheight - 1 || i == imheight - 2) {
+            int row = 2 * imheight - 1 - 2 * i;
+
+            for (int j = 0; j < imwidth; j++) {
+                int col = imwidth - 1 - j;
+                image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
+                image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
+                image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
+            }
+
+            row = 2 * imheight - 1 - 2 * i + 2;
+
+            for (int j = 0; j < imwidth; j++) {
+                int col = imwidth - 1 - j;
+                image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
+                image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
+                image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
+            }
+        } else if (i > 2 && i < imheight - 1) { // vertical bicubic interpolation
+            int row = 2 * imheight - 1 - 2 * i + 2;
+
+            for (int j = 0; j < imwidth; j++) {
+                int col = imwidth - 1 - j;
+                image->r(row, col) = MAX(0.f, -0.0625f * (red[j] + image->r(row + 3, col)) + 0.5625f * (image->r(row - 1, col) + image->r(row + 1, col)));
+                image->g(row, col) = MAX(0.f, -0.0625f * (green[j] + image->g(row + 3, col)) + 0.5625f * (image->g(row - 1, col) + image->g(row + 1, col)));
+                image->b(row, col) = MAX(0.f, -0.0625f * (blue[j] + image->b(row + 3, col)) + 0.5625f * (image->b(row - 1, col) + image->b(row + 1, col)));
+
+                if(clip) {
+                    image->r(row, col) = MIN(image->r(row, col), rtengine::MAXVALF);
+                    image->g(row, col) = MIN(image->g(row, col), rtengine::MAXVALF);
+                    image->b(row, col) = MIN(image->b(row, col), rtengine::MAXVALF);
+                }
+            }
+        }
+
+        break;
+
+    case TR_R90: // rotate right
+        if( i == 0) {
+            for (int j = 0; j < imwidth; j++) {
+                image->r(j, 2 * imheight - 1) = red[j];
+                image->g(j, 2 * imheight - 1) = green[j];
+                image->b(j, 2 * imheight - 1) = blue[j];
+            }
+        }
+
+        for (int j = 0; j < imwidth; j++) {
+            image->r(j, 2 * (imheight - 1 - i)) = red[j];
+            image->g(j, 2 * (imheight - 1 - i)) = green[j];
+            image->b(j, 2 * (imheight - 1 - i)) = blue[j];
+        }
+
+        if (i == 1 || i == 2) { // linear interpolation
+            int col = 2 * imheight - 1 - 2 * i;
+
+            for (int j = 0; j < imwidth; j++) {
+                image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
+                image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
+                image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
+
+                if(oddHeight && i == 2) {
+                    image->r(j, 2 * imheight) = (red[j] + image->r(j, 2 * imheight - 2)) / 2;
+                    image->g(j, 2 * imheight) = (green[j] + image->g(j, 2 * imheight - 2)) / 2;
+                    image->b(j, 2 * imheight) = (blue[j] + image->b(j, 2 * imheight - 2)) / 2;
+                }
+            }
+        } else if (i == imheight - 1) {
+            int col = 2 * imheight - 1 - 2 * i;
+
+            for (int j = 0; j < imwidth; j++) {
+                image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
+                image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
+                image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
+            }
+
+            col = 2 * imheight - 1 - 2 * i + 2;
+
+            for (int j = 0; j < imwidth; j++) {
+                image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
+                image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
+                image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
+            }
+        } else if (i > 2 && i < imheight - 1) { // vertical bicubic interpolation
+            int col = 2 * imheight - 1 - 2 * i + 2;
+
+            for (int j = 0; j < imwidth; j++) {
+                image->r(j, col) = MAX(0.f, -0.0625f * (red[j] + image->r(j, col + 3)) + 0.5625f * (image->r(j, col - 1) + image->r(j, col + 1)));
+                image->g(j, col) = MAX(0.f, -0.0625f * (green[j] + image->g(j, col + 3)) + 0.5625f * (image->g(j, col - 1) + image->g(j, col + 1)));
+                image->b(j, col) = MAX(0.f, -0.0625f * (blue[j] + image->b(j, col + 3)) + 0.5625f * (image->b(j, col - 1) + image->b(j, col + 1)));
+
+                if(clip) {
+                    image->r(j, col) = MIN(image->r(j, col), rtengine::MAXVALF);
+                    image->g(j, col) = MIN(image->g(j, col), rtengine::MAXVALF);
+                    image->b(j, col) = MIN(image->b(j, col), rtengine::MAXVALF);
+                }
+            }
+        }
+
+        break;
+
+    case TR_R270: // rotate left
+        if (i == 0) {
+            for (int j = imwidth - 1, row = 0; j >= 0; j--, row++) {
+                image->r(row, 2 * i) = red[j];
+                image->g(row, 2 * i) = green[j];
+                image->b(row, 2 * i) = blue[j];
+            }
+        } else if (i == 1 || i == 2) { // linear interpolation
+            for (int j = imwidth - 1, row = 0; j >= 0; j--, row++) {
+                image->r(row, 2 * i) = red[j];
+                image->g(row, 2 * i) = green[j];
+                image->b(row, 2 * i) = blue[j];
+                image->r(row, 2 * i - 1) = (red[j] + image->r(row, 2 * i - 2)) * 0.5f;
+                image->g(row, 2 * i - 1) = (green[j] + image->g(row, 2 * i - 2)) * 0.5f;
+                image->b(row, 2 * i - 1) = (blue[j] + image->b(row, 2 * i - 2)) * 0.5f;
+            }
+        } else if (i > 0 && i < imheight) { // vertical bicubic interpolation
+            for (int j = imwidth - 1, row = 0; j >= 0; j--, row++) {
+                image->r(row, 2 * i - 3) = MAX(0.f, -0.0625f * (red[j] + image->r(row, 2 * i - 6)) + 0.5625f * (image->r(row, 2 * i - 2) + image->r(row, 2 * i - 4)));
+                image->g(row, 2 * i - 3) = MAX(0.f, -0.0625f * (green[j] + image->g(row, 2 * i - 6)) + 0.5625f * (image->g(row, 2 * i - 2) + image->g(row, 2 * i - 4)));
+                image->b(row, 2 * i - 3) = MAX(0.f, -0.0625f * (blue[j] + image->b(row, 2 * i - 6)) + 0.5625f * (image->b(row, 2 * i - 2) + image->b(row, 2 * i - 4)));
+
+                if(clip) {
+                    image->r(row, 2 * i - 3) = MIN(image->r(row, 2 * i - 3), rtengine::MAXVALF);
+                    image->g(row, 2 * i - 3) = MIN(image->g(row, 2 * i - 3), rtengine::MAXVALF);
+                    image->b(row, 2 * i - 3) = MIN(image->b(row, 2 * i - 3), rtengine::MAXVALF);
+                }
+
+                image->r(row, 2 * i) = red[j];
+                image->g(row, 2 * i) = green[j];
+                image->b(row, 2 * i) = blue[j];
+            }
+        }
+
+        if (i == imheight - 1) {
+            for (int j = imwidth - 1, row = 0; j >= 0; j--, row++) {
+                image->r(row, 2 * i - 1) = MAX(0.f, -0.0625f * (red[j] + image->r(row, 2 * i - 4)) + 0.5625f * (image->r(row, 2 * i) + image->r(row, 2 * i - 2)));
+                image->g(row, 2 * i - 1) = MAX(0.f, -0.0625f * (green[j] + image->g(row, 2 * i - 4)) + 0.5625f * (image->g(row, 2 * i) + image->g(row, 2 * i - 2)));
+                image->b(row, 2 * i - 1) = MAX(0.f, -0.0625f * (blue[j] + image->b(row, 2 * i - 4)) + 0.5625f * (image->b(row, 2 * i) + image->b(row, 2 * i - 2)));
+
+                if(clip) {
+                    image->r(j, 2 * i - 1) = MIN(image->r(j, 2 * i - 1), rtengine::MAXVALF);
+                    image->g(j, 2 * i - 1) = MIN(image->g(j, 2 * i - 1), rtengine::MAXVALF);
+                    image->b(j, 2 * i - 1) = MIN(image->b(j, 2 * i - 1), rtengine::MAXVALF);
+                }
+
+                image->r(row, 2 * i + 1) = (red[j] + image->r(row, 2 * i - 1)) / 2;
+                image->g(row, 2 * i + 1) = (green[j] + image->g(row, 2 * i - 1)) / 2;
+                image->b(row, 2 * i + 1) = (blue[j] + image->b(row, 2 * i - 1)) / 2;
+
+                if (oddHeight) {
+                    image->r(row, 2 * i + 2) = (red[j] + image->r(row, 2 * i - 2)) / 2;
+                    image->g(row, 2 * i + 2) = (green[j] + image->g(row, 2 * i - 2)) / 2;
+                    image->b(row, 2 * i + 2) = (blue[j] + image->b(row, 2 * i - 2)) / 2;
+                }
+            }
+        }
+
+        break;
+
+    case TR_NONE: // no coarse rotation
+    default:
+        rotateLine (red, image->r, tran, 2 * i, imwidth, imheight);
+        rotateLine (green, image->g, tran, 2 * i, imwidth, imheight);
+        rotateLine (blue, image->b, tran, 2 * i, imwidth, imheight);
+
+        if (i == 1 || i == 2) { // linear interpolation
+            for (int j = 0; j < imwidth; j++) {
+                image->r(2 * i - 1, j) = (red[j] + image->r(2 * i - 2, j)) / 2;
+                image->g(2 * i - 1, j) = (green[j] + image->g(2 * i - 2, j)) / 2;
+                image->b(2 * i - 1, j) = (blue[j] + image->b(2 * i - 2, j)) / 2;
+            }
+        } else if (i > 2 && i < imheight) { // vertical bicubic interpolation
+            for (int j = 0; j < imwidth; j++) {
+                image->r(2 * i - 3, j) = MAX(0.f, -0.0625f * (red[j] + image->r(2 * i - 6, j)) + 0.5625f * (image->r(2 * i - 2, j) + image->r(2 * i - 4, j)));
+                image->g(2 * i - 3, j) = MAX(0.f, -0.0625f * (green[j] + image->g(2 * i - 6, j)) + 0.5625f * (image->g(2 * i - 2, j) + image->g(2 * i - 4, j)));
+                image->b(2 * i - 3, j) = MAX(0.f, -0.0625f * (blue[j] + image->b(2 * i - 6, j)) + 0.5625f * (image->b(2 * i - 2, j) + image->b(2 * i - 4, j)));
+
+                if(clip) {
+                    image->r(2 * i - 3, j) = MIN(image->r(2 * i - 3, j), rtengine::MAXVALF);
+                    image->g(2 * i - 3, j) = MIN(image->g(2 * i - 3, j), rtengine::MAXVALF);
+                    image->b(2 * i - 3, j) = MIN(image->b(2 * i - 3, j), rtengine::MAXVALF);
+                }
+            }
+        }
+
+        if (i == imheight - 1) {
+            for (int j = 0; j < imwidth; j++) {
+                image->r(2 * i - 1, j) = MAX(0.f, -0.0625f * (red[j] + image->r(2 * i - 4, j)) + 0.5625f * (image->r(2 * i, j) + image->r(2 * i - 2, j)));
+                image->g(2 * i - 1, j) = MAX(0.f, -0.0625f * (green[j] + image->g(2 * i - 4, j)) + 0.5625f * (image->g(2 * i, j) + image->g(2 * i - 2, j)));
+                image->b(2 * i - 1, j) = MAX(0.f, -0.0625f * (blue[j] + image->b(2 * i - 4, j)) + 0.5625f * (image->b(2 * i, j) + image->b(2 * i - 2, j)));
+
+                if(clip) {
+                    image->r(2 * i - 1, j) = MIN(image->r(2 * i - 1, j), rtengine::MAXVALF);
+                    image->g(2 * i - 1, j) = MIN(image->g(2 * i - 1, j), rtengine::MAXVALF);
+                    image->b(2 * i - 1, j) = MIN(image->b(2 * i - 1, j), rtengine::MAXVALF);
+                }
+
+                image->r(2 * i + 1, j) = (red[j] + image->r(2 * i - 1, j)) / 2;
+                image->g(2 * i + 1, j) = (green[j] + image->g(2 * i - 1, j)) / 2;
+                image->b(2 * i + 1, j) = (blue[j] + image->b(2 * i - 1, j)) / 2;
+
+                if (oddHeight) {
+                    image->r(2 * i + 2, j) = (red[j] + image->r(2 * i - 2, j)) / 2;
+                    image->g(2 * i + 2, j) = (green[j] + image->g(2 * i - 2, j)) / 2;
+                    image->b(2 * i + 2, j) = (blue[j] + image->b(2 * i - 2, j)) / 2;
+                }
+            }
+        }
+    }
+}
+
+}
+
 
 namespace rtengine
 {
@@ -113,15 +481,11 @@ RawImageSource::~RawImageSource ()
 
     if (hrmap[0] != NULL) {
         int dh = H / HR_SCALE;
-        freeArray<float>(hrmap[0], dh);
-        freeArray<float>(hrmap[1], dh);
-        freeArray<float>(hrmap[2], dh);
+        freeJaggedArray<float>(hrmap[0]);
+        freeJaggedArray<float>(hrmap[1]);
+        freeJaggedArray<float>(hrmap[2]);
     }
 
-    //if (needhr)
-    //    freeArray<char>(needhr, H);
-    //if (hpmap)
-    //    freeArray<char>(hpmap, H);
     if (camProfile) {
         cmsCloseProfile (camProfile);
     }
@@ -305,7 +669,7 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
 
     defGain = 0.0;
     // compute image area to render in order to provide the requested part of the image
-    int sx1, sy1, imwidth, imheight, fw;
+    int sx1, sy1, imwidth, imheight, fw, d1xHeightOdd;
     transformRect (pp, tran, sx1, sy1, imwidth, imheight, fw);
 
     // check possible overflows
@@ -320,7 +684,12 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
     }
 
     if (d1x) {
+        // D1X has only half of the required rows
+        // we interpolate the missing ones later to get correct aspect ratio
+        // if the height is odd we also have to add an additional row to avoid a black line
+        d1xHeightOdd = maximheight & 1;
         maximheight /= 2;
+        imheight = maximheight;
     }
 
     // correct if overflow (very rare), but not fuji because it is corrected in transline
@@ -338,9 +707,9 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
     hlmax[0] = clmax[0] * rm;
     hlmax[1] = clmax[1] * gm;
     hlmax[2] = clmax[2] * bm;
-    const bool has_clipping = (chmax[0] >= clmax[0] || chmax[1] >= clmax[1] || chmax[2] >= clmax[2]);
 
-    //if (sx1+skip*imwidth>maxx) imwidth --; // very hard to fix this situation without an 'if' in the loop.
+    const bool doClip = (chmax[0] >= clmax[0] || chmax[1] >= clmax[1] || chmax[2] >= clmax[2]) && !hrp.hrenabled;
+
     float area = skip * skip;
     rm /= area;
     gm /= area;
@@ -351,11 +720,9 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
     {
 #endif
         // render the requested image part
-        float* line_red  = new float[imwidth];
-        float* line_grn  = new float[imwidth];
-        float* line_blue = new float[imwidth];
-        //printf("clip[0]=%f  clip[1]=%f  clip[2]=%f\n",hlmax[0],hlmax[1],hlmax[2]);
-
+        float line_red[imwidth] ALIGNED16;
+        float line_grn[imwidth] ALIGNED16;
+        float line_blue[imwidth] ALIGNED16;
 
 #ifdef _OPENMP
         #pragma omp for
@@ -370,12 +737,9 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
 
             if (ri->getSensorType() == ST_BAYER || ri->getSensorType() == ST_FUJI_XTRANS || ri->get_colors() == 1) {
                 for (int j = 0, jx = sx1; j < imwidth; j++, jx += skip) {
-                    if (jx >= maxx - skip) {
-                        jx = maxx - skip - 1;    // avoid trouble
-                    }
+                    jx = jx >= (maxx - skip) ? jx = maxx - skip - 1 : jx; // avoid trouble
 
-                    float rtot, gtot, btot;
-                    rtot = gtot = btot = 0;
+                    float rtot = 0.f, gtot = 0.f, btot = 0.f;
 
                     for (int m = 0; m < skip; m++)
                         for (int n = 0; n < skip; n++) {
@@ -388,12 +752,12 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
                     gtot *= gm;
                     btot *= bm;
 
-                    if (!hrp.hrenabled && has_clipping) {
+                    if (doClip) {
                         // note: as hlmax[] can be larger than CLIP and we can later apply negative
                         // exposure this means that we can clip away local highlights which actually
                         // are not clipped. We have to do that though as we only check pixel by pixel
                         // and don't know if this will transition into a clipped area, if so we need
-                        // to clip also surrounding to make a good color transition
+                        // to clip also surrounding to make a good colour transition
                         rtot = CLIP(rtot);
                         gtot = CLIP(gtot);
                         btot = CLIP(btot);
@@ -423,7 +787,7 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
                     gtot *= gm;
                     btot *= bm;
 
-                    if (!hrp.hrenabled && has_clipping) {
+                    if (doClip) {
                         rtot = CLIP(rtot);
                         gtot = CLIP(gtot);
                         btot = CLIP(btot);
@@ -441,13 +805,16 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
                 hlRecovery (hrp.method, line_red, line_grn, line_blue, i, sx1, imwidth, skip, raw, hlmax);
             }
 
-            transLine (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight, fw);
+            if(d1x) {
+                transLineD1x (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight, d1xHeightOdd, doClip);
+            } else if(fuji) {
+                transLineFuji (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight, fw);
+            } else {
+                transLineStandard (line_red, line_grn, line_blue, ix, image, tran, imwidth, imheight);
+            }
 
         }
 
-        delete [] line_red;
-        delete [] line_grn;
-        delete [] line_blue;
 #ifdef _OPENMP
     }
 #endif
@@ -500,8 +867,6 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
         }
     }
 
-
-
     // Flip if needed
     if (tran & TR_HFLIP) {
         hflip (image);
@@ -511,11 +876,14 @@ void RawImageSource::getImage (ColorTemp ctemp, int tran, Imagefloat* image, Pre
         vflip (image);
     }
 
-    // Color correction (only when running on full resolution)
-    if (ri->getSensorType() != ST_NONE && pp.skip == 1) {
-        if (ri->getSensorType() == ST_BAYER) {
+    // Colour correction (only when running on full resolution)
+    if(pp.skip == 1) {
+        switch(ri->getSensorType()) {
+        case ST_BAYER:
             processFalseColorCorrection (image, raw.bayersensor.ccSteps);
-        } else if (ri->getSensorType() == ST_FUJI_XTRANS) {
+            break;
+
+        case ST_FUJI_XTRANS:
             processFalseColorCorrection (image, raw.xtranssensor.ccSteps);
         }
     }
@@ -544,13 +912,15 @@ void RawImageSource::convertColorSpace(Imagefloat* image, ColorManagementParams 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /* interpolateBadPixelsBayer: correct raw pixels looking at the bitmap
- * takes into consideration if there are multiple bad pixels in the neighborhood
+ * takes into consideration if there are multiple bad pixels in the neighbourhood
  */
 int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
 {
     static const float eps = 1.f;
     int counter = 0;
+#ifdef _OPENMP
     #pragma omp parallel for reduction(+:counter) schedule(dynamic,16)
+#endif
 
     for( int row = 2; row < H - 2; row++ ) {
         for(int col = 2; col < W - 2; col++ ) {
@@ -569,8 +939,8 @@ int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
 
             // diagonal interpolation
             if(FC(row, col) == 1) {
-                // green channel. We can use closer pixels than for red or blue channel. Distance to center pixel is sqrt(2) => weighting is 0.70710678
-                // For green channel following pixels will be used for interpolation. Pixel to be interpolated is in center.
+                // green channel. We can use closer pixels than for red or blue channel. Distance to centre pixel is sqrt(2) => weighting is 0.70710678
+                // For green channel following pixels will be used for interpolation. Pixel to be interpolated is in centre.
                 // 1 means that pixel is used in this step, if itself and his counterpart are not marked bad
                 // 0 0 0 0 0
                 // 0 1 0 1 0
@@ -587,8 +957,8 @@ int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
                     norm += dirwt;
                 }
             } else {
-                // red and blue channel. Distance to center pixel is sqrt(8) => weighting is 0.35355339
-                // For red and blue channel following pixels will be used for interpolation. Pixel to be interpolated is in center.
+                // red and blue channel. Distance to centre pixel is sqrt(8) => weighting is 0.35355339
+                // For red and blue channel following pixels will be used for interpolation. Pixel to be interpolated is in centre.
                 // 1 means that pixel is used in this step, if itself and his counterpart are not marked bad
                 // 1 0 0 0 1
                 // 0 0 0 0 0
@@ -606,8 +976,8 @@ int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
                 }
             }
 
-            // channel independent. Distance to center pixel is 2 => weighting is 0.5
-            // Additionally for all channel following pixels will be used for interpolation. Pixel to be interpolated is in center.
+            // channel independent. Distance to centre pixel is 2 => weighting is 0.5
+            // Additionally for all channel following pixels will be used for interpolation. Pixel to be interpolated is in centre.
             // 1 means that pixel is used in this step, if itself and his counterpart are not marked bad
             // 0 0 1 0 0
             // 0 0 0 0 0
@@ -629,7 +999,7 @@ int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
                 norm += dirwt;
             }
 
-            if (LIKELY(norm > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelyhood of this case is about 99.999%
+            if (LIKELY(norm > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelihood of this case is about 99.999%
                 rawData[row][col] = wtdsum / (2.f * norm); //gradient weighted average, Factor of 2.f is an optimization to avoid multiplications in former steps
                 counter++;
             } else { //backup plan -- simple average. Same method for all channels. We could improve this, but it's really unlikely that this case happens
@@ -659,13 +1029,15 @@ int RawImageSource::interpolateBadPixelsBayer( PixelsMap &bitmapBads )
 }
 
 /* interpolateBadPixels3Colours: correct raw pixels looking at the bitmap
- * takes into consideration if there are multiple bad pixels in the neighborhood
+ * takes into consideration if there are multiple bad pixels in the neighbourhood
  */
 int RawImageSource::interpolateBadPixelsNColours( PixelsMap &bitmapBads, const int colours )
 {
     static const float eps = 1.f;
     int counter = 0;
+#ifdef _OPENMP
     #pragma omp parallel for reduction(+:counter) schedule(dynamic,16)
+#endif
 
     for( int row = 2; row < H - 2; row++ ) {
         for(int col = 2; col < W - 2; col++ ) {
@@ -717,7 +1089,7 @@ int RawImageSource::interpolateBadPixelsNColours( PixelsMap &bitmapBads, const i
                 }
             }
 
-            if (LIKELY(norm[0] > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelyhood of this case is about 99.999%
+            if (LIKELY(norm[0] > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelihood of this case is about 99.999%
                 for(int c = 0; c < colours; c++) {
                     rawData[row][col * colours + c] = wtdsum[c] / (2.f * norm[c]); //gradient weighted average, Factor of 2.f is an optimization to avoid multiplications in former steps
                 }
@@ -759,13 +1131,15 @@ int RawImageSource::interpolateBadPixelsNColours( PixelsMap &bitmapBads, const i
     return counter; // Number of interpolated pixels.
 }
 /* interpolateBadPixelsXtrans: correct raw pixels looking at the bitmap
- * takes into consideration if there are multiple bad pixels in the neighborhood
+ * takes into consideration if there are multiple bad pixels in the neighbourhood
  */
 int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
 {
     static const float eps = 1.f;
     int counter = 0;
+#ifdef _OPENMP
     #pragma omp parallel for reduction(+:counter) schedule(dynamic,16)
+#endif
 
     for( int row = 2; row < H - 2; row++ ) {
         for(int col = 2; col < W - 2; col++ ) {
@@ -787,10 +1161,10 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
             if(pixelColor == 1) {
                 // green channel. A green pixel can either be a solitary green pixel or a member of a 2x2 square of green pixels
                 if(ri->XTRANSFC(row, col - 1) == ri->XTRANSFC(row, col + 1)) {
-                    // If left and right neighbour have same color, then this is a solitary green pixel
-                    // For these the following pixels will be used for interpolation. Pixel to be interpolated is in center and marked with a P.
+                    // If left and right neighbour have same colour, then this is a solitary green pixel
+                    // For these the following pixels will be used for interpolation. Pixel to be interpolated is in centre and marked with a P.
                     // Pairs of pixels used in this step are numbered. A pair will be used if none of the pixels of the pair is marked bad
-                    // 0 means, the pixel has a different color and will not be used
+                    // 0 means, the pixel has a different colour and will not be used
                     // 0 1 0 2 0
                     // 3 5 0 6 4
                     // 0 0 P 0 0
@@ -829,12 +1203,14 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
                     // this is a member of a 2x2 square of green pixels
                     // For these the following pixels will be used for interpolation. Pixel to be interpolated is at position P in the example.
                     // Pairs of pixels used in this step are numbered. A pair will be used if none of the pixels of the pair is marked bad
-                    // 0 means, the pixel has a different color and will not be used
+                    // 0 means, the pixel has a different colour and will not be used
                     // 1 0 0 3
                     // 0 P 2 0
                     // 0 2 1 0
                     // 3 0 0 0
-                    int offset1 = ri->XTRANSFC(row - 1, col - 1) == ri->XTRANSFC(row + 1, col + 1) ? 1 : -1; // pixels marked 1 in above example. Distance to P is sqrt(2) => weighting is 0.70710678f
+
+                    // pixels marked 1 in above example. Distance to P is sqrt(2) => weighting is 0.70710678f
+                    int offset1 = ri->XTRANSFC(row - 1, col - 1) == ri->XTRANSFC(row + 1, col + 1) ? 1 : -1;
 
                     if( !(bitmapBads.get(col - offset1, row - 1) || bitmapBads.get(col + offset1, row + 1))) {
                         float dirwt = 0.70710678f / ( fabsf( rawData[row - 1][col - offset1] - rawData[row + 1][col + offset1]) + eps);
@@ -842,6 +1218,7 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
                         norm += dirwt;
                     }
 
+                    // pixels marked 2 in above example. Distance to P is 1 => weighting is 1.f
                     int offsety = (ri->XTRANSFC(row - 1, col) != 1 ? 1 : -1);
                     int offsetx = offset1 * offsety;
 
@@ -865,9 +1242,9 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
                 }
             } else {
                 // red and blue channel.
-                // Each red or blue pixel has exactly one neigbour of same color in distance 2 and four neighbours of same color which can be reached by a move of a knight in chess.
+                // Each red or blue pixel has exactly one neighbour of same colour in distance 2 and four neighbours of same colour which can be reached by a move of a knight in chess.
                 // For the distance 2 pixel (marked with an X) we generate a virtual counterpart (marked with a V)
-                // For red and blue channel following pixels will be used for interpolation. Pixel to be interpolated is in center and marked with a P.
+                // For red and blue channel following pixels will be used for interpolation. Pixel to be interpolated is in centre and marked with a P.
                 // Pairs of pixels used in this step are numbered except for distance 2 pixels which are marked X and V. A pair will be used if none of the pixels of the pair is marked bad
                 // 0 1 0 0 0    0 0 X 0 0   remaining cases are symmetric
                 // 0 0 0 0 2    1 0 0 0 2
@@ -875,12 +1252,12 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
                 // 0 0 0 0 1    0 0 0 0 0
                 // 0 2 0 0 0    0 2 V 1 0
 
-                // Find two knight moves landing on a pixel of same color as the pixel to be interpolated.
+                // Find two knight moves landing on a pixel of same colour as the pixel to be interpolated.
                 // If we look at first and last row of 5x5 square, we will find exactly two knight pixels.
-                // Additionally we know that the column of this pixel has 1 or -1 horizontal distance to the center pixel
+                // Additionally we know that the column of this pixel has 1 or -1 horizontal distance to the centre pixel
                 // When we find a knight pixel, we get its counterpart, which has distance (+-3,+-3), where the signs of distance depend on the corner of the found knight pixel.
                 // These pixels are marked 1 or 2 in above examples. Distance to P is sqrt(5) => weighting is 0.44721359f
-                // The following loop simply scans the four possible places. To keep things simple, it doesn't stop after finding two knight pixels, because it will not find more than two
+                // The following loop simply scans the four possible places. To keep things simple, it does not stop after finding two knight pixels, because it will not find more than two
                 for(int d1 = -2, offsety = 3; d1 <= 2; d1 += 4, offsety -= 6) {
                     for(int d2 = -1, offsetx = 3; d2 < 1; d2 += 2, offsetx -= 6) {
                         if(ri->XTRANSFC(row + d1, col + d2) == pixelColor) {
@@ -926,10 +1303,8 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
                 norm += dirwt;
             }
 
-            if (LIKELY(norm > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelyhood of this case is about 99.999%
+            if (LIKELY(norm > 0.f)) { // This means, we found at least one pair of valid pixels in the steps above, likelihood of this case is about 99.999%
                 rawData[row][col] = wtdsum / (2.f * norm); //gradient weighted average, Factor of 2.f is an optimization to avoid multiplications in former steps
-//#pragma omp critical
-//              printf("%s Pixel at (col/row) : (%4d/%4d) : Original : %f, interpolated: %f\n",pixelColor == 0 ? "Red  " : pixelColor==1 ? "Green" : "Blue ", col-7,row-7,oldval, rawData[row][col]);
                 counter++;
             }
         }
@@ -940,95 +1315,124 @@ int RawImageSource::interpolateBadPixelsXtrans( PixelsMap &bitmapBads )
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /*  Search for hot or dead pixels in the image and update the map
- *  For each pixel compare its value to the average of similar color surrounding
+ *  For each pixel compare its value to the average of similar colour surrounding
  *  (Taken from Emil Martinec idea)
- *  (Optimized by Ingo Weyrich 2013)
+ *  (Optimized by Ingo Weyrich 2013 and 2015)
  */
-int RawImageSource::findHotDeadPixels( PixelsMap &bpMap, float thresh, bool findHotPixels, bool findDeadPixels )
+SSEFUNCTION int RawImageSource::findHotDeadPixels( PixelsMap &bpMap, float thresh, bool findHotPixels, bool findDeadPixels )
 {
-    float varthresh = (20.0 * (thresh / 100.0) + 1.0 );
-
-    // counter for dead or hot pixels
-    int counter = 0;
+    float varthresh = (20.0 * (thresh / 100.0) + 1.0 ) / 24.f;
 
     // allocate temporary buffer
     float (*cfablur);
     cfablur = (float (*)) malloc (H * W * sizeof * cfablur);
 
+    // counter for dead or hot pixels
+    int counter = 0;
+
+#ifdef _OPENMP
     #pragma omp parallel
+#endif
     {
-        #pragma omp for
+#ifdef _OPENMP
+        #pragma omp for schedule(dynamic,16) nowait
+#endif
 
-        for (int i = 0; i < H; i++) {
-            int iprev, inext, jprev, jnext;
-            float p[9], temp;
+        for (int i = 2; i < H - 2; i++) {
+            float p[9], temp; // we need this for med3x3 macro
 
-            if (i < 2) {
-                iprev = i + 2;
-            } else {
-                iprev = i - 2;
-            }
-
-            if (i > H - 3) {
-                inext = i - 2;
-            } else {
-                inext = i + 2;
-            }
-
-            for (int j = 0; j < W; j++) {
-                if (j < 2) {
-                    jprev = j + 2;
-                } else {
-                    jprev = j - 2;
-                }
-
-                if (j > W - 3) {
-                    jnext = j - 2;
-                } else {
-                    jnext = j + 2;
-                }
-
-                med3x3(rawData[iprev][jprev], rawData[iprev][j], rawData[iprev][jnext],
-                       rawData[i][jprev], rawData[i][j], rawData[i][jnext],
-                       rawData[inext][jprev], rawData[inext][j], rawData[inext][jnext], temp);
+            for (int j = 2; j < W - 2; j++) {
+                med3x3(rawData[i - 2][j - 2], rawData[i - 2][j], rawData[i - 2][j + 2],
+                       rawData[i][j - 2], rawData[i][j], rawData[i][j + 2],
+                       rawData[i + 2][j - 2], rawData[i + 2][j], rawData[i + 2][j + 2], temp);
                 cfablur[i * W + j] = rawData[i][j] - temp;
             }
         }
 
-        #pragma omp for reduction(+:counter) schedule (dynamic,16)
+        // process borders. Former version calculated the median using mirrored border which does not make sense because the original pixel loses weight
+        // Setting the difference between pixel and median for border pixels to zero should do the job not worse then former version
+#ifdef _OPENMP
+        #pragma omp single
+#endif
+        {
+            for(int i = 0; i < 2; i++) {
+                for(int j = 0; j < W; j++) {
+                    cfablur[i * W + j] = 0.f;
+                }
+            }
+
+            for(int i = 2; i < H - 2; i++) {
+                for(int j = 0; j < 2; j++) {
+                    cfablur[i * W + j] = 0.f;
+                }
+
+                for(int j = W - 2; j < W; j++) {
+                    cfablur[i * W + j] = 0.f;
+                }
+            }
+
+            for(int i = H - 2; i < H; i++) {
+                for(int j = 0; j < W; j++) {
+                    cfablur[i * W + j] = 0.f;
+                }
+            }
+        }
+#ifdef _OPENMP
+        #pragma omp barrier // barrier because of nowait clause above
+
+        #pragma omp for reduction(+:counter) schedule(dynamic,16)
+#endif
 
         //cfa pixel heat/death evaluation
-        for (int rr = 0; rr < H; rr++) {
-            int top = max(0, rr - 2);
-            int bottom = min(H - 1, rr + 2);
-            int rrmWpcc = rr * W;
+        for (int rr = 2; rr < H - 2; rr++) {
+            int rrmWpcc = rr * W + 2;
 
-            for (int cc = 0; cc < W; cc++, rrmWpcc++) {
+            for (int cc = 2; cc < W - 2; cc++, rrmWpcc++) {
                 //evaluate pixel for heat/death
                 float pixdev = cfablur[rrmWpcc];
 
-                if((!findDeadPixels) && pixdev <= 0) {
+                if(pixdev == 0.f) {
                     continue;
                 }
 
-                if((!findHotPixels) && pixdev >= 0) {
+                if((!findDeadPixels) && pixdev < 0) {
+                    continue;
+                }
+
+                if((!findHotPixels) && pixdev > 0) {
                     continue;
                 }
 
                 pixdev = fabsf(pixdev);
                 float hfnbrave = -pixdev;
-                int left = max(0, cc - 2);
-                int right = min(W - 1, cc + 2);
 
-                for (int mm = top; mm <= bottom; mm++) {
-                    int mmmWpnn = mm * W + left;
+#ifdef __SSE2__
+                // sum up 5*4 = 20 values using SSE
+                // 10 fabs function calls and float 10 additions with SSE
+                vfloat sum = vabsf(LVFU(cfablur[(rr - 2) * W + cc - 2])) + vabsf(LVFU(cfablur[(rr - 1) * W + cc - 2]));
+                sum += vabsf(LVFU(cfablur[(rr) * W + cc - 2]));
+                sum += vabsf(LVFU(cfablur[(rr + 1) * W + cc - 2]));
+                sum += vabsf(LVFU(cfablur[(rr + 2) * W + cc - 2]));
+                // horizontally add the values and add the result to hfnbrave
+                hfnbrave += vhadd(sum);
 
-                    for (int nn = left; nn <= right; nn++, mmmWpnn++) {
-                        hfnbrave += fabsf(cfablur[mmmWpnn]);
+                // add remaining 5 values of last column
+                for (int mm = rr - 2; mm <= rr + 2; mm++) {
+                    hfnbrave += fabsf(cfablur[mm * W + cc + 2]);
+                }
+
+#else
+
+                //  25 fabs function calls and 25 float additions without SSE
+                for (int mm = rr - 2; mm <= rr + 2; mm++) {
+                    for (int nn = cc - 2; nn <= cc + 2; nn++) {
+                        hfnbrave += fabsf(cfablur[mm * W + nn]);
                     }
                 }
 
-                if (pixdev * ((bottom - top + 1) * (right - left + 1) - 1) > varthresh * hfnbrave) {
+#endif
+
+                if (pixdev > varthresh * hfnbrave) {
                     // mark the pixel as "bad"
                     bpMap.set(cc, rr);
                     counter++;
@@ -1038,250 +1442,6 @@ int RawImageSource::findHotDeadPixels( PixelsMap &bpMap, float thresh, bool find
     }//end of parallel processing
     free (cfablur);
     return counter;
-}
-
-void RawImageSource::rotateLine (float* line, PlanarPtr<float> &channel, int tran, int i, int w, int h)
-{
-
-    if ((tran & TR_ROT) == TR_R180)
-        for (int j = 0; j < w; j++) {
-            channel(h - 1 - i, w - 1 - j) = line[j];
-        }
-
-    else if ((tran & TR_ROT) == TR_R90)
-        for (int j = 0; j < w; j++) {
-            channel(j, h - 1 - i) = line[j];
-        }
-
-    else if ((tran & TR_ROT) == TR_R270)
-        for (int j = 0; j < w; j++) {
-            channel(w - 1 - j, i) = line[j];
-        }
-    else
-        for (int j = 0; j < w; j++) {
-            channel(i, j) = line[j];
-        }
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-void RawImageSource::transLine (float* red, float* green, float* blue, int i, Imagefloat* image, int tran, int imwidth, int imheight, int fw)
-{
-
-    // Fuji SuperCCD rotation + coarse rotation
-    if (fuji) {
-        int start = ABS(fw - i);
-        int w = fw * 2 + 1;
-        int h = (imheight - fw) * 2 + 1;
-
-        if ((tran & TR_ROT) == TR_R180) {
-            int end = min(h + fw - i, w - fw + i);
-
-            for (int j = start; j < end; j++) {
-                int y = i + j - fw;
-                int x = fw - i + j;
-
-                if (x >= 0 && y < image->height && y >= 0 && x < image->width) {
-                    image->r(image->height - 1 - y, image->width - 1 - x) = red[j];
-                    image->g(image->height - 1 - y, image->width - 1 - x) = green[j];
-                    image->b(image->height - 1 - y, image->width - 1 - x) = blue[j];
-                }
-            }
-        } else if ((tran & TR_ROT) == TR_R270) {
-            int end = min(h + fw - i, w - fw + i);
-
-            for (int j = start; j < end; j++) {
-                int y = i + j - fw;
-                int x = fw - i + j;
-
-                if (x >= 0 && x < image->height && y >= 0 && y < image->width) {
-                    image->r(image->height - 1 - x, y) = red[j];
-                    image->g(image->height - 1 - x, y) = green[j];
-                    image->b(image->height - 1 - x, y) = blue[j];
-                }
-            }
-        } else if ((tran & TR_ROT) == TR_R90) {
-            int end = min(h + fw - i, w - fw + i);
-
-            for (int j = start; j < end; j++) {
-                int y = i + j - fw;
-                int x = fw - i + j;
-
-                if (x >= 0 && y < image->width && y >= 0 && x < image->height) {
-                    image->r(x, image->width - 1 - y) = red[j];
-                    image->g(x, image->width - 1 - y) = green[j];
-                    image->b(x, image->width - 1 - y) = blue[j];
-                }
-            }
-        } else {
-            int end = min(h + fw - i, w - fw + i);
-
-            for (int j = start; j < end; j++) {
-                int y = i + j - fw;
-                int x = fw - i + j;
-
-                if (x >= 0 && y < image->height && y >= 0 && x < image->width) {
-                    image->r(y, x) = red[j];
-                    image->g(y, x) = green[j];
-                    image->b(y, x) = blue[j];
-                }
-            }
-        }
-    }
-    // Nikon D1X vertical interpolation + coarse rotation
-    else if (d1x) {
-        // copy new pixels
-        if ((tran & TR_ROT) == TR_R180) {
-            for (int j = 0; j < imwidth; j++) {
-                image->r(2 * imheight - 2 - 2 * i, imwidth - 1 - j) = red[j];
-                image->g(2 * imheight - 2 - 2 * i, imwidth - 1 - j) = green[j];
-                image->b(2 * imheight - 2 - 2 * i, imwidth - 1 - j) = blue[j];
-            }
-
-            if (i == 1 || i == 2) { // linear interpolation
-                int row = 2 * imheight - 1 - 2 * i;
-
-                for (int j = 0; j < imwidth; j++) {
-                    int col = imwidth - 1 - j;
-                    image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
-                    image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
-                    image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
-                }
-            } else if (i == imheight - 1) {
-                int row = 2 * imheight - 1 - 2 * i;
-
-                for (int j = 0; j < imwidth; j++) {
-                    int col = imwidth - 1 - j;
-                    image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
-                    image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
-                    image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
-                }
-
-                row = 2 * imheight - 1 - 2 * i + 2;
-
-                for (int j = 0; j < imwidth; j++) {
-                    int col = imwidth - 1 - j;
-                    image->r(row, col) = (red[j] + image->r(row + 1, col)) / 2;
-                    image->g(row, col) = (green[j] + image->g(row + 1, col)) / 2;
-                    image->b(row, col) = (blue[j] + image->b(row + 1, col)) / 2;
-                }
-            } else if (i > 2 && i < imheight - 1) { // vertical bicubic interpolation
-                int row = 2 * imheight - 1 - 2 * i + 2;
-
-                for (int j = 0; j < imwidth; j++) {
-                    int col = imwidth - 1 - j;
-                    image->r(row, col) = CLIP((int)(-0.0625 * red[j] + 0.5625 * image->r(row - 1, col) + 0.5625 * image->r(row + 1, col) - 0.0625 * image->r(row + 3, col)));
-                    image->g(row, col) = CLIP((int)(-0.0625 * green[j] + 0.5625 * image->g(row - 1, col) + 0.5625 * image->g(row + 1, col) - 0.0625 * image->g(row + 3, col)));
-                    image->b(row, col) = CLIP((int)(-0.0625 * blue[j] + 0.5625 * image->b(row - 1, col) + 0.5625 * image->b(row + 1, col) - 0.0625 * image->b(row + 3, col)));
-                }
-            }
-        } else if ((tran & TR_ROT) == TR_R90) {
-            for (int j = 0; j < imwidth; j++) {
-                image->r(j, 2 * imheight - 2 - 2 * i) = red[j];
-                image->g(j, 2 * imheight - 2 - 2 * i) = green[j];
-                image->b(j, 2 * imheight - 2 - 2 * i) = blue[j];
-            }
-
-            if (i == 1 || i == 2) { // linear interpolation
-                int col = 2 * imheight - 1 - 2 * i;
-
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
-                    image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
-                    image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
-                }
-            } else if (i == imheight - 1) {
-                int col = 2 * imheight - 1 - 2 * i;
-
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
-                    image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
-                    image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
-                }
-
-                col = 2 * imheight - 1 - 2 * i + 2;
-
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(j, col) = (red[j] + image->r(j, col + 1)) / 2;
-                    image->g(j, col) = (green[j] + image->g(j, col + 1)) / 2;
-                    image->b(j, col) = (blue[j] + image->b(j, col + 1)) / 2;
-                }
-            } else if (i > 2 && i < imheight - 1) { // vertical bicubic interpolation
-                int col = 2 * imheight - 1 - 2 * i + 2;
-
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(j, col) = CLIP((int)(-0.0625 * red[j] + 0.5625 * image->r(j, col - 1) + 0.5625 * image->r(j, col + 1) - 0.0625 * image->r(j, col + 3)));
-                    image->g(j, col) = CLIP((int)(-0.0625 * green[j] + 0.5625 * image->g(j, col - 1) + 0.5625 * image->g(j, col + 1) - 0.0625 * image->g(j, col + 3)));
-                    image->b(j, col) = CLIP((int)(-0.0625 * blue[j] + 0.5625 * image->b(j, col - 1) + 0.5625 * image->b(j, col + 1) - 0.0625 * image->b(j, col + 3)));
-                }
-            }
-        } else if ((tran & TR_ROT) == TR_R270) {
-            for (int j = 0; j < imwidth; j++) {
-                image->r(imwidth - 1 - j, 2 * i) = red[j];
-                image->g(imwidth - 1 - j, 2 * i) = green[j];
-                image->b(imwidth - 1 - j, 2 * i) = blue[j];
-            }
-
-            if (i == 1 || i == 2) { // linear interpolation
-                for (int j = 0; j < imwidth; j++) {
-                    int row = imwidth - 1 - j;
-                    image->r(row, 2 * i - 1) = (red[j] + image->r(row, 2 * i - 2)) * 0.5f;
-                    image->g(row, 2 * i - 1) = (green[j] + image->g(row, 2 * i - 2)) * 0.5f;
-                    image->b(row, 2 * i - 1) = (blue[j] + image->b(row, 2 * i - 2)) * 0.5f;
-                }
-            } else if (i == imheight - 1) {
-                for (int j = 0; j < imwidth; j++) {
-                    int row = imwidth - 1 - j;
-                    image->r(row, 2 * i - 1) = (red[j] + image->r(row, 2 * i - 2)) * 0.5f;
-                    image->g(row, 2 * i - 1) = (green[j] + image->g(row, 2 * i - 2)) * 0.5f;
-                    image->b(row, 2 * i - 1) = (blue[j] + image->b(row, 2 * i - 2)) * 0.5f;
-                    image->r(row, 2 * i - 3) = (image->r(row, 2 * i - 2) + image->r(row, 2 * i - 4)) * 0.5f;
-                    image->g(row, 2 * i - 3) = (image->g(row, 2 * i - 2) + image->g(row, 2 * i - 4)) * 0.5f;
-                    image->b(row, 2 * i - 3) = (image->b(row, 2 * i - 2) + image->b(row, 2 * i - 4)) * 0.5f;
-                }
-            } else if (i > 0 && i < imheight - 1) { // vertical bicubic interpolationi
-                for (int j = 0; j < imwidth; j++) {
-                    int row = imwidth - 1 - j;
-                    image->r(row, 2 * i - 3) = CLIP((int)(-0.0625 * red[j] + 0.5625 * image->r(row, 2 * i - 2) + 0.5625 * image->r(row, 2 * i - 4) - 0.0625 * image->r(row, 2 * i - 6)));
-                    image->g(row, 2 * i - 3) = CLIP((int)(-0.0625 * green[j] + 0.5625 * image->g(row, 2 * i - 2) + 0.5625 * image->g(row, 2 * i - 4) - 0.0625 * image->g(row, 2 * i - 6)));
-                    image->b(row, 2 * i - 3) = CLIP((int)(-0.0625 * blue[j] + 0.5625 * image->b(row, 2 * i - 2) + 0.5625 * image->b(row, 2 * i - 4) - 0.0625 * image->b(row, 2 * i - 6)));
-                }
-            }
-        } else {
-            rotateLine (red, image->r, tran, 2 * i, imwidth, imheight);
-            rotateLine (green, image->g, tran, 2 * i, imwidth, imheight);
-            rotateLine (blue, image->b, tran, 2 * i, imwidth, imheight);
-
-            if (i == 1 || i == 2) { // linear interpolation
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(2 * i - 1, j) = (red[j] + image->r(2 * i - 2, j)) / 2;
-                    image->g(2 * i - 1, j) = (green[j] + image->g(2 * i - 2, j)) / 2;
-                    image->b(2 * i - 1, j) = (blue[j] + image->b(2 * i - 2, j)) / 2;
-                }
-            } else if (i == imheight - 1) {
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(2 * i - 3, j) = (image->r(2 * i - 4, j) + image->r(2 * i - 2, j)) / 2;
-                    image->g(2 * i - 3, j) = (image->g(2 * i - 4, j) + image->g(2 * i - 2, j)) / 2;
-                    image->b(2 * i - 3, j) = (image->b(2 * i - 4, j) + image->b(2 * i - 2, j)) / 2;
-                    image->r(2 * i - 1, j) = (red[j] + image->r(2 * i - 2, j)) / 2;
-                    image->g(2 * i - 1, j) = (green[j] + image->g(2 * i - 2, j)) / 2;
-                    image->b(2 * i - 1, j) = (blue[j] + image->b(2 * i - 2, j)) / 2;
-                }
-            } else if (i > 2 && i < imheight - 1) { // vertical bicubic interpolationi
-                for (int j = 0; j < imwidth; j++) {
-                    image->r(2 * i - 3, j) = CLIP((int)(-0.0625 * red[j] + 0.5625 * image->r(2 * i - 2, j) + 0.5625 * image->r(2 * i - 4, j) - 0.0625 * image->r(2 * i - 6, j)));
-                    image->g(2 * i - 3, j) = CLIP((int)(-0.0625 * green[j] + 0.5625 * image->g(2 * i - 2, j) + 0.5625 * image->g(2 * i - 4, j) - 0.0625 * image->g(2 * i - 6, j)));
-                    image->b(2 * i - 3, j) = CLIP((int)(-0.0625 * blue[j] + 0.5625 * image->b(2 * i - 2, j) + 0.5625 * image->b(2 * i - 4, j) - 0.0625 * image->b(2 * i - 6, j)));
-                }
-            }
-        }
-    }  // if nikon dx1
-    // other (conventional) CCD coarse rotation
-    else {
-        rotateLine (red, image->r, tran, i, imwidth, imheight);
-        rotateLine (green, image->g, tran, i, imwidth, imheight);
-        rotateLine (blue, image->b, tran, i, imwidth, imheight);
-    }
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1296,7 +1456,7 @@ void RawImageSource::getFullSize (int& w, int& h, int tr)
         h = (H - ri->get_FujiWidth()) * 2 + 1;
     } else if (d1x) {
         w = W;
-        h = 2 * H - 1;
+        h = 2 * H;
     } else {
         w = W;
         h = H;
@@ -1318,17 +1478,8 @@ void RawImageSource::getSize (int tran, PreviewProps pp, int& w, int& h)
 {
 
     tran = defTransform (tran);
-
-//    if (fuji) {
-//        return;
-//    }
-//    else if (d1x) {
-//        return;
-//    }
-//    else {
     w = pp.w / pp.skip + (pp.w % pp.skip > 0);
     h = pp.h / pp.skip + (pp.h % pp.skip > 0);
-//    }
 }
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1388,10 +1539,6 @@ int RawImageSource::load (Glib::ustring fname, bool batch)
     inverse33 (imatrices.rgb_cam, imatrices.cam_rgb);
 
     d1x  = ! ri->get_model().compare("D1X");
-
-    if (d1x) {
-        border = 8;
-    }
 
     if(ri->getSensorType() == ST_FUJI_XTRANS) {
         border = 7;
@@ -1539,7 +1686,10 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
     int totBP = 0; // Hold count of bad pixels to correct
 
     if(ri->zeroIsBad()) { // mark all pixels with value zero as bad, has to be called before FF and DF. dcraw sets this flag only for some cameras (mainly Panasonic and Leica)
+#ifdef _OPENMP
         #pragma omp parallel for reduction(+:totBP)
+#endif
+
         for(int i = 0; i < H; i++)
             for(int j = 0; j < W; j++) {
                 if(ri->data[i][j] == 0.f) {
@@ -1614,7 +1764,9 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
         if (pLCPProf && idata->getFocalLen() > 0.f) {
             LCPMapper map(pLCPProf, idata->getFocalLen(), idata->getFocalLen35mm(), idata->getFocusDist(), idata->getFNumber(), true, false, W, H, coarse, -1);
 
+#ifdef _OPENMP
             #pragma omp parallel for
+#endif
 
             for (int y = 0; y < H; y++) {
                 for (int x = 0; x < W; x++) {
@@ -1648,7 +1800,9 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
         int ng1 = 0, ng2 = 0, i = 0;
         double avgg1 = 0., avgg2 = 0.;
 
+#ifdef _OPENMP
         #pragma omp parallel for default(shared) private(i) reduction(+: ng1, ng2, avgg1, avgg2)
+#endif
 
         for (i = border; i < H - border; i++)
             for (int j = border; j < W - border; j++)
@@ -1665,7 +1819,9 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
         double corrg1 = ((double)avgg1 / ng1 + (double)avgg2 / ng2) / 2.0 / ((double)avgg1 / ng1);
         double corrg2 = ((double)avgg1 / ng1 + (double)avgg2 / ng2) / 2.0 / ((double)avgg2 / ng2);
 
+#ifdef _OPENMP
         #pragma omp parallel for default(shared)
+#endif
 
         for (int i = border; i < H - border; i++)
             for (int j = border; j < W - border; j++)
@@ -1710,7 +1866,7 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
             plistener->setProgress (0.0);
         }
 
-        CA_correct_RT(raw.cared, raw.cablue);
+        CA_correct_RT(raw.cared, raw.cablue, 10.0 - raw.caautostrength);
     }
 
     if ( raw.expos != 1 ) {
@@ -1734,7 +1890,6 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
 
     return;
 }
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 void RawImageSource::demosaic(const RAWParams &raw)
@@ -1788,7 +1943,9 @@ void RawImageSource::demosaic(const RAWParams &raw)
 
     t2.set();
 
+
     rgbSourceModified = false;
+
 
     if( settings->verbose ) {
         if (getSensorType() == ST_BAYER) {
@@ -1796,6 +1953,613 @@ void RawImageSource::demosaic(const RAWParams &raw)
         } else if (getSensorType() == ST_FUJI_XTRANS) {
             printf("Demosaicing X-Trans data: %s - %d usec\n", raw.xtranssensor.method.c_str(), t2.etime(t1));
         }
+    }
+}
+
+
+//void RawImageSource::retinexPrepareBuffers(ColorManagementParams cmp, RetinexParams retinexParams, multi_array2D<float, 3> &conversionBuffer, LUTu &lhist16RETI)
+void RawImageSource::retinexPrepareBuffers(ColorManagementParams cmp, RetinexParams retinexParams, multi_array2D<float, 4> &conversionBuffer, LUTu &lhist16RETI)
+{
+    bool useHsl = (retinexParams.retinexcolorspace == "HSLLOG" || retinexParams.retinexcolorspace == "HSLLIN");
+    conversionBuffer[0] (W - 2 * border, H - 2 * border);
+    conversionBuffer[1] (W - 2 * border, H - 2 * border);
+    conversionBuffer[2] (W - 2 * border, H - 2 * border);
+    conversionBuffer[3] (W - 2 * border, H - 2 * border);
+
+    LUTf *retinexgamtab;//gamma before and after Retinex to restore tones
+    LUTf lutTonereti;
+    lutTonereti(65536);
+
+    if(retinexParams.gammaretinex == "low") {
+        retinexgamtab = &(Color::gammatab_115_2);
+    } else if(retinexParams.gammaretinex == "mid") {
+        retinexgamtab = &(Color::gammatab_13_2);
+    } else if(retinexParams.gammaretinex == "hig") {
+        retinexgamtab = &(Color::gammatab_145_3);
+    } else if(retinexParams.gammaretinex == "fre") {
+        double g_a0, g_a1, g_a2, g_a3, g_a4, g_a5;
+        double pwr = 1.0 / retinexParams.gam;
+        double gamm = retinexParams.gam;
+        double ts = retinexParams.slope;
+        double gamm2 = retinexParams.gam;
+
+        if(gamm2 < 1.) {
+            pwr = 1. / pwr;
+            gamm = 1. / gamm;
+        }
+
+        int mode = 0, imax = 0;
+        Color::calcGamma(pwr, ts, mode, imax, g_a0, g_a1, g_a2, g_a3, g_a4, g_a5); // call to calcGamma with selected gamma and slope
+
+        //    printf("g_a0=%f g_a1=%f g_a2=%f g_a3=%f g_a4=%f\n", g_a0,g_a1,g_a2,g_a3,g_a4);
+        for (int i = 0; i < 65536; i++) {
+            double val = (i) / 65535.;
+            double start = g_a3;
+            double add = g_a4;
+            double mul = 1. + g_a4;
+            double x;
+
+            if(gamm2 < 1.) {
+                start = g_a2;
+                add = g_a4;
+                x = Color::igammareti (val, gamm, start, ts, mul , add);
+            } else {
+                x = Color::gammareti (val, gamm, start, ts, mul , add);
+            }
+
+            lutTonereti[i] = CLIP(x * 65535.);// CLIP avoid in some case extra values
+        }
+
+        retinexgamtab = &lutTonereti;
+    }
+
+    /*
+    //test with amsterdam.pef and other files
+    float rr,gg,bb;
+    rr=red[50][2300];
+    gg=green[50][2300];
+    bb=blue[50][2300];
+    printf("rr=%f gg=%f bb=%f \n",rr,gg,bb);
+    rr=red[1630][370];
+    gg=green[1630][370];
+    bb=blue[1630][370];
+    printf("rr1=%f gg1=%f bb1=%f \n",rr,gg,bb);
+    rr=red[380][1630];
+    gg=green[380][1630];
+    bb=blue[380][1630];
+    printf("rr2=%f gg2=%f bb2=%f \n",rr,gg,bb);
+    */
+    /*
+    if(retinexParams.highlig < 100 && retinexParams.retinexMethod == "highliplus") {//try to recover magenta...very difficult !
+        float hig = ((float)retinexParams.highlig)/100.f;
+        float higgb = ((float)retinexParams.grbl)/100.f;
+
+    #ifdef _OPENMP
+            #pragma omp parallel for
+    #endif
+            for (int i = border; i < H - border; i++ ) {
+                for (int j = border; j < W - border; j++ ) {
+                    float R_,G_,B_;
+                    R_=red[i][j];
+                    G_=green[i][j];
+                    B_=blue[i][j];
+
+                    //empirical method to find highlight magenta with no conversion RGB and no white balance
+                    //red = master   Gr and Bl default higgb=0.5
+         //           if(R_>65535.f*hig  && G_ > 65535.f*higgb && B_ > 65535.f*higgb) conversionBuffer[3][i - border][j - border] = R_;
+          //          else conversionBuffer[3][i - border][j - border] = 0.f;
+                }
+            }
+    }
+    */
+    if(retinexParams.gammaretinex != "none" && retinexParams.str != 0) {//gamma
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = border; i < H - border; i++ ) {
+            for (int j = border; j < W - border; j++ ) {
+                float R_, G_, B_;
+                R_ = red[i][j];
+                G_ = green[i][j];
+                B_ = blue[i][j];
+
+                red[i][j] = (*retinexgamtab)[R_];
+                green[i][j] = (*retinexgamtab)[G_];
+                blue[i][j] = (*retinexgamtab)[B_];
+            }
+        }
+    }
+
+    if(useHsl) {
+#ifdef _OPENMP
+        #pragma omp parallel
+#endif
+        {
+            // one LUT per thread
+            LUTu lhist16RETIThr;
+
+            if(lhist16RETI)
+            {
+                lhist16RETIThr(32769, 0);
+                lhist16RETIThr.clear();
+            }
+
+#ifdef __SSE2__
+            vfloat c32768 = F2V(32768.f);
+#endif
+#ifdef _OPENMP
+            #pragma omp for
+#endif
+
+            for (int i = border; i < H - border; i++ )
+            {
+                int j = border;
+#ifdef __SSE2__
+
+                for (; j < W - border - 3; j += 4) {
+                    vfloat H, S, L;
+                    int pos;
+                    Color::rgb2hsl(LVFU(red[i][j]), LVFU(green[i][j]), LVFU(blue[i][j]), H, S, L);
+                    STVFU(conversionBuffer[0][i - border][j - border], H);
+                    STVFU(conversionBuffer[1][i - border][j - border], S);
+                    L *= c32768;
+                    STVFU(conversionBuffer[2][i - border][j - border], L);
+                    STVFU(conversionBuffer[3][i - border][j - border], H);
+
+                    if(lhist16RETI) {
+                        for(int p = 0; p < 4; p++) {
+                            pos =  (int) clipretinex( conversionBuffer[2][i - border][j - border + p], 0.f, 32768.f);//histogram in curve HSL
+                            lhist16RETIThr[pos]++;
+                        }
+                    }
+                }
+
+#endif
+
+                for (; j < W - border; j++) {
+                    float H, S, L;
+                    int pos;
+                    //rgb=>lab
+                    Color::rgb2hslfloat(red[i][j], green[i][j], blue[i][j], conversionBuffer[0][i - border][j - border], conversionBuffer[1][i - border][j - border], L);
+                    L *= 32768.f;
+                    conversionBuffer[2][i - border][j - border] = L;
+
+                    if(lhist16RETI) {
+                        pos =  (int) clipretinex(L, 0, 32768);
+                        lhist16RETIThr[pos]++;
+                    }
+                }
+            }
+
+#ifdef _OPENMP
+            #pragma omp critical
+            {
+                if(lhist16RETI)
+                {
+                    // Add per Thread LUT to global LUT
+                    for(int i = 0; i < 32769; i++) {
+                        lhist16RETI[i] += lhist16RETIThr[i];
+                    }
+                }
+            }
+#endif
+
+        }
+    } else {
+        TMatrix wprof = iccStore->workingSpaceMatrix (cmp.working);
+        double wp[3][3] = {
+            {wprof[0][0], wprof[0][1], wprof[0][2]},
+            {wprof[1][0], wprof[1][1], wprof[1][2]},
+            {wprof[2][0], wprof[2][1], wprof[2][2]}
+        };
+
+        // Conversion rgb -> lab is hard to vectorize because it uses a lut (that's not the main problem)
+        // and it uses a condition inside XYZ2Lab which is almost impossible to vectorize without making it slower...
+#ifdef _OPENMP
+        #pragma omp parallel
+#endif
+        {
+            // one LUT per thread
+            LUTu lhist16RETIThr;
+
+            if(lhist16RETI) {
+                lhist16RETIThr(32769, 0);
+                lhist16RETIThr.clear();
+            }
+
+#ifdef _OPENMP
+            #pragma omp for
+#endif
+
+            for (int i = border; i < H - border; i++ )
+                for (int j = border; j < W - border; j++) {
+                    float X, Y, Z, L, aa, bb;
+                    int pos;
+                    float R_, G_, B_;
+                    R_ = red[i][j];
+                    G_ = green[i][j];
+                    B_ = blue[i][j];
+                    float k;
+                    //rgb=>lab
+                    Color::rgbxyz(R_, G_, B_, X, Y, Z, wp);
+                    //convert Lab
+                    Color::XYZ2Lab(X, Y, Z, L, aa, bb);
+                    conversionBuffer[0][i - border][j - border] = aa;
+                    conversionBuffer[1][i - border][j - border] = bb;
+                    conversionBuffer[2][i - border][j - border] = L;
+                    conversionBuffer[3][i - border][j - border] = xatan2f(bb, aa);
+
+//                   if(R_>40000.f  && G_ > 30000.f && B_ > 30000.f) conversionBuffer[3][i - border][j - border] = R_;
+//                   else conversionBuffer[3][i - border][j - border] = 0.f;
+                    if(lhist16RETI) {
+                        pos =  (int) clipretinex(L, 0, 32768);
+                        lhist16RETIThr[pos]++;//histogram in Curve Lab
+                    }
+                }
+
+#ifdef _OPENMP
+            #pragma omp critical
+            {
+                if(lhist16RETI) {
+                    // Add per Thread LUT to global LUT
+                    for(int i = 0; i < 32769; i++) {
+                        lhist16RETI[i] += lhist16RETIThr[i];
+                    }
+                }
+            }
+#endif
+
+        }
+    }
+
+
+
+}
+
+void RawImageSource::retinexPrepareCurves(RetinexParams retinexParams, LUTf &cdcurve, LUTf &mapcurve, RetinextransmissionCurve &retinextransmissionCurve, bool &retinexcontlutili, bool &mapcontlutili, bool &useHsl, LUTu & lhist16RETI, LUTu & histLRETI)
+{
+    useHsl = (retinexParams.retinexcolorspace == "HSLLOG" || retinexParams.retinexcolorspace == "HSLLIN");
+
+    if(useHsl) {
+        CurveFactory::curveDehaContL (retinexcontlutili, retinexParams.cdHcurve, cdcurve, 1, lhist16RETI, histLRETI);
+    } else {
+        CurveFactory::curveDehaContL (retinexcontlutili, retinexParams.cdcurve, cdcurve, 1, lhist16RETI, histLRETI);
+    }
+
+    CurveFactory::mapcurve (mapcontlutili, retinexParams.mapcurve, mapcurve, 1, lhist16RETI, histLRETI);
+
+    retinexParams.getCurves(retinextransmissionCurve);
+}
+
+//void RawImageSource::retinex(ColorManagementParams cmp, RetinexParams deh, ToneCurveParams Tc, LUTf & cdcurve, const RetinextransmissionCurve & dehatransmissionCurve, multi_array2D<float, 3> &conversionBuffer, bool dehacontlutili, bool useHsl, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax, LUTu &histLRETI)
+void RawImageSource::retinex(ColorManagementParams cmp, RetinexParams deh, ToneCurveParams Tc, LUTf & cdcurve, LUTf & mapcurve, const RetinextransmissionCurve & dehatransmissionCurve, multi_array2D<float, 4> &conversionBuffer, bool dehacontlutili, bool mapcontlutili, bool useHsl, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax, LUTu &histLRETI)
+{
+
+    MyTime t4, t5;
+    t4.set();
+
+    if (settings->verbose) {
+        printf ("Applying Retinex\n");
+    }
+
+    LUTf lutToneireti;
+    lutToneireti(65536);
+
+    LUTf *retinexigamtab;//gamma before and after Retinex to restore tones
+
+    if(deh.gammaretinex == "low") {
+        retinexigamtab = &(Color::igammatab_115_2);
+    } else if(deh.gammaretinex == "mid") {
+        retinexigamtab = &(Color::igammatab_13_2);
+    } else if(deh.gammaretinex == "hig") {
+        retinexigamtab = &(Color::igammatab_145_3);
+    } else if(deh.gammaretinex == "fre") {
+        double g_a0, g_a1, g_a2, g_a3, g_a4, g_a5;
+        double pwr = 1.0 / deh.gam;
+        double gamm = deh.gam;
+        double gamm2 = gamm;
+        double ts = deh.slope;
+        int mode = 0, imax = 0;
+
+        if(gamm2 < 1.) {
+            pwr = 1. / pwr;
+            gamm = 1. / gamm;
+        }
+
+        Color::calcGamma(pwr, ts, mode, imax, g_a0, g_a1, g_a2, g_a3, g_a4, g_a5); // call to calcGamma with selected gamma and slope
+
+        //    printf("g_a0=%f g_a1=%f g_a2=%f g_a3=%f g_a4=%f\n", g_a0,g_a1,g_a2,g_a3,g_a4);
+        for (int i = 0; i < 65536; i++) {
+            double val = (i) / 65535.;
+            double x;
+            double mul = 1. + g_a4;
+            double add = g_a4;
+            double start = g_a2;
+
+            if(gamm2 < 1.) {
+                start = g_a3;
+                add = g_a3;
+                x = Color::gammareti (val, gamm, start, ts, mul , add);
+            } else {
+                x = Color::igammareti (val, gamm, start, ts, mul , add);
+            }
+
+            lutToneireti[i] = CLIP(x * 65535.);
+        }
+
+        retinexigamtab = &lutToneireti;
+    }
+
+    // We need a buffer with original L data to allow correct blending
+    // red, green and blue still have original size of raw, but we can't use the borders
+    const int HNew = H - 2 * border;
+    const int WNew = W - 2 * border;
+
+    array2D<float> LBuffer (WNew, HNew);
+    float **temp = conversionBuffer[2]; // one less dereference
+    LUTf dLcurve;
+    LUTu hist16RET;
+    float val;
+
+    if(dehacontlutili && histLRETI) {
+        hist16RET(32769, 0);
+        hist16RET.clear();
+        histLRETI.clear();
+        dLcurve(32769, 0);
+        dLcurve.clear();
+    }
+
+    FlatCurve* chcurve = NULL;//curve c=f(H)
+    bool chutili = false;
+
+    if (deh.enabled && deh.retinexMethod == "highli") {
+        chcurve = new FlatCurve(deh.lhcurve);
+
+        if (!chcurve || chcurve->isIdentity()) {
+            if (chcurve) {
+                delete chcurve;
+                chcurve = NULL;
+            }
+        } else {
+            chutili = true;
+        }
+    }
+
+
+
+#ifdef _OPENMP
+    #pragma omp parallel
+#endif
+    {
+        // one LUT per thread
+        LUTu hist16RETThr;
+
+        if(dehacontlutili && histLRETI) {
+            hist16RETThr(32769, 0);
+            hist16RETThr.clear();
+        }
+
+#ifdef _OPENMP
+        #pragma omp for
+#endif
+
+        for (int i = 0; i < H - 2 * border; i++ )
+            if(dehacontlutili)
+                for (int j = 0; j < W - 2 * border; j++) {
+                    LBuffer[i][j] = cdcurve[2.f * temp[i][j]] / 2.f;
+
+                    if(histLRETI) {
+                        int pos = (int) clipretinex(LBuffer[i][j], 0.f, 32768.f);
+                        hist16RETThr[pos]++; //histogram in Curve
+                    }
+                }
+            else
+                for (int j = 0; j < W - 2 * border; j++) {
+                    LBuffer[i][j] = temp[i][j];
+                }
+
+#ifdef _OPENMP
+        #pragma omp critical
+#endif
+        {
+            if(dehacontlutili && histLRETI) {
+                // Add per Thread LUT to global LUT
+                for(int i = 0; i < 32769; i++) {
+                    hist16RET[i] += hist16RETThr[i];
+                }
+            }
+        }
+    }
+
+    if(dehacontlutili && histLRETI) {//update histogram
+        for (int i = 0; i < 32768; i++) {
+            val = (double)i / 32767.0;
+            dLcurve[i] = CLIPD(val);
+        }
+
+        for (int i = 0; i < 32768; i++) {
+            float hval = dLcurve[i];
+            int hi = (int)(255.0f * CLIPD(hval));
+            histLRETI[hi] += hist16RET[i];
+        }
+    }
+
+    MSR(LBuffer, conversionBuffer[2], conversionBuffer[3], mapcurve, mapcontlutili, WNew, HNew, deh, dehatransmissionCurve, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+
+    if(useHsl) {
+        if(chutili) {
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
+            for (int i = border; i < H - border; i++ ) {
+                int j = border;
+
+                for (; j < W - border; j++) {
+
+                    float valp;
+                    float chr;
+                    //   if(chutili) {  // c=f(H)
+                    {
+                        valp = float((chcurve->getVal(conversionBuffer[3][i - border][j - border]) - 0.5f));
+
+                        conversionBuffer[1][i - border][j - border] *= (1.f + 2.f * valp);
+                    }
+                    //    }
+
+                }
+            }
+        }
+
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = border; i < H - border; i++ ) {
+            int j = border;
+#ifdef __SSE2__
+            vfloat c32768 = F2V(32768.f);
+
+            for (; j < W - border - 3; j += 4) {
+                vfloat R, G, B;
+                Color::hsl2rgb(LVFU(conversionBuffer[0][i - border][j - border]), LVFU(conversionBuffer[1][i - border][j - border]), LVFU(LBuffer[i - border][j - border]) / c32768, R, G, B);
+
+                STVFU(red[i][j], R);
+                STVFU(green[i][j], G);
+                STVFU(blue[i][j], B);
+            }
+
+#endif
+
+            for (; j < W - border; j++) {
+                Color::hsl2rgbfloat(conversionBuffer[0][i - border][j - border], conversionBuffer[1][i - border][j - border], LBuffer[i - border][j - border] / 32768.f, red[i][j], green[i][j], blue[i][j]);
+            }
+        }
+
+    } else {
+        TMatrix wiprof = iccStore->workingSpaceInverseMatrix (cmp.working);
+
+        double wip[3][3] = {
+            {wiprof[0][0], wiprof[0][1], wiprof[0][2]},
+            {wiprof[1][0], wiprof[1][1], wiprof[1][2]},
+            {wiprof[2][0], wiprof[2][1], wiprof[2][2]}
+        };
+        // gamut control only in Lab mode
+        const bool highlight = Tc.hrenabled;
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = border; i < H - border; i++ ) {
+            for (int j = border; j < W - border; j++) {
+
+                float Lprov1 = (LBuffer[i - border][j - border]) / 327.68f;
+                float Chprov1 = sqrt(SQR(conversionBuffer[0][i - border][j - border]) + SQR(conversionBuffer[1][i - border][j - border])) / 327.68f;
+                float  HH = xatan2f(conversionBuffer[1][i - border][j - border], conversionBuffer[0][i - border][j - border]);
+                float2 sincosval;
+                float valp;
+                float chr;
+
+                if(chutili) {  // c=f(H)
+                    {
+                        valp = float((chcurve->getVal(Color::huelab_to_huehsv2(HH)) - 0.5f));
+                        Chprov1 *= (1.f + 2.f * valp);
+                    }
+                }
+
+                sincosval = xsincosf(HH);
+                float R, G, B;
+#ifdef _DEBUG
+                bool neg = false;
+                bool more_rgb = false;
+                //gamut control : Lab values are in gamut
+                Color::gamutLchonly(HH, sincosval, Lprov1, Chprov1, R, G, B, wip, highlight, 0.15f, 0.96f, neg, more_rgb);
+#else
+                //gamut control : Lab values are in gamut
+                Color::gamutLchonly(HH, sincosval, Lprov1, Chprov1, R, G, B, wip, highlight, 0.15f, 0.96f);
+#endif
+
+
+
+                conversionBuffer[0][i - border][j - border] = 327.68f * Chprov1 * sincosval.y;
+                conversionBuffer[1][i - border][j - border] = 327.68f * Chprov1 * sincosval.x;
+                LBuffer[i - border][j - border] = Lprov1 * 327.68f;
+            }
+        }
+
+        //end gamut control
+#ifdef __SSE2__
+        vfloat wipv[3][3];
+
+        for(int i = 0; i < 3; i++)
+            for(int j = 0; j < 3; j++) {
+                wipv[i][j] = F2V(wiprof[i][j]);
+            }
+
+#endif // __SSE2__
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = border; i < H - border; i++ ) {
+            int j = border;
+#ifdef __SSE2__
+
+            for (; j < W - border - 3; j += 4) {
+                vfloat x_, y_, z_;
+                vfloat R, G, B;
+                Color::Lab2XYZ(LVFU(LBuffer[i - border][j - border]), LVFU(conversionBuffer[0][i - border][j - border]), LVFU(conversionBuffer[1][i - border][j - border]), x_, y_, z_) ;
+                Color::xyz2rgb(x_, y_, z_, R, G, B, wipv);
+
+                STVFU(red[i][j], R);
+                STVFU(green[i][j], G);
+                STVFU(blue[i][j], B);
+
+            }
+
+#endif
+
+            for (; j < W - border; j++) {
+                float x_, y_, z_;
+                float R, G, B;
+                Color::Lab2XYZ(LBuffer[i - border][j - border], conversionBuffer[0][i - border][j - border], conversionBuffer[1][i - border][j - border], x_, y_, z_) ;
+                Color::xyz2rgb(x_, y_, z_, R, G, B, wip);
+                red[i][j] = R;
+                green[i][j] = G;
+                blue[i][j] = B;
+            }
+        }
+    }
+
+    if (chcurve) {
+        delete chcurve;
+    }
+
+    if(deh.gammaretinex != "none"  && deh.str != 0) { //inverse gamma
+#ifdef _OPENMP
+        #pragma omp parallel for
+#endif
+
+        for (int i = border; i < H - border; i++ ) {
+            for (int j = border; j < W - border; j++ ) {
+                float R_, G_, B_;
+                R_ = red[i][j];
+                G_ = green[i][j];
+                B_ = blue[i][j];
+                red[i][j] = (*retinexigamtab)[R_];
+                green[i][j] = (*retinexigamtab)[G_];
+                blue[i][j] = (*retinexigamtab)[B_];
+            }
+        }
+    }
+
+    rgbSourceModified = false; // tricky handling for Color propagation
+
+    t5.set();
+
+    if( settings->verbose ) {
+        printf("Retinex=%d usec\n",  t5.etime(t4));
     }
 
 }
@@ -1827,7 +2591,7 @@ void RawImageSource::flushRGB()
     }
 }
 
-void RawImageSource::HLRecovery_Global(ToneCurveParams hrp )
+void RawImageSource::HLRecovery_Global(ToneCurveParams hrp)
 {
     if (hrp.hrenabled && hrp.method == "Color") {
         if(!rgbSourceModified) {
@@ -1839,6 +2603,7 @@ void RawImageSource::HLRecovery_Global(ToneCurveParams hrp )
             rgbSourceModified = true;
         }
     }
+
 }
 
 
@@ -1885,10 +2650,14 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
                     float maxval = 0.f;
                     int c  = FC(m, n);
                     int c4 = ( c == 1 && !(m & 1) ) ? 3 : c;
+#ifdef _OPENMP
                     #pragma omp parallel
+#endif
                     {
                         float maxvalthr = 0.f;
+#ifdef _OPENMP
                         #pragma omp for
+#endif
 
                         for (int row = 0; row < H - m; row += 2) {
                             for (int col = 0; col < W - n; col += 2) {
@@ -1900,7 +2669,9 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
                             }
                         }
 
+#ifdef _OPENMP
                         #pragma omp critical
+#endif
                         {
 
                             if(maxvalthr > maxval) {
@@ -1930,11 +2701,15 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
 
         for (int m = 0; m < 2; m++)
             for (int n = 0; n < 2; n++) {
+#ifdef _OPENMP
                 #pragma omp parallel
+#endif
                 {
                     int c  = FC(m, n);
                     int c4 = ( c == 1 && !(m & 1) ) ? 3 : c;
+#ifdef _OPENMP
                     #pragma omp for
+#endif
 
                     for (int row = 0; row < H - m; row += 2)
                     {
@@ -1970,10 +2745,14 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
             int clipControlGui = 0;
             float maxval = 0.f;
             // xtrans files have only one black level actually, so we can simplify the code a bit
+#ifdef _OPENMP
             #pragma omp parallel
+#endif
             {
                 float maxvalthr = 0.f;
+#ifdef _OPENMP
                 #pragma omp for schedule(dynamic,16) nowait
+#endif
 
                 for (int row = 0; row < H; row++) {
                     for (int col = 0; col < W; col++) {
@@ -1985,7 +2764,9 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
                     }
                 }
 
+#ifdef _OPENMP
                 #pragma omp critical
+#endif
                 {
                     if(maxvalthr > maxval) {
                         maxval = maxvalthr;
@@ -2007,7 +2788,9 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
             refcolor[c] *= limitFactor;
         }
 
+#ifdef _OPENMP
         #pragma omp parallel for
+#endif
 
         for (int row = 0; row < H; row++) {
             for (int col = 0; col < W; col++) {
@@ -2030,7 +2813,9 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
         if(ri->getSensorType() == ST_BAYER) {
             for (int m = 0; m < 2; m++)
                 for (int n = 0; n < 2; n++) {
+#ifdef _OPENMP
                     #pragma omp parallel for
+#endif
 
                     for (int row = 0; row < H - m; row += 2) {
                         int c  = FC(row, 0);
@@ -2044,7 +2829,9 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
                     }
                 }
         } else if(ri->getSensorType() == ST_FUJI_XTRANS) {
+#ifdef _OPENMP
             #pragma omp parallel for
+#endif
 
             for (int row = 0; row < H; row++) {
                 for (int col = 0; col < W; col++) {
@@ -2071,7 +2858,11 @@ void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile
  */
 void RawImageSource::copyOriginalPixels(const RAWParams &raw, RawImage *src, RawImage *riDark, RawImage *riFlatFile )
 {
-    unsigned short black[4] = {ri->get_cblack(0), ri->get_cblack(1), ri->get_cblack(2), ri->get_cblack(3)};
+    // TODO: Change type of black[] to float to avoid conversions
+    unsigned short black[4] = {
+        (unsigned short)ri->get_cblack(0), (unsigned short)ri->get_cblack(1),
+        (unsigned short)ri->get_cblack(2), (unsigned short)ri->get_cblack(3)
+    };
 
     if (ri->getSensorType() == ST_BAYER || ri->getSensorType() == ST_FUJI_XTRANS) {
         if (!rawData) {
@@ -2153,9 +2944,13 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
     cfatmp = (float (*)) calloc (H * W, sizeof * cfatmp);
 //  const float hotdeadthresh = 0.5;
 
+#ifdef _OPENMP
     #pragma omp parallel
+#endif
     {
+#ifdef _OPENMP
         #pragma omp for
+#endif
 
         for (int i = 0; i < H; i++) {
             int iprev, inext, jprev, jnext;
@@ -2204,7 +2999,9 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
 
         //box blur cfa image; box size = BS
         //horizontal blur
+#ifdef _OPENMP
         #pragma omp for
+#endif
 
         for (int row = 0; row < H; row++) {
             int len = boxW / 2 + 1;
@@ -2239,11 +3036,13 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
 
         //vertical blur
 #ifdef __SSE2__
-        __m128  leninitv = _mm_set1_ps( (float)((int)(boxH / 2 + 1)));
-        __m128  onev = _mm_set1_ps( 1.0f );
-        __m128  temp1v, temp2v, lenv, lenp1v, lenm1v;
+        vfloat  leninitv = F2V(boxH / 2 + 1);
+        vfloat  onev = F2V( 1.0f );
+        vfloat  temp1v, temp2v, lenv, lenp1v, lenm1v;
         int row;
+#ifdef _OPENMP
         #pragma omp for
+#endif
 
         for (int col = 0; col < W - 3; col += 4) {
             lenv = leninitv;
@@ -2255,29 +3054,29 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
                 temp2v += LVFU(cfatmp[(i + 1) * W + col]) / lenv;
             }
 
-            _mm_storeu_ps(&cfablur[0 * W + col], temp1v);
-            _mm_storeu_ps(&cfablur[1 * W + col], temp2v);
+            STVFU(cfablur[0 * W + col], temp1v);
+            STVFU(cfablur[1 * W + col], temp2v);
 
             for (row = 2; row < boxH + 2; row += 2) {
                 lenp1v = lenv + onev;
                 temp1v = (temp1v * lenv + LVFU(cfatmp[(row + boxH) * W + col])) / lenp1v;
                 temp2v = (temp2v * lenv + LVFU(cfatmp[(row + boxH + 1) * W + col])) / lenp1v;
-                _mm_storeu_ps( &cfablur[row * W + col], temp1v);
-                _mm_storeu_ps( &cfablur[(row + 1)*W + col], temp2v);
+                STVFU(cfablur[row * W + col], temp1v);
+                STVFU(cfablur[(row + 1)*W + col], temp2v);
                 lenv = lenp1v;
             }
 
             for (; row < H - boxH - 1; row += 2) {
                 temp1v = temp1v + (LVFU(cfatmp[(row + boxH) * W + col]) - LVFU(cfatmp[(row - boxH - 2) * W + col])) / lenv;
                 temp2v = temp2v + (LVFU(cfatmp[(row + 1 + boxH) * W + col]) - LVFU(cfatmp[(row + 1 - boxH - 2) * W + col])) / lenv;
-                _mm_storeu_ps(&cfablur[row * W + col], temp1v);
-                _mm_storeu_ps(&cfablur[(row + 1)*W + col], temp2v);
+                STVFU(cfablur[row * W + col], temp1v);
+                STVFU(cfablur[(row + 1)*W + col], temp2v);
             }
 
             for(; row < H - boxH; row++) {
                 temp1v = temp1v + (LVFU(cfatmp[(row + boxH) * W + col]) - LVFU(cfatmp[(row - boxH - 2) * W + col])) / lenv;
-                _mm_storeu_ps(&cfablur[row * W + col], temp1v);
-                __m128 swapv = temp1v;
+                STVFU(cfablur[row * W + col], temp1v);
+                vfloat swapv = temp1v;
                 temp1v = temp2v;
                 temp2v = swapv;
 
@@ -2287,15 +3086,15 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
                 lenm1v = lenv - onev;
                 temp1v = (temp1v * lenv - LVFU(cfatmp[(row - boxH - 2) * W + col])) / lenm1v;
                 temp2v = (temp2v * lenv - LVFU(cfatmp[(row - boxH - 1) * W + col])) / lenm1v;
-                _mm_storeu_ps(&cfablur[row * W + col], temp1v);
-                _mm_storeu_ps(&cfablur[(row + 1)*W + col], temp2v);
+                STVFU(cfablur[row * W + col], temp1v);
+                STVFU(cfablur[(row + 1)*W + col], temp2v);
                 lenv = lenm1v;
             }
 
             for(; row < H; row++) {
                 lenm1v = lenv - onev;
                 temp1v = (temp1v * lenv - LVFU(cfatmp[(row - boxH - 2) * W + col])) / lenm1v;
-                _mm_storeu_ps(&cfablur[(row)*W + col], temp1v);
+                STVFU(cfablur[(row)*W + col], temp1v);
             }
 
         }
@@ -2332,7 +3131,9 @@ SSEFUNCTION void RawImageSource::cfaboxblur(RawImage *riFlatFile, float* cfablur
         }
 
 #else
+#ifdef _OPENMP
         #pragma omp for
+#endif
 
         for (int col = 0; col < W; col++) {
             int len = boxH / 2 + 1;
@@ -2414,12 +3215,15 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
     // scale image colors
 
     if( ri->getSensorType() == ST_BAYER) {
+#ifdef _OPENMP
         #pragma omp parallel
+#endif
         {
             float tmpchmax[3];
             tmpchmax[0] = tmpchmax[1] = tmpchmax[2] = 0.0f;
-
+#ifdef _OPENMP
             #pragma omp for nowait
+#endif
 
             for (int row = winy; row < winy + winh; row ++)
             {
@@ -2434,7 +3238,9 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
                 }
             }
 
+#ifdef _OPENMP
             #pragma omp critical
+#endif
             {
                 chmax[0] = max(tmpchmax[0], chmax[0]);
                 chmax[1] = max(tmpchmax[1], chmax[1]);
@@ -2442,11 +3248,14 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
             }
         }
     } else if ( ri->get_colors() == 1 ) {
+#ifdef _OPENMP
         #pragma omp parallel
+#endif
         {
             float tmpchmax = 0.0f;
-
+#ifdef _OPENMP
             #pragma omp for nowait
+#endif
 
             for (int row = winy; row < winy + winh; row ++)
             {
@@ -2459,18 +3268,23 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
                 }
             }
 
+#ifdef _OPENMP
             #pragma omp critical
+#endif
             {
                 chmax[0] = chmax[1] = chmax[2] = chmax[3] = max(tmpchmax, chmax[0]);
             }
         }
     } else if(ri->getSensorType() == ST_FUJI_XTRANS) {
+#ifdef _OPENMP
         #pragma omp parallel
+#endif
         {
             float tmpchmax[3];
             tmpchmax[0] = tmpchmax[1] = tmpchmax[2] = 0.0f;
-
+#ifdef _OPENMP
             #pragma omp for nowait
+#endif
 
             for (int row = winy; row < winy + winh; row ++)
             {
@@ -2485,7 +3299,9 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
                 }
             }
 
+#ifdef _OPENMP
             #pragma omp critical
+#endif
             {
                 chmax[0] = max(tmpchmax[0], chmax[0]);
                 chmax[1] = max(tmpchmax[1], chmax[1]);
@@ -2493,12 +3309,15 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
             }
         }
     } else {
+#ifdef _OPENMP
         #pragma omp parallel
+#endif
         {
             float tmpchmax[3];
             tmpchmax[0] = tmpchmax[1] = tmpchmax[2] = 0.0f;
-
+#ifdef _OPENMP
             #pragma omp for nowait
+#endif
 
             for (int row = winy; row < winy + winh; row ++)
             {
@@ -2513,7 +3332,9 @@ void RawImageSource::scaleColors(int winx, int winy, int winw, int winh, const R
                 }
             }
 
+#ifdef _OPENMP
             #pragma omp critical
+#endif
             {
                 chmax[0] = max(tmpchmax[0], chmax[0]);
                 chmax[1] = max(tmpchmax[1], chmax[1]);
@@ -2826,8 +3647,9 @@ void RawImageSource::colorSpaceConversion_ (Imagefloat* im, ColorManagementParam
                     mat[i][j] += work[i][k] * camMatrix[k][j];    // rgb_xyz * imatrices.xyz_cam
                 }
 
-
+#ifdef _OPENMP
         #pragma omp parallel for
+#endif
 
         for (int i = 0; i < im->height; i++)
             for (int j = 0; j < im->width; j++) {
@@ -3150,91 +3972,6 @@ void RawImageSource::colorSpaceConversion_ (Imagefloat* im, ColorManagementParam
 //        printf ("ICM TIME: %d usec\n", t3.etime(t1));
 }
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-// Converts raw image including ICC input profile to working space - 16bit int version
-/*void RawImageSource::colorSpaceConversion16 (Image16* im, ColorManagementParams cmp, cmsHPROFILE embedded, cmsHPROFILE camprofile, double camMatrix[3][3], std::string camName) {
-    cmsHPROFILE in;
-    DCPProfile *dcpProf;
-
-    if (!findInputProfile(cmp.input, embedded, camName, &dcpProf, in)) return;
-
-    if (dcpProf!=NULL) {
-        dcpProf->Apply(im, (DCPLightType)cmp.preferredProfile, cmp.working, cmp.toneCurve);
-    } else {
-        if (in==NULL) {
-            // Take camprofile from DCRAW
-            // in this case we avoid using the slllllooooooowwww lcms
-            TMatrix work = iccStore->workingSpaceInverseMatrix (cmp.working);
-            double mat[3][3] = {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}};
-            for (int i=0; i<3; i++)
-                for (int j=0; j<3; j++)
-                    for (int k=0; k<3; k++)
-                        mat[i][j] += work[i][k] * camMatrix[k][j]; // rgb_xyz * imatrices.xyz_cam
-
-#pragma omp parallel for
-            for (int i=0; i<im->height; i++)
-                for (int j=0; j<im->width; j++) {
-
-                    float newr = mat[0][0]*im->r(i,j) + mat[0][1]*im->g(i,j) + mat[0][2]*im->b(i,j);
-                    float newg = mat[1][0]*im->r(i,j) + mat[1][1]*im->g(i,j) + mat[1][2]*im->b(i,j);
-                    float newb = mat[2][0]*im->r(i,j) + mat[2][1]*im->g(i,j) + mat[2][2]*im->b(i,j);
-
-                    im->r(i,j) = CLIP((int)newr);
-                    im->g(i,j) = CLIP((int)newg);
-                    im->b(i,j) = CLIP((int)newb);
-                }
-        } else {
-            // Gamma preprocessing
-            float gammaFac, lineFac, lineSum;
-            getProfilePreprocParams(in, gammaFac, lineFac, lineSum);
-
-            if (gammaFac>0) {
-#pragma omp parallel for
-                for ( int h = 0; h < im->height; ++h )
-                    for ( int w = 0; w < im->width; ++w ) {
-                        im->r(h,w)=  (int) (pow ((double)(im->r(h,w) / 65535.0), (double)gammaFac) * 65535.0);
-                        im->g(h,w)=  (int) (pow ((double)(im->g(h,w) / 65535.0), (double)gammaFac) * 65535.0);
-                        im->b(h,w)=  (int) (pow ((double)(im->b(h,w) / 65535.0), (double)gammaFac) * 65535.0);
-                    }
-            }
-
-            cmsHPROFILE out = iccStore->workingSpace (cmp.working);
-            //out = iccStore->workingSpaceGamma (wProfile);
-            lcmsMutex->lock ();
-            cmsHTRANSFORM hTransform = cmsCreateTransform (in, TYPE_RGB_16, out, TYPE_RGB_16, settings->colorimetricIntent,
-            cmsFLAGS_NOCACHE);  // NOCACHE is important for thread safety
-            lcmsMutex->unlock ();
-
-            if (hTransform) {
-                im->ExecCMSTransform(hTransform);
-
-                // There might be Nikon postprocessings
-                if (lineSum>0) {
-#pragma omp parallel for
-                    for ( int h = 0; h < im->height; ++h )
-                        for ( int w = 0; w < im->width; ++w ) {
-                            im->r(h,w) *= im->r(h,w) * lineFac / 65535.0 + lineSum;
-                            im->g(h,w) *= im->g(h,w) * lineFac / 65535.0 + lineSum;
-                            im->b(h,w) *= im->b(h,w) * lineFac / 65535.0 + lineSum;
-                        }
-                }
-            }
-            else {
-                lcmsMutex->lock ();
-                hTransform = cmsCreateTransform (camprofile, TYPE_RGB_16, out, TYPE_RGB_16,
-                              settings->colorimetricIntent, cmsFLAGS_NOCACHE);
-                lcmsMutex->unlock ();
-
-                im->ExecCMSTransform(hTransform);
-            }
-
-            cmsDeleteTransform(hTransform);
-        }
-    }
-    //t3.set ();
-    //printf ("ICM TIME: %d\n", t3.etime(t1));
-}*/
 
 // Determine RAW input and output profiles. Returns TRUE on success
 bool RawImageSource::findInputProfile(Glib::ustring inProfile, cmsHPROFILE embedded, std::string camName, DCPProfile **dcpProf, cmsHPROFILE& in)
@@ -3473,14 +4210,14 @@ void RawImageSource::HLRecovery_CIELab (float* rin, float* gin, float* bin, floa
             float go = min(g, maxval);
             float bo = min(b, maxval);
             float yy = xyz_cam[1][0] * r + xyz_cam[1][1] * g + xyz_cam[1][2] * b;
-            float fy = (yy < 65535.0 ? ImProcFunctions::cachef[yy] / 327.68 : (exp(log(yy / MAXVALD) / 3.0 )));
+            float fy = (yy < 65535.0 ? Color::cachef[yy] / 327.68 : std::cbrt(yy / MAXVALD));
             // compute LCH decompostion of the clipped pixel (only color information, thus C and H will be used)
             float x = xyz_cam[0][0] * ro + xyz_cam[0][1] * go + xyz_cam[0][2] * bo;
             float y = xyz_cam[1][0] * ro + xyz_cam[1][1] * go + xyz_cam[1][2] * bo;
             float z = xyz_cam[2][0] * ro + xyz_cam[2][1] * go + xyz_cam[2][2] * bo;
-            x = (x < 65535.0 ? ImProcFunctions::cachef[x] / 327.68 : (exp(log(x / MAXVALD) / 3.0 )));
-            y = (y < 65535.0 ? ImProcFunctions::cachef[y] / 327.68 : (exp(log(y / MAXVALD) / 3.0 )));
-            z = (z < 65535.0 ? ImProcFunctions::cachef[z] / 327.68 : (exp(log(z / MAXVALD) / 3.0 )));
+            x = (x < 65535.0 ? Color::cachef[x] / 327.68 : std::cbrt(x / MAXVALD));
+            y = (y < 65535.0 ? Color::cachef[y] / 327.68 : std::cbrt(y / MAXVALD));
+            z = (z < 65535.0 ? Color::cachef[z] / 327.68 : std::cbrt(z / MAXVALD));
             // convert back to rgb
             double fz = fy - y + z;
             double fx = fy + x - y;
@@ -3533,11 +4270,15 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
     histogram(65536 >> histcompr);
     histogram.clear();
 
+#ifdef _OPENMP
     #pragma omp parallel
+#endif
     {
         LUTu tmphistogram(65536 >> histcompr);
         tmphistogram.clear();
+#ifdef _OPENMP
         #pragma omp for nowait
+#endif
 
         for (int i = border; i < H - border; i++) {
             int start, end;
@@ -3576,7 +4317,9 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
             }
         }
 
+#ifdef _OPENMP
         #pragma omp critical
+#endif
         {
             for(int i = 0; i < (65536 >> histcompr); i++) {
                 histogram[i] += tmphistogram[i];
@@ -3592,7 +4335,11 @@ void RawImageSource::getRAWHistogram (LUTu & histRedRaw, LUTu & histGreenRaw, LU
     histRedRaw.clear();
     histGreenRaw.clear();
     histBlueRaw.clear();
-    const float mult[4] = { 65535.0 / ri->get_white(0), 65535.0 / ri->get_white(1), 65535.0 / ri->get_white(2), 65535.0 / ri->get_white(3) };
+    const float mult[4] = { 65535.0f / ri->get_white(0),
+                            65535.0f / ri->get_white(1),
+                            65535.0f / ri->get_white(2),
+                            65535.0f / ri->get_white(3)
+                          };
 
 #ifdef _OPENMP
     int numThreads;
@@ -4253,28 +5000,6 @@ void RawImageSource::cleanup ()
     delete phaseOneIccCurve;
     delete phaseOneIccCurveInv;
 }
-
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//#include "demosaic_algos.cc"
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//Emil's code
-/*
- * Now compiled separately
- *
-#include "fast_demo.cc"//fast demosaic
-#include "amaze_demosaic_RT.cc"//AMaZE demosaic
-#include "CA_correct_RT.cc"//Emil's CA auto correction
-#include "cfa_linedn_RT.cc"//Emil's line denoise
-#include "green_equil_RT.cc"//Emil's green channel equilibration
-#include "hilite_recon.cc"//Emil's highlight reconstruction
-
-#include "expo_before_b.cc"//Jacques's exposure before interpolation
-*/
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #undef PIX_SORT
 #undef med3x3

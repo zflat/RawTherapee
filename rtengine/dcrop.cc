@@ -31,7 +31,7 @@ namespace rtengine
 extern const Settings* settings;
 
 Crop::Crop (ImProcCoordinator* parent, EditDataProvider *editDataProvider, bool isDetailWindow)
-    : EditBuffer(editDataProvider), origCrop(NULL), laboCrop(NULL), labnCrop(NULL),
+    : PipetteBuffer(editDataProvider), origCrop(NULL), laboCrop(NULL), labnCrop(NULL),
       cropImg(NULL), cbuf_real(NULL), cshmap(NULL), transCrop(NULL), cieCrop(NULL), cbuffer(NULL),
       updating(false), newUpdatePending(false), skip(10),
       cropx(0), cropy(0), cropw(-1), croph(-1),
@@ -77,7 +77,7 @@ void Crop::setListener (DetailedCropListener* il)
 
 EditUniqueID Crop::getCurrEditID()
 {
-    EditSubscriber *subscriber = EditBuffer::dataProvider ? EditBuffer::dataProvider->getCurrSubscriber() : NULL;
+    EditSubscriber *subscriber = PipetteBuffer::dataProvider ? PipetteBuffer::dataProvider->getCurrSubscriber() : NULL;
     return subscriber ? subscriber->getEditID() : EUID_None;
 }
 
@@ -90,32 +90,25 @@ void Crop::setEditSubscriber(EditSubscriber* newSubscriber)
     MyMutex::MyLock lock(cropMutex);
 
     // At this point, editCrop.dataProvider->currSubscriber is the old subscriber
-    EditSubscriber *oldSubscriber = EditBuffer::dataProvider ? EditBuffer::dataProvider->getCurrSubscriber() : NULL;
+    EditSubscriber *oldSubscriber = PipetteBuffer::dataProvider ? PipetteBuffer::dataProvider->getCurrSubscriber() : NULL;
 
-    if (newSubscriber == NULL || (oldSubscriber != NULL && oldSubscriber->getEditBufferType() != newSubscriber->getEditBufferType())) {
-        if (EditBuffer::imgFloatBuffer != NULL) {
-            delete EditBuffer::imgFloatBuffer;
-            EditBuffer::imgFloatBuffer = NULL;
+    if (newSubscriber == NULL || (oldSubscriber != NULL && oldSubscriber->getPipetteBufferType() != newSubscriber->getPipetteBufferType())) {
+        if (PipetteBuffer::imgFloatBuffer != NULL) {
+            delete PipetteBuffer::imgFloatBuffer;
+            PipetteBuffer::imgFloatBuffer = NULL;
         }
 
-        if (EditBuffer::LabBuffer != NULL) {
-            delete EditBuffer::LabBuffer;
-            EditBuffer::LabBuffer = NULL;
+        if (PipetteBuffer::LabBuffer != NULL) {
+            delete PipetteBuffer::LabBuffer;
+            PipetteBuffer::LabBuffer = NULL;
         }
 
-        if (EditBuffer::singlePlaneBuffer.getW() != -1) {
-            EditBuffer::singlePlaneBuffer.flushData();
+        if (PipetteBuffer::singlePlaneBuffer.getW() != -1) {
+            PipetteBuffer::singlePlaneBuffer.flushData();
         }
     }
 
-    if (newSubscriber == NULL  && oldSubscriber != NULL && oldSubscriber->getEditingType() == ET_OBJECTS) {
-        printf("Free object buffers\n");
-        EditBuffer::resize(0, 0); // This will delete the objects buffer
-    } else if (newSubscriber && newSubscriber->getEditingType() == ET_OBJECTS) {
-        EditBuffer::resize(cropw, croph, newSubscriber);
-    }
-
-    // If oldSubscriber == NULL && newSubscriber != NULL -> the image will be allocated when necessary
+    // If oldSubscriber == NULL && newSubscriber != NULL && newSubscriber->getEditingType() == ET_PIPETTE-> the image will be allocated when necessary
 }
 
 void Crop::update (int todo)
@@ -712,6 +705,17 @@ void Crop::update (int todo)
         transCrop = NULL;
     }
 
+    if ((todo & (M_TRANSFORM))  && params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled) {
+
+        const int W = baseCrop->getWidth();
+        const int H = baseCrop->getHeight();
+        LabImage labcbdl(W, H);
+        parent->ipf.rgb2lab(*baseCrop, labcbdl, params.icm.working);
+        parent->ipf.dirpyrequalizer (&labcbdl, skip);
+        parent->ipf.lab2rgb(labcbdl, *baseCrop, params.icm.working);
+
+    }
+
     // blurmap for shadow & highlights
     if ((todo & M_BLURMAP) && params.sh.enabled) {
         double radius = sqrt (double(SKIPS(parent->fw, skip) * SKIPS(parent->fw, skip) + SKIPS(parent->fh, skip) * SKIPS(parent->fh, skip))) / 2.0;
@@ -731,6 +735,7 @@ void Crop::update (int todo)
             cshmap->forceStat (parent->shmap->max_f, parent->shmap->min_f, parent->shmap->avg);
         }
     }
+
 
     // shadows & highlights & tone curve & convert to cielab
     /*int xref,yref;
@@ -807,6 +812,8 @@ void Crop::update (int todo)
         bool wavcontlutili = parent->wavcontlutili;
 
         LUTu dummy;
+        int moderetinex;
+        //    parent->ipf.MSR(labnCrop, labnCrop->W, labnCrop->H, 1);
         parent->ipf.chromiLuminanceCurve (this, 1, labnCrop, labnCrop, parent->chroma_acurve, parent->chroma_bcurve, parent->satcurve, parent->lhskcurve,  parent->clcurve, parent->lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy, dummy, dummy);
         parent->ipf.vibrance (labnCrop);
 
@@ -836,11 +843,12 @@ void Crop::update (int todo)
         //   if (skip==1) {
         WaveletParams WaveParams = params.wavelet;
 
-        if((params.colorappearance.enabled && !settings->autocielab)  || (!params.colorappearance.enabled)) {
-            parent->ipf.dirpyrequalizer (labnCrop, skip);
-            //  parent->ipf.Lanczoslab (labnCrop,labnCrop , 1.f/skip);
+        if(params.dirpyrequalizer.cbdlMethod == "aft") {
+            if(((params.colorappearance.enabled && !settings->autocielab)  || (!params.colorappearance.enabled))) {
+                parent->ipf.dirpyrequalizer (labnCrop, skip);
+                //  parent->ipf.Lanczoslab (labnCrop,labnCrop , 1.f/skip);
+            }
         }
-
 
         int kall = 0;
         int minwin = min(labnCrop->W, labnCrop->H);
@@ -982,45 +990,11 @@ void Crop::update (int todo)
     }
 
     // all pipette buffer processing should be finished now
-    EditBuffer::setReady();
+    PipetteBuffer::setReady();
 
     // switch back to rgb
     parent->ipf.lab2monitorRgb (labnCrop, cropImg);
 
-    //parent->ipf.lab2monitorRgb (laboCrop, cropImg);
-
-    //cropImg = baseCrop->to8();
-    /*
-    //     int xref,yref;
-    xref=000;yref=000;
-    if (colortest && cropw>115 && croph>115)
-    for(int j=1;j<5;j++){
-        xref+=j*30;yref+=j*30;
-        int rlin = (CurveFactory::igamma2((float)cropImg->data[3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))]/255.0) * 255.0);
-        int glin = (CurveFactory::igamma2((float)cropImg->data[3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))+1]/255.0) * 255.0);
-        int blin = (CurveFactory::igamma2((float)cropImg->data[3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))+2]/255.0) * 255.0);
-
-        printf("after lab2rgb RGB lab2 Xr%i Yr%i Skip=%d  R=%d  G=%d  B=%d  \n",xref,yref,skip,
-               rlin,glin,blin);
-               //cropImg->data[3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))],
-               //cropImg->data[(3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))+1)],
-               //cropImg->data[(3*((int)(xref/skip)*cropImg->width+(int)(yref/skip))+2)]);
-        //printf("after lab2rgb Lab lab2 Xr%i Yr%i Skip=%d  l=%f  a=%f  b=%f  \n",xref,yref,skip, labnCrop->L[(int)(xref/skip)][(int)(yref/skip)]/327,labnCrop->a[(int)(xref/skip)][(int)(yref/skip)]/327,labnCrop->b[(int)(xref/skip)][(int)(yref/skip)]/327);
-        printf("after lab2rgb Lab Xr%i Yr%i Skip=%d  l=%f  a=%f  b=%f  \n",xref,yref,skip,
-               labnCrop->L[(int)(xref/skip)][(int)(yref/skip)]/327,
-               labnCrop->a[(int)(xref/skip)][(int)(yref/skip)]/327,
-               labnCrop->b[(int)(xref/skip)][(int)(yref/skip)]/327)q;
-    }
-    */
-    /*
-    if (colortest && cropImg->height>115 && cropImg->width>115) {//for testing
-        xref=000;yref=000;
-        printf("dcrop final R= %d  G= %d  B= %d  \n",
-               cropImg->data[3*xref/(skip)*(cropImg->width+1)],
-               cropImg->data[3*xref/(skip)*(cropImg->width+1)+1],
-               cropImg->data[3*xref/(skip)*(cropImg->width+1)+2]);
-    }
-    */
     if (cropImageListener) {
         // this in output space held in parallel to allow analysis like shadow/highlight
         Glib::ustring outProfile = params.icm.output;
@@ -1028,13 +1002,13 @@ void Crop::update (int todo)
         Image8 *cropImgtrue;
 
         if(settings->HistogramWorking) {
-            cropImgtrue = parent->ipf.lab2rgb (labnCrop, 0, 0, cropw, croph, workProfile, false);
+            cropImgtrue = parent->ipf.lab2rgb (labnCrop, 0, 0, cropw, croph, workProfile, RI_RELATIVE, false);  // HOMBRE: was RELATIVE by default in lab2rgb, is it safe to assume we have to use it again ?
         } else {
             if (params.icm.output == "" || params.icm.output == ColorManagementParams::NoICMString) {
                 outProfile = "sRGB";
             }
 
-            cropImgtrue = parent->ipf.lab2rgb (labnCrop, 0, 0, cropw, croph, outProfile, false);
+            cropImgtrue = parent->ipf.lab2rgb (labnCrop, 0, 0, cropw, croph, outProfile, params.icm.outputIntent, false);
         }
 
         int finalW = rqcropw;
@@ -1117,7 +1091,7 @@ void Crop::freeAll ()
             cshmap = NULL;
         }
 
-        EditBuffer::flush();
+        PipetteBuffer::flush();
     }
 
     cropAllocated = false;
@@ -1189,6 +1163,13 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
         printf ("setsizes starts (%d, %d, %d, %d, %d, %d)\n", orW, orH, trafw, trafh, cw, ch);
     }
 
+    EditType editType = ET_PIPETTE;
+    if (const auto editProvider = PipetteBuffer::getDataProvider ()) {
+        if (const auto editSubscriber = editProvider->getCurrSubscriber ()) {
+            editType = editSubscriber->getEditingType ();
+        }
+    }
+
     if (cw != cropw || ch != croph || orW != trafw || orH != trafh) {
 
         cropw = cw;
@@ -1255,7 +1236,11 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
             cshmap = new SHMap (cropw, croph, true);
         }
 
-        EditBuffer::resize(cropw, croph);
+        if (editType == ET_PIPETTE) {
+            PipetteBuffer::resize(cropw, croph);
+        } else if (PipetteBuffer::bufferCreated()) {
+            PipetteBuffer::flush();
+        }
 
         cropAllocated = true;
 
