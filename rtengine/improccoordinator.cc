@@ -708,6 +708,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
             if(pos > 2) {
+                MyMutex* merMutex = NULL;
+                merMutex = new MyMutex;
+                merMutex->lock ();
+
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
                 //    printf("DWimp mergelapart=%d DH=%d\n", e.W, e.H);
@@ -729,6 +733,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 //   printf("maxx=%f\n", maxx);
                 fin.close();
+                merMutex->unlock ();
+                delete merMutex;
 
                 mergelab = new LabImage(fw, fh);
                 float LT = 0.f;

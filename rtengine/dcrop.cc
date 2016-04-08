@@ -957,6 +957,10 @@ void Crop::update (int todo)
             pos = inpu.find("mer");
 
             if(pos > 2) {//open file Lab datas with its own size
+                MyMutex* merMutex = NULL;
+                merMutex = new MyMutex;
+                merMutex->lock ();
+
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
                 //printf("DWcrop mergelabpart=%d DH=%d\n", e.W, e.H);
@@ -979,6 +983,8 @@ void Crop::update (int todo)
 
                 //    printf("maxx=%f\n", maxx);
                 fin.close();
+                merMutex->unlock ();
+                delete merMutex;
 
                 mergelab = new LabImage(widIm, heiIm);
                 float LT = 0.f;
@@ -1033,6 +1039,7 @@ void Crop::update (int todo)
         if(params.wavelet.expmerge && params.wavelet.mergevMethod != "save") {
 
             if(pos > 2) {
+
                 bool merguez = true;
                 cropmergelab = new LabImage(labnCrop->W, labnCrop->H);
 
@@ -1429,6 +1436,7 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
     }
 
     EditType editType = ET_PIPETTE;
+
     if (const auto editProvider = PipetteBuffer::getDataProvider ()) {
         if (const auto editSubscriber = editProvider->getCurrSubscriber ()) {
             editType = editSubscriber->getEditingType ();

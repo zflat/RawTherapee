@@ -51,11 +51,11 @@ bool LinEqSolve(int nDim, double* pfMatr, double* pfVect, double* pfSolution)
 
     for(k = 0; k < (nDim - 1); k++) { // base row of matrix
         // search of line with max element
-        fMaxElem = fabsf( pfMatr[k * nDim + k] );
+        fMaxElem = fabs( pfMatr[k * nDim + k] );
         m = k;
 
         for (i = k + 1; i < nDim; i++) {
-            if(fMaxElem < fabsf(pfMatr[i * nDim + k]) ) {
+            if(fMaxElem < fabs(pfMatr[i * nDim + k]) ) {
                 fMaxElem = pfMatr[i * nDim + k];
                 m = i;
             }
@@ -148,7 +148,7 @@ void RawImageSource::CA_correct_RT(const double cared, const double cablue, cons
     float *Gtmp = (float (*)) calloc ((height) * (width), sizeof * Gtmp);
 
     // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-    float *RawDataTmp = (float*) malloc( height * width * sizeof(float) / 2);
+    float *RawDataTmp = (float*) malloc( (height * width + ((height * width) & 1)) * sizeof(float) / 2);
 
     float blockave[2][2] = {{0, 0}, {0, 0}}, blocksqave[2][2] = {{0, 0}, {0, 0}}, blockdenom[2][2] = {{0, 0}, {0, 0}}, blockvar[2][2];
 

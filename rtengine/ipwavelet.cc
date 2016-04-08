@@ -1452,6 +1452,10 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
         if(merg)   {
             //  printf("Generate file L*a*b after Wavelet=%s\n", inp.c_str());
 
+            MyMutex* merMutex = NULL;
+            merMutex = new MyMutex;
+            merMutex->lock ();
+
             ofstream fout;
             ifstream fin;
             fout.open(inp.c_str(), ios::binary);
@@ -1492,6 +1496,8 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, int
 
             fout.close();
             //    printf("DWwav=%d DHwav=%d ski=%d\n", d.W, d.H, d.sk);
+            merMutex->unlock ();
+            delete merMutex;
         }
     }
 
