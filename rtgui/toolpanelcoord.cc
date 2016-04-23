@@ -28,7 +28,7 @@
 
 using namespace rtengine::procparams;
 
-ToolPanelCoordinator::ToolPanelCoordinator () : ipc(NULL)
+ToolPanelCoordinator::ToolPanelCoordinator () : ipc(nullptr), editDataProvider(nullptr)
 {
 
     exposurePanel   = Gtk::manage (new ToolVBox ());
@@ -413,7 +413,16 @@ void ToolPanelCoordinator::profileChange  (const PartialProfile *nparams, rtengi
         lParams[1] = *mergedParams;
         pe.initFrom (lParams);
 
+        //HOMBRE: yeah, this sound like a hack, it's because isUnchanged is gone and
+        //        we use the bool operator now, which has to test all fields.
+        bool xtransccsteps = pe.raw.xtranssensor.ccSteps;
+        bool bayerccsteps = pe.raw.bayersensor.ccSteps;
+        pe.raw.xtranssensor.ccSteps = pe.raw.bayersensor.ccSteps = false;
+
         filterRawRefresh = pe.raw && pe.lensProf && pe.retinex;
+
+        pe.raw.xtranssensor.ccSteps = xtransccsteps;
+        pe.raw.bayersensor.ccSteps = bayerccsteps;
     }
 
     *params = *mergedParams;

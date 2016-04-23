@@ -63,17 +63,18 @@ void CacheManager::init ()
         std::cerr << "Failed to create all cache directories: " << g_strerror(errno) << std::endl;
     }
 
-    //MERGEHOMBRE: Revoir ça avec le nouveau mécanisme "cacheDirs"
+    // TODO: find a way to cleanup the Rawtherapee temp dir !?
+
     Glib::ustring tmpDir = g_get_tmp_dir();
     Glib::ustring tmpDirRT = Glib::build_filename (tmpDir, "RawTherapee");
-    if (!safe_file_test (tmpDirRT, (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
-        safe_g_mkdir_with_parents (tmpDirRT, 511);
+    if (!Glib::file_test (tmpDirRT, (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        g_mkdir_with_parents (tmpDirRT.c_str(), 511);
     }
-    if (!safe_file_test (Glib::build_filename (tmpDirRT, "Small"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
-        safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Small")), 511);
+    if (!Glib::file_test (Glib::build_filename (tmpDirRT, "Small"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Small")).c_str(), 511);
     }
-    if (!safe_file_test (Glib::build_filename (tmpDirRT, "Big"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
-        safe_g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Big")), 511);
+    if (!Glib::file_test (Glib::build_filename (tmpDirRT, "Big"), (Glib::FILE_TEST_IS_DIR|Glib::FILE_TEST_IS_SYMLINK))) {
+        g_mkdir_with_parents (Glib::ustring(Glib::build_filename (tmpDirRT, "Big")).c_str(), 511);
     }
 }
 
@@ -101,8 +102,8 @@ Thumbnail* CacheManager::getEntry (const Glib::ustring& fname)
     // build path name
     const auto md5 = getMD5 (fname);
 
-    if (md5 == "") {
-        return NULL;
+    if (md5.empty ()) {
+        return nullptr;
     }
 
     const auto cacheName = getCacheFileName ("data", fname, ".txt", md5);

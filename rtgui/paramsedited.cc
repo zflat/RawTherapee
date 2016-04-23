@@ -702,10 +702,10 @@ void ToneCurveParamsEdited::initFrom (std::vector<const void*> elems)
 
 void RetinexParamsEdited::initFrom (std::vector<const void*> elems)
 {
-    const RetinexParams *e0 = static_cast< const LCurveParams* >(elems.at(0));
+    const RetinexParams *e0 = static_cast< const RetinexParams* >(elems.at(0));
     size_t size = elems.size();
     for (size_t i = 1; i < size; ++i) {
-        const RetinexParams* e = static_cast< const LCurveParams* >(elems.at(i));
+        const RetinexParams* e = static_cast< const RetinexParams* >(elems.at(i));
         cdcurve = cdcurve && e0->cdcurve == e->cdcurve;
         mapcurve = mapcurve && e0->mapcurve == e->mapcurve;
         cdHcurve = cdHcurve && e0->cdHcurve == e->cdHcurve;
@@ -1269,6 +1269,7 @@ void RAWParamsEdited::initFrom (std::vector<const void*> elems)
         xtranssensor.exBlackGreen = xtranssensor.exBlackGreen && e0->xtranssensor.blackgreen == e->xtranssensor.blackgreen;
         xtranssensor.exBlackBlue = xtranssensor.exBlackBlue && e0->xtranssensor.blackblue == e->xtranssensor.blackblue;
         caCorrection = caCorrection && e0->ca_autocorrect == e->ca_autocorrect;
+        caAutoStrength = caAutoStrength && e0->caautostrength == e->caautostrength;
         caRed = caRed && e0->cared == e->cared;
         caBlue = caBlue && e0->cablue == e->cablue;
         hotPixelFilter = hotPixelFilter && e0->hotPixelFilter == e->hotPixelFilter;
@@ -2089,6 +2090,7 @@ void RAWParamsEdited::combine (RAWParams* toEdit, const RAWParams* mods, bool do
     if (xtranssensor.exBlackGreen) toEdit->xtranssensor.blackgreen = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->xtranssensor.blackgreen + mods->xtranssensor.blackgreen : mods->xtranssensor.blackgreen;
     if (xtranssensor.exBlackBlue) toEdit->xtranssensor.blackblue = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_BLACKS] ? toEdit->xtranssensor.blackblue + mods->xtranssensor.blackblue : mods->xtranssensor.blackblue;
     if (caCorrection) toEdit->ca_autocorrect = mods->ca_autocorrect;
+    if (caAutoStrength) toEdit->caautostrength = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit->caautostrength + mods->caautostrength : mods->caautostrength;
     if (caRed) toEdit->cared = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit->cared + mods->cared : mods->cared;
     if (caBlue) toEdit->cablue = dontforceSet && options.baBehav[ADDSET_RAWCACORR] ? toEdit->cablue + mods->cablue : mods->cablue;
     if (exPos) toEdit->expos = dontforceSet && options.baBehav[ADDSET_RAWEXPOS_LINEAR] ? toEdit->expos + mods->expos : mods->expos;
@@ -2295,9 +2297,7 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
 bool ParamsEdited::isTagsSet()
 {
-    bool retVal = general;
-    return retVal;
-    //return general;
+    return general;
 }
 
 bool ParamsEdited::isToolSet()

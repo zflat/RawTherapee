@@ -1038,8 +1038,8 @@ public:
 
     operator bool (void) const
     {
-        //printf("bool: %d\n", bayersensor|xtranssensor|caCorrection|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser);
-        return bayersensor|xtranssensor|caCorrection|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser;
+        //printf("bool: %d\n", bayersensor|xtranssensor|caCorrection|caAutoStrength|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser);
+        return bayersensor|xtranssensor|caCorrection|caAutoStrength|caRed|caBlue|hotPixelFilter|deadPixelFilter|hotDeadPixelThresh|darkFrame|dfAuto|ff_file|ff_AutoSelect|ff_BlurRadius|ff_BlurType|ff_AutoClipControl|ff_clipControl|exPos|exPreser;
     }
     void set(bool v);
     void initFrom (std::vector<const void*> elems);

@@ -322,8 +322,8 @@ rtengine::procparams::ProcParams* Thumbnail::createProcParamsForUpdate(bool retu
         // cleanup
         g_remove (tmpFileName.c_str ());
 
-        if (!forceCPB && !outFName.empty() && Gtlib::file_test(outFName, Glib::FILE_TEST_EXISTS )) {
-            safe_g_remove (outFName);
+        if (!forceCPB && !outFName.empty() && Glib::file_test(outFName, Glib::FILE_TEST_EXISTS )) {
+            g_remove (outFName.c_str());
         }
 
         delete imageMetaData;
@@ -394,7 +394,7 @@ void Thumbnail::loadProcParams (Glib::ustring fileName)
 
         // if no success, try to load the cached version of the procparams
         if (!pparamsValid) {
-            pparamsValid = !pparams.load (getCacheFileName ("profiles", paramFileExtension, &pe);
+            pparamsValid = !pparams.load (getCacheFileName ("profiles", paramFileExtension), &pe);
         }
     } else {
         // try to load it from cache
