@@ -2077,11 +2077,11 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float *****stylev, LabIm
         }
 
 #ifdef _RT_NESTED_OPENMP
-//       #pragma omp parallel num_threads(wavNestedLevels) if(wavNestedLevels>1)
+        #pragma omp parallel num_threads(wavNestedLevels) if(wavNestedLevels>1)
 #endif
         {
 #ifdef _RT_NESTED_OPENMP
-//           #pragma omp for nowait
+            #pragma omp for nowait
 #endif
 
             for (int dir = 1; dir < 4; dir++) {
@@ -2101,7 +2101,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float *****stylev, LabIm
 
             //store Luma resid
 #ifdef _RT_NESTED_OPENMP
-//            #pragma omp for nowait
+            #pragma omp for nowait
 #endif
 
 
@@ -2667,7 +2667,7 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float *****stylev, LabIm
                     int ii = (int) (i / kh);//adjust to real size of image
                     int jj = (int) (j / kw);
 
-                    WavCoeffs_L0[i * W_L + j] += cp.bmres * 0.007f * styres->L[ii][jj];
+                    WavCoeffs_L0[i * W_L + j] = (WavCoeffs_L0[i * W_L + j] + cp.bmres * 0.007f * styres->L[ii][jj]) / (1.f + cp.bmres * 0.007f) ;
                 }
             }
 
@@ -3174,9 +3174,9 @@ void ImProcFunctions::WaveletcontAllAB(LabImage * labco, float *****stylev, LabI
 
 
                     if (chan == 1) {
-                        WavCoeffs_ab0[i * W_L + j] += cp.bmch * cp.bmres * 0.0001f * styres->a[ii][jj];
+                        WavCoeffs_ab0[i * W_L + j] = (WavCoeffs_ab0[i * W_L + j] + cp.bmch * cp.bmres * 0.0001f * styres->a[ii][jj]) / (1.f + cp.bmch * cp.bmres * 0.0001f );
                     } else {
-                        WavCoeffs_ab0[i * W_L + j] += cp.bmch * cp.bmres * 0.0001f * styres->b[ii][jj];
+                        WavCoeffs_ab0[i * W_L + j] = (WavCoeffs_ab0[i * W_L + j] + cp.bmch * cp.bmres * 0.0001f * styres->b[ii][jj]) / (1.f + cp.bmch * cp.bmres * 0.0001f );
                     }
                 }
             }
