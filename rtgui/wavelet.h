@@ -59,6 +59,7 @@ protected:
     CurveEditorGroup* CCWcurveEditorT;
     CurveEditorGroup* CCWcurveEditorgainT;
     CurveEditorGroup* CCWcurveEditormerg;
+    CurveEditorGroup* CCWcurveEditorsty;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
     Gtk::HSeparator* colorSep;
@@ -67,6 +68,7 @@ protected:
     Gtk::HSeparator* separatorNeutral;
     Gtk::HSeparator* separatoredge;
     Gtk::HSeparator* separatorRT;
+    Gtk::HSeparator* separatorsty;
 
     CurveEditorGroup* opaCurveEditorG;
     FlatCurveEditor* opacityShapeRG;
@@ -85,6 +87,7 @@ protected:
     FlatCurveEditor* cTshape;
     FlatCurveEditor* cTgainshape;
     FlatCurveEditor* cmergshape;
+    FlatCurveEditor* cstyshape;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;
     Gtk::CheckButton * displaychro;
@@ -101,6 +104,7 @@ protected:
     Gtk::Button * neutralchButton;
     Adjuster* correction[9];
     Adjuster* correctionch[9];
+    Adjuster* balmer[9];
     Adjuster* rescon;
     Adjuster* resconH;
     Adjuster* reschro;
@@ -140,12 +144,20 @@ protected:
     Adjuster* bluehigh;
     Adjuster* balanleft;
     Adjuster* balanhig;
+    Adjuster* sizelab;
+    Adjuster* dirV;
+    Adjuster* dirH;
+    Adjuster* dirD;
+    Adjuster* balmerch;
+    Adjuster* shapedetcolor;
+    Adjuster* balmerres;
     Adjuster* blend;
     Adjuster* blendc;
     Adjuster* grad;
 
     ThresholdAdjuster* hueskin;
     ThresholdAdjuster* hueskin2;
+    ThresholdAdjuster* hueskinsty;
     ThresholdAdjuster* hllev;
     ThresholdAdjuster* bllev;
     ThresholdAdjuster* pastlev;
@@ -220,6 +232,7 @@ protected:
     Gtk::Frame *gainFrame;
     Gtk::Frame *tranFrame;
     Gtk::Frame *gaussFrame;
+    Gtk::Frame *balMFrame;
 
     MyComboBoxText*   retinexMethod;
     Gtk::Label* labmdh;
@@ -229,6 +242,9 @@ protected:
     Gtk::HBox* dhboxpro;
     Gtk::Label* labretifin;
     Gtk::HBox* labretifinbox;
+
+    Gtk::Button* neutral2;
+    Gtk::HBox* neutrHBox2;
 
     Gtk::Label* labmmg1;
     Gtk::HBox* mg1box;
@@ -334,11 +350,11 @@ protected:
 
     sigc::connection enableChromaConn, enableContrastConn, enableEdgeConn, enableEdge3Conn, enableFinalConn, enableTCConn;
     sigc::connection enableNoiseConn, enableResidConn, enableToningConn, enableMergeConn, enableretiConn;
-    sigc::connection expConn,  medianConn, avoidConn, tmrConn, medianlevConn, linkedgConn, lipstConn, cbenabConn, neutralconn;
+    sigc::connection expConn,  medianConn, avoidConn, tmrConn, medianlevConn, linkedgConn, lipstConn, cbenabConn, neutral2conn;
     sigc::connection neutralPressedConn;
     sigc::connection contrastPlusPressedConn;
     sigc::connection contrastMinusPressedConn;
-    sigc::connection neutralchPressedConn;
+    sigc::connection neutralchPressedConn, neutralconn;
     sigc::connection retinexMethodConn, retinexMethodproConn;
     //  rtengine::StagedImageProcessor* ipc2;
 
@@ -434,6 +450,7 @@ private:
     void medianlevToggled ();
     void neutralPressed ();
     void neutral_pressed ();
+    void neutral2_pressed       ();
     void neutralchPressed ();
     void tmrToggled ();
     void updatewavLabel ();

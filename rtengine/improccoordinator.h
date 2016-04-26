@@ -134,6 +134,7 @@ protected:
     WavretiCurve wavRETCurve;
     WavretigainCurve wavRETgainCurve;
     WavmergCurve wavMERCurve;
+    WavstyCurve wavSTYCurve;
     WavOpacityCurveRG waOpacityCurveRG;
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;

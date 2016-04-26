@@ -574,6 +574,13 @@ public:
     bool balance;
     bool balanleft;
     bool balanhig;
+    bool sizelab;
+    bool balmerch;
+    bool shapedetcolor;
+    bool dirV;
+    bool dirH;
+    bool dirD;
+    bool balmerres;
     bool grad;
     bool blend;
     bool blendc;
@@ -588,6 +595,7 @@ public:
     bool tmr;
     bool c[9];
     bool ch[9];
+    bool bm[9];
     bool Lmethod;
     bool CHmethod;
     bool CHSLmethod;
@@ -634,6 +642,7 @@ public:
     bool skinprotect;
     bool hueskin;
     bool hueskin2;
+    bool hueskinsty;
     bool hllev;
     bool bllev;
     bool edgcont;
@@ -645,6 +654,7 @@ public:
     bool ccwTcurve;
     bool ccwTgaincurve;
     bool ccwmergcurve;
+    bool ccwstycurve;
     bool opacityCurveBY;
     bool opacityCurveRG;
     bool opacityCurveW;

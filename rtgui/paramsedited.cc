@@ -396,6 +396,13 @@ void ParamsEdited::set (bool v)
     wavelet.balance = v;
     wavelet.balanleft = v;
     wavelet.balanhig = v;
+    wavelet.sizelab = v;
+    wavelet.balmerch = v;
+    wavelet.shapedetcolor = v;
+    wavelet.dirV = v;
+    wavelet.dirH = v;
+    wavelet.dirD = v;
+    wavelet.balmerres = v;
     wavelet.grad = v;
     wavelet.blend = v;
     wavelet.blendc = v;
@@ -478,6 +485,7 @@ void ParamsEdited::set (bool v)
     wavelet.skinprotect = v;
     wavelet.hueskin = v;
     wavelet.hueskin2 = v;
+    wavelet.hueskinsty = v;
     wavelet.hllev = v;
     wavelet.bllev = v;
     wavelet.edgcont = v;
@@ -489,6 +497,7 @@ void ParamsEdited::set (bool v)
     wavelet.ccwTcurve = v;
     wavelet.ccwTgaincurve = v;
     wavelet.ccwmergcurve = v;
+    wavelet.ccwstycurve = v;
     wavelet.opacityCurveRG   = v;
     wavelet.opacityCurveBY   = v;
     wavelet.opacityCurveW   = v;
@@ -518,6 +527,10 @@ void ParamsEdited::set (bool v)
 
     for(int i = 0; i < 9; i++) {
         wavelet.ch[i] = v;
+    }
+
+    for(int i = 0; i < 9; i++) {
+        wavelet.bm[i] = v;
     }
 
     dirpyrequalizer.enabled = v;
@@ -939,6 +952,13 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.balance = wavelet.balance && p.wavelet.balance == other.wavelet.balance;
         wavelet.balanleft = wavelet.balanleft && p.wavelet.balanleft == other.wavelet.balanleft;
         wavelet.balanhig = wavelet.balanhig && p.wavelet.balanhig == other.wavelet.balanhig;
+        wavelet.sizelab = wavelet.sizelab && p.wavelet.sizelab == other.wavelet.sizelab;
+        wavelet.balmerch = wavelet.balmerch && p.wavelet.balmerch == other.wavelet.balmerch;
+        wavelet.shapedetcolor = wavelet.shapedetcolor && p.wavelet.shapedetcolor == other.wavelet.shapedetcolor;
+        wavelet.dirV = wavelet.dirV && p.wavelet.dirV == other.wavelet.dirV;
+        wavelet.dirH = wavelet.dirH && p.wavelet.dirH == other.wavelet.dirH;
+        wavelet.dirD = wavelet.dirD && p.wavelet.dirD == other.wavelet.dirD;
+        wavelet.balmerres = wavelet.balmerres && p.wavelet.balmerres == other.wavelet.balmerres;
         wavelet.grad = wavelet.grad && p.wavelet.grad == other.wavelet.grad;
         wavelet.blend = wavelet.blend && p.wavelet.blend == other.wavelet.blend;
         wavelet.blendc = wavelet.blendc && p.wavelet.blendc == other.wavelet.blendc;
@@ -1002,6 +1022,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.thrH = wavelet.thrH && p.wavelet.thrH == other.wavelet.thrH;
         wavelet.hueskin = wavelet.hueskin && p.wavelet.hueskin == other.wavelet.hueskin;
         wavelet.hueskin2 = wavelet.hueskin2 && p.wavelet.hueskin2 == other.wavelet.hueskin2;
+        wavelet.hueskinsty = wavelet.hueskinsty && p.wavelet.hueskinsty == other.wavelet.hueskinsty;
         wavelet.hllev = wavelet.hllev && p.wavelet.hllev == other.wavelet.hllev;
         wavelet.bllev = wavelet.bllev && p.wavelet.bllev == other.wavelet.bllev;
         wavelet.edgcont = wavelet.edgcont && p.wavelet.edgcont == other.wavelet.edgcont;
@@ -1015,6 +1036,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.ccwTcurve = wavelet.ccwTcurve && p.wavelet.ccwTcurve == other.wavelet.ccwTcurve;
         wavelet.ccwTgaincurve = wavelet.ccwTgaincurve && p.wavelet.ccwTgaincurve == other.wavelet.ccwTgaincurve;
         wavelet.ccwmergcurve = wavelet.ccwmergcurve && p.wavelet.ccwmergcurve == other.wavelet.ccwmergcurve;
+        wavelet.ccwstycurve = wavelet.ccwstycurve && p.wavelet.ccwstycurve == other.wavelet.ccwstycurve;
         wavelet.opacityCurveRG = wavelet.opacityCurveRG && p.wavelet.opacityCurveRG == other.wavelet.opacityCurveRG;
         wavelet.opacityCurveBY = wavelet.opacityCurveBY && p.wavelet.opacityCurveBY == other.wavelet.opacityCurveBY;
         wavelet.opacityCurveW = wavelet.opacityCurveW && p.wavelet.opacityCurveW == other.wavelet.opacityCurveW;
@@ -1042,6 +1064,10 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
 
         for(int i = 0; i < 9; i++) {
             wavelet.ch[i] = wavelet.ch[i] && p.wavelet.ch[i] == other.wavelet.ch[i];
+        }
+
+        for(int i = 0; i < 9; i++) {
+            wavelet.bm[i] = wavelet.bm[i] && p.wavelet.bm[i] == other.wavelet.bm[i];
         }
 
         dirpyrequalizer.enabled = dirpyrequalizer.enabled && p.dirpyrequalizer.enabled == other.dirpyrequalizer.enabled;
@@ -2509,6 +2535,34 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.balanhig   = mods.wavelet.balanhig;
     }
 
+    if (wavelet.sizelab) {
+        toEdit.wavelet.sizelab   = mods.wavelet.sizelab;
+    }
+
+    if (wavelet.balmerch) {
+        toEdit.wavelet.balmerch   = mods.wavelet.balmerch;
+    }
+
+    if (wavelet.shapedetcolor) {
+        toEdit.wavelet.shapedetcolor   = mods.wavelet.shapedetcolor;
+    }
+
+    if (wavelet.dirV) {
+        toEdit.wavelet.dirV   = mods.wavelet.dirV;
+    }
+
+    if (wavelet.dirH) {
+        toEdit.wavelet.dirH   = mods.wavelet.dirH;
+    }
+
+    if (wavelet.dirD) {
+        toEdit.wavelet.dirD   = mods.wavelet.dirD;
+    }
+
+    if (wavelet.balmerres) {
+        toEdit.wavelet.balmerres   = mods.wavelet.balmerres;
+    }
+
     if (wavelet.grad) {
         toEdit.wavelet.grad   = mods.wavelet.grad;
     }
@@ -2733,6 +2787,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.ccwmergcurve   = mods.wavelet.ccwmergcurve;
     }
 
+    if (wavelet.ccwstycurve) {
+        toEdit.wavelet.ccwstycurve   = mods.wavelet.ccwstycurve;
+    }
+
     if (wavelet.opacityCurveRG) {
         toEdit.wavelet.opacityCurveRG = mods.wavelet.opacityCurveRG;
     }
@@ -2822,6 +2880,12 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         }
     }
 
+    for(int i = 0; i < 9; i++) {
+        if(wavelet.bm[i]) {
+            toEdit.wavelet.bm[i] = mods.wavelet.bm[i];
+        }
+    }
+
     if (wavelet.skinprotect) {
         toEdit.wavelet.skinprotect = dontforceSet && options.baBehav[ADDSET_WA_SKINPROTECT] ? toEdit.wavelet.skinprotect + mods.wavelet.skinprotect : mods.wavelet.skinprotect;
     }
@@ -2832,6 +2896,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.hueskin2) {
         toEdit.wavelet.hueskin2   = mods.wavelet.hueskin2;
+    }
+
+    if (wavelet.hueskinsty) {
+        toEdit.wavelet.hueskinsty   = mods.wavelet.hueskinsty;
     }
 
     if (wavelet.edgesensi) {

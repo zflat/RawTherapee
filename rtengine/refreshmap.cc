@@ -502,6 +502,17 @@ int refreshmap[rtengine::NUMOFEVENTS] = {
     DIRPYREQUALIZER,  // EvWavgrad
     DIRPYREQUALIZER,  // EvWavmergCurve
     DIRPYREQUALIZER,  // EvWavCTgainCurve
-    ALLNORAW          // EvcbdlMethod
+    ALLNORAW,          // EvcbdlMethod
+    DIRPYREQUALIZER,   // EvWavsizelab
+    DIRPYREQUALIZER,     //EvWaveletbalmer
+    DIRPYREQUALIZER,     //EvWavbalmerch
+    DIRPYREQUALIZER,     //EvWavbalmerres
+    DIRPYREQUALIZER,     //EvWavshapedet
+    DIRPYREQUALIZER,     //EvWavstyCurve
+    DIRPYREQUALIZER,     //EvWavHueskinsty
+    DIRPYREQUALIZER,    //EvWavdirV
+    DIRPYREQUALIZER,    //EvWavdirH
+    DIRPYREQUALIZER    //EvWavdirD
+
 };
 
