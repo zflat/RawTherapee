@@ -660,6 +660,7 @@ public:
     bool opacityCurveW;
     bool opacityCurveWL;
     bool hhcurve;
+    bool shstycurve;
     bool Chcurve;
     bool pastlev;
     bool satlev;

@@ -1215,6 +1215,20 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     Gtk::HSeparator *separatorsty = Gtk::manage (new  Gtk::HSeparator());
     balMVBox->pack_start(*separatorsty);
 
+    curveEditorsty = new CurveEditorGroup (options.lastWaveletCurvesDir);
+    curveEditorsty->setCurveListener (this);
+
+    shstyshape = static_cast<FlatCurveEditor*>(curveEditorsty->addCurve(CT_Flat, M("TP_WAVELET_CURVEEDITOR_STYH")));
+    shstyshape->setTooltip(M("TP_WAVELET_CURVEEDITOR_STYH_TOOLTIP"));
+    shstyshape->setCurveColorProvider(this, 5);
+    shstyshape->setBottomBarBgGradient(milestones);
+    curveEditorsty->curveListComplete();
+
+    balMVBox->pack_start(*curveEditorsty, Gtk::PACK_SHRINK, 4);
+
+    Gtk::HSeparator *separatorsty2 = Gtk::manage (new  Gtk::HSeparator());
+    balMVBox->pack_start(*separatorsty2);
+
     dirV  = Gtk::manage (new Adjuster (M("TP_WAVELET_DIRV"), -100, 100, 1, 60));
     dirV->setAdjusterListener (this);
     dirV->set_tooltip_text (M("TP_WAVELET_DIRV_TOOLTIP"));
@@ -1229,6 +1243,10 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     dirD->setAdjusterListener (this);
     dirD->set_tooltip_text (M("TP_WAVELET_DIRV_TOOLTIP"));
     balMVBox->pack_start(*dirD);
+
+    Gtk::HSeparator *separatorsty3 = Gtk::manage (new  Gtk::HSeparator());
+    balMVBox->pack_start(*separatorsty3);
+
 
 
     CCWcurveEditorsty = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_ST2CURVE"));
@@ -1476,6 +1494,7 @@ Wavelet::~Wavelet ()
     delete CCWcurveEditorT;
     delete CCWcurveEditorgainT;
     delete curveEditorRES;
+    delete curveEditorsty;
     delete curveEditorGAM;
     delete curveEditorG;
     delete opacityCurveEditorW;
@@ -1881,6 +1900,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     opacityShape->setCurve (pp->wavelet.opacityCurveW);
     opacityShapeWL->setCurve (pp->wavelet.opacityCurveWL);
     hhshape->setCurve (pp->wavelet.hhcurve);
+    shstyshape->setCurve (pp->wavelet.shstycurve);
     Chshape->setCurve (pp->wavelet.Chcurve);
     clshape->setCurve (pp->wavelet.wavclCurve);
     expcontrast->setEnabled (pp->wavelet.expcontrast);
@@ -2119,6 +2139,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         opacityShape->setCurve (pp->wavelet.opacityCurveW);
         opacityShapeWL->setCurve (pp->wavelet.opacityCurveWL);
         hhshape->setUnChanged  (!pedited->wavelet.hhcurve);
+        shstyshape->setUnChanged  (!pedited->wavelet.shstycurve);
         Chshape->setUnChanged  (!pedited->wavelet.Chcurve);
         clshape->setUnChanged  (!pedited->wavelet.wavclCurve);
         avoid->set_inconsistent (!pedited->wavelet.avoid);
@@ -2356,6 +2377,7 @@ void Wavelet::setEditProvider  (EditDataProvider *provider)
     opacityShape->setEditProvider(provider);
     opacityShapeWL->setEditProvider(provider);
     hhshape->setEditProvider(provider);
+    shstyshape->setEditProvider(provider);
     Chshape->setEditProvider(provider);
     clshape->setEditProvider(provider);
 }
@@ -2436,6 +2458,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.opacityCurveW  = opacityShape->getCurve ();
     pp->wavelet.opacityCurveWL = opacityShapeWL->getCurve ();
     pp->wavelet.hhcurve        = hhshape->getCurve ();
+    pp->wavelet.shstycurve        = shstyshape->getCurve ();
     pp->wavelet.Chcurve        = Chshape->getCurve ();
     pp->wavelet.pastlev        = pastlev->getValue<int> ();
     pp->wavelet.satlev         = satlev->getValue<int> ();
@@ -2579,6 +2602,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.opacityCurveW   = !opacityShape->isUnChanged ();
         pedited->wavelet.opacityCurveWL  = !opacityShapeWL->isUnChanged ();
         pedited->wavelet.hhcurve         = !hhshape->isUnChanged ();
+        pedited->wavelet.shstycurve         = !shstyshape->isUnChanged ();
         pedited->wavelet.Chcurve         = !Chshape->isUnChanged ();
         pedited->wavelet.bllev           = bllev->getEditedState ();
         pedited->wavelet.pastlev         = pastlev->getEditedState ();
@@ -3120,6 +3144,8 @@ void Wavelet::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvWavopacityWL, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == hhshape) {
             listener->panelChanged (EvWavHHCurve, M("HISTORY_CUSTOMCURVE"));
+        } else if (ce == shstyshape) {
+            listener->panelChanged (EvWavshstyCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == Chshape) {
             listener->panelChanged (EvWavCHCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == clshape) {
@@ -3857,6 +3883,7 @@ void Wavelet::setBatchMode (bool batchMode)
     opacityCurveEditorW->setBatchMode (batchMode);
     opacityCurveEditorWL->setBatchMode (batchMode);
     curveEditorRES->setBatchMode (batchMode);
+    curveEditorsty->setBatchMode (batchMode);
     curveEditorGAM->setBatchMode (batchMode);
     rescon->showEditedCB ();
     resconH->showEditedCB ();

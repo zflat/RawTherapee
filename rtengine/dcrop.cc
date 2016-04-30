@@ -1223,14 +1223,14 @@ void Crop::update (int todo)
 
                             styres = new LabImage(wid1, hei1);
 
-                            parent->ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            parent->ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                         }
 
                         stytype = 2;
 
                         if(stytype == 2) {
 
-                            parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                             for(int y = 0; y < lab; y++) {
                                 for (int i = 0; i < dir; i++) {
@@ -1287,7 +1287,7 @@ void Crop::update (int todo)
                 provis = params.wavelet.CLmethod;
                 params.wavelet.CLmethod = "all";
 
-                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                 unshar->CopyFrom(labnCrop);
 
                 params.wavelet.CLmethod = provis;
@@ -1296,7 +1296,7 @@ void Crop::update (int todo)
 
             //     if(params.wavelet.mergMethod != "loadzero" || (params.wavelet.mergMethod == "loadzero" &&  !params.wavelet.expmerge)) {
             if(params.wavelet.mergMethod != "loadzero" || (params.wavelet.mergMethod == "loadzero" &&  !params.wavelet.expmerge)) {
-                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
             }
 
             if(parent->awavListener) {

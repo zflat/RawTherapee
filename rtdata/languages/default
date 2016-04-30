@@ -718,6 +718,7 @@ HISTORY_MSG_483;W - merge - style detection color
 HISTORY_MSG_484;W - merge - dirV
 HISTORY_MSG_485;W - merge - dirH
 HISTORY_MSG_486;W - merge - dirD
+HISTORY_MSG_487;W - merge - SH curve
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1915,6 +1916,8 @@ TP_WAVELET_CURVEEDITOR_CH;Contrast levels=f(Hue)
 TP_WAVELET_CURVEEDITOR_CH_TOOLTIP;Modifies each level's contrast as a function of hue.\nTake care not to overwrite changes made with the Gamut sub-tool's hue controls.\nThe curve will only have an effect when wavelet contrast level sliders are non-zero.
 TP_WAVELET_CURVEEDITOR_CL;L
 TP_WAVELET_CURVEEDITOR_CL_TOOLTIP;Applies a final contrast luminance curve at the end of the wavelet treatment.
+TP_WAVELET_CURVEEDITOR_STYH;Style hue (first)
+TP_WAVELET_CURVEEDITOR_STYH_TOOLTIP;Modifies the merge file taking into account the colors of the image "first"
 TP_WAVELET_CURVEEDITOR_HH;HH
 TP_WAVELET_CURVEEDITOR_HH_TOOLTIP;Modifies the residual image's hue as a function of hue.
 TP_WAVELET_DALL;All directions
@@ -1968,7 +1971,7 @@ TP_WAVELET_HUESKIN;Skin hue
 TP_WAVELET_HUESKIN_TOOLTIP;The bottom points set the beginning of the transition zone, and the upper points the end of it, where the effect is at its maximum.\n\nIf you need to move the area significantly, or if there are artifacts, then the <b>white balance is incorrect</b>.
 TP_WAVELET_HUESKY;Sky hue
 TP_WAVELET_HUESKY_TOOLTIP;The bottom points set the beginning of the transition zone, and the upper points the end of it, where the effect is at its maximum.\n\nIf you need to move the area significantly, or if there are artifacts, then the <b>white balance is incorrect</b>.
-TP_WAVELET_HUESKINSTY;Style hue
+TP_WAVELET_HUESKINSTY;Style hue (current)
 TP_WAVELET_HUESKINSTY_TOOLTIP;Target or protect merge image taking into account the colors of the current image (act on luma and chroma)
 TP_WAVELET_ITER;Delta balance levels
 TP_WAVELET_ITER_TOOLTIP;Left: increase low levels and reduce high levels,\nRight: reduce low levels and increase high levels.

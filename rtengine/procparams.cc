@@ -842,6 +842,8 @@ void WaveletParams::setDefaults()
     level3noise.setValues(0, 0);
     hhcurve.clear ();
     hhcurve.push_back(FCT_Linear);
+    shstycurve.clear ();
+    shstycurve.push_back(FCT_Linear);
     Chcurve.clear ();
     Chcurve.push_back(FCT_Linear);
     expcontrast = true;
@@ -3160,6 +3162,11 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         if (!pedited || pedited->wavelet.hhcurve) {
             Glib::ArrayHandle<double> curve = wavelet.hhcurve;
             keyFile.set_double_list("Wavelet", "HHcurve", curve);
+        }
+
+        if (!pedited || pedited->wavelet.shstycurve) {
+            Glib::ArrayHandle<double> curve = wavelet.shstycurve;
+            keyFile.set_double_list("Wavelet", "Shstycurve", curve);
         }
 
         if (!pedited || pedited->wavelet.Chcurve) {
@@ -7025,6 +7032,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "Shstycurve"))    {
+                wavelet.shstycurve = keyFile.get_double_list ("Wavelet", "Shstycurve");
+
+                if (pedited) {
+                    pedited->wavelet.shstycurve = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "CHcurve"))    {
                 wavelet.Chcurve = keyFile.get_double_list ("Wavelet", "CHcurve");
 
@@ -8628,6 +8643,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.opacityCurveW == other.wavelet.opacityCurveW
         && wavelet.opacityCurveWL == other.wavelet.opacityCurveWL
         && wavelet.hhcurve == other.wavelet.hhcurve
+        && wavelet.shstycurve == other.wavelet.shstycurve
         && wavelet.Chcurve == other.wavelet.Chcurve
         && wavelet.ccwcurve == other.wavelet.ccwcurve
         && wavelet.ccwTcurve == other.wavelet.ccwTcurve

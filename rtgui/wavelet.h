@@ -62,6 +62,7 @@ protected:
     CurveEditorGroup* CCWcurveEditorsty;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
+    CurveEditorGroup* curveEditorsty;
     Gtk::HSeparator* colorSep;
     Gtk::HSeparator* separator3;
     Gtk::HSeparator* separatorCB;
@@ -69,6 +70,8 @@ protected:
     Gtk::HSeparator* separatoredge;
     Gtk::HSeparator* separatorRT;
     Gtk::HSeparator* separatorsty;
+    Gtk::HSeparator* separatorsty2;
+    Gtk::HSeparator* separatorsty3;
 
     CurveEditorGroup* opaCurveEditorG;
     FlatCurveEditor* opacityShapeRG;
@@ -79,6 +82,7 @@ protected:
     FlatCurveEditor* opacityShape;
     FlatCurveEditor* opacityShapeWL;
     FlatCurveEditor*   hhshape;
+    FlatCurveEditor*   shstyshape;
     FlatCurveEditor*   Chshape;
     DiagonalCurveEditor* clshape;
     Gtk::VBox* chanMixerBox;
