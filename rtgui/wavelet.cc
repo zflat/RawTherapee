@@ -1063,6 +1063,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mergMethod->append_text (M("TP_WAVELET_SAVE_ZERO"));
     mergMethod->append_text (M("TP_WAVELET_LOAD"));
     mergMethod->append_text (M("TP_WAVELET_LOAD_ZERO"));
+    mergMethod->append_text (M("TP_WAVELET_LOAD_ZEROHDR"));
 
     mergMethod->set_active(0);
     mergMethodConn = mergMethod->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergMethodChanged) );
@@ -1147,6 +1148,20 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     CCWcurveEditormerg->show();
     mgVBox->pack_start(*CCWcurveEditormerg, Gtk::PACK_SHRINK, 4);
 
+    CCWcurveEditormerg2 = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_MCURVE2"));
+    CCWcurveEditormerg2->setCurveListener (this);
+
+    rtengine::WaveletParams::getDefaultmerg2CurveT(defaultCurve);
+    cmerg2shape = static_cast<FlatCurveEditor*>(CCWcurveEditormerg2->addCurve(CT_Flat, "", NULL, false));
+
+    cmerg2shape->setIdentityValue(0.);
+    cmerg2shape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
+    cmerg2shape->setTooltip(M("TP_WAVELET_MCURVE2_TOOLTIP"));
+
+    CCWcurveEditormerg2->curveListComplete();
+    CCWcurveEditormerg2->show();
+    mgVBox->pack_start(*CCWcurveEditormerg2, Gtk::PACK_SHRINK, 4);
+
     blend  = Gtk::manage (new Adjuster (M("TP_WAVELET_BLEND"), 0, 100, 1, 50));
     blend->setAdjusterListener (this);
     blend->set_tooltip_text (M("TP_WAVELET_BLEND_TOOLTIP"));
@@ -1201,6 +1216,35 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
         balMVBox->pack_start(*balmer[i]);
 
     }
+
+    for(int i = 0; i < 9; i++) {
+        Glib::ustring ss;
+
+        switch( i ) {
+        case 0:
+            ss = Glib::ustring::compose( "%1 (%2)", (i + 1), M("TP_WAVELET_FINEST"));
+            break;
+
+        case 8:
+            ss = Glib::ustring::compose( "%1 (%2)", (i + 1), M("TP_WAVELET_LARGEST"));
+            break;
+
+        default:
+            ss = Glib::ustring::compose( "%1", (i + 1));
+        }
+
+        balmer2[i] = Gtk::manage ( new Adjuster (ss, -20, 140, 1, 70) );
+        balmer2[i]->setAdjusterListener(this);
+        balmer2[i]->set_tooltip_text (M("TP_WAVELET_BALMERLUM2_TOOLTIP"));
+
+        balMVBox->pack_start(*balmer2[i]);
+
+    }
+
+    balmerres2  = Gtk::manage (new Adjuster (M("TP_WAVELET_BALMERRES2"), -20, 120, 1, 70));
+    balmerres2->setAdjusterListener (this);
+    balmerres2->set_tooltip_text (M("TP_WAVELET_BALMERRES2_TOOLTIP"));
+    balMVBox->pack_start(*balmerres2);
 
     balmerres  = Gtk::manage (new Adjuster (M("TP_WAVELET_BALMERRES"), 0, 150, 1, 30));
     balmerres->setAdjusterListener (this);
@@ -1490,6 +1534,7 @@ Wavelet::~Wavelet ()
     delete opacityCurveEditorG;
     delete CCWcurveEditorG;
     delete CCWcurveEditormerg;
+    delete CCWcurveEditormerg2;
     delete CCWcurveEditorsty;
     delete CCWcurveEditorT;
     delete CCWcurveEditorgainT;
@@ -1761,6 +1806,8 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         mergMethod->set_active (3);
     } else if (pp->wavelet.mergMethod == "loadzero") {
         mergMethod->set_active (4);
+    } else if (pp->wavelet.mergMethod == "loadzerohdr") {
+        mergMethod->set_active (5);
     }
 
     if (pp->wavelet.mergevMethod == "curr") {
@@ -1894,6 +1941,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     cTshape->setCurve (pp->wavelet.ccwTcurve);
     cTgainshape->setCurve (pp->wavelet.ccwTgaincurve);
     cmergshape->setCurve (pp->wavelet.ccwmergcurve);
+    cmerg2shape->setCurve (pp->wavelet.ccwmerg2curve);
     cstyshape->setCurve (pp->wavelet.ccwstycurve);
     opacityShapeRG->setCurve (pp->wavelet.opacityCurveRG);
     opacityShapeBY->setCurve (pp->wavelet.opacityCurveBY);
@@ -2004,6 +2052,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     dirH->setValue(pp->wavelet.dirH);
     dirD->setValue(pp->wavelet.dirD);
     balmerres->setValue(pp->wavelet.balmerres);
+    balmerres2->setValue(pp->wavelet.balmerres2);
     grad->setValue(pp->wavelet.grad);
     blend->setValue(pp->wavelet.blend);
     blendc->setValue(pp->wavelet.blendc);
@@ -2036,6 +2085,10 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     for (int i = 0; i < 9; i++) {
         balmer[i]->setValue(pp->wavelet.bm[i]);
+    }
+
+    for (int i = 0; i < 9; i++) {
+        balmer2[i]->setValue(pp->wavelet.bm2[i]);
     }
 
     /*****************************************************************************************************
@@ -2122,6 +2175,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         cTshape->setUnChanged  (!pedited->wavelet.ccwTcurve);
         cTgainshape->setUnChanged  (!pedited->wavelet.ccwTgaincurve);
         cmergshape->setUnChanged  (!pedited->wavelet.ccwmergcurve);
+        cmerg2shape->setUnChanged  (!pedited->wavelet.ccwmerg2curve);
         cstyshape->setUnChanged  (!pedited->wavelet.ccwstycurve);
         expcontrast->set_inconsistent   (!pedited->wavelet.expcontrast);
         expchroma->set_inconsistent   (!pedited->wavelet.expchroma);
@@ -2163,6 +2217,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         dirD->setEditedState (pedited->wavelet.dirD ? Edited : UnEdited);
         dirH->setEditedState (pedited->wavelet.dirH ? Edited : UnEdited);
         balmerres->setEditedState (pedited->wavelet.balmerres ? Edited : UnEdited);
+        balmerres2->setEditedState (pedited->wavelet.balmerres2 ? Edited : UnEdited);
         grad->setEditedState (pedited->wavelet.grad ? Edited : UnEdited);
         blend->setEditedState (pedited->wavelet.blend ? Edited : UnEdited);
         blendc->setEditedState (pedited->wavelet.blendc ? Edited : UnEdited);
@@ -2237,6 +2292,10 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
             balmer[i]->setEditedState (pedited->wavelet.bm[i] ? Edited : UnEdited);
         }
 
+        for(int i = 0; i < 9; i++) {
+            balmer2[i]->setEditedState (pedited->wavelet.bm2[i] ? Edited : UnEdited);
+        }
+
     }
 
     /*****************************************************************************************************
@@ -2277,6 +2336,14 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
 
         for(z = 0; z < y; z++) {
             balmer[z]->show();
+        }
+
+        for(z = y; z < 9; z++) {
+            balmer2[z]->hide();
+        }
+
+        for(z = 0; z < y; z++) {
+            balmer2[z]->show();
         }
 
         if (pp->wavelet.CHSLmethod == "SL") {
@@ -2372,6 +2439,7 @@ void Wavelet::setEditProvider  (EditDataProvider *provider)
     cTgainshape->setEditProvider(provider);
     cstyshape->setEditProvider(provider);
     cmergshape->setEditProvider(provider);
+    cmerg2shape->setEditProvider(provider);
     opacityShapeRG->setEditProvider(provider);
     opacityShapeBY->setEditProvider(provider);
     opacityShape->setEditProvider(provider);
@@ -2388,6 +2456,7 @@ void Wavelet::autoOpenCurve ()
     cTshape->openIfNonlinear();
     cTgainshape->openIfNonlinear();
     cmergshape->openIfNonlinear();
+    cmerg2shape->openIfNonlinear();
     cstyshape->openIfNonlinear();
     //opacityShapeRG->openIfNonlinear();
     //opacityShapeBY->openIfNonlinear();
@@ -2452,6 +2521,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.ccwTgaincurve       = cTgainshape->getCurve ();
     pp->wavelet.ccwTcurve       = cTshape->getCurve ();
     pp->wavelet.ccwmergcurve       = cmergshape->getCurve ();
+    pp->wavelet.ccwmerg2curve       = cmerg2shape->getCurve ();
     pp->wavelet.ccwstycurve       = cstyshape->getCurve ();
     pp->wavelet.opacityCurveRG = opacityShapeRG->getCurve ();
     pp->wavelet.opacityCurveBY = opacityShapeBY->getCurve ();
@@ -2471,6 +2541,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.dirV        = (int) dirV->getValue();
     pp->wavelet.dirH        = (int) dirH->getValue();
     pp->wavelet.balmerres        = (int) balmerres->getValue();
+    pp->wavelet.balmerres2        = (int) balmerres2->getValue();
     pp->wavelet.dirD        = (int) dirD->getValue();
     pp->wavelet.balanhig        = (int) balanhig->getValue();
     pp->wavelet.grad        = grad->getValue();
@@ -2525,6 +2596,10 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
 
     for (int i = 0; i < 9; i++) {
         pp->wavelet.bm[i] = (int) balmer[i]->getValue();
+    }
+
+    for (int i = 0; i < 9; i++) {
+        pp->wavelet.bm2[i] = (int) balmer2[i]->getValue();
     }
 
     if (pedited) {
@@ -2591,6 +2666,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.ccwTcurve        = !cTshape->isUnChanged ();
         pedited->wavelet.ccwTgaincurve        = !cTgainshape->isUnChanged ();
         pedited->wavelet.ccwmergcurve        = !cmergshape->isUnChanged ();
+        pedited->wavelet.ccwmerg2curve        = !cmerg2shape->isUnChanged ();
         pedited->wavelet.ccwstycurve        = !cstyshape->isUnChanged ();
         pedited->wavelet.edgcont         = edgcont->getEditedState ();
         pedited->wavelet.level0noise     = level0noise->getEditedState ();
@@ -2640,6 +2716,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.dirH        = dirH->getEditedState ();
         pedited->wavelet.dirD        = dirD->getEditedState ();
         pedited->wavelet.balmerres        = balmerres->getEditedState ();
+        pedited->wavelet.balmerres2        = balmerres2->getEditedState ();
         pedited->wavelet.grad        = grad->getEditedState ();
         pedited->wavelet.blend         = blend->getEditedState ();
         pedited->wavelet.blendc         = blendc->getEditedState ();
@@ -2669,6 +2746,10 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
             pedited->wavelet.bm[i]        = balmer[i]->getEditedState();
         }
 
+        for(int i = 0; i < 9; i++) {
+            pedited->wavelet.bm2[i]        = balmer2[i]->getEditedState();
+        }
+
     }
 
     if (CHmethod->get_active_row_number() == 0) {
@@ -2689,6 +2770,8 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pp->wavelet.mergMethod = "load";
     } else if (mergMethod->get_active_row_number() == 4) {
         pp->wavelet.mergMethod = "loadzero";
+    } else if (mergMethod->get_active_row_number() == 5) {
+        pp->wavelet.mergMethod = "loadzerohdr";
     }
 
     if (mergevMethod->get_active_row_number() == 0) {
@@ -2855,6 +2938,7 @@ void Wavelet::mergMethodChanged()
         blendc->hide();
         balanhig->hide();
         CCWcurveEditormerg->hide();
+        CCWcurveEditormerg2->hide();
         labmmgB->hide();
         grad->hide();
         balanleft->hide();
@@ -2865,6 +2949,7 @@ void Wavelet::mergMethodChanged()
         dirD->hide();
         dirH->hide();
         balmerres->hide();
+        balmerres2->hide();
         balMFrame->hide();
         hueskinsty->hide();
         neutral2->hide();
@@ -2881,6 +2966,7 @@ void Wavelet::mergMethodChanged()
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
+            balmer2[z]->hide();
         }
 
 
@@ -2888,6 +2974,7 @@ void Wavelet::mergMethodChanged()
         blend->hide();
         blendc->hide();
         CCWcurveEditormerg->hide();
+        CCWcurveEditormerg2->hide();
         labmmgB->hide();
         balanhig->hide();
         grad->hide();
@@ -2901,6 +2988,7 @@ void Wavelet::mergMethodChanged()
         dirH->hide();
         hueskinsty->hide();
         balmerres->hide();
+        balmerres2->hide();
         hbin->hide();
         savelab->show();
         mergBMethod->hide();
@@ -2916,6 +3004,8 @@ void Wavelet::mergMethodChanged()
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
+            balmer2[z]->hide();
+
         }
 
     } else if(mergMethod->get_active_row_number() == 2   && expmerge->getEnabled() == true) {//save zero
@@ -2923,6 +3013,7 @@ void Wavelet::mergMethodChanged()
         blend->hide();
         blendc->hide();
         CCWcurveEditormerg->hide();
+        CCWcurveEditormerg2->hide();
         labmmgB->hide();
         balanhig->hide();
         grad->hide();
@@ -2935,6 +3026,7 @@ void Wavelet::mergMethodChanged()
         dirH->hide();
         hueskinsty->hide();
         balmerres->hide();
+        balmerres2->hide();
         neutral2->hide();
         hbin->hide();
         savelab->show();
@@ -2952,6 +3044,8 @@ void Wavelet::mergMethodChanged()
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
+            balmer2[z]->hide();
+
         }
 
 
@@ -2968,6 +3062,7 @@ void Wavelet::mergMethodChanged()
         dirH->hide();
         hueskinsty->hide();
         balmerres->hide();
+        balmerres2->hide();
         neutral2->hide();
         hbin->show();
         savelab->hide();
@@ -2978,9 +3073,12 @@ void Wavelet::mergMethodChanged()
         CLmethod->set_active (3);
         Lmethod->set_active (3);
         balMFrame->hide();
+        CCWcurveEditormerg2->hide();
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
+            balmer2[z]->hide();
+
         }
 
         if(mergBMethod->get_active_row_number() == 1) {//slider HDR
@@ -2994,7 +3092,7 @@ void Wavelet::mergMethodChanged()
             CCWcurveEditormerg->show();
             grad->hide();
         }
-    } else if(mergMethod->get_active_row_number() == 4) {//load zero
+    } else if(mergMethod->get_active_row_number() == 4 || mergMethod->get_active_row_number() == 5) {//load zero or zerohdr
         blendc->hide();
         balanhig->hide();
         labmmgB->hide();
@@ -3009,23 +3107,67 @@ void Wavelet::mergMethodChanged()
         CLmethod->set_active (3);
         Lmethod->set_active (3);
         balMFrame->show();
+        Tilesmethod->set_active (0);//force full image
 
-        for(int z = 0; z < y; z++) {
-            balmer[z]->show();
+        if(mergMethod->get_active_row_number() == 5) {
+            CCWcurveEditormerg2->show();
+        } else {
+            CCWcurveEditormerg2->hide();
         }
 
-        for(int z = y; z < 9; z++) {
-            balmer[z]->hide();
+        if(mergMethod->get_active_row_number() == 4) {
+            for(int z = 0; z < y; z++) {
+                balmer[z]->show();
+                balmer2[z]->hide();
+            }
+
+            for(int z = y; z < 9; z++) {
+                balmer[z]->hide();
+                balmer2[z]->hide();
+            }
+        }
+
+        if(mergMethod->get_active_row_number() == 5) {
+
+            for(int z = 0; z < y; z++) {
+                balmer2[z]->show();
+                balmer[z]->hide();
+
+            }
+
+            for(int z = y; z < 9; z++) {
+                balmer2[z]->hide();
+                balmer[z]->hide();
+
+            }
+
+
         }
 
         balmerch->show();
-        balmerres->show();
-        shapedetcolor->show();
+
+        if(mergMethod->get_active_row_number() == 5) {
+            shapedetcolor->hide();
+            hueskinsty->hide();
+            dirV->hide();
+            dirD->hide();
+            dirH->hide();
+            balmerres->hide();
+            balmerres2->show();
+
+
+        } else {
+            shapedetcolor->show();
+            hueskinsty->show();
+            dirV->show();
+            dirD->show();
+            dirH->show();
+            balmerres->show();
+            balmerres2->hide();
+
+        }
+
         neutral2->show();
-        hueskinsty->show();
-        dirV->show();
-        dirD->show();
-        dirH->show();
 
         blend->hide();
         CCWcurveEditormerg->hide();
@@ -3064,7 +3206,7 @@ void Wavelet::mergBMethodChanged()
         grad->show();
         blend->show();
         CCWcurveEditormerg->hide();
-    } else if(mergBMethod->get_active_row_number() == 0  && mergMethod->get_active_row_number() != 4) { //curve HDR
+    } else if(mergBMethod->get_active_row_number() == 0  && mergMethod->get_active_row_number() < 4) { //curve HDR
         grad->hide();
         blend->hide();
         CCWcurveEditormerg->show();
@@ -3132,6 +3274,8 @@ void Wavelet::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvWavCTgainCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == cmergshape) {
             listener->panelChanged (EvWavmergCurve, M("HISTORY_CUSTOMCURVE"));
+        } else if (ce == cmerg2shape) {
+            listener->panelChanged (EvWavmerg2Curve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == cstyshape) {
             listener->panelChanged (EvWavstyCurve, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == opacityShapeRG) {
@@ -3169,6 +3313,10 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         balmer[i]->setDefault(defParams->wavelet.bm[i]);
     }
 
+    for (int i = 0; i < 9; i++) {
+        balmer2[i]->setDefault(defParams->wavelet.bm2[i]);
+    }
+
     strength->setDefault(defParams->wavelet.strength );
     mergeL->setDefault(defParams->wavelet.mergeL );
     mergeC->setDefault(defParams->wavelet.mergeC );
@@ -3196,6 +3344,7 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
     dirH->setDefault(defParams->wavelet.dirH );
     dirD->setDefault(defParams->wavelet.dirD );
     balmerres->setDefault(defParams->wavelet.balmerres );
+    balmerres2->setDefault(defParams->wavelet.balmerres2 );
     grad->setDefault(defParams->wavelet.grad );
     blend->setDefault(defParams->wavelet.blend );
     blendc->setDefault(defParams->wavelet.blendc );
@@ -3310,6 +3459,7 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         dirH->setDefaultEditedState(pedited->wavelet.dirH ? Edited : UnEdited);
         dirD->setDefaultEditedState(pedited->wavelet.dirD ? Edited : UnEdited);
         balmerres->setDefaultEditedState(pedited->wavelet.balmerres ? Edited : UnEdited);
+        balmerres2->setDefaultEditedState(pedited->wavelet.balmerres2 ? Edited : UnEdited);
         grad->setDefaultEditedState(pedited->wavelet.grad ? Edited : UnEdited);
         blend->setDefaultEditedState(pedited->wavelet.blend ? Edited : UnEdited);
         blendc->setDefaultEditedState(pedited->wavelet.blendc ? Edited : UnEdited);
@@ -3329,6 +3479,10 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
 
         for (int i = 0; i < 9; i++) {
             balmer[i]->setDefaultEditedState(pedited->wavelet.bm[i] ? Edited : UnEdited);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            balmer2[i]->setDefaultEditedState(pedited->wavelet.bm2[i] ? Edited : UnEdited);
         }
 
     } else {
@@ -3390,6 +3544,7 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
         dirH->setDefaultEditedState (Irrelevant);
         dirD->setDefaultEditedState (Irrelevant);
         balmerres->setDefaultEditedState (Irrelevant);
+        balmerres2->setDefaultEditedState (Irrelevant);
         grad->setDefaultEditedState (Irrelevant);
         blend->setDefaultEditedState (Irrelevant);
         blendc->setDefaultEditedState (Irrelevant);
@@ -3409,6 +3564,10 @@ void Wavelet::setDefaults (const ProcParams* defParams, const ParamsEdited* pedi
 
         for (int i = 0; i < 9; i++) {
             balmer[i]->setDefaultEditedState(Irrelevant);
+        }
+
+        for (int i = 0; i < 9; i++) {
+            balmer2[i]->setDefaultEditedState(Irrelevant);
         }
 
     }
@@ -3875,6 +4034,7 @@ void Wavelet::setBatchMode (bool batchMode)
     mergBMethod->append_text (M("GENERAL_UNCHANGED"));
     CCWcurveEditorG->setBatchMode (batchMode);
     CCWcurveEditormerg->setBatchMode (batchMode);
+    CCWcurveEditormerg2->setBatchMode (batchMode);
     CCWcurveEditorsty->setBatchMode (batchMode);
     CCWcurveEditorT->setBatchMode (batchMode);
     CCWcurveEditorgainT->setBatchMode (batchMode);
@@ -3943,6 +4103,7 @@ void Wavelet::setBatchMode (bool batchMode)
     dirH->showEditedCB ();
     dirD->showEditedCB ();
     balmerres->showEditedCB ();
+    balmerres2->showEditedCB ();
     grad->showEditedCB ();
     blend->showEditedCB ();
     blendc->showEditedCB ();
@@ -3967,6 +4128,10 @@ void Wavelet::setBatchMode (bool batchMode)
         balmer[i]->showEditedCB();
     }
 
+    for (int i = 0; i < 9; i++) {
+        balmer2[i]->showEditedCB();
+    }
+
 }
 
 void Wavelet::neutral2_pressed ()
@@ -3976,6 +4141,11 @@ void Wavelet::neutral2_pressed ()
         adjusterChanged(balmer[i], 15 + 18 * i);
     }
 
+    for (int i = 0; i < 9; i++) {
+        balmer2[i]->setValue(70);
+        adjusterChanged(balmer2[i], 70);
+    }
+
     hueskinsty->setValue(-5, 25, 170, 120);
     shapedetcolor->resetValue(false);
     dirV->resetValue(false);
@@ -3983,6 +4153,7 @@ void Wavelet::neutral2_pressed ()
     dirD->resetValue(false);
     cstyshape->reset();
     balmerres->resetValue(false);
+    balmerres2->resetValue(false);
     balmerch->resetValue(false);
 }
 
@@ -4138,12 +4309,33 @@ void Wavelet::adjusterChanged (Adjuster* a, double newval)
                 correctionch[z]->show();
             }
 
-            for(z = y; z < 9; z++) {
-                balmer[z]->hide();
+            if(mergMethod->get_active_row_number() == 4) {
+                for(z = y; z < 9; z++) {
+                    balmer[z]->hide();
+                }
+
+                for(z = 0; z < y; z++) {
+                    balmer[z]->show();
+                }
+
+                for(z = 0; z < 9; z++) {
+                    balmer2[z]->hide();
+                }
             }
 
-            for(z = 0; z < y; z++) {
-                balmer[z]->show();
+            if(mergMethod->get_active_row_number() == 5) {
+                for(z = y; z < 9; z++) {
+                    balmer2[z]->hide();
+                }
+
+                for(z = 0; z < y; z++) {
+                    balmer2[z]->show();
+                }
+
+                for(z = 0; z < 9; z++) {
+                    balmer[z]->hide();
+                }
+
             }
 
             if(z == 9) {
@@ -4207,6 +4399,8 @@ void Wavelet::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (EvWavbalmerch, balmerch->getTextValue());
         } else if (a == balmerres) {
             listener->panelChanged (EvWavbalmerres, balmerres->getTextValue());
+        } else if (a == balmerres2) {
+            listener->panelChanged (EvWavbalmerres2, balmerres2->getTextValue());
         } else if (a == grad) {
             listener->panelChanged (EvWavgrad, grad->getTextValue());
         } else if (a == blend) {
@@ -4268,7 +4462,21 @@ void Wavelet::adjusterChanged (Adjuster* a, double newval)
                                             Glib::ustring::format(std::fixed, std::setprecision(0), balmer[7]->getValue()),
                                             Glib::ustring::format(std::fixed, std::setprecision(0), balmer[8]->getValue()))
                                    );
+        } else if (a == balmer2[0] || a == balmer2[1] || a == balmer2[2] || a == balmer2[3] || a == balmer2[4] || a == balmer2[5] || a == balmer2[6] || a == balmer2[7] || a == balmer2[8] ) {
+            listener->panelChanged (EvWaveletbalmer2,
+                                    Glib::ustring::compose("%1, %2, %3, %4, %5, %6, %7, %8, %9",
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[0]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[1]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[2]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[3]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[4]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[5]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[6]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[7]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), balmer2[8]->getValue()))
+                                   );
         }
+
 
     }
 }

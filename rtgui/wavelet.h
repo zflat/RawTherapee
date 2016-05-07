@@ -59,6 +59,7 @@ protected:
     CurveEditorGroup* CCWcurveEditorT;
     CurveEditorGroup* CCWcurveEditorgainT;
     CurveEditorGroup* CCWcurveEditormerg;
+    CurveEditorGroup* CCWcurveEditormerg2;
     CurveEditorGroup* CCWcurveEditorsty;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
@@ -91,6 +92,7 @@ protected:
     FlatCurveEditor* cTshape;
     FlatCurveEditor* cTgainshape;
     FlatCurveEditor* cmergshape;
+    FlatCurveEditor* cmerg2shape;
     FlatCurveEditor* cstyshape;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;
@@ -109,6 +111,7 @@ protected:
     Adjuster* correction[9];
     Adjuster* correctionch[9];
     Adjuster* balmer[9];
+    Adjuster* balmer2[9];
     Adjuster* rescon;
     Adjuster* resconH;
     Adjuster* reschro;
@@ -155,6 +158,7 @@ protected:
     Adjuster* balmerch;
     Adjuster* shapedetcolor;
     Adjuster* balmerres;
+    Adjuster* balmerres2;
     Adjuster* blend;
     Adjuster* blendc;
     Adjuster* grad;

@@ -514,6 +514,9 @@ enum ProcEvent {
     EvWavdirH = 484,
     EvWavdirD = 485,
     EvWavshstyCurve = 486,
+    EvWavmerg2Curve = 487,
+    EvWaveletbalmer2 = 488,
+    EvWavbalmerres2 = 489,
     NUMOFEVENTS
 };
 }

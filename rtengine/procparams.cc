@@ -696,6 +696,21 @@ void WaveletParams::getDefaultmergCurveT(std::vector<double> &curve)
 
 }
 
+void WaveletParams::getDefaultmerg2CurveT(std::vector<double> &curve)
+{
+    double v[8] =   {   0.00, 0.80, 0.35, 0.35,
+                        1.00, 0.40, 0.35, 0.35,
+                    };
+
+    curve.resize(9);
+    curve.at(0 ) = double(FCT_MinMaxCPoints);
+
+    for (size_t i = 1; i < curve.size(); ++i) {
+        curve.at(i) = v[i - 1];
+    }
+
+}
+
 void WaveletParams::getDefaultstyCurveT(std::vector<double> &curve)
 {
     double v[8] =   {   0.00, 0.95, 0.35, 0.35,
@@ -711,12 +726,13 @@ void WaveletParams::getDefaultstyCurveT(std::vector<double> &curve)
 
 }
 
-void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, WavstyCurve &cstyCurve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
+void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, Wavmerg2Curve &cmerg2Curve, WavstyCurve &cstyCurve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
 {
     cCurve.Set(this->ccwcurve);
     cTCurve.Set(this->ccwTcurve);
     cTgainCurve.Set(this->ccwTgaincurve);
     cmergCurve.Set(this->ccwmergcurve);
+    cmerg2Curve.Set(this->ccwmerg2curve);
     cstyCurve.Set(this->ccwstycurve);
     opacityCurveLUTRG.Set(this->opacityCurveRG);
     opacityCurveLUTBY.Set(this->opacityCurveBY);
@@ -732,6 +748,7 @@ void WaveletParams::setDefaults()
     getDefaultCCWCurveT(ccwTcurve);
     getDefaultCCWgainCurveT(ccwTgaincurve);
     getDefaultmergCurveT(ccwmergcurve);
+    getDefaultmerg2CurveT(ccwmerg2curve);
     getDefaultstyCurveT(ccwstycurve);
 
     getDefaultOpacityCurveRG(opacityCurveRG);
@@ -758,6 +775,7 @@ void WaveletParams::setDefaults()
     dirH = 0;
     dirD = -30;
     balmerres = 30;
+    balmerres2 = 70;
     blend = 50;
     blendc = 30;
     grad = 20;
@@ -868,6 +886,10 @@ void WaveletParams::setDefaults()
 
     for(int i = 0; i < 9; i ++) {
         bm[i] = 15 + 18 * i;
+    }
+
+    for(int i = 0; i < 9; i ++) {
+        bm2[i] = 70;
     }
 
 }
@@ -2825,6 +2847,10 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
             keyFile.set_integer ("Wavelet", "Balmerres", wavelet.balmerres);
         }
 
+        if (!pedited || pedited->wavelet.balmerres2) {
+            keyFile.set_integer ("Wavelet", "Balmerres2", wavelet.balmerres2);
+        }
+
         if (!pedited || pedited->wavelet.dirD) {
             keyFile.set_integer ("Wavelet", "dirD", wavelet.dirD);
         }
@@ -2996,6 +3022,15 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
             }
         }
 
+        for(int i = 0; i < 9; i++) {
+            std::stringstream ss;
+            ss << "balmer2" << (i + 1);
+
+            if (!pedited || pedited->wavelet.bm2[i]) {
+                keyFile.set_integer("Wavelet", ss.str(), wavelet.bm2[i]);
+            }
+        }
+
         if (!pedited || pedited->wavelet.sup) {
             keyFile.set_integer  ("Wavelet", "ContExtra",  wavelet.sup);
         }
@@ -3122,6 +3157,11 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         if (!pedited || pedited->wavelet.ccwmergcurve)  {
             Glib::ArrayHandle<double> ccwmergcurve = wavelet.ccwmergcurve;
             keyFile.set_double_list("Wavelet", "MCurve", ccwmergcurve);
+        }
+
+        if (!pedited || pedited->wavelet.ccwmerg2curve)  {
+            Glib::ArrayHandle<double> ccwmerg2curve = wavelet.ccwmerg2curve;
+            keyFile.set_double_list("Wavelet", "MCurve2", ccwmerg2curve);
         }
 
         if (!pedited || pedited->wavelet.ccwstycurve)  {
@@ -6338,6 +6378,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "Balmerres2"))   {
+                wavelet.balmerres2 = keyFile.get_integer ("Wavelet", "Balmerres2");
+
+                if (pedited) {
+                    pedited->wavelet.balmerres2 = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "Grad"))   {
                 wavelet.grad = keyFile.get_double ("Wavelet", "Grad");
 
@@ -6984,6 +7032,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "MCurve2")) {
+                wavelet.ccwmerg2curve = keyFile.get_double_list ("Wavelet", "MCurve2");
+
+                if (pedited) {
+                    pedited->wavelet.ccwmerg2curve = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "StCurve")) {
                 wavelet.ccwstycurve = keyFile.get_double_list ("Wavelet", "StCurve");
 
@@ -7233,6 +7289,19 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
                     if (pedited) {
                         pedited->wavelet.bm[i]   = true;
+                    }
+                }
+            }
+
+            for(int i = 0; i < 9; i ++) {
+                std::stringstream ss;
+                ss << "balmer2" << (i + 1);
+
+                if(keyFile.has_key ("Wavelet", ss.str())) {
+                    wavelet.bm2[i] = keyFile.get_integer ("Wavelet", ss.str());
+
+                    if (pedited) {
+                        pedited->wavelet.bm2[i]   = true;
                     }
                 }
             }
@@ -8195,6 +8264,12 @@ bool operator==(const WaveletParams & a, const WaveletParams & b)
         }
     }
 
+    for(int i = 0; i < 9; i++) {
+        if(a.bm2[i] != b.bm2[i]) {
+            return false;
+        }
+    }
+
     return true;
 }
 
@@ -8626,6 +8701,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.dirH == other.wavelet.dirH
         && wavelet.dirD == other.wavelet.dirD
         && wavelet.balmerres == other.wavelet.balmerres
+        && wavelet.balmerres2 == other.wavelet.balmerres2
         && wavelet.grad == other.wavelet.grad
         && wavelet.blend == other.wavelet.blend
         && wavelet.blendc == other.wavelet.blendc
@@ -8649,6 +8725,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.ccwTcurve == other.wavelet.ccwTcurve
         && wavelet.ccwTgaincurve == other.wavelet.ccwTgaincurve
         && wavelet.ccwmergcurve == other.wavelet.ccwmergcurve
+        && wavelet.ccwmerg2curve == other.wavelet.ccwmerg2curve
         && wavelet.ccwstycurve == other.wavelet.ccwstycurve
         && wavelet.wavclCurve == other.wavelet.wavclCurve
         && wavelet.skinprotect == other.wavelet.skinprotect

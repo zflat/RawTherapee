@@ -403,6 +403,7 @@ void ParamsEdited::set (bool v)
     wavelet.dirH = v;
     wavelet.dirD = v;
     wavelet.balmerres = v;
+    wavelet.balmerres2 = v;
     wavelet.grad = v;
     wavelet.blend = v;
     wavelet.blendc = v;
@@ -497,6 +498,7 @@ void ParamsEdited::set (bool v)
     wavelet.ccwTcurve = v;
     wavelet.ccwTgaincurve = v;
     wavelet.ccwmergcurve = v;
+    wavelet.ccwmerg2curve = v;
     wavelet.ccwstycurve = v;
     wavelet.opacityCurveRG   = v;
     wavelet.opacityCurveBY   = v;
@@ -532,6 +534,10 @@ void ParamsEdited::set (bool v)
 
     for(int i = 0; i < 9; i++) {
         wavelet.bm[i] = v;
+    }
+
+    for(int i = 0; i < 9; i++) {
+        wavelet.bm2[i] = v;
     }
 
     dirpyrequalizer.enabled = v;
@@ -960,6 +966,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.dirH = wavelet.dirH && p.wavelet.dirH == other.wavelet.dirH;
         wavelet.dirD = wavelet.dirD && p.wavelet.dirD == other.wavelet.dirD;
         wavelet.balmerres = wavelet.balmerres && p.wavelet.balmerres == other.wavelet.balmerres;
+        wavelet.balmerres2 = wavelet.balmerres2 && p.wavelet.balmerres2 == other.wavelet.balmerres2;
         wavelet.grad = wavelet.grad && p.wavelet.grad == other.wavelet.grad;
         wavelet.blend = wavelet.blend && p.wavelet.blend == other.wavelet.blend;
         wavelet.blendc = wavelet.blendc && p.wavelet.blendc == other.wavelet.blendc;
@@ -1037,6 +1044,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.ccwTcurve = wavelet.ccwTcurve && p.wavelet.ccwTcurve == other.wavelet.ccwTcurve;
         wavelet.ccwTgaincurve = wavelet.ccwTgaincurve && p.wavelet.ccwTgaincurve == other.wavelet.ccwTgaincurve;
         wavelet.ccwmergcurve = wavelet.ccwmergcurve && p.wavelet.ccwmergcurve == other.wavelet.ccwmergcurve;
+        wavelet.ccwmerg2curve = wavelet.ccwmerg2curve && p.wavelet.ccwmerg2curve == other.wavelet.ccwmerg2curve;
         wavelet.ccwstycurve = wavelet.ccwstycurve && p.wavelet.ccwstycurve == other.wavelet.ccwstycurve;
         wavelet.opacityCurveRG = wavelet.opacityCurveRG && p.wavelet.opacityCurveRG == other.wavelet.opacityCurveRG;
         wavelet.opacityCurveBY = wavelet.opacityCurveBY && p.wavelet.opacityCurveBY == other.wavelet.opacityCurveBY;
@@ -1070,6 +1078,10 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
 
         for(int i = 0; i < 9; i++) {
             wavelet.bm[i] = wavelet.bm[i] && p.wavelet.bm[i] == other.wavelet.bm[i];
+        }
+
+        for(int i = 0; i < 9; i++) {
+            wavelet.bm2[i] = wavelet.bm2[i] && p.wavelet.bm2[i] == other.wavelet.bm2[i];
         }
 
         dirpyrequalizer.enabled = dirpyrequalizer.enabled && p.dirpyrequalizer.enabled == other.dirpyrequalizer.enabled;
@@ -2565,6 +2577,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.balmerres   = mods.wavelet.balmerres;
     }
 
+    if (wavelet.balmerres2) {
+        toEdit.wavelet.balmerres2   = mods.wavelet.balmerres2;
+    }
+
     if (wavelet.grad) {
         toEdit.wavelet.grad   = mods.wavelet.grad;
     }
@@ -2789,6 +2805,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.ccwmergcurve   = mods.wavelet.ccwmergcurve;
     }
 
+    if (wavelet.ccwmerg2curve) {
+        toEdit.wavelet.ccwmerg2curve   = mods.wavelet.ccwmerg2curve;
+    }
+
     if (wavelet.ccwstycurve) {
         toEdit.wavelet.ccwstycurve   = mods.wavelet.ccwstycurve;
     }
@@ -2889,6 +2909,12 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
     for(int i = 0; i < 9; i++) {
         if(wavelet.bm[i]) {
             toEdit.wavelet.bm[i] = mods.wavelet.bm[i];
+        }
+    }
+
+    for(int i = 0; i < 9; i++) {
+        if(wavelet.bm2[i]) {
+            toEdit.wavelet.bm2[i] = mods.wavelet.bm2[i];
         }
     }
 

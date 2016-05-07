@@ -581,6 +581,7 @@ public:
     bool dirH;
     bool dirD;
     bool balmerres;
+    bool balmerres2;
     bool grad;
     bool blend;
     bool blendc;
@@ -596,6 +597,7 @@ public:
     bool c[9];
     bool ch[9];
     bool bm[9];
+    bool bm2[9];
     bool Lmethod;
     bool CHmethod;
     bool CHSLmethod;
@@ -654,6 +656,7 @@ public:
     bool ccwTcurve;
     bool ccwTgaincurve;
     bool ccwmergcurve;
+    bool ccwmerg2curve;
     bool ccwstycurve;
     bool opacityCurveBY;
     bool opacityCurveRG;

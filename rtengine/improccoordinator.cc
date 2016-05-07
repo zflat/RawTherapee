@@ -696,8 +696,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         int disp = 0;
         int Lwa, Hwa;
         bool sav = (params.wavelet.mergMethod == "savwat" || params.wavelet.mergMethod == "savhdr" || params.wavelet.mergMethod == "savzero");
+        bool zero = (params.wavelet.mergMethod == "loadzero"  || params.wavelet.mergMethod == "loadzerohdr");
+        bool zerono = (params.wavelet.mergMethod != "loadzero"  && params.wavelet.mergMethod != "loadzerohdr");
 
-        if(params.wavelet.mergMethod == "load" || params.wavelet.mergMethod == "loadzero") {
+        if(params.wavelet.mergMethod == "load" || zero) {
             sav = false;
         }
 
@@ -720,7 +722,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
-                //    printf("DWimp mergelapart=%d DH=%d\n", e.W, e.H);
+                printf("DWimp mergelapart=%d DH=%d\n", e.W, e.H);
                 mergelabpart = new LabImage(e.W, e.H);
 
 
@@ -762,7 +764,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 float percenthig = (float) params.wavelet.balanhig;
                 float percentleft = (float) params.wavelet.balanleft;
 
-                if(params.wavelet.mergMethod == "loadzero") {
+                if(zero) {
                     percenthig = percentleft = 0.f;
                 }
 
@@ -862,7 +864,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
         if((params.wavelet.enabled)) {
             WaveletParams WaveParams = params.wavelet;
-            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, wavMER2Curve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             int kall = 0;
             progress ("Wavelet...", 100 * readyphase / numofphases);
             LabImage *unshar;
@@ -885,7 +887,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     mLY = m_L;
                     mCY = m_C;
 
-                    if(params.wavelet.mergBMethod == "hdr1"  && wavMERCurve && params.wavelet.mergMethod != "loadzero") {
+                    if(params.wavelet.mergBMethod == "hdr1"  && wavMERCurve && zerono) {
 
                         float Mlc;
 #ifdef _OPENMP
@@ -917,7 +919,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             }
                     }
 
-                    if(params.wavelet.mergMethod == "loadzero") {
+                    if(zero) {
+
                         stytype = 1;
                         int lab = 3;
                         int leve =  params.wavelet.thres;
@@ -958,7 +961,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                             styres = new LabImage(wid1, hei1);
 
-                            ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                         }
 
@@ -966,7 +969,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                         if(stytype == 2) {
 
-                            ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                             for(int y = 0; y < lab; y++) {
                                 for (int i = 0; i < dir; i++) {
@@ -998,6 +1001,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                             delete [] stylev;
                             delete  styres;
+
                         }
 
                     }
@@ -1013,26 +1017,26 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
 
-            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all" && params.wavelet.mergMethod != "loadzero") {
+            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all" && zerono) {
                 unshar = new LabImage (pW, pH);
                 provis = params.wavelet.CLmethod;
                 params.wavelet.CLmethod = "all";
 
-                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                 unshar->CopyFrom(nprevl);
 
                 params.wavelet.CLmethod = provis;
 
             }
 
-            if(params.wavelet.mergMethod != "loadzero"  || (params.wavelet.mergMethod == "loadzero" &&  !params.wavelet.expmerge)) {
+            if(zerono || (zero &&  !params.wavelet.expmerge)) {
 
-                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
             }
 
 
-            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all"  && params.wavelet.mergMethod != "loadzero") {
+            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all" && zerono) {
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
                 float mL0;
@@ -1552,7 +1556,7 @@ void ImProcCoordinator::savelabReference (const Glib::ustring& fname)
 
     rtengine::ProcessingJob* job = rtengine::ProcessingJob::create (getInitialImage(), params);
     rtengine::IImage16* res = rtengine::processImage (job, err,  0);
-    printf("OK savelab\n");
+//   printf("OK savelab\n");
 }
 
 void ImProcCoordinator::saveInputICCReference (const Glib::ustring& fname, bool apply_wb)

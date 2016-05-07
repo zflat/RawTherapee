@@ -946,8 +946,10 @@ void Crop::update (int todo)
         int wat_hdr = 0;
         int Lwa, Hwa;
         bool sav = (params.wavelet.mergMethod == "savwat" || params.wavelet.mergMethod == "savhdr" || params.wavelet.mergMethod == "savzero");
+        bool zero = (params.wavelet.mergMethod == "loadzero"  || params.wavelet.mergMethod == "loadzerohdr");
+        bool zerono = (params.wavelet.mergMethod != "loadzero"  && params.wavelet.mergMethod != "loadzerohdr");
 
-        if(params.wavelet.mergMethod == "load" || params.wavelet.mergMethod == "loadzero") {
+        if(params.wavelet.mergMethod == "load" || zero) {
             sav = false;
         }
 
@@ -970,7 +972,7 @@ void Crop::update (int todo)
 
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
-                //printf("DWcrop mergelabpart=%d DH=%d\n", e.W, e.H);
+                printf("DWcrop mergelabpart=%d DH=%d\n", e.W, e.H);
                 newsizH = e.H;
                 newsizW = e.W;
                 wat_hdr = e.sk;
@@ -1013,7 +1015,7 @@ void Crop::update (int todo)
                 float percenthig = (float) params.wavelet.balanhig;
                 float percentleft = (float) params.wavelet.balanleft;
 
-                if(params.wavelet.mergMethod == "loadzero") {
+                if(zero) {
                     percenthig = percentleft = 0.f;
                 }
 
@@ -1030,7 +1032,7 @@ void Crop::update (int todo)
 
                 int difwM = widIm - Lwa;
                 int difw = (int)((percentleft * difwM) / 100.f);
-                //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+               //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
                 int difhM = heiIm - Hwa;
                 int difh = (int)((percenthig * difhM) / 100.f);
                 //  printf("dcrop difh + Hwa=%d difw + Lwa=%d\n",difh + Hwa,difw + Lwa);
@@ -1115,6 +1117,7 @@ void Crop::update (int todo)
             WavretiCurve wavRETCurve;
             WavretigainCurve wavRETgainCurve;
             WavmergCurve wavMERCurve;
+            Wavmerg2Curve wavMER2Curve;
             WavstyCurve wavSTYCurve;
 
             WavOpacityCurveRG waOpacityCurveRG;
@@ -1124,7 +1127,7 @@ void Crop::update (int todo)
             LUTf wavclCurve;
             LUTu dummy;
 
-            params.wavelet.getCurves(wavCLVCurve, wavRETCurve,  wavRETgainCurve, wavMERCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            params.wavelet.getCurves(wavCLVCurve, wavRETCurve,  wavRETgainCurve, wavMERCurve, wavMER2Curve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             LabImage *unshar;
             Glib::ustring provis;
             float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
@@ -1147,7 +1150,7 @@ void Crop::update (int todo)
                     mLY = m_L;
                     mCY = m_C;
 
-                    if(params.wavelet.mergBMethod == "hdr1" && wavMERCurve  && params.wavelet.mergMethod != "loadzero") {
+                    if(params.wavelet.mergBMethod == "hdr1" && wavMERCurve  && (zerono)) {
 
                         float Mlc;
 #ifdef _OPENMP
@@ -1179,8 +1182,7 @@ void Crop::update (int todo)
                             }
                     }
 
-                    if(params.wavelet.mergMethod == "loadzero") {
-
+                    if(zero) {
                         stytype = 1;
                         int lab = 3;
                         int leve =  params.wavelet.thres;
@@ -1223,14 +1225,14 @@ void Crop::update (int todo)
 
                             styres = new LabImage(wid1, hei1);
 
-                            parent->ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            parent->ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                         }
 
                         stytype = 2;
 
                         if(stytype == 2) {
 
-                            parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                             for(int y = 0; y < lab; y++) {
                                 for (int i = 0; i < dir; i++) {
@@ -1281,13 +1283,13 @@ void Crop::update (int todo)
 
 
 
-            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all" && params.wavelet.mergMethod != "loadzero") {
+            if(WaveParams.ushamethod != "none" && WaveParams.expedge && WaveParams.CLmethod != "all" && zerono) {
 
                 unshar = new LabImage (labnCrop->W, labnCrop->H);
                 provis = params.wavelet.CLmethod;
                 params.wavelet.CLmethod = "all";
 
-                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                 unshar->CopyFrom(labnCrop);
 
                 params.wavelet.CLmethod = provis;
@@ -1295,8 +1297,8 @@ void Crop::update (int todo)
             }
 
             //     if(params.wavelet.mergMethod != "loadzero" || (params.wavelet.mergMethod == "loadzero" &&  !params.wavelet.expmerge)) {
-            if(params.wavelet.mergMethod != "loadzero" || (params.wavelet.mergMethod == "loadzero" &&  !params.wavelet.expmerge)) {
-                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            if(zerono || (zero &&  !params.wavelet.expmerge)) {
+                parent->ipf.ip_wavelet(labnCrop, labnCrop, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, parent->wavclCurve, wavcontlutili, skip, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
             }
 
             if(parent->awavListener) {
@@ -1305,7 +1307,7 @@ void Crop::update (int todo)
 
             }
 
-            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all" && params.wavelet.mergMethod != "loadzero") {
+            if(WaveParams.ushamethod != "none"  && WaveParams.expedge && WaveParams.CLmethod != "all" && zerono) {
 
                 float mL = (float) (WaveParams.mergeL / 100.f);
                 float mC = (float) (WaveParams.mergeC / 100.f);
