@@ -318,10 +318,16 @@ public:
                          struct cont_params &cp, int skip, int minlevwavL, float *mean, float *meanN, float *sigma, float *sigmaN, float *MaxP, float *MaxN,  const Wavmerg2Curve & wavMER2Curve, const WavCurve & wavCLVCcurve, const WavretiCurve & wavRETCcurve, const WavretigainCurve & wavRETgainCcurve, const WavstyCurve & wavSTYCurve, const WavOpacityCurveW & waOpacityCurveW, const WavOpacityCurveWL & waOpacityCurveWL, FlatCurve* ChCurve, bool Chutili,
                          FlatCurve* shstyCurve, bool shstyutili, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax
                         );
+    void WaveletmergeL(LabImage * lab, int posit, bool first, float *****stylev, LabImage *styres, int stytype, LabImage * cropmergelab, int merge_two[6], float **varhue, float **varchrom, wavelet_decomposition &WaveletCoeffs_L,
+                       struct cont_params &cp, int skip, int minlevwavL, float *mean, float *meanN, float *sigma, float *sigmaN, float *MaxP, float *MaxN,  const Wavmerg2Curve & wavMER2Curve, const WavCurve & wavCLVCcurve, const WavretiCurve & wavRETCcurve, const WavretigainCurve & wavRETgainCcurve, const WavstyCurve & wavSTYCurve, const WavOpacityCurveW & waOpacityCurveW, const WavOpacityCurveWL & waOpacityCurveWL, FlatCurve* ChCurve, bool Chutili,
+                       FlatCurve* shstyCurve, bool shstyutili, float &minCD, float &maxCD, float &mini, float &maxi, float &Tmean, float &Tsigma, float &Tmin, float &Tmax
+                      );
 
     void WaveletcontAllLfinal(wavelet_decomposition &WaveletCoeffs_L, struct cont_params &cp, float *mean, float *sigma, float *MaxP, const WavOpacityCurveWL & waOpacityCurveWL);
     void WaveletcontAllAB(LabImage * lab, float *****stylev, LabImage *styres, int stytype, LabImage * cropmergelab, int merge_two[6], float **varhue, float **varchrom, wavelet_decomposition &WaveletCoeffs_a, const Wavmerg2Curve & wavMER2Curve, const WavOpacityCurveW & waOpacityCurveW, const WavstyCurve & wavSTYCurve,
                           FlatCurve* shstyCurve, bool shstyutili, struct cont_params &cp, const bool useChannelA);
+    void WaveletmergeAB(LabImage * lab, int posit, bool first, float *****stylev, LabImage *styres, int stytype, LabImage * cropmergelab, int merge_two[6], float **varhue, float **varchrom, wavelet_decomposition &WaveletCoeffs_a, const Wavmerg2Curve & wavMER2Curve, const WavOpacityCurveW & waOpacityCurveW, const WavstyCurve & wavSTYCurve,
+                        FlatCurve* shstyCurve, bool shstyutili, struct cont_params &cp, const bool useChannelA);
     void WaveletAandBAllAB(LabImage * lab, float **varhue, float **varchrom, const WavretiCurve & wavRETCcurve, const WavretigainCurve & wavRETgainCcurve, wavelet_decomposition &WaveletCoeffs_a, wavelet_decomposition &WaveletCoeffs_b,
                            struct cont_params &cp, const WavOpacityCurveW & waOpacityCurveW, FlatCurve* hhcurve, bool hhutili);
 

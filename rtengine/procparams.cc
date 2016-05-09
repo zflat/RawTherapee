@@ -795,6 +795,7 @@ void WaveletParams::setDefaults()
     mergevMethod = "curr";
     mergMethod = "load";
     mergBMethod = "hdr1";
+    mergMethod2 = "befo";
 
     TMmethod         = "cont";
     HSmethod         = "with";
@@ -2888,6 +2889,10 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
 
         if (!pedited || pedited->wavelet.mergMethod) {
             keyFile.set_string  ("Wavelet", "MergMethod",  wavelet.mergMethod);
+        }
+
+        if (!pedited || pedited->wavelet.mergMethod2) {
+            keyFile.set_string  ("Wavelet", "MergMethod2",  wavelet.mergMethod2);
         }
 
 
@@ -6558,6 +6563,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "MergMethod2"))     {
+                wavelet.mergMethod2  = keyFile.get_string  ("Wavelet", "MergMethod2");
+
+                if (pedited) {
+                    pedited->wavelet.mergMethod2 = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "retinexMethod"))     {
                 wavelet.retinexMethod  = keyFile.get_string  ("Wavelet", "retinexMethod");
 
@@ -8614,6 +8627,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.inpute == other.wavelet.inpute
         && wavelet.mergevMethod == other.wavelet.mergevMethod
         && wavelet.mergMethod == other.wavelet.mergMethod
+        && wavelet.mergMethod2 == other.wavelet.mergMethod2
         && wavelet.mergBMethod == other.wavelet.mergBMethod
         && wavelet.Lmethod == other.wavelet.Lmethod
         && wavelet.CLmethod == other.wavelet.CLmethod

@@ -1071,6 +1071,19 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mg1box->pack_start(*mergMethod);
     mergeBox->pack_start(*mg1box);
 
+    mg2box = Gtk::manage (new Gtk::HBox ());
+    labmmg2 = Gtk::manage (new Gtk::Label (M("TP_WAVELET_MERG_METHOD2") + ":"));
+    mg2box->pack_start (*labmmg2, Gtk::PACK_SHRINK, 1);
+
+    mergMethod2 = Gtk::manage (new MyComboBoxText ());
+    mergMethod2->append_text (M("TP_WAVELET_ZERO_BEF"));
+    mergMethod2->append_text (M("TP_WAVELET_ZERO_AFT"));
+    mergMethod2->set_active(0);
+    mergMethod2Conn = mergMethod2->signal_changed().connect ( sigc::mem_fun(*this, &Wavelet::mergMethod2Changed) );
+    mergMethod2->set_tooltip_markup (M("TP_WAVELET_MERGMET2_TOOLTIP"));
+    mg2box->pack_start(*mergMethod2);
+    mergeBox->pack_start(*mg2box);
+
 
     hbin = Gtk::manage(new Gtk::HBox());
     hbin->set_spacing(2);
@@ -1736,6 +1749,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     mergevMethodConn.block(true);
     mergMethodConn.block(true);
     mergBMethodConn.block(true);
+    mergMethod2Conn.block(true);
 
     /*****************************************************************************************************
      *
@@ -1808,6 +1822,12 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         mergMethod->set_active (4);
     } else if (pp->wavelet.mergMethod == "loadzerohdr") {
         mergMethod->set_active (5);
+    }
+
+    if (pp->wavelet.mergMethod2 == "befo") {
+        mergMethod2->set_active (0);
+    } else if (pp->wavelet.mergMethod2 == "after") {
+        mergMethod2->set_active (1);
     }
 
     if (pp->wavelet.mergevMethod == "curr") {
@@ -2380,6 +2400,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
         retinexMethodproChanged ();
         mergevMethodChanged ();
         mergMethodChanged ();
+        mergMethod2Changed ();
         mergBMethodChanged ();
         ushamethodChanged ();
         usharpmethodChanged ();
@@ -2427,6 +2448,7 @@ void Wavelet::read (const ProcParams* pp, const ParamsEdited* pedited)
     retinexMethodproConn.block(false);
     mergevMethodConn.block(false);
     mergMethodConn.block(false);
+    mergMethod2Conn.block(false);
     mergBMethodConn.block(false);
     enableListener ();
 
@@ -2610,6 +2632,7 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->wavelet.retinexMethodpro    = retinexMethodpro->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergevMethod    = mergevMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergMethod    = mergMethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->wavelet.mergMethod2    = mergMethod2->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.mergBMethod    = mergBMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->wavelet.avoid           = !avoid->get_inconsistent();
         pedited->wavelet.tmr             = !tmr->get_inconsistent();
@@ -2774,6 +2797,12 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
         pp->wavelet.mergMethod = "loadzerohdr";
     }
 
+    if (mergMethod2->get_active_row_number() == 0) {
+        pp->wavelet.mergMethod2 = "befo";
+    } else if (mergMethod2->get_active_row_number() == 1) {
+        pp->wavelet.mergMethod2 = "after";
+    }
+
     if (mergevMethod->get_active_row_number() == 0) {
         pp->wavelet.mergevMethod = "curr";
     } else if (mergevMethod->get_active_row_number() == 1) {
@@ -2929,6 +2958,14 @@ void Wavelet::write (ProcParams* pp, ParamsEdited* pedited)
     pp->wavelet.Lmethod = lMethod;
 }
 
+void Wavelet::mergMethod2Changed()
+{
+    if (listener) {
+        listener->panelChanged (EvWavmergMethod2, mergMethod2->get_active_text ());
+    }
+
+}
+
 void Wavelet::mergMethodChanged()
 {
     int y = thres->getValue();
@@ -2963,6 +3000,7 @@ void Wavelet::mergMethodChanged()
         Dirmethod->set_active (3);
         Lmethod->set_sensitive(true);
         Dirmethod->set_sensitive(true);
+        mg2box->hide();
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
@@ -3001,6 +3039,7 @@ void Wavelet::mergMethodChanged()
         Dirmethod->set_sensitive(true);
 
         balMFrame->hide();
+        mg2box->hide();
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
@@ -3039,6 +3078,7 @@ void Wavelet::mergMethodChanged()
         Lmethod->set_sensitive(false);
         Dirmethod->set_sensitive(false);
         balMFrame->hide();
+        mg2box->hide();
 
 
 
@@ -3074,6 +3114,7 @@ void Wavelet::mergMethodChanged()
         Lmethod->set_active (3);
         balMFrame->hide();
         CCWcurveEditormerg2->hide();
+        mg2box->hide();
 
         for(int z = 0; z < 9; z++) {
             balmer[z]->hide();
@@ -3108,6 +3149,7 @@ void Wavelet::mergMethodChanged()
         Lmethod->set_active (3);
         balMFrame->show();
         Tilesmethod->set_active (0);//force full image
+        mg2box->show();
 
         if(mergMethod->get_active_row_number() == 5) {
             CCWcurveEditormerg2->show();
@@ -4031,6 +4073,7 @@ void Wavelet::setBatchMode (bool batchMode)
     Dirmethod->append_text (M("GENERAL_UNCHANGED"));
     mergevMethod->append_text (M("GENERAL_UNCHANGED"));
     mergMethod->append_text (M("GENERAL_UNCHANGED"));
+    mergMethod2->append_text (M("GENERAL_UNCHANGED"));
     mergBMethod->append_text (M("GENERAL_UNCHANGED"));
     CCWcurveEditorG->setBatchMode (batchMode);
     CCWcurveEditormerg->setBatchMode (batchMode);

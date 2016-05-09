@@ -1080,6 +1080,7 @@ public:
     Glib::ustring Lmethod;
     Glib::ustring CLmethod;
     Glib::ustring mergMethod;
+    Glib::ustring mergMethod2;
     Glib::ustring mergevMethod;
     Glib::ustring mergBMethod;
     Glib::ustring retinexMethod;

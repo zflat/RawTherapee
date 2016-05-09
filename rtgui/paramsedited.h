@@ -603,6 +603,7 @@ public:
     bool CHSLmethod;
     bool mergevMethod;
     bool mergMethod;
+    bool mergMethod2;
     bool mergBMethod;
     bool EDmethod;
     bool BAmethod;

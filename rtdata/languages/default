@@ -722,6 +722,7 @@ HISTORY_MSG_487;W - merge - SH curve
 HISTORY_MSG_488;W - merge - luma curve++
 HISTORY_MSG_489;W - merge - luminance hdr
 HISTORY_MSG_490;W - merge - residual hdr
+HISTORY_MSG_491;W - merge - position
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -2015,8 +2016,12 @@ TP_WAVELET_MCURVE;Merge luma curve
 TP_WAVELET_MCURVE2;Merge luma curve ++
 TP_WAVELET_MCURVE2_TOOLTIP;Take into account luminance of first image
 TP_WAVELET_MCURVE_TOOLTIP;Merge luminance between current and first image in function luma first image
-TP_WAVELET_MERGE_TOOLTIP;*Can be used for create Watermark (or Sharp-mask with the same file) or merge 2 files (HDR) or merge 2 files for Style or merge 2 files (HDR++).\n*This second possibility (hdr) is currently limited by the lack of local control. In addition the algorithm must be greatly improved.\nI recommand:a) threat 'first' image overexposed (neutral) and Save L*a*b* HDR, and then open current image underexposed, and then merge.\n*For Style the first image (style) should not be too small
+TP_WAVELET_MERGE_TOOLTIP;*Can be used for create Watermark (or Sharp-mask with the same file) or merge 2 files (HDR) or merge 2 files for Style or merge 2 files (HDR++).\n*This second possibility (hdr) is currently limited by the lack of local control. In addition the algorithm must be greatly improved.\nI recommand:a) threat 'first' image overexposed (near neutral) and Save L*a*b* HDR, and then open current image underexposed (near neutral), and then merge.\n*For Style the first image (style) should not be too small
 TP_WAVELET_MERG_METHOD;Merge type
+TP_WAVELET_MERG_METHOD2;Position in Wavelet process
+TP_WAVELET_MERGMET2_TOOLTIP;If you select "begin", all wavelet threatment will concern re-assembly image.\nIf you select "end", only current image will be threated.
+TP_WAVELET_ZERO_BEF;Begin
+TP_WAVELET_ZERO_AFT;End
 TP_WAVELET_MERGEINPUTLABEL;Select file to merge
 TP_WAVELET_MERGEINPUT_TOOLTIP;Select file data
 TP_WAVELET_MERGELABEL;MERGE FILES

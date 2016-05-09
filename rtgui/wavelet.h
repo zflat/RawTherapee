@@ -259,6 +259,11 @@ protected:
     MyComboBoxText*   mergMethod;
     sigc::connection  mergMethodConn;
 
+    Gtk::Label* labmmg2;
+    Gtk::HBox* mg2box;
+    MyComboBoxText*   mergMethod2;
+    sigc::connection  mergMethod2Conn;
+
     Gtk::Label* labmmg;
     Gtk::HBox* mgbox;
     MyComboBoxText*   mergevMethod;
@@ -440,6 +445,7 @@ private:
     void mergevMethodChanged ();
     void mergMethodChanged ();
     void mergBMethodChanged ();
+    void mergMethod2Changed ();
 
     void MedgreinfChanged ();
     void TMmethodChanged ();
