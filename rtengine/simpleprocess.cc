@@ -1030,6 +1030,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         int W, H, sk;
     } e;
     int disp = 0;
+    int newsizH, newsizW;
     int Lwa, Hwa;
     bool sav = (params.wavelet.mergMethod == "savwat" || params.wavelet.mergMethod == "savhdr" || params.wavelet.mergMethod == "savzero");
     bool zero = (params.wavelet.mergMethod == "loadzero"  || params.wavelet.mergMethod == "loadzerohdr");
@@ -1055,8 +1056,10 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         if(pos > 2) {
             fin.open(inpu.c_str(), ios::binary);
             fin.read(reinterpret_cast<char *>(&e), sizeof(e));
-            printf("DW=%d DH=%d\n", e.W, e.H);
+            //  printf("DW=%d DH=%d\n", e.W, e.H);
             mergelabpart = new LabImage(e.W, e.H);
+            newsizH = e.H;
+            newsizW = e.W;
 
             for(int ir = 0; ir < e.H; ir++)
                 for(int jr = 0; jr < e.W; jr++) {
@@ -1074,57 +1077,99 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             //     printf("maxx=%f\n", maxx);
             fin.close();
 
-            mergelab = new LabImage(fw, fh);
-            float LT = 0.f;
-            float aT = 0.f;
-            float bT = 0.f;
+            if(params.wavelet.mergMethod != "loadzerohdr"  || (params.wavelet.mergMethod == "loadzerohdr" && newsizW != fw)) {
+
+                mergelab = new LabImage(fw, fh);
+                float LT = 0.f;
+                float aT = 0.f;
+                float bT = 0.f;
 
 #ifdef _OPENMP
-            #pragma omp parallel for
+                #pragma omp parallel for
 #endif
 
-            for(int ir = 0; ir < fh; ir++)
-                for(int jr = 0; jr < fw; jr++) {//fill with color
-                    mergelab->L[ir][jr] = LT;
-                    mergelab->a[ir][jr] = aT;
-                    mergelab->b[ir][jr] = bT;
+                for(int ir = 0; ir < fh; ir++)
+                    for(int jr = 0; jr < fw; jr++) {//fill with color
+                        mergelab->L[ir][jr] = LT;
+                        mergelab->a[ir][jr] = aT;
+                        mergelab->b[ir][jr] = bT;
 
+                    }
+
+                //put  datas mergelab inside megelabtotal
+                float percenthig = (float) params.wavelet.balanhig;
+                float percentleft = (float) params.wavelet.balanleft;
+
+                if(zero) {
+                    percenthig = percentleft = 0.f;
                 }
 
-            //put  datas mergelab inside megelabtotal
-            float percenthig = (float) params.wavelet.balanhig;
-            float percentleft = (float) params.wavelet.balanleft;
+                Lwa = e.W;
+                Hwa = e.H;
 
-            if(zero) {
-                percenthig = percentleft = 0.f;
-            }
+                if(Lwa > fw) {
+                    Lwa = fw;
+                }
 
-            Lwa = e.W;
-            Hwa = e.H;
+                if(Hwa > fh) {
+                    Hwa = fh;
+                }
 
-            if(Lwa > fw) {
-                Lwa = fw;
-            }
-
-            if(Hwa > fh) {
-                Hwa = fh;
-            }
-
-            int difwM = fw - Lwa;
-            int difw = (int)((percentleft * difwM) / 100.f);
-            //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
-            int difhM = fh - Hwa;
-            int difh = (int)((percenthig * difhM) / 100.f);
+                int difwM = fw - Lwa;
+                int difw = (int)((percentleft * difwM) / 100.f);
+                //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+                int difhM = fh - Hwa;
+                int difh = (int)((percenthig * difhM) / 100.f);
 #ifdef _OPENMP
-            #pragma omp parallel for
+                #pragma omp parallel for
 #endif
 
-            for(int ir = difh ; ir < (difh + Hwa); ir++)
-                for(int jr = difw ; jr < (difw + Lwa); jr++) {//
-                    mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
-                    mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
-                    mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
-                }
+                for(int ir = difh ; ir < (difh + Hwa); ir++)
+                    for(int jr = difw ; jr < (difw + Lwa); jr++) {//
+                        mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
+                        mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
+                        mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
+                    }
+
+            } else if(params.wavelet.mergMethod == "loadzerohdr" && newsizW == fw) {
+
+                mergelab = new LabImage(newsizW, newsizH);
+                float LT = 1000.f;
+                float aT = 0.f;
+                float bT = 0.f; //red
+                Lwa = newsizW;
+                Hwa = newsizH;
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for(int ir = 0; ir < (newsizH); ir++)
+                    for(int jr = 0; jr < (newsizW); jr++) {//fill with color
+                        mergelab->L[ir][jr] = LT;
+                        mergelab->a[ir][jr] = aT;
+                        mergelab->b[ir][jr] = bT;
+
+                    }
+
+                float percenthig = (float) params.wavelet.balanhig;
+                float percentleft = (float) params.wavelet.balanleft;
+                int maxshift = 10;
+
+                int deltawe = maxshift * (percentleft - 50.f) / 100.f; //if pcwe = 50  deltawe = 0 ; if pcwe = 100  deltawe = 2;if pcwe = 0  deltawe = -2
+                int deltahi = maxshift * (percenthig - 50.f) / 100.f;
+                int absw = abs(deltawe);
+                int absh = abs(deltahi);
+
+                for(int ir = absh; ir < (newsizH - absh); ir++)
+                    for(int jr = absw; jr < (newsizW - absw); jr++) { //new image
+                        mergelab->L[ir][jr] = mergelabpart->L[ir - deltahi][jr - deltawe];
+                        mergelab->a[ir][jr] = mergelabpart->a[ir - deltahi][jr - deltawe];
+                        mergelab->b[ir][jr] = mergelabpart->b[ir - deltahi][jr - deltawe];
+                    }
+
+            }
+
+
 
             delete mergelabpart;
 

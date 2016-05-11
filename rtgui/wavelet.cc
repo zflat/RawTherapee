@@ -1146,6 +1146,17 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     mgVBox->pack_start(*mgBbox);
 
 
+    balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 50));
+    balanhig->setAdjusterListener (this);
+    balanhig->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
+    mgVBox->pack_start(*balanhig);
+
+    balanleft  = Gtk::manage (new Adjuster (M("TP_WAVELET_HORIZSH"), 0, 100, 1, 50));
+    balanleft->setAdjusterListener (this);
+    balanleft->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
+    mgVBox->pack_start(*balanleft);
+
+
     // Wavelet merge curve
     CCWcurveEditormerg = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_MCURVE"));
     CCWcurveEditormerg->setCurveListener (this);
@@ -1189,17 +1200,6 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     grad->setAdjusterListener (this);
     grad->set_tooltip_text (M("TP_WAVELET_GRAD_TOOLTIP"));
     mgVBox->pack_start(*grad);
-
-    balanhig  = Gtk::manage (new Adjuster (M("TP_WAVELET_VERTSH"), 0, 100, 1, 50));
-    balanhig->setAdjusterListener (this);
-    balanhig->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
-    mgVBox->pack_start(*balanhig);
-
-    balanleft  = Gtk::manage (new Adjuster (M("TP_WAVELET_HORIZSH"), 0, 100, 1, 50));
-    balanleft->setAdjusterListener (this);
-    balanleft->set_tooltip_text (M("TP_WAVELET_VERTSH_TOOLTIP"));
-    mgVBox->pack_start(*balanleft);
-
 
 
     Gtk::VBox *balMVBox = Gtk::manage (new Gtk::VBox());
@@ -3091,9 +3091,7 @@ void Wavelet::mergMethodChanged()
 
     } else if(mergMethod->get_active_row_number() == 3) {//load
         blendc->show();
-        balanhig->show();
         labmmgB->show();
-        balanleft->show();
         sizelab->hide();
         balmerch->hide();
         shapedetcolor->hide();
@@ -3135,9 +3133,9 @@ void Wavelet::mergMethodChanged()
         }
     } else if(mergMethod->get_active_row_number() == 4 || mergMethod->get_active_row_number() == 5) {//load zero or zerohdr
         blendc->hide();
-        balanhig->hide();
+        balanhig->show();
         labmmgB->hide();
-        balanleft->hide();
+        balanleft->show();
         sizelab->hide();
         hbin->show();
         savelab->hide();
@@ -3196,6 +3194,8 @@ void Wavelet::mergMethodChanged()
             dirH->hide();
             balmerres->hide();
             balmerres2->show();
+            balanhig->show();
+            balanleft->show();
 
 
         } else {
@@ -3206,6 +3206,8 @@ void Wavelet::mergMethodChanged()
             dirH->show();
             balmerres->show();
             balmerres2->hide();
+            balanhig->hide();
+            balanleft->hide();
 
         }
 
@@ -4198,6 +4200,8 @@ void Wavelet::neutral2_pressed ()
     balmerres->resetValue(false);
     balmerres2->resetValue(false);
     balmerch->resetValue(false);
+    balanhig->resetValue(false);
+    balanleft->resetValue(false);
 }
 
 void Wavelet::savelabPressed ()

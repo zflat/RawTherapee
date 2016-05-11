@@ -846,7 +846,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
 
         //empirical skip evaluation : very difficult  because quasi all parameters interfere
         //to test on several images
-        int nei = (int) krad * deh.neigh;
+        int nei = (int) (krad * deh.neigh);
         if(skip >= 4) {
             nei = (int) (0.1f * nei + 2.f);    //not too bad
         } else if(skip > 1 && skip < 4) {

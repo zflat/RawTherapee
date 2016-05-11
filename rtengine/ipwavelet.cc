@@ -2299,6 +2299,7 @@ void ImProcFunctions::WaveletmergeL(LabImage * labco, int posit, bool first, flo
 
                                 if(skinprotsty > 0.f) {
                                     Color::SkinSatCbdl2 (LL100, modhue, modchro, skinprotsty, scalex, true, cp.b_lsty, cp.t_lsty, cp.t_rsty, cp.b_rsty, 0); //0 for skin and extand
+                                    scalex *= 0.7f;
                                 } else if(skinprotsty < 0.f) {
                                     Color::SkinSatCbdl2 (LL100, modhue, modchro, skinprotnegsty, scalex, false, cp.b_lsty, cp.t_lsty, cp.t_rsty, cp.b_rsty, 0);
 
@@ -2310,9 +2311,6 @@ void ImProcFunctions::WaveletmergeL(LabImage * labco, int posit, bool first, flo
                                 }
 
                             }
-
-
-
 
 
                             if(fabsf(WavCoeffs_L[dir][k]) >= (meanL[lvl] + sigmaL[lvl])) { //for max
@@ -2403,17 +2401,6 @@ void ImProcFunctions::WaveletcontAllL(LabImage * labco, float *****stylev, LabIm
     int W_L = WaveletCoeffs_L.level_W(0);
     int H_L = WaveletCoeffs_L.level_H(0);
     float * WavCoeffs_L0 = WaveletCoeffs_L.coeff0;
-//   int ww = merge_two[0];
-//   int hh = merge_two[1];
-//   printf("WAV aLLL H=%d W=%d h=%d w=%d \n", H_L, W_L, hh, ww);
-//   bool zero = (params->wavelet.mergMethod == "loadzero"  || params->wavelet.mergMethod == "loadzerohdr");
-//   bool loadzer = params->wavelet.mergMethod == "loadzero";
-    /*    int maxshift = 4;
-
-        int deltawe = maxshift * (cp.pcwe - 50.f) / 100.f; //if pcwe = 50  deltawe = 0 ; if pcwe = 100  deltawe = 2;if pcwe = 0  deltawe = -2
-        int deltahi = maxshift * (cp.pchi - 50.f) / 100.f;
-    */
-
 
     float maxh = 2.5f; //amplification contrast above mean
     float maxl = 2.5f; //reduction contrast under mean
@@ -3060,10 +3047,7 @@ void ImProcFunctions::WaveletmergeAB(LabImage * labco, int posit, bool first, fl
 
             Evaluateab(WaveletCoeffs_ab, cp, ind, meanab, meanNab, sigmaab, sigmaNab, MaxPab, MaxNab);
 
-            //#ifdef _RT_NESTED_OPENMP
-//        #pragma omp parallel num_threads(wavNestedLevels) if(wavNestedLevels>1)
-//#endif
-//       {
+
             int chan = 1;
 
             if(useChannelA) {
@@ -3141,6 +3125,7 @@ void ImProcFunctions::WaveletmergeAB(LabImage * labco, int posit, bool first, fl
 
                                 if(skinprotsty > 0.f) {
                                     Color::SkinSatCbdl2 (LL100, modhue, modchro, skinprotsty, scalex, true, cp.b_lsty, cp.t_lsty, cp.t_rsty, cp.b_rsty, 0); //0 for skin and extand
+                                    scalex *= 0.7f; //increase effect
                                 } else if(skinprotsty < 0.f) {
                                     Color::SkinSatCbdl2 (LL100, modhue, modchro, skinprotnegsty, scalex, false, cp.b_lsty, cp.t_lsty, cp.t_rsty, cp.b_rsty, 0);
 

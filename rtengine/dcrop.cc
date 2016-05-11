@@ -972,7 +972,7 @@ void Crop::update (int todo)
 
                 fin.open(inpu.c_str(), ios::binary);
                 fin.read(reinterpret_cast<char *>(&e), sizeof(e));
-                printf("DWcrop mergelabpart=%d DH=%d\n", e.W, e.H);
+                // printf("DWcrop mergelabpart=%d DH=%d\n", e.W, e.H);
                 newsizH = e.H;
                 newsizW = e.W;
                 wat_hdr = e.sk;
@@ -995,57 +995,101 @@ void Crop::update (int todo)
                 merMutex->unlock ();
                 delete merMutex;
 
-                mergelab = new LabImage(widIm, heiIm);
-                float LT = 0.f;
-                float aT = 0.f;
-                float bT = 0.f; //red
+                if(params.wavelet.mergMethod != "loadzerohdr"  || (params.wavelet.mergMethod == "loadzerohdr" && newsizW != widIm)) {
+                    mergelab = new LabImage(widIm, heiIm);
+                    float LT = 1000.f;
+                    float aT = 0.f;
+                    float bT = 0.f; //red
 #ifdef _OPENMP
-                #pragma omp parallel for
+                    #pragma omp parallel for
 #endif
 
-                for(int ir = 0; ir < (heiIm); ir++)
-                    for(int jr = 0; jr < (widIm); jr++) {//fill with color
-                        mergelab->L[ir][jr] = LT;
-                        mergelab->a[ir][jr] = aT;
-                        mergelab->b[ir][jr] = bT;
+                    for(int ir = 0; ir < (heiIm); ir++)
+                        for(int jr = 0; jr < (widIm); jr++) {//fill with color
+                            mergelab->L[ir][jr] = LT;
+                            mergelab->a[ir][jr] = aT;
+                            mergelab->b[ir][jr] = bT;
 
+                        }
+
+                    //put  datas mergelab inside megelabtotal
+                    float percenthig = (float) params.wavelet.balanhig;
+                    float percentleft = (float) params.wavelet.balanleft;
+
+                    if(zero) {
+                        percenthig = percentleft = 0.f;
                     }
 
-                //put  datas mergelab inside megelabtotal
-                float percenthig = (float) params.wavelet.balanhig;
-                float percentleft = (float) params.wavelet.balanleft;
+                    Lwa = newsizW;
+                    Hwa = newsizH;
 
-                if(zero) {
-                    percenthig = percentleft = 0.f;
-                }
+                    if(Lwa >= widIm) {
+                        Lwa = widIm;
+                    }
 
-                Lwa = newsizW;
-                Hwa = newsizH;
+                    if(Hwa >= heiIm) {
+                        Hwa = heiIm;
+                    }
 
-                if(Lwa >= widIm) {
-                    Lwa = widIm;
-                }
-
-                if(Hwa >= heiIm) {
-                    Hwa = heiIm;
-                }
-
-                int difwM = widIm - Lwa;
-                int difw = (int)((percentleft * difwM) / 100.f);
-               //  printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
-                int difhM = heiIm - Hwa;
-                int difh = (int)((percenthig * difhM) / 100.f);
-                //  printf("dcrop difh + Hwa=%d difw + Lwa=%d\n",difh + Hwa,difw + Lwa);
+                    int difwM = widIm - Lwa;
+                    int difw = (int)((percentleft * difwM) / 100.f);
+                    //    printf("widIM=%d eW=%d difwM=%d difw=%d\n",  widIm, e.W, difwM, difw);
+                    int difhM = heiIm - Hwa;
+                    int difh = (int)((percenthig * difhM) / 100.f);
+                    //  printf("dcrop difh + Hwa=%d difw + Lwa=%d\n",difh + Hwa,difw + Lwa);
 #ifdef _OPENMP
-                #pragma omp parallel for
+                    #pragma omp parallel for
 #endif
 
-                for(int ir = difh ; ir < (difh + Hwa); ir++)
-                    for(int jr = difw ; jr < (difw + Lwa); jr++) {//
-                        mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
-                        mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
-                        mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
-                    }
+                    for(int ir = difh ; ir < (difh + Hwa); ir++)
+                        for(int jr = difw ; jr < (difw + Lwa); jr++) {//
+                            mergelab->L[ir][jr] = mergelabpart->L[ir - difh][jr - difw];
+                            mergelab->a[ir][jr] = mergelabpart->a[ir - difh][jr - difw];
+                            mergelab->b[ir][jr] = mergelabpart->b[ir - difh][jr - difw];
+                        }
+                } else if(params.wavelet.mergMethod == "loadzerohdr"  && newsizW == widIm) {
+                    //  if(newsizW != widIm) {
+                    //     return;    //exit if bad selection
+                    //  }
+
+                    mergelab = new LabImage(newsizW, newsizH);
+                    float LT = 1000.f;
+                    float aT = 0.f;
+                    float bT = 0.f; //red
+                    Lwa = newsizW;
+                    Hwa = newsizH;
+
+#ifdef _OPENMP
+                    #pragma omp parallel for
+#endif
+
+                    for(int ir = 0; ir < (newsizH); ir++)
+                        for(int jr = 0; jr < (newsizW); jr++) {//fill with color
+                            mergelab->L[ir][jr] = LT;
+                            mergelab->a[ir][jr] = aT;
+                            mergelab->b[ir][jr] = bT;
+
+                        }
+
+                    //put  datas mergelab inside megelabtotal
+
+                    float percenthig = (float) params.wavelet.balanhig;
+                    float percentleft = (float) params.wavelet.balanleft;
+                    int maxshift = 10;
+
+                    int deltawe = maxshift * (percentleft - 50.f) / 100.f; //if pcwe = 50  deltawe = 0 ; if pcwe = 100  deltawe = 2;if pcwe = 0  deltawe = -2
+                    int deltahi = maxshift * (percenthig - 50.f) / 100.f;
+                    int absw = abs(deltawe);
+                    int absh = abs(deltahi);
+                    //  printf("DCROP delE=%d delH=%d absw=%d absh=%d\n", deltawe, deltahi, absw, absh);
+
+                    for(int ir = absh; ir < (newsizH - absh); ir++)
+                        for(int jr = absw; jr < (newsizW - absw); jr++) { //new image
+                            mergelab->L[ir][jr] = mergelabpart->L[ir - deltahi][jr - deltawe];
+                            mergelab->a[ir][jr] = mergelabpart->a[ir - deltahi][jr - deltawe];
+                            mergelab->b[ir][jr] = mergelabpart->b[ir - deltahi][jr - deltawe];
+                        }
+                }
 
                 delete mergelabpart;
             }
