@@ -847,6 +847,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         //empirical skip evaluation : very difficult  because quasi all parameters interfere
         //to test on several images
         int nei = (int) (krad * deh.neigh);
+
         if(skip >= 4) {
             nei = (int) (0.1f * nei + 2.f);    //not too bad
         } else if(skip > 1 && skip < 4) {
@@ -854,11 +855,12 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         }
 
         int moderetinex;
+
         if (deh.retinexMethod == "uni") {
             moderetinex = 0;
         } else if (deh.retinexMethod == "low") {
             moderetinex = 1;
-        } else /*if (deh.retinexMethod == "high") */ { // default to 2 ( deh.retinexMethod == "high" )
+        } else { /*if (deh.retinexMethod == "high") */  // default to 2 ( deh.retinexMethod == "high" )
             moderetinex = 2;
         }
 
@@ -1060,6 +1062,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
             for (int i = 0; i < H_L; i++ )
                 for (int j = 0; j < W_L; j++) { //for mintr to maxtr evalate absciss in function of original transmission
                     float absciss;
+
                     if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
                         absciss = asig * luminance[i][j] + bsig;
                     } else if (luminance[i][j] >= mean) {
@@ -1161,6 +1164,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
         float asig, bsig, amax, bmax, amin, bmin;
 
         const bool hasWavRetGainCurve = wavRETgainCcurve && mean != 0.f && stddv != 0.f;
+
         if (hasWavRetGainCurve) { //if curve
             asig = 0.166666f / stddv;
             bsig = 0.5f - asig * mean;
@@ -1196,6 +1200,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
                 for (int j = 0; j < W_L; j++) {
                     if (hasWavRetGainCurve) {
                         float absciss;
+
                         if (LIKELY(fabsf(luminance[i][j] - mean) < stddv)) {
                             absciss = asig * luminance[i][j] + bsig;
                         } else if (luminance[i][j] >= mean) {
@@ -1203,6 +1208,7 @@ void ImProcFunctions::MSRWav(float** luminance, const float* const *originalLumi
                         } else { /*if(luminance[i][j] <= mean - stddv)*/
                             absciss = amin * luminance[i][j] + bmin;
                         }
+
                         gan = wavRETgainCcurve[absciss]; //new gain function transmission
                     }
 

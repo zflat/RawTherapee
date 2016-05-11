@@ -1113,8 +1113,10 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
 
                         bool first = true;
                         WaveletmergeL(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *Ldecomp, cp, skip, minlevwavL, mean, meanN, sigma, sigmaN, MaxP, MaxN, wavMER2Curve, wavCLVCcurve, wavRETCcurve, wavRETgainCcurve, wavSTYCurve, waOpacityCurveW, waOpacityCurveWL, ChCurve, Chutili, shstyCurve, shstyutili, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                        first = false;
 
                         if(posit == 0) {
+
                             WaveletmergeL(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *Ldecomp, cp, skip, minlevwavL, mean, meanN, sigma, sigmaN, MaxP, MaxN, wavMER2Curve, wavCLVCcurve, wavRETCcurve, wavRETgainCcurve, wavSTYCurve, waOpacityCurveW, waOpacityCurveWL, ChCurve, Chutili, shstyCurve, shstyutili, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                         }
 
@@ -1178,6 +1180,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
                             }
 
                             WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *adecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, true);
+                            first = false;
 
                             if(posit == 0) {
                                 WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *adecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, true);
@@ -1220,6 +1223,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
                             }
 
                             WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
+                            first = false;
 
                             if(posit == 0) {
                                 WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
@@ -1254,9 +1258,29 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
                         wavelet_decomposition* bdecomp = new wavelet_decomposition (labco->data + 2 * datalen, labco->W, labco->H, levwavab, 1, skip, max(1, wavNestedLevels), DaubLen );
 
                         if(!adecomp->memoryAllocationFailed && !bdecomp->memoryAllocationFailed) {
+                            bool first = true;
+                            int posit = 0;
+
+                            if(params->wavelet.mergMethod2 == "befo") {
+                                posit = 0;
+                            } else {
+                                posit = 1;
+                            }
+
+                            WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
+                            first = false;
+
+                            if(posit == 0) {
+                                WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
+                            }
+
                             WaveletcontAllAB(labco, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *adecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, true);
                             WaveletcontAllAB(labco, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
                             WaveletAandBAllAB(labco, varhue, varchro, wavRETCcurve, wavRETgainCcurve, *adecomp, *bdecomp, cp, waOpacityCurveW, hhCurve, hhutili );
+
+                            if(posit == 1) {
+                                WaveletmergeAB(labco, posit, first, stylev, styres, stytype, cropmergelab, merge_two, varhue, varchro, *bdecomp, wavMER2Curve, waOpacityCurveW, wavSTYCurve, shstyCurve, shstyutili, cp, false);
+                            }
 
                             adecomp->reconstruct(labco->data + datalen, cp.strength);
                             bdecomp->reconstruct(labco->data + 2 * datalen, cp.strength);
@@ -2178,12 +2202,12 @@ void ImProcFunctions::WaveletmergeL(LabImage * labco, int posit, bool first, flo
 
             for (int dir = 1; dir < 4; dir++) {
                 for (int lvl = 0; lvl < maxlvl; lvl++) {
-                    float ** WavCoeffs_LS = WaveletCoeffs_L.level_coeffs(lvl);
+                    float ** WavCoeffs_L = WaveletCoeffs_L.level_coeffs(lvl);
 
                     for (int i = 0; i < H_L; i++) {
                         for (int j = 0; j < W_L; j++) {
                             if(i < hh && j < ww) {
-                                stylev[0][dir - 1][lvl][i][j] = WavCoeffs_LS[dir][i * W_L + j];
+                                stylev[0][dir - 1][lvl][i][j] = WavCoeffs_L[dir][i * W_L + j];
                             }
                         }
                     }
@@ -2992,12 +3016,12 @@ void ImProcFunctions::WaveletmergeAB(LabImage * labco, int posit, bool first, fl
 
             for (int dir = 1; dir < 4; dir++) {
                 for (int lvl = 0; lvl < maxlvl; lvl++) {
-                    float ** WavCoeffs_abS = WaveletCoeffs_ab.level_coeffs(lvl);
+                    float ** WavCoeffs_ab = WaveletCoeffs_ab.level_coeffs(lvl);
 
                     for (int i = 0; i < H_L; i++) {
                         for (int j = 0; j < W_L; j++) {
                             if(i < hh && j < ww) {
-                                stylev[chan][dir - 1][lvl][i][j] = WavCoeffs_abS[dir][i * W_L + j];
+                                stylev[chan][dir - 1][lvl][i][j] = WavCoeffs_ab[dir][i * W_L + j];
                             }
                         }
                     }
