@@ -671,61 +671,60 @@ HISTORY_MSG_436;Retinex - M - Radius
 HISTORY_MSG_437;Retinex - M - Method
 HISTORY_MSG_438;Retinex - M - Equalizer
 HISTORY_MSG_439;Retinex - Preview
-HISTORY_MSG_440;W - Unsharp method
-HISTORY_MSG_441;W - Merge luma
-HISTORY_MSG_442;W - Merge chroma
-HISTORY_MSG_443;W - Reti - gain
-HISTORY_MSG_444;W - Reti - brightness
-HISTORY_MSG_445;W - Reti - strength
-HISTORY_MSG_446;W - Reti - radius
-HISTORY_MSG_447;W - Reti - contrast
-HISTORY_MSG_448;W - Reti - threshold
-HISTORY_MSG_449;W - Retinex method
-HISTORY_MSG_450;W - Reti - transmission
-HISTORY_MSG_451;W - Reti - chroma
-HISTORY_MSG_452;W - Reti - process
-HISTORY_MSG_453;W - merge - enabled
-HISTORY_MSG_454;W - merge - file
-HISTORY_MSG_455;W - merge - type
-HISTORY_MSG_456;W - merge - preview
-HISTORY_MSG_457;W - merge - H shift
-HISTORY_MSG_458;W - merge - V shift
-HISTORY_MSG_459;W - merge - blend L
-HISTORY_MSG_460;W - merge - blend C
-HISTORY_MSG_461;W - merge - reset
-HISTORY_MSG_462;W - es - sharp method
-HISTORY_MSG_463;W - Reti - enabled
-HISTORY_MSG_464;W - merge - method
-HISTORY_MSG_465;W - Reti - radius
-HISTORY_MSG_466;W - Reti - highlight
-HISTORY_MSG_467;W - Reti - H tonal width
-HISTORY_MSG_468;W - Reti - shadows
-HISTORY_MSG_469;W - Reti - S tonal width
-HISTORY_MSG_470;W - Reti - Scale
-HISTORY_MSG_471;W - Residual - Toning color bal
-HISTORY_MSG_472;W - es - Edge detection
-HISTORY_MSG_473;W - merge - gradient luma
-HISTORY_MSG_474;W - merge - merge curve
-HISTORY_MSG_475;W - Reti - gain curve
-HISTORY_MSG_476;CbDL - method
-HISTORY_MSG_477;W - merge - save size
-HISTORY_MSG_478;W - merge - luminance style
-HISTORY_MSG_479;W - merge - chroma
-HISTORY_MSG_480;W - merge - residual style
-HISTORY_MSG_481;W - merge - style targ/prot
-HISTORY_MSG_482;W - merge - shape detection curve
-HISTORY_MSG_483;W - merge - style detection color
-HISTORY_MSG_484;W - merge - dirV
-HISTORY_MSG_485;W - merge - dirH
-HISTORY_MSG_486;W - merge - dirD
-HISTORY_MSG_487;W - merge - SH curve
-HISTORY_MSG_488;W - merge - luma curve++
-HISTORY_MSG_489;W - merge - luminance hdr
-HISTORY_MSG_490;W - merge - residual hdr
-HISTORY_MSG_491;W - merge - position
-HISTORY_MSG_492;CbDL - Method
-HISTORY_MSG_493;Retinex - Gain transmission
-HISTORY_MSG_494;Retinex - Scale
+HISTORY_MSG_440;Retinex - Gain transmission
+HISTORY_MSG_441;Retinex - Scale
+HISTORY_MSG_442;W - Unsharp method
+HISTORY_MSG_443;W - Merge luma
+HISTORY_MSG_444;W - Merge chroma
+HISTORY_MSG_445;W - Reti - gain
+HISTORY_MSG_446;W - Reti - brightness
+HISTORY_MSG_447;W - Reti - strength
+HISTORY_MSG_448;W - Reti - radius
+HISTORY_MSG_449;W - Reti - contrast
+HISTORY_MSG_450;W - Reti - threshold
+HISTORY_MSG_451;W - Retinex method
+HISTORY_MSG_452;W - Reti - transmission
+HISTORY_MSG_453;W - Reti - chroma
+HISTORY_MSG_454;W - Reti - process
+HISTORY_MSG_455;W - merge - enabled
+HISTORY_MSG_456;W - merge - file
+HISTORY_MSG_457;W - merge - type
+HISTORY_MSG_458;W - merge - preview
+HISTORY_MSG_459;W - merge - H shift
+HISTORY_MSG_460;W - merge - V shift
+HISTORY_MSG_461;W - merge - blend L
+HISTORY_MSG_462;W - merge - blend C
+HISTORY_MSG_463;W - merge - reset
+HISTORY_MSG_464;W - es - sharp method
+HISTORY_MSG_465;W - Reti - enabled
+HISTORY_MSG_466;W - merge - method
+HISTORY_MSG_467;W - Reti - radius
+HISTORY_MSG_468;W - Reti - highlight
+HISTORY_MSG_469;W - Reti - H tonal width
+HISTORY_MSG_470;W - Reti - shadows
+HISTORY_MSG_471;W - Reti - S tonal width
+HISTORY_MSG_472;W - Reti - Scale
+HISTORY_MSG_473;W - Residual - Toning color bal
+HISTORY_MSG_474;W - es - Edge detection
+HISTORY_MSG_475;W - merge - gradient luma
+HISTORY_MSG_476;W - merge - merge curve
+HISTORY_MSG_477;W - Reti - gain curve
+HISTORY_MSG_478;CbDL - method
+HISTORY_MSG_479;W - merge - save size
+HISTORY_MSG_480;W - merge - luminance style
+HISTORY_MSG_481;W - merge - chroma
+HISTORY_MSG_482;W - merge - residual style
+HISTORY_MSG_483;W - merge - style targ/prot
+HISTORY_MSG_484;W - merge - shape detection curve
+HISTORY_MSG_485;W - merge - style detection color
+HISTORY_MSG_486;W - merge - dirV
+HISTORY_MSG_487;W - merge - dirH
+HISTORY_MSG_488;W - merge - dirD
+HISTORY_MSG_489;W - merge - SH curve
+HISTORY_MSG_490;W - merge - luma curve++
+HISTORY_MSG_491;W - merge - luminance hdr
+HISTORY_MSG_492;W - merge - residual hdr
+HISTORY_MSG_493;W - merge - position
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
