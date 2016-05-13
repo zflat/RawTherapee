@@ -8,7 +8,7 @@
 #include "adjuster.h"
 #include "toolpanel.h"
 #include "edit.h"
-#include "../rtengine/coord.h"
+#include "guiutils.h"
 
 class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public EditSubscriber
 {
@@ -64,7 +64,7 @@ public:
     void setDefaults    (const rtengine::procparams::ProcParams* defParams, const ParamsEdited* pedited = NULL);
     void setBatchMode   (bool batchMode);
 
-    void updateGeometry (int centerX_, int centerY_, int locY_, double degree_, int locX_, int locYT_, int locXL_);
+    void updateGeometry (const int centerX_, const int centerY_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth = -1, const int fullHeight = -1);
     void SmethodChanged      ();
 
     void adjusterChanged (Adjuster* a, double newval);

@@ -55,6 +55,49 @@ public:
     bool method;
 };
 
+class RetinexParamsEdited
+{
+public:
+    bool enabled;
+    bool str;
+    bool scal;
+    bool iter;
+    bool grad;
+    bool grads;
+    bool gam;
+    bool slope;
+    bool neigh;
+    bool gain;
+    bool offs;
+    bool retinexMethod;
+    bool mapMethod;
+    bool viewMethod;
+    bool retinexcolorspace;
+    bool gammaretinex;
+    bool vart;
+    bool limd;
+    bool highl;
+    bool baselog;
+    bool skal;
+    bool method;
+    bool transmissionCurve;
+    bool gaintransmissionCurve;
+    bool cdcurve;
+    bool mapcurve;
+    bool cdHcurve;
+    bool lhcurve;
+    bool retinex;
+    bool medianmap;
+    bool isUnchanged() const;
+    bool highlights;
+    bool htonalwidth;
+    bool shadows;
+    bool stonalwidth;
+    bool radius;
+
+};
+
+
 class LCurveParamsEdited
 {
 public:
@@ -73,7 +116,6 @@ public:
     bool hhcurve;
     bool lccurve;
     bool clcurve;
-
     bool enabled;
     bool method;
 };
@@ -525,6 +567,7 @@ public:
     bool dcpIlluminant;
     bool working;
     bool output;
+    bool outputIntent;
     bool gamma;
     bool gampos;
     bool slpos;
@@ -629,7 +672,7 @@ public:
     bool enabled;
     bool gamutlab;
     bool mult[6];
-
+    bool cbdlMethod;
     bool threshold;
     bool skinprotect;
     bool hueskin;
@@ -695,6 +738,7 @@ public:
     XTransSensor xtranssensor;
 
     bool caCorrection;
+    bool caAutoStrength;
     bool caRed;
     bool caBlue;
     bool hotPixelFilter;
@@ -723,6 +767,7 @@ public:
     LCurveParamsEdited            labCurve;
     RGBCurvesParamsEdited         rgbCurves;
     ColorToningEdited             colorToning;
+    RetinexParamsEdited             retinex;
     SharpeningParamsEdited        sharpening;
     SharpeningParamsEdited        prsharpening;
     SharpenEdgeParamsEdited       sharpenEdge;

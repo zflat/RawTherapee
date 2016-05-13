@@ -23,6 +23,7 @@
 #include <vector>
 #include <cstdio>
 #include <cmath>
+#include <lcms2.h>
 #include "LUT.h"
 #include "coord.h"
 
@@ -39,6 +40,16 @@ class WavOpacityCurveRG;
 class WavOpacityCurveBY;
 class WavOpacityCurveW;
 class WavOpacityCurveWL;
+class RetinextransmissionCurve;
+class RetinexgaintransmissionCurve;
+
+enum RenderingIntent {
+    RI_PERCEPTUAL = INTENT_PERCEPTUAL,
+    RI_RELATIVE = INTENT_RELATIVE_COLORIMETRIC,
+    RI_SATURATION = INTENT_SATURATION,
+    RI_ABSOLUTE = INTENT_ABSOLUTE_COLORIMETRIC,
+    RI__COUNT
+};
 
 namespace procparams
 {
@@ -259,6 +270,55 @@ public:
     }
     void setDefaults();
     static bool HLReconstructionNecessary(LUTu &histRedRaw, LUTu &histGreenRaw, LUTu &histBlueRaw);
+};
+/**
+  * Parameters of Retinex
+  */
+class RetinexParams
+{
+
+public:
+    bool enabled;
+    std::vector<double>   cdcurve;
+    std::vector<double>   cdHcurve;
+    std::vector<double>   lhcurve;
+    std::vector<double> transmissionCurve;
+    std::vector<double> gaintransmissionCurve;
+    std::vector<double>   mapcurve;
+    int     str;
+    int     scal;
+    int     iter;
+    int     grad;
+    int     grads;
+    double  gam;
+    double  slope;
+    int     neigh;
+    int     gain;
+    int     offs;
+    int     highlights;
+    int     htonalwidth;
+    int     shadows;
+    int     stonalwidth;
+    int     radius;
+
+    Glib::ustring retinexMethod;
+    Glib::ustring retinexcolorspace;
+    Glib::ustring gammaretinex;
+    Glib::ustring mapMethod;
+    Glib::ustring viewMethod;
+    int     vart;
+    int     limd;
+    int     highl;
+    double     baselog;
+    int     skal;
+    bool    medianmap;
+    RetinexParams ();
+    void setDefaults();
+    void getCurves(RetinextransmissionCurve &transmissionCurveLUT, RetinexgaintransmissionCurve &gaintransmissionCurveLUT) const;
+
+    static void getDefaultgaintransmissionCurve(std::vector<double> &curve);
+
+    static void getDefaulttransmissionCurve(std::vector<double> &curve);
 };
 
 
@@ -941,6 +1001,7 @@ public:
     int dcpIlluminant;
     Glib::ustring working;
     Glib::ustring output;
+    RenderingIntent outputIntent;
     static const Glib::ustring NoICMString;
 
     Glib::ustring gamma;
@@ -1084,7 +1145,7 @@ public:
     double skinprotect;
     Threshold<int> hueskin;
     //Glib::ustring algo;
-
+    Glib::ustring cbdlMethod;
     DirPyrEqualizerParams() : hueskin(20, 80, 2000, 1200, false) {};
 };
 
@@ -1196,6 +1257,7 @@ public:
     int ff_clipControl;
 
     bool ca_autocorrect;
+    double caautostrength;
     double cared;
     double cablue;
 
@@ -1223,6 +1285,7 @@ class ProcParams
 public:
     ToneCurveParams         toneCurve;       ///< Tone curve parameters
     LCurveParams            labCurve;        ///< CIELAB luminance curve parameters
+    RetinexParams             retinex;           ///< Retinex parameters
     RGBCurvesParams         rgbCurves;       ///< RGB curves parameters
     ColorToningParams       colorToning;     ///< Color Toning parameters
     SharpeningParams        sharpening;      ///< Sharpening parameters

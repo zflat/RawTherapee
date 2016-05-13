@@ -46,6 +46,7 @@ public:
     Gtk::CheckButton* exposure;
     Gtk::CheckButton* sh;
     Gtk::CheckButton* epd;
+    Gtk::CheckButton* retinex;
     Gtk::CheckButton* pcvignette;
     Gtk::CheckButton* gradient;
     Gtk::CheckButton* labcurve;
@@ -67,7 +68,6 @@ public:
 
     // options in color:
     Gtk::CheckButton* icm;
-    Gtk::CheckButton* gam;
     Gtk::CheckButton* vibrance;
     Gtk::CheckButton* chmixer;
     Gtk::CheckButton* blackwhite;
@@ -87,6 +87,7 @@ public:
     Gtk::CheckButton* finerot;
     Gtk::CheckButton* crop;
     Gtk::CheckButton* resize;
+    Gtk::CheckButton* prsharpening;
     Gtk::CheckButton* perspective;
     Gtk::CheckButton* commonTrans;
 
@@ -110,7 +111,6 @@ public:
     Gtk::CheckButton* raw_ccSteps;
     Gtk::CheckButton* raw_dcb_iterations;
     Gtk::CheckButton* raw_dcb_enhance;
-    //Gtk::CheckButton* raw_all_enhance;
     Gtk::CheckButton* raw_lmmse_iterations;
 
     Gtk::CheckButton* df_file;
@@ -124,13 +124,13 @@ public:
     sigc::connection everythingConn, basicConn, detailConn, colorConn, lensConn, compositionConn, metaConn, rawConn, wavConn;
 
     sigc::connection wbConn, exposureConn, shConn, pcvignetteConn, gradientConn, labcurveConn, colorappearanceConn, locallabConn;
-    sigc::connection sharpenConn, gradsharpenConn, microcontrastConn, impdenConn, dirpyrdenConn, defringeConn, epdConn, dirpyreqConn, waveletConn;
+    sigc::connection sharpenConn, gradsharpenConn, microcontrastConn, impdenConn, dirpyrdenConn, defringeConn, epdConn, dirpyreqConn, waveletConn, retinexConn;
     sigc::connection vibranceConn, chmixerConn, hsveqConn, rgbcurvesConn, chmixerbwConn, colortoningConn, filmSimulationConn;
     sigc::connection distortionConn, cacorrConn, vignettingConn, lcpConn;
-    sigc::connection coarserotConn, finerotConn, cropConn, resizeConn, perspectiveConn, commonTransConn;
-    sigc::connection exifchConn, iptcConn, icmConn, gamcsconn;
+    sigc::connection coarserotConn, finerotConn, cropConn, resizeConn, prsharpeningConn, perspectiveConn, commonTransConn;
+    sigc::connection exifchConn, iptcConn, icmConn;
     sigc::connection df_fileConn, df_AutoSelectConn, ff_fileConn, ff_AutoSelectConn, ff_BlurRadiusConn, ff_BlurTypeConn, ff_ClipControlConn;
-    sigc::connection raw_caredConn, raw_cablueConn, raw_ca_autocorrectConn, raw_hotpix_filtConn, raw_deadpix_filtConn, raw_linenoiseConn, raw_greenthreshConn, raw_ccStepsConn, raw_methodConn, raw_dcb_iterationsConn, raw_lmmse_iterationsConn, raw_dcb_enhanceConn, raw_exposConn, raw_preserConn, raw_blackConn; //,raw_all_enhanceConn
+    sigc::connection raw_caredConn, raw_cablueConn, raw_ca_autocorrectConn, raw_hotpix_filtConn, raw_deadpix_filtConn, raw_linenoiseConn, raw_greenthreshConn, raw_ccStepsConn, raw_methodConn, raw_dcb_iterationsConn, raw_lmmse_iterationsConn, raw_dcb_enhanceConn, raw_exposConn, raw_preserConn, raw_blackConn;
 
 public:
     PartialPasteDlg (Glib::ustring title);

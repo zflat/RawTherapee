@@ -58,11 +58,6 @@ enum PPLoadLocation {PLL_Cache = 0, PLL_Input = 1};
 enum CPBKeyType {CPBKT_TID = 0, CPBKT_NAME = 1, CPBKT_TID_NAME = 2};
 enum prevdemo_t {PD_Sidecar = 1, PD_Fast = 0};
 
-namespace rtengine
-{
-class SafeKeyFile;
-}
-
 class Options
 {
 
@@ -87,7 +82,7 @@ private:
      * @param destination destination variable to store to
      * @return @c true if @p destination was changed
      */
-    bool safeDirGet(const rtengine::SafeKeyFile& keyFile, const Glib::ustring& section,
+    bool safeDirGet(const Glib::KeyFile& keyFile, const Glib::ustring& section,
                     const Glib::ustring& entryName, Glib::ustring& destination);
 
 public:
@@ -264,6 +259,7 @@ public:
     Glib::ustring fastexport_icm_input;
     Glib::ustring fastexport_icm_working;
     Glib::ustring fastexport_icm_output;
+    rtengine::RenderingIntent fastexport_icm_outputIntent;
     Glib::ustring fastexport_icm_gamma;
     bool          fastexport_resize_enabled;
     double        fastexport_resize_scale;
@@ -279,6 +275,7 @@ public:
     Glib::ustring lastFlatfieldDir;
     Glib::ustring lastRgbCurvesDir;
     Glib::ustring lastLabCurvesDir;
+    Glib::ustring lastRetinexDir;
     Glib::ustring lastDenoiseCurvesDir;
     Glib::ustring lastWaveletCurvesDir;
     Glib::ustring lastPFCurvesDir;

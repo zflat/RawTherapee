@@ -1211,13 +1211,19 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
 #endif
         {
             if(lp.rad > 0.1 || lp.stren > 0.1) {
-                AlignedBufferMP<double> buffer(max(GW, GH));
-                gaussHorizontal<float> (original->L, tmp1->L, buffer, GW, GH, radius);
-                gaussHorizontal<float> (original->a, tmp1->a, buffer, GW, GH, radius);
-                gaussHorizontal<float> (original->b, tmp1->b, buffer, GW, GH, radius);
-                gaussVertical<float>   (tmp1->L, tmp1->L, buffer, GW, GH, radius);
-                gaussVertical<float>   (tmp1->a, tmp1->a, buffer, GW, GH, radius);
-                gaussVertical<float>   (tmp1->b, tmp1->b, buffer, GW, GH, radius);
+                //  AlignedBufferMP<double> buffer(max(GW, GH));
+                gaussianBlur (original->L, tmp1->L, GW, GH, radius);
+                gaussianBlur (original->a, tmp1->a, GW, GH, radius);
+                gaussianBlur (original->b, tmp1->b, GW, GH, radius);
+
+                //gaussianBlur
+                /*       gaussHorizontal<float> (original->L, tmp1->L, buffer, GW, GH, radius);
+                       gaussHorizontal<float> (original->a, tmp1->a, buffer, GW, GH, radius);
+                       gaussHorizontal<float> (original->b, tmp1->b, buffer, GW, GH, radius);
+                       gaussVertical<float>   (tmp1->L, tmp1->L, buffer, GW, GH, radius);
+                       gaussVertical<float>   (tmp1->a, tmp1->a, buffer, GW, GH, radius);
+                       gaussVertical<float>   (tmp1->b, tmp1->b, buffer, GW, GH, radius);
+                   */
             }
         }
 

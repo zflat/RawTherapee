@@ -72,6 +72,10 @@ protected:
 
     ImProcFunctions ipf;
 
+    Glib::ustring monitorProfile;
+
+    RenderingIntent monitorIntent;
+
     int scale;
     bool highDetailPreprocessComputed;
     bool highDetailRawComputed;
@@ -96,6 +100,8 @@ protected:
     LUTf satcurve;
     LUTf lhskcurve;
     LUTf clcurve;
+//    multi_array2D<float, 3> conversionBuffer;
+    multi_array2D<float, 4> conversionBuffer;
     LUTf wavclCurve;
     LUTf clToningcurve;
     LUTf cl2Toningcurve;
@@ -106,13 +112,14 @@ protected:
     LUTu lhist16, lhist16Cropped;
     LUTu lhist16CAM, lhist16CroppedCAM;
     LUTu lhist16CCAM;
+    LUTu lhist16RETI;
     LUTu histCropped;
     LUTu lhist16Clad, lhist16CLlad, lhist16LClad, lhist16LLClad;
     LUTu histRed, histRedRaw;
     LUTu histGreen, histGreenRaw;
     LUTu histBlue, histBlueRaw;
     LUTu histLuma, histToneCurve, histToneCurveBW, histLCurve, histCCurve, histCLurve;
-    LUTu histLLCurve, histLCAM, histCCAM, histClad, bcabhist, histChroma;
+    LUTu histLLCurve, histLCAM, histCCAM, histClad, bcabhist, histChroma, histLRETI;
 
     LUTf CAMBrightCurveJ, CAMBrightCurveQ;
 
@@ -130,6 +137,8 @@ protected:
     WavOpacityCurveBY waOpacityCurveBY;
     WavOpacityCurveW waOpacityCurveW;
     WavOpacityCurveWL waOpacityCurveWL;
+    RetinextransmissionCurve dehatransmissionCurve;
+    RetinexgaintransmissionCurve dehagaintransmissionCurve;
 
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;
@@ -154,6 +163,7 @@ protected:
     AutoColorTonListener* actListener;
     AutoChromaListener* adnListener;
     WaveletListener* awavListener;
+    RetinexListener* dehaListener;
 
     HistogramListener* hListener;
     std::vector<SizeListener*> sizeListeners;
@@ -247,6 +257,9 @@ public:
     void getSpotWB   (int x, int y, int rectSize, double& temp, double& green);
     void getAutoCrop (double ratio, int &x, int &y, int &w, int &h);
 
+    void setMonitorProfile (const Glib::ustring& profile, RenderingIntent intent);
+    void getMonitorProfile (Glib::ustring& profile, RenderingIntent& intent) const;
+
     bool updateTryLock ()
     {
         return updaterThreadStart.trylock();
@@ -299,6 +312,10 @@ public:
     void setAutoChromaListener  (AutoChromaListener* adn)
     {
         adnListener = adn;
+    }
+    void setRetinexListener  (RetinexListener* adh)
+    {
+        dehaListener = adh;
     }
     void setWaveletListener  (WaveletListener* awa)
     {

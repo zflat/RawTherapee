@@ -17,7 +17,7 @@
  *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exifpanel.h"
-#include "../rtengine/safegtk.h"
+
 #include "guiutils.h"
 #include "rtimage.h"
 
@@ -47,9 +47,9 @@ ExifPanel::ExifPanel () : idata(NULL)
     exifTreeModel = Gtk::TreeStore::create(exifColumns);
     exifTree->set_model (exifTreeModel);
 
-    delicon = safe_create_from_file ("gtk-close.png");
-    keepicon = safe_create_from_file ("gtk-apply.png");
-    editicon = safe_create_from_file ("gtk-add.png");
+    delicon = RTImage::createFromFile ("gtk-close.png");
+    keepicon = RTImage::createFromFile ("gtk-apply.png");
+    editicon = RTImage::createFromFile ("gtk-add.png");
 
     Gtk::TreeView::Column *viewcol = Gtk::manage(new Gtk::TreeView::Column ("Field Name"));
     Gtk::CellRendererPixbuf* render_pb = Gtk::manage(new Gtk::CellRendererPixbuf ());
@@ -156,14 +156,17 @@ void ExifPanel::setImageData (const ImageMetaData* id)
     idata = id;
     exifTreeModel->clear ();
 
-    const std::vector<Tag*>& defTags = ExifManager::getDefaultTIFFTags (NULL);
+    const std::vector<Tag*> defTags = ExifManager::getDefaultTIFFTags (NULL);
 
-    for (size_t i = 0; i < defTags.size(); i++)
-        if (defTags[i]->nameToString() == "ImageWidth" || defTags[i]->nameToString() == "ImageHeight" || defTags[i]->nameToString() == "BitsPerSample") {
-            addTag (exifTreeModel->children(), defTags[i]->nameToString(), "?", AC_SYSTEM, false);
+    for (size_t i = 0; i < defTags.size(); i++) {
+        Tag* defTag = defTags[i];
+        if (defTag->nameToString() == "ImageWidth" || defTag->nameToString() == "ImageHeight" || defTag->nameToString() == "BitsPerSample") {
+            addTag (exifTreeModel->children(), defTag->nameToString(), "?", AC_SYSTEM, false);
         } else {
-            addTag (exifTreeModel->children(), defTags[i]->nameToString(), defTags[i]->valueToString(), AC_SYSTEM, false);
+            addTag (exifTreeModel->children(), defTag->nameToString(), defTag->valueToString(), AC_SYSTEM, false);
         }
+        delete defTag;
+    }
 
     if (id && id->getExifData ()) {
 //        id->getExifData ()->printAll ();
@@ -495,6 +498,9 @@ void ExifPanel::editTag (Gtk::TreeModel::Children root, Glib::ustring name, Glib
             iter->set_value (exifColumns.orig_value, Glib::ustring(M("EXIFPANEL_SUBDIRECTORY")));
         }
     }
+
+    if (iter == root.end())
+        return;
 
     if (dp == Glib::ustring::npos) {
         if (value == "#keep" && iter->get_value (exifColumns.action) != AC_SYSTEM) {

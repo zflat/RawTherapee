@@ -78,11 +78,11 @@ private:
     MyComboBoxText*    wgamma;
 
     MyComboBoxText*    onames;
+    MyComboBoxText*    ointent;
     Gtk::RadioButton*  ofromdir;
     Gtk::RadioButton*  ofromfile;
     Gtk::RadioButton*  iunchanged;
     MyFileChooserButton* ipDialog;
-    std::auto_ptr<FileChooserLastFolderPersister> ipDialogPersister;
     Gtk::RadioButton::Group opts;
     Gtk::Button*        saveRef;
     sigc::connection   ipc;
@@ -107,6 +107,7 @@ public:
 
     void wpChanged ();
     void opChanged ();
+    void oiChanged ();
     void ipChanged ();
     void gpChanged ();
     void GamChanged ();

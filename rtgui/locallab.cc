@@ -127,7 +127,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     shapeVBox->pack_start (*locX);
     shapeVBox->pack_start (*locXL);
-//  pack_start (*degree);
+    pack_start (*degree);
     shapeVBox->pack_start (*locY);
     shapeVBox->pack_start (*locYT);
     shapeVBox->pack_start (*centerX);
@@ -334,96 +334,77 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableListener ();
 }
 
-void Locallab::updateGeometry(int centerX_, int centerY_, int locY_, double degree_, int locX_, int locYT_, int locXL_)
+void Locallab::updateGeometry(const int centerX_, const int centerY_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
 {
     EditDataProvider* dataProvider = getEditProvider();
 
-    if (dataProvider) {
-        int imW, imH;
-        PolarCoord polCoord1, polCoord2, polCoord0;
-        dataProvider->getImageSize(imW, imH);
-        double decayY = (locY_) * double(imH) / 200.;
-        double decayYT = (locYT_) * double(imH) / 200.;
-        double decayX = (locX_) * (double(imW)) / 200.;
-        double decayXL = (locXL_) * (double(imW)) / 200.;
-        Coord origin(imW / 2 + centerX_ * imW / 200.f, imH / 2 + centerY_ * imH / 200.f);
 
-        //  if (Smethod->get_active_row_number()==2) decayY=decayYT=decayXL=decayX;
-        if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-            decayYT = decayY;
-            decayXL = decayX;
-        }
-
-        Line *currLine;
-        Circle *currCircle;
-        // update horizontal line
-        currLine = static_cast<Line*>(visibleGeometry.at(0));
-        polCoord0.set(decayX, float(-degree_));
-        polCoord1.set(100.f, float(-degree_ + 90));
-        currLine->begin.setFromPolar(polCoord1 + polCoord0);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_ + 270   ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord0);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(mouseOverGeometry.at(0));
-        polCoord1.set(100.f, float(-degree_ + 90));
-        currLine->begin.setFromPolar(polCoord1 + polCoord0);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_ + 270   ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord0);
-        currLine->end   += origin;
-        // update vertical line
-        currLine = static_cast<Line*>(visibleGeometry.at(1));
-        polCoord0.set(decayXL, float(-degree_ + 180));
-        polCoord1.set( 100.f, float(-degree_ + 90 ));
-        currLine->begin.setFromPolar(polCoord1 + polCoord0);
-        currLine->begin += origin;
-        polCoord1.set( 100.f, float(-degree_ + 270));
-        currLine->end.setFromPolar  (polCoord1 + polCoord0);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(mouseOverGeometry.at(1));
-        polCoord1.set( 100.f, float(-degree_ + 90 ));
-        currLine->begin.setFromPolar(polCoord1 + polCoord0);
-        currLine->begin += origin;
-        polCoord1.set( 100.f, float(-degree_ + 270));
-        currLine->end.setFromPolar  (polCoord1 + polCoord0);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(visibleGeometry.at(2));
-        polCoord2.set(decayYT, float(-degree_ + 270));
-        polCoord1.set(100.f, float(-degree_ + 180));
-        currLine->begin.setFromPolar(polCoord1 + polCoord2);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_    ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord2);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(mouseOverGeometry.at(2));
-        polCoord1.set(100.f, float(-degree_ + 180));
-        currLine->begin.setFromPolar(polCoord1 + polCoord2);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_    ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord2);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(visibleGeometry.at(3));
-        polCoord2.set(decayY, float(-degree_ + 90));
-        polCoord1.set(100.f, float(-degree_ + 180));
-        currLine->begin.setFromPolar(polCoord1 + polCoord2);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_    ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord2);
-        currLine->end   += origin;
-        currLine = static_cast<Line*>(mouseOverGeometry.at(3));
-        polCoord1.set(100.f, float(-degree_ + 180));
-        currLine->begin.setFromPolar(polCoord1 + polCoord2);
-        currLine->begin += origin;
-        polCoord1.set(100.f, float(-degree_    ));
-        currLine->end.setFromPolar  (polCoord1 + polCoord2);
-        currLine->end   += origin;
-        // update circle's position
-        currCircle = static_cast<Circle*>(visibleGeometry.at(4));
-        currCircle->center = origin;
-        currCircle = static_cast<Circle*>(mouseOverGeometry.at(4));
-        currCircle->center = origin;
+    if (!dataProvider) {
+        return;
     }
+
+    int imW, imH;
+    PolarCoord polCoord1, polCoord2, polCoord0;
+    dataProvider->getImageSize(imW, imH);
+    double decayY = (locY_) * double(imH) / 200.;
+    double decayYT = (locYT_) * double(imH) / 200.;
+    double decayX = (locX_) * (double(imW)) / 200.;
+    double decayXL = (locXL_) * (double(imW)) / 200.;
+    rtengine::Coord origin(imW / 2 + centerX_ * imW / 200.f, imH / 2 + centerY_ * imH / 200.f);
+
+    //  if (Smethod->get_active_row_number()==2) decayY=decayYT=decayXL=decayX;
+    if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
+        decayYT = decayY;
+        decayXL = decayX;
+    }
+
+    Line *currLine;
+    Circle *currCircle;
+    double decay;
+    const auto updateLine = [&](Geometry * geometry, const float radius, const float begin, const float end) {
+        const auto line = static_cast<Line*>(geometry);
+        line->begin = PolarCoord(radius, -degree_ + begin);
+        line->begin += origin;
+        line->end = PolarCoord(radius, -degree_ + end);
+        line->end += origin;
+    };
+
+    const auto updateLineWithDecay = [&](Geometry * geometry, const float radius, const float decal, const float offSetAngle) {
+        const auto line = static_cast<Line*>(geometry);//180
+        line->begin = PolarCoord (radius, -degree_ + decal) + PolarCoord (decay, -degree_ + offSetAngle);
+        line->begin += origin;//0
+        line->end = PolarCoord (radius, -degree_ + (decal - 180)) + PolarCoord (decay, -degree_ + offSetAngle);
+        line->end += origin;
+    };
+
+    const auto updateCircle = [&](Geometry * geometry) {
+        const auto circle = static_cast<Circle*>(geometry);
+        circle->center = origin;
+    };
+
+
+    decay = decayX;
+    updateLineWithDecay (visibleGeometry.at(0), 100., 90., 0.);
+    updateLineWithDecay (mouseOverGeometry.at(0), 100., 90., 0.);
+
+    decay = decayXL;
+    updateLineWithDecay (visibleGeometry.at(1), 100., 90., 180.);
+    updateLineWithDecay (mouseOverGeometry.at(1), 100., 90., 180.);
+
+
+    decay = decayYT;
+    updateLineWithDecay (visibleGeometry.at(2), 100., 180., 270.);
+    updateLineWithDecay (mouseOverGeometry.at(2), 100., 180., 270.);
+
+    decay = decayY;
+
+    updateLineWithDecay (visibleGeometry.at(3), 100., 180, 90.);
+    updateLineWithDecay (mouseOverGeometry.at(3), 100., 180., 90.);
+
+    updateCircle (visibleGeometry.at(4));
+    updateCircle (mouseOverGeometry.at(4));
+
+
 }
 
 void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
@@ -964,10 +945,16 @@ bool Locallab::mouseOver(int modifierKey)
 
 bool Locallab::button1Pressed(int modifierKey)
 {
-    if (!(modifierKey & (GDK_CONTROL_MASK | GDK_CONTROL_MASK))) {
+    if (lastObject < 0) {
+        return false;
+    }
+
+    EditDataProvider *provider = getEditProvider();
+
+    if (!(modifierKey & GDK_CONTROL_MASK)) {
         // button press is valid (no modifier key)
         PolarCoord pCoord;
-        EditDataProvider *provider = getEditProvider();
+        //  EditDataProvider *provider = getEditProvider();
         int imW, imH;
         provider->getImageSize(imW, imH);
         double halfSizeW = imW / 2.;
@@ -975,27 +962,26 @@ bool Locallab::button1Pressed(int modifierKey)
         draggedCenter.set(int(halfSizeW + halfSizeW * (centerX->getValue() / 100.)), int(halfSizeH + halfSizeH * (centerY->getValue() / 100.)));
 
         // trick to get the correct angle (clockwise/counter-clockwise)
-        Coord p1 = draggedCenter;
-        Coord p2 = provider->posImage;
+        rtengine::Coord p1 = draggedCenter;
+        rtengine::Coord p2 = provider->posImage;
         int p = p1.y;
         p1.y = p2.y;
         p2.y = p;
-
-        pCoord.setFromCartesian(p1, p2);
+        pCoord = p2 - p1;
         draggedPointOldAngle = pCoord.angle;
         draggedPointAdjusterAngle = degree->getValue();
 
         if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
             if (lastObject == 2) {
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
                 double verti = double(imH);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                draggedPoint = currPos - centerPos;
                 // compute the projected value of the dragged point
                 draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
@@ -1006,9 +992,9 @@ bool Locallab::button1Pressed(int modifierKey)
             } else if (lastObject == 3) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
 
                 double verti = double(imH);
 
@@ -1016,8 +1002,9 @@ bool Locallab::button1Pressed(int modifierKey)
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
+                draggedPoint = currPos - centerPos;
 
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                // draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
                 draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
@@ -1031,16 +1018,17 @@ bool Locallab::button1Pressed(int modifierKey)
             if (lastObject == 2 || lastObject == 3) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
                 double verti = double(imH);
                 // trick to get the correct angle (clockwise/counter-clockwise)
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
+                draggedPoint = currPos - centerPos;
 
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                //    draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
                 draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
@@ -1057,9 +1045,9 @@ bool Locallab::button1Pressed(int modifierKey)
             if (lastObject == 0) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
 
                 double horiz = double(imW);
 
@@ -1067,8 +1055,9 @@ bool Locallab::button1Pressed(int modifierKey)
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
+                draggedPoint = currPos - centerPos;
 
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                //     draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
                 printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
                 draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
@@ -1078,14 +1067,16 @@ bool Locallab::button1Pressed(int modifierKey)
             } else if (lastObject == 1) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
                 double horiz = double(imW);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                draggedPoint = currPos - centerPos;
+
+                //     draggedPoint.setFromCartesian(centerPos, currPos);
                 printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
                 draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
@@ -1099,14 +1090,16 @@ bool Locallab::button1Pressed(int modifierKey)
 
             if (lastObject == 0 || lastObject == 1) {
                 PolarCoord draggedPoint;
-                Coord currPos;
+                rtengine::Coord currPos;
                 currPos = provider->posImage;
-                Coord centerPos = draggedCenter;
+                rtengine::Coord centerPos = draggedCenter;
                 double horiz = double(imW);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
-                draggedPoint.setFromCartesian(centerPos, currPos);
+                draggedPoint = currPos - centerPos;
+
+                //    draggedPoint.setFromCartesian(centerPos, currPos);
                 printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
                 draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
@@ -1161,8 +1154,8 @@ bool Locallab::button1Pressed(int modifierKey)
                 }
             }
             */
-                EditSubscriber::dragging = true;
-
+        //    EditSubscriber::dragging = true;
+        EditSubscriber::action = ES_ACTION_DRAGGING;
         return false;
     } else {
         // this will let this class ignore further drag events
@@ -1188,7 +1181,8 @@ bool Locallab::button1Pressed(int modifierKey)
 bool Locallab::button1Released()
 {
     draggedPointOldAngle = -1000.;
-    EditSubscriber::dragging = false;
+    EditSubscriber::action = ES_ACTION_NONE;
+
     return true;
 }
 
@@ -1205,14 +1199,16 @@ bool Locallab::drag1(int modifierKey)
         if (lastObject == 2) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double verti = double(imH);
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            //  draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             if (lastObject == 2) {
@@ -1240,15 +1236,17 @@ bool Locallab::drag1(int modifierKey)
         } else if (lastObject == 3) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double verti = double(imH);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            //  draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             //  if (lastObject==2)
@@ -1283,15 +1281,17 @@ bool Locallab::drag1(int modifierKey)
         if (lastObject == 2 || lastObject == 3) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double verti = double(imH);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            //   draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             if (lastObject == 2)
@@ -1335,15 +1335,17 @@ bool Locallab::drag1(int modifierKey)
         if (lastObject == 0) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double horiz = double(imW);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            //    draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
@@ -1374,14 +1376,16 @@ bool Locallab::drag1(int modifierKey)
         } else if (lastObject == 1) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double horiz = double(imW);
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            //draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
@@ -1414,15 +1418,17 @@ bool Locallab::drag1(int modifierKey)
         if (lastObject == 0 || lastObject == 1) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
-            Coord currPos;
+            rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
-            Coord centerPos = draggedCenter;
+            rtengine::Coord centerPos = draggedCenter;
             double horiz = double(imW);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
-            draggedPoint.setFromCartesian(centerPos, currPos);
+            draggedPoint = currPos - centerPos;
+
+            // draggedPoint.setFromCartesian(centerPos, currPos);
             double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
@@ -1531,7 +1537,7 @@ bool Locallab::drag1(int modifierKey)
     if (lastObject == 4) {
 
         // Dragging the circle to change the center
-        Coord currPos;
+        rtengine::Coord currPos;
         draggedCenter += provider->deltaPrevImage;
         currPos = draggedCenter;
         currPos.clip(imW, imH);
