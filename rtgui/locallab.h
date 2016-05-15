@@ -19,6 +19,7 @@ private:
 
 protected:
 //   Gtk::CheckButton* enabled;
+    Gtk::HBox *editHBox;
     Gtk::ToggleButton* edit;
     Adjuster* degree;
     Adjuster* locX;

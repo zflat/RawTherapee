@@ -127,6 +127,7 @@ static void calc_fourarea (float lox, float loy, float ach, struct local_params&
 {
     //boolean calculation for the four ellipse area
     //one can replace by other "curve" or LUT
+    //printf("lx=%f lxL=%f lp.ly=%f lp.lyT=%f\n", lp.lx, lp.lxL, lp.ly, lp.lyT);
     qu1 = (lox >= lp.xc && lox < (lp.xc + lp.lx)) && (loy >= lp.yc && loy < (lp.yc + lp.ly));
     qu1nt = ( (SQR(lox - lp.xc) / SQR(ach * lp.lx) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) < 1.f);
     qu1wt = (((SQR(lox - lp.xc) / SQR(ach * lp.lx) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) > 1.f)  && ((SQR(lox - lp.xc) / SQR(lp.lx) + SQR(loy - lp.yc) / SQR(lp.ly)) < 1.f));
@@ -1191,9 +1192,11 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         MunsellDebugInfo* MunsDebugInfo = new MunsellDebugInfo();
 #endif
 
+
+
         struct local_params lp;
         calcLocalParams(oW, oH, params->locallab, lp);
-
+        printf("sx=%d sy=%d oW=%d oH=%d lp.xc=%f lp.yc=%f lp.lx=%f lp.ly=%f lp.lxL=%f lp.lyT=%f\n", sx, sy, oW, oH, lp.xc, lp.yc, lp.lx, lp.ly, lp.lxL, lp.lyT);
         TMatrix wiprof = iccStore->workingSpaceInverseMatrix (params->icm.working);
         double wip[3][3] = {
             {wiprof[0][0], wiprof[0][1], wiprof[0][2]},
@@ -1216,14 +1219,6 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
                 gaussianBlur (original->a, tmp1->a, GW, GH, radius);
                 gaussianBlur (original->b, tmp1->b, GW, GH, radius);
 
-                //gaussianBlur
-                /*       gaussHorizontal<float> (original->L, tmp1->L, buffer, GW, GH, radius);
-                       gaussHorizontal<float> (original->a, tmp1->a, buffer, GW, GH, radius);
-                       gaussHorizontal<float> (original->b, tmp1->b, buffer, GW, GH, radius);
-                       gaussVertical<float>   (tmp1->L, tmp1->L, buffer, GW, GH, radius);
-                       gaussVertical<float>   (tmp1->a, tmp1->a, buffer, GW, GH, radius);
-                       gaussVertical<float>   (tmp1->b, tmp1->b, buffer, GW, GH, radius);
-                   */
             }
         }
 
