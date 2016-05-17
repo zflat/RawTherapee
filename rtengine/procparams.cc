@@ -892,7 +892,7 @@ void LocallabParams::setDefaults()
     sensi = 20;
     transit = 60;
     avoid = false;
-    Smethod = "SYM";
+    Smethod = "IND";
     invers = false;
     radius = 0.;
     inversrad = false;

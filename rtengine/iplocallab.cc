@@ -128,6 +128,7 @@ static void calc_fourarea (float lox, float loy, float ach, struct local_params&
     //boolean calculation for the four ellipse area
     //one can replace by other "curve" or LUT
     //printf("lx=%f lxL=%f lp.ly=%f lp.lyT=%f\n", lp.lx, lp.lxL, lp.ly, lp.lyT);
+
     qu1 = (lox >= lp.xc && lox < (lp.xc + lp.lx)) && (loy >= lp.yc && loy < (lp.yc + lp.ly));
     qu1nt = ( (SQR(lox - lp.xc) / SQR(ach * lp.lx) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) < 1.f);
     qu1wt = (((SQR(lox - lp.xc) / SQR(ach * lp.lx) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) > 1.f)  && ((SQR(lox - lp.xc) / SQR(lp.lx) + SQR(loy - lp.yc) / SQR(lp.ly)) < 1.f));
@@ -143,6 +144,7 @@ static void calc_fourarea (float lox, float loy, float ach, struct local_params&
     qu4 = ((lox < lp.xc && lox > (lp.xc - lp.lxL)) && (loy > lp.yc && loy < (lp.yc + lp.ly)));
     qu4nt = (SQR(lox - lp.xc) / SQR(ach * lp.lxL) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) < 1.f;
     qu4wt = (((SQR(lox - lp.xc) / SQR(ach * lp.lxL) + SQR(loy - lp.yc) / SQR(ach * lp.ly)) > 1.f)  && ((SQR(lox - lp.xc) / SQR(lp.lxL) + SQR(loy - lp.yc) / SQR(lp.ly)) < 1.f));
+
 }
 
 void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, double mean, double variance, int chroma, int sk)
@@ -283,6 +285,8 @@ void ImProcFunctions::BlurNoise_Local(struct local_params& lp, LabImage* origina
             float ach = (float)lp.trans / 100.f;
 
             bool qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt;
+            qu1 = qu1nt = qu1wt = qu2 = qu2nt = qu2wt = qu3 = qu3nt = qu3wt = qu4 = qu4nt = qu4wt = false;
+
             calc_fourarea (lox, loy, ach, lp, qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt);
 
             float l_x, l_y;
@@ -317,7 +321,9 @@ void ImProcFunctions::BlurNoise_Local(struct local_params& lp, LabImage* origina
                 difa *= factorx;
                 difb *= factorx;
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+
+                    //     if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse
                     factorx = 1.f;
                     factory = 1.f;
                     difL *= factorx; //in case of..
@@ -328,7 +334,9 @@ void ImProcFunctions::BlurNoise_Local(struct local_params& lp, LabImage* origina
                     transformed->b[y][x] = original->b[y][x] + difb;
                 }
                 //intermed transition
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
+
+                    //   else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
                     fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
                     difL *= factorx;
@@ -381,6 +389,8 @@ void ImProcFunctions::InverseBlurNoise_Local(struct local_params& lp, LabImage* 
             float ach = (float)lp.trans / 100.f;
 
             bool qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt;
+            qu1 = qu1nt = qu1wt = qu2 = qu2nt = qu2wt = qu3 = qu3nt = qu3wt = qu4 = qu4nt = qu4wt = false;
+
             calc_fourarea (lox, loy, ach, lp, qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt);
 
             float l_x, l_y;
@@ -416,13 +426,18 @@ void ImProcFunctions::InverseBlurNoise_Local(struct local_params& lp, LabImage* 
                 difa *= factorx;
                 difb *= factorx;
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+
+                    //  if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
                     transformed->L[y][x] = original->L[y][x];
                     transformed->a[y][x] = original->a[y][x];
                     transformed->b[y][x] = original->b[y][x];
                 }
                 //intermed transition
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                //  if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)){//interior ellipse with max transit no application
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
+
+                    //       else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
                     factorx = 1.f - factorx;
                     fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
@@ -605,6 +620,8 @@ void ImProcFunctions::Contrast_Local(float pm, bool locL, struct local_contra& l
             ImProcFunctions::secondeg_end (reducac, vinf, lco.aaa, lco.bbb, lco.ccc);//parabolic
 
             bool qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt;
+            qu1 = qu1nt = qu1wt = qu2 = qu2nt = qu2wt = qu3 = qu3nt = qu3wt = qu4 = qu4nt = qu4wt = false;
+
             calc_fourarea (lox, loy, ach, lp, qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt);
 
             float l_x, l_y;
@@ -635,7 +652,9 @@ void ImProcFunctions::Contrast_Local(float pm, bool locL, struct local_contra& l
                 float core;
                 float prov100;
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+
+                    //     if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
                     if(original->L[y][x] < 32768.f) {
                         float prov;
                         prov = original->L[y][x] / 327.68f;
@@ -666,7 +685,9 @@ void ImProcFunctions::Contrast_Local(float pm, bool locL, struct local_contra& l
                     }
                 }
                 //intermed transition
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
+
+                    //  else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
 
                     if(original->L[y][x] < 32768.f) {
@@ -739,6 +760,8 @@ void ImProcFunctions::InverseContrast_Local(float ave, float pm, bool locL, stru
             float ach = (float)lp.trans / 100.f;
 
             bool qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt;
+            qu1 = qu1nt = qu1wt = qu2 = qu2nt = qu2wt = qu3 = qu3nt = qu3wt = qu4 = qu4nt = qu4wt = false;
+
             calc_fourarea (lox, loy, ach, lp, qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt);
 
             float l_x, l_y;
@@ -767,11 +790,15 @@ void ImProcFunctions::InverseContrast_Local(float ave, float pm, bool locL, stru
                 factorx = 1.f;
                 factory = 1.f;
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+
+                    //    if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
                     transformed->L[y][x] = original->L[y][x];
                 }
                 //intermed transition
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
+
+                    //  else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
                     factorx = 1.f - factorx;
 
@@ -844,6 +871,9 @@ void ImProcFunctions::InverseContrast_Local(float ave, float pm, bool locL, stru
 void ImProcFunctions::ColorLight_Local(float hueplus, float huemoins, float hueplusred, float huemoinsred, float hueref, float dhue, float chromaref, float lumaref, struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk)
 {
 // chroma and lightness
+//    printf("x=%d y=%d\n", transformed->W, transformed->H);
+//    printf("lx=%f ly=%f lxL=%f lyT=%f\n", lp.lx, lp.ly, lp.lxL, lp.lyT);
+
     #pragma omp parallel for schedule(dynamic,16) if (multiThread)
     for (int y = 0; y < transformed->H; y++) {
         for (int x = 0; x < transformed->W; x++) {
@@ -1029,10 +1059,12 @@ void ImProcFunctions::ColorLight_Local(float hueplus, float huemoins, float huep
             }
 
             bool qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt;
+            qu1 = qu1nt = qu1wt = qu2 = qu2nt = qu2wt = qu3 = qu3nt = qu3wt = qu4 = qu4nt = qu4wt = false;
             calc_fourarea (lox, loy, ach, lp, qu1, qu1nt, qu1wt, qu2, qu2nt, qu2wt, qu3, qu3nt, qu3wt, qu4, qu4nt, qu4wt);
 
 
-            float l_x, l_y;
+            float l_x = lp.lx;
+            float l_y = lp.ly;
 
             if(qu1) {
                 l_x = lp.lx;
@@ -1041,16 +1073,16 @@ void ImProcFunctions::ColorLight_Local(float hueplus, float huemoins, float huep
 
             if(qu2) {
                 l_x = lp.lx;
-                l_y = lp.lyT;
+                l_y = lp.lyT;//lyT
             }
 
             if(qu3) {
-                l_x = lp.lxL;
-                l_y = lp.lyT;
+                l_x = lp.lxL;//lxL
+                l_y = lp.lyT;//lyT
             }
 
             if(qu4) {
-                l_x = lp.lxL;
+                l_x = lp.lxL;//lxL
                 l_y = lp.ly;
             }
 
@@ -1063,13 +1095,13 @@ void ImProcFunctions::ColorLight_Local(float hueplus, float huemoins, float huep
                 diflc *= kdiff;
                 diflc *= factorx; //transition lightess
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
-                    transformed->L[y][x] = original->L[y][x] + diflc;
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+                    transformed->L[y][x] = original-> L[y][x] + diflc;
                     transformed->a[y][x] = original->a[y][x] * fac;
                     transformed->b[y][x] = original->b[y][x] * fac;
                 }
 
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
                     float lightcont = localcurve[original->L[y][x]]; //apply lightness
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
                     fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
@@ -1081,7 +1113,7 @@ void ImProcFunctions::ColorLight_Local(float hueplus, float huemoins, float huep
                     transformed->L[y][x] = original->L[y][x] + diflc;
                     transformed->a[y][x] = original->a[y][x] * fac;
                     transformed->b[y][x] = original->b[y][x] * fac;
-                } else { //exter ellipse full borders no transition
+                }  else { //exter ellipse full borders no transition
                     transformed->L[y][x] = original->L[y][x];
                     transformed->a[y][x] = original->a[y][x];
                     transformed->b[y][x] = original->b[y][x];
@@ -1145,13 +1177,17 @@ void ImProcFunctions::InverseColorLight_Local(float hueplus, float huemoins, flo
                 float diflc = lightcont - original->L[y][x];
                 diflc *= factorx; //transition lightness
 
-                if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
+                if((qu1 && qu1nt)  ||  (qu2 && qu2nt) ||  (qu3 && qu3nt) || (qu4 && qu4nt)) { //interior ellipse with max transit no application
+
+                    //       if(qu1nt || qu2nt  || qu3nt  || qu4nt) {//interior ellipse with max transit no application
                     transformed->L[y][x] = original->L[y][x];
                     transformed->a[y][x] = original->a[y][x];
                     transformed->b[y][x] = original->b[y][x];
                 }
                 //intermed transition
-                else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
+                else if ((qu1 && qu1wt) || (qu2 && qu2wt)  || (qu3 && qu3wt)  || (qu4 && qu4wt)) {
+
+                    //  else if (qu1wt || qu2wt  || qu3wt  || qu4wt) {
                     calcLocalFactor(lp, lox, loy, lp.xc, l_x, lp.yc, l_y, factorx, factory, lp.trans);
                     factorx = 1.f - factorx;
                     fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
@@ -1196,7 +1232,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
 
         struct local_params lp;
         calcLocalParams(oW, oH, params->locallab, lp);
-        printf("sx=%d sy=%d oW=%d oH=%d lp.xc=%f lp.yc=%f lp.lx=%f lp.ly=%f lp.lxL=%f lp.lyT=%f\n", sx, sy, oW, oH, lp.xc, lp.yc, lp.lx, lp.ly, lp.lxL, lp.lyT);
+        //printf("sx=%d sy=%d oW=%d oH=%d lp.xc=%f lp.yc=%f lp.lx=%f lp.ly=%f lp.lxL=%f lp.lyT=%f\n", sx, sy, oW, oH, lp.xc, lp.yc, lp.lx, lp.ly, lp.lxL, lp.lyT);
         TMatrix wiprof = iccStore->workingSpaceInverseMatrix (params->icm.working);
         double wip[3][3] = {
             {wiprof[0][0], wiprof[0][1], wiprof[0][2]},

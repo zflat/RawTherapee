@@ -9,7 +9,6 @@
 using namespace rtengine;
 using namespace rtengine::procparams;
 
-//Locallab::Locallab () : FoldableToolPanel(this), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
 Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
 {
     editHBox = Gtk::manage (new Gtk::HBox());
@@ -42,9 +41,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     ctboxS->set_tooltip_markup (M("TP_LOCALLAB_STYPE_TOOLTIP"));
 
     Smethod = Gtk::manage (new MyComboBoxText ());
-//    Smethod->append_text (M("TP_LOCALLAB_IND"));
+    Smethod->append_text (M("TP_LOCALLAB_IND"));
     Smethod->append_text (M("TP_LOCALLAB_SYM"));
-//    Smethod->append_text (M("TP_LOCALLAB_INDSL"));
+    Smethod->append_text (M("TP_LOCALLAB_INDSL"));
     Smethod->append_text (M("TP_LOCALLAB_SYMSL"));
     Smethod->set_active(0);
     Smethodconn = Smethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::SmethodChanged) );
@@ -179,7 +178,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     centerCircle->datum = Geometry::IMAGE;
     centerCircle->radiusInImageSpace = false;
     centerCircle->radius = 8;
-    centerCircle->filled = false;
+    centerCircle->filled = true;
 
     EditSubscriber::visibleGeometry.push_back( locXLine[0] );
     EditSubscriber::visibleGeometry.push_back( locXLine[1] );
@@ -204,7 +203,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     centerCircle->datum = Geometry::IMAGE;
     centerCircle->radiusInImageSpace = false;
     centerCircle->radius = 8;
-    centerCircle->filled = false;
+    centerCircle->filled = true;
 
     EditSubscriber::mouseOverGeometry.push_back( locXLine[0] );
     EditSubscriber::mouseOverGeometry.push_back( locXLine[1] );
@@ -247,7 +246,6 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
-//      enabled->set_inconsistent (multiImage && !pedited->locallab.enabled);
         set_inconsistent (multiImage && !pedited->locallab.enabled);
         avoid->set_inconsistent (multiImage && !pedited->locallab.avoid);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
@@ -261,9 +259,6 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     Smethodconn.block(true);
 
-    //enaConn.block (true);
-    //enabled->set_active (pp->locallab.enabled);
-    //enaConn.block (false);
     setEnabled(pp->locallab.enabled);
     avoidConn.block (true);
     avoid->set_active (pp->locallab.avoid);
@@ -290,22 +285,20 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
 
-//  lastEnabled = pp->locallab.enabled;
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
     lastinversrad = pp->locallab.inversrad;
     inversChanged();
     updateGeometry (pp->locallab.centerX, pp->locallab.centerY, pp->locallab.locY, pp->locallab.degree,  pp->locallab.locX, pp->locallab.locYT, pp->locallab.locXL);
 
-//   if (pp->locallab.Smethod == "IND") {
-//       Smethod->set_active (0);
-//   } else
-    if (pp->locallab.Smethod == "SYM") {
+    if (pp->locallab.Smethod == "IND") {
         Smethod->set_active (0);
-//   } else if (pp->locallab.Smethod == "INDSL") {
-//       Smethod->set_active (2);
-    } else if (pp->locallab.Smethod == "SYMSL") {
+    } else if (pp->locallab.Smethod == "SYM") {
         Smethod->set_active (1);
+    } else if (pp->locallab.Smethod == "INDSL") {
+        Smethod->set_active (2);
+    } else if (pp->locallab.Smethod == "SYMSL") {
+        Smethod->set_active (3);
     }
 
     SmethodChanged();
@@ -359,11 +352,9 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
     double decayX = (locX_) * (double(imW)) / 200.;
     double decayXL = (locXL_) * (double(imW)) / 200.;
     rtengine::Coord origin(imW / 2 + centerX_ * imW / 200.f, imH / 2 + centerY_ * imH / 200.f);
-    printf("deX=%f dexL=%f deY=%f deyT=%f\n", decayX, decayXL, decayY, decayYT);
+//   printf("deX=%f dexL=%f deY=%f deyT=%f\n", decayX, decayXL, decayY, decayYT);
 
-    //  if (Smethod->get_active_row_number()==2) decayY=decayYT=decayXL=decayX;
-//   if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-    if (Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 1) {
+    if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
         decayYT = decayY;
         decayXL = decayX;
     }
@@ -432,7 +423,6 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.sensi = sensi->getIntValue ();
     pp->locallab.radius = radius->getValue ();
     pp->locallab.strength = strength->getValue ();
-    //pp->locallab.enabled = enabled->get_active();
     pp->locallab.enabled = getEnabled();
     pp->locallab.transit = transit->getIntValue ();
     pp->locallab.avoid = avoid->get_active();
@@ -455,26 +445,24 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.radius = radius->getEditedState ();
         pedited->locallab.strength = strength->getEditedState ();
         pedited->locallab.transit = transit->getEditedState ();
-//      pedited->locallab.enabled = !enabled->get_inconsistent();
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
         pedited->locallab.invers = !invers->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
     }
 
-//    if (Smethod->get_active_row_number() == 0) {
-//       pp->locallab.Smethod = "IND";
-//   } else
     if (Smethod->get_active_row_number() == 0) {
-        pp->locallab.Smethod = "SYM";
-        //  } else if (Smethod->get_active_row_number() == 2) {
-//      pp->locallab.Smethod = "INDSL";
+        pp->locallab.Smethod = "IND";
     } else if (Smethod->get_active_row_number() == 1) {
+        pp->locallab.Smethod = "SYM";
+    } else if (Smethod->get_active_row_number() == 2) {
+        pp->locallab.Smethod = "INDSL";
+    } else if (Smethod->get_active_row_number() == 3) {
         pp->locallab.Smethod = "SYMSL";
     }
 
-//   if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-    if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+    if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+//   if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
         pp->locallab.locX = locX->getValue();
         pp->locallab.locY = locY->getValue();
 
@@ -498,14 +486,14 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
 void Locallab::SmethodChanged ()
 {
     if (!batchMode) {
-        if(Smethod->get_active_row_number() == 5) { //IND 0
+        if(Smethod->get_active_row_number() == 0) { //IND 0
             locX->hide();
             locXL->hide();
             locY->hide();
             locYT->hide();
             centerX->hide();
             centerY->hide();
-        } else if(Smethod->get_active_row_number() == 0) {          // 1 SYM
+        } else if(Smethod->get_active_row_number() == 1) {          // 1 SYM
             locX->hide();
             locXL->hide();
             locY->hide();
@@ -521,7 +509,7 @@ void Locallab::SmethodChanged ()
             centerX->show();
             centerY->show();
 
-        } else if(Smethod->get_active_row_number() == 1) {          // 3 SYM
+        } else if(Smethod->get_active_row_number() == 3) {          // 3 SYM
             locX->show();
             locXL->hide();
             locY->show();
@@ -539,10 +527,8 @@ void Locallab::SmethodChanged ()
                 }   */
     }
 
-    //if (listener && ()) ) {
     if (listener && getEnabled()) {
-        //  if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-        if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+        if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
             listener->panelChanged (EvlocallabSmet, Smethod->get_active_text ());
             locXL->setValue (locX->getValue());
             locYT->setValue (locY->getValue());
@@ -678,8 +664,7 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
         if (a == degree) {
             listener->panelChanged (EvlocallabDegree, degree->getTextValue());
         } else if (a == locY) {
-            if(Smethod->get_active_row_number() == 4  || Smethod->get_active_row_number() == 2) {  // 0 2
-                // if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {  // 0 2
+            if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {  // 0 2
                 listener->panelChanged (EvlocallablocY, locY->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -688,15 +673,13 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            //else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-            else if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocY, locY->getTextValue());
                 locYT->setValue (locY->getValue());
             }
         } else if (a == locX) {
             //listener->panelChanged (EvlocallablocX, locX->getTextValue());
-            // if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
-            if(Smethod->get_active_row_number() == 4  || Smethod->get_active_row_number() == 2) {
+            if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocX, locX->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -705,14 +688,12 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            //   else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-            else if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocX, locX->getTextValue());
                 locXL->setValue (locX->getValue());
             }
         } else if (a == locYT) {
-            // if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
-            if(Smethod->get_active_row_number() == 4 || Smethod->get_active_row_number() == 2) {
+            if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocYT, locYT->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -721,14 +702,12 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            //  else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-            else if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 1) {
+            else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocYT, locYT->getTextValue());
                 locYT->setValue (locY->getValue());
             }
         } else if (a == locXL) {
-            //  if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
-            if(Smethod->get_active_row_number() == 4 || Smethod->get_active_row_number() == 2) {
+            if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -737,8 +716,7 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            //   else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-            else if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
                 locXL->setValue (locX->getValue());
             }
@@ -842,7 +820,6 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
 
 void Locallab::setBatchMode (bool batchMode)
 {
-    //removeIfThere(enaBox, edit, false);
     removeIfThere(this, edit, false);
     ToolPanel::setBatchMode (batchMode);
     degree->showEditedCB ();
@@ -996,8 +973,7 @@ bool Locallab::button1Pressed(int modifierKey)
         draggedPointOldAngle = pCoord.angle;
         draggedPointAdjusterAngle = degree->getValue();
 
-        // if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
-        if(Smethod->get_active_row_number() == 4 || Smethod->get_active_row_number() == 2) {
+        if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
             if (lastObject == 2) {
                 PolarCoord draggedPoint;
                 rtengine::Coord currPos;
@@ -1041,8 +1017,7 @@ bool Locallab::button1Pressed(int modifierKey)
 
             }
 
-            //   } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-        } else if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 1) {
+        } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
             if (lastObject == 2 || lastObject == 3) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
@@ -1068,9 +1043,7 @@ bool Locallab::button1Pressed(int modifierKey)
             }
         }
 
-        // if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
-        if(Smethod->get_active_row_number() == 4  || Smethod->get_active_row_number() == 2) {
-            //else if (lastObject==0) {
+        if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
             if (lastObject == 0) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
@@ -1116,8 +1089,7 @@ bool Locallab::button1Pressed(int modifierKey)
                 draggedlocXOffset -= (locXL->getValue() / 200. * horiz);
             }
 
-            //     } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-        } else if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+        } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
 
             if (lastObject == 0 || lastObject == 1) {
                 PolarCoord draggedPoint;
@@ -1226,8 +1198,7 @@ bool Locallab::drag1(int modifierKey)
     double halfSizeW = imW / 2.;
     double halfSizeH = imH / 2.;
 
-    //if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
-    if(Smethod->get_active_row_number() == 4  || Smethod->get_active_row_number() == 2) {
+    if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
         if (lastObject == 2) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
@@ -1310,8 +1281,7 @@ bool Locallab::drag1(int modifierKey)
             }
         }
 
-//   } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-    } else if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 1) {
+    } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
         if (lastObject == 2 || lastObject == 3) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
@@ -1350,8 +1320,7 @@ bool Locallab::drag1(int modifierKey)
                 updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(),  locYT->getValue(), locXL->getValue());
 
                 if (listener) {
-                    //   if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
-                    if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 1) {
+                    if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
                         listener->panelChanged (EvlocallablocY, locY->getTextValue());
                     }
 
@@ -1365,8 +1334,7 @@ bool Locallab::drag1(int modifierKey)
 
     }
 
-    //  if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
-    if(Smethod->get_active_row_number() == 4 || Smethod->get_active_row_number() == 2) {
+    if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
         //else if (lastObject==0) {
         if (lastObject == 0) {
             // Dragging the upper or lower locY bar
@@ -1451,8 +1419,7 @@ bool Locallab::drag1(int modifierKey)
             }
         }
 
-        //  } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
-    } else if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
+    } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
         if (lastObject == 0 || lastObject == 1) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
