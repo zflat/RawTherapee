@@ -29,7 +29,6 @@
 #include "iccmatrices.h"
 #include "color.h"
 #include "rt_math.h"
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -147,125 +146,66 @@ static void calc_fourarea (float lox, float loy, float ach, struct local_params&
 
 }
 
-void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, double mean, double variance, int chroma, int sk)
+void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, const float mean, const float variance, const int sk)
 {
+
 //Box-Muller method.
-// add noise to image : luma and chroma
-// actually chroma disabled
+// add luma noise to image
+
     srand(1);
-#define unit_rand() (1.0*rand()/RAND_MAX)
-    double u1, u2;
 
-    u1 = 0.0;
-
-    for (int y = 1; y < lab->H; y++) {
-        for (int x = 1; x < lab->W; x++) {
-            while (u1 == 0.0) {
-                u1 = unit_rand();
-            }
-
-            //  double X=sqrt(-2.0*variance*log(u1)) * cos(2.*M_PI*u2);//sqrt does not run in debug
-            double kvar = 1.;
-            double varia;
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+{
+    float z0,z1;
+    bool generate = false;
+#ifdef _OPENMP
+#pragma omp for
+#endif
+    for (int y = 0; y < lab->H; y++) {
+        for (int x = 0; x < lab->W; x++) {
+            generate = !generate;
+            float kvar = 1.f;
 
             if(lab->L[y][x] < 12000.f) {
-                kvar = (double)(-0.5f * (lab->L[y][x]) / 12000.f + 1.5f);    //increase effect for low lights < 12000.f
+                constexpr float ah = -0.5f / 12000.f;
+                constexpr float bh = 1.5f;
+                kvar = ah * lab->L[y][x] + bh;    //increase effect for low lights < 12000.f
+            } else if(lab->L[y][x] > 20000.f) {
+
+                constexpr float ah = -0.5f / 12768.f;
+                constexpr float bh = 1.f - 20000.f * ah;
+                kvar = ah * lab->L[y][x] + bh;    //decrease effect for high lights > 20000.f
+                kvar = kvar < 0.5f ? 0.5f : kvar;
             }
 
-            float ah = -0.5f / 12768.f;
-            float bh = 1.f - 20000.f * ah;
+            float varia = SQR(variance * kvar) / sk;
 
-            if(lab->L[y][x] > 20000.f) {
-                kvar = (double)(ah * (lab->L[y][x]) + bh);    //decrease effect for high lights > 20000.f
+            if(!generate) {
+                dst->L[y][x] = LIM(lab->L[y][x] + mean + varia * z1, 0.f, 32768.f);
+                continue;
             }
 
-            if(kvar < 0.5) {
-                kvar = 0.5;
+            int u1 = 0;
+            int u2;
+            while( u1 == 0) {
+                u1 = rand();
+                u2 = rand();
             }
+            float u1f = 1.f* u1 / RAND_MAX;
+            float u2f = 1.f* u2 / RAND_MAX;
 
-            varia = variance * kvar;
-            varia = SQR(varia) / sk;
-            double X = pow(-2.0 * varia * log(u1), 0.5) * cos(2.*M_PI * u2);
-            double Y = pow(-2.0 * varia * log(u1), 0.5) * sin(2.*M_PI * u2);
-            double Xp = mean + sqrt(varia) * X ;
-            double Yp = mean + sqrt(varia) * Y ;
-            float tempf1 = lab->L[y][x] + Xp;
-            float tempa1;
-            float tempb1;
-            float tempab1;
-            float HH;
+            float2 sincosval = xsincosf(2.f * M_PI * u2f);
+            float factor = sqrtf(-2.f * xlogf(u1f));
+            z0 = factor * sincosval.y;
+            z1 = factor * sincosval.x;
 
-            float k = 1.f;
+            dst->L[y][x] = LIM(lab->L[y][x] + mean + varia * z0, 0.f, 32768.f);
 
-            if(chroma == 0) {
-                k = 2.f;    //increase chroma noise
-            }
-
-            float redPi = 5000.f; //about 32768 / 2*Pi
-
-            if (chroma <= 2) {
-                tempab1 = sqrt(SQR(lab->a[y][x]) + SQR(lab->b[y][x])) + k * Xp;
-
-                if(chroma <= 2) {
-                    HH = xatan2f(lab->b[y][x], lab->a[y][x]) + k * Xp / redPi;
-                } else {
-                    HH = xatan2f(lab->b[y][x], lab->a[y][x]);
-                }
-            }
-
-            if(tempf1 > 32768.f) {
-                dst->L[y][x] = 32768.f;
-            } else if (tempf1 < 0.f) {
-                dst->L[y][x] = 0.f;
-            } else {
-                dst->L[y][x] = tempf1;
-            }
-
-            if(chroma <= 2) {
-                if(tempab1 < 0) {
-                    dst->a[y][x] = 0.f;
-                    dst->b[y][x] = 0.f;
-                } else {
-                    dst->a[y][x] = tempab1 * cos(HH);
-                    dst->b[y][x] = tempab1 * sin(HH);
-                }
-            }
-
-            float tempf2 = lab->L[y][x] + Yp;
-            float tempab2;
-
-            if(chroma <= 2) {
-                tempab2 = sqrt(SQR(lab->a[y][x]) + SQR(lab->b[y][x])) + k * Yp;
-
-                if(chroma <= 2) {
-                    HH = xatan2f(lab->b[y][x], lab->a[y][x]) + k * Yp / redPi;
-                } else {
-                    HH = xatan2f(lab->b[y][x], lab->a[y][x]);
-                }
-
-            }
-
-            if(tempf2 > 32768.f) {
-                dst->L[y - 1][x - 1] = 32768.f;
-            } else if (tempf2 < 0.f) {
-                dst->L[y - 1][x - 1] = 0.f;
-            } else {
-                dst->L[y - 1][x - 1] = tempf2;
-            }
-
-            if(chroma <= 2) {
-                if(tempab2 < 0) {
-                    dst->a[y - 1][x - 1] = 0.f;
-                    dst->b[y - 1][x - 1] = 0.f;
-                } else {
-                    dst->a[y - 1][x - 1] = tempab2 * cos(HH);
-                    dst->b[y - 1][x - 1] = tempab2 * sin(HH);
-                }
-            }
-
-            u1 = 0.0;
         }
     }
+}
 }
 
 void ImProcFunctions::BlurNoise_Local(struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk)
@@ -1259,11 +1199,9 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         }
 
         if(lp.stren > 0.1f) {
-            double mean = 0.;//0 best result
-            double variance = lp.stren ; //(double) SQR(lp.stren)/sk;
-            int chroma = 3;//>=3 disabled chroma
-            addGaNoise (tmp1, tmp1, mean, variance, chroma, sk) ;
-            printf("vari=%f\n", variance);
+            float mean = 0.f;//0 best result
+            float variance = lp.stren ; //(double) SQR(lp.stren)/sk;
+            addGaNoise (tmp1, tmp1, mean, variance, sk) ;
         }
 
         if(lp.rad > 0.1 || lp.stren > 0.1) {
