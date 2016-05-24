@@ -109,7 +109,7 @@ EXPORT_BYPASS_SH_HQ;Schatten/Lichter überspringen\n(Schärfemaske)
 EXPORT_FASTEXPORTOPTIONS;<b>Schnell-Export - Einstellungen</b>
 EXPORT_INSTRUCTIONS;Die Einstellungen zum schnellen Export\nerlauben es, zeit- und ressourcenintensive\nEntwicklungsschritte zu überspringen und dafür\ndie Warteschlangenverarbeitung mit\nschnellen Export-Einstellungen auszuführen.\nDieses Vorgehen wird zur schnelleren\nGenerierung von gering aufgelösten Bildern\nempfohlen, falls es auf die Geschwindigkeit\nankommt oder für ein oder mehrere Bilder\nandere Ausgabegrößen gewünscht werden,\nohne Änderungen an deren gespeicherten\nParameter vornehmen zu müssen.
 EXPORT_MAXHEIGHT;Maximale Höhe: 
-EXPORT_MAXWIDTH;Maximale Breite:  
+EXPORT_MAXWIDTH;Maximale Breite: 
 EXPORT_PUTTOQUEUEFAST; Zur Warteschlange “Schneller Export“ hinzufügen
 EXPORT_RAW_DMETHOD;Demosaikmethode
 EXTPROGTARGET_1;RAW
@@ -226,7 +226,7 @@ FILECHOOSER_FILTER_TIFF;TIFF-Dateien
 GENERAL_ABOUT;Über
 GENERAL_AFTER;Nachher
 GENERAL_APPLY;Anwenden
-GENERAL_ASIMAGE;Als Bild
+GENERAL_ASIMAGE;Wie Bild
 GENERAL_AUTO;Automatisch
 GENERAL_BEFORE;Vorher
 GENERAL_CANCEL;Abbrechen
@@ -2043,3 +2043,16 @@ ZOOMPANEL_ZOOMFITSCREEN;An Bildschirm anpassen\nTaste: <b>f</b>
 ZOOMPANEL_ZOOMIN;Hineinzoomen\nTaste: <b>+</b>
 ZOOMPANEL_ZOOMOUT;Herauszoomen\nTaste: <b>-</b>
 
+!!!!!!!!!!!!!!!!!!!!!!!!!
+! Untranslated keys follow; remove the ! prefix after an entry is translated.
+!!!!!!!!!!!!!!!!!!!!!!!!!
+
+!HISTORY_MSG_441;Retinex - Gain transmission
+!HISTORY_MSG_442;Retinex - Scale
+!TP_RETINEX_EQUAL;Equalizer
+!TP_RETINEX_GAINOFFS;Gain and Offset (brightness)
+!TP_RETINEX_GAINTRANSMISSION;Gain transmission
+!TP_RETINEX_GAINTRANSMISSION_TOOLTIP;Amplify or reduce transmission map to achieve luminance.\nAbscissa: transmission -min from 0, mean, and values (max).\nOrdinate: gain.
+!TP_RETINEX_ITERF;Tone mapping
+!TP_RETINEX_SKAL;Scale
+!TP_RETINEX_TRANF;Transmission
