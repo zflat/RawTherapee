@@ -880,10 +880,10 @@ void LocallabParams::setDefaults()
 {
     enabled = false;
     degree = 0;
-    locY = 25;
-    locX = 25;
-    locYT = 25;
-    locXL = 25;
+    locY = 250;
+    locX = 250;
+    locYT = 250;
+    locXL = 250;
     centerX = 0;
     centerY = 0;
     lightness = 0;

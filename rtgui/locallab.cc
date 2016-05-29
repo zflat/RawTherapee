@@ -48,11 +48,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     Smethod->set_active(0);
     Smethodconn = Smethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::SmethodChanged) );
 
-    locX = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH"), 0, 150, 1, 25));
+    locX = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locX->setAdjusterListener (this);
 
-    locXL = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH_L"), 0, 150, 1, 25));
+    locXL = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH_L"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locXL->setAdjusterListener (this);
 
@@ -60,19 +60,19 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     degree->set_tooltip_text (M("TP_LOCAL_DEGREE_TOOLTIP"));
     degree->setAdjusterListener (this);
 
-    locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 150, 1, 25));
+    locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locY->setAdjusterListener (this);
 
-    locYT = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT_T"), 0, 150, 1, 25));
+    locYT = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT_T"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locYT->setAdjusterListener (this);
 
-    centerX = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_X"), -100, 100, 1, 0));
+    centerX = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_X"), -1000, 1000, 1, 0));
     //centerX->set_tooltip_text (M("TP_LOCALLAB_CENTER_X_TOOLTIP"));
     centerX->setAdjusterListener (this);
 
-    centerY = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_Y"), -100, 100, 1, 0));
+    centerY = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_Y"), -1000, 1000, 1, 0));
     //centerY->set_tooltip_text (M("TP_LOCALLAB_CENTER_Y_TOOLTIP"));
     centerY->setAdjusterListener (this);
 
@@ -116,7 +116,6 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
 
     ctboxS->pack_start (*Smethod);
-    shapeVBox->pack_start (*editHBox);
     shapeVBox->pack_start (*ctboxS);
 
     shapeVBox->pack_start (*locX);
@@ -176,9 +175,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     centerCircle = new Circle();
     centerCircle->datum = Geometry::IMAGE;
-    centerCircle->radiusInImageSpace = false;
-    centerCircle->radius = 8;
-    centerCircle->filled = true;
+    centerCircle->radiusInImageSpace = true;
+    centerCircle->radius = 19;
+    centerCircle->filled = false;
 
     EditSubscriber::visibleGeometry.push_back( locXLine[0] );
     EditSubscriber::visibleGeometry.push_back( locXLine[1] );
@@ -201,8 +200,8 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     centerCircle = new Circle();
     centerCircle->datum = Geometry::IMAGE;
-    centerCircle->radiusInImageSpace = false;
-    centerCircle->radius = 8;
+    centerCircle->radiusInImageSpace = true;
+    centerCircle->radius = 19;
     centerCircle->filled = true;
 
     EditSubscriber::mouseOverGeometry.push_back( locXLine[0] );
@@ -347,11 +346,11 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
 
     PolarCoord polCoord1, polCoord2, polCoord0;
     // dataProvider->getImageSize(imW, imH);
-    double decayY = (locY_) * double(imH) / 200.;
-    double decayYT = (locYT_) * double(imH) / 200.;
-    double decayX = (locX_) * (double(imW)) / 200.;
-    double decayXL = (locXL_) * (double(imW)) / 200.;
-    rtengine::Coord origin(imW / 2 + centerX_ * imW / 200.f, imH / 2 + centerY_ * imH / 200.f);
+    double decayY = (locY_) * double(imH) / 2000.;
+    double decayYT = (locYT_) * double(imH) / 2000.;
+    double decayX = (locX_) * (double(imW)) / 2000.;
+    double decayXL = (locXL_) * (double(imW)) / 2000.;
+    rtengine::Coord origin(imW / 2 + centerX_ * imW / 2000.f, imH / 2 + centerY_ * imH / 2000.f);
 //   printf("deX=%f dexL=%f deY=%f deyT=%f\n", decayX, decayXL, decayY, decayYT);
 
     if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
@@ -961,7 +960,7 @@ bool Locallab::button1Pressed(int modifierKey)
         provider->getImageSize(imW, imH);
         double halfSizeW = imW / 2.;
         double halfSizeH = imH / 2.;
-        draggedCenter.set(int(halfSizeW + halfSizeW * (centerX->getValue() / 100.)), int(halfSizeH + halfSizeH * (centerY->getValue() / 100.)));
+        draggedCenter.set(int(halfSizeW + halfSizeW * (centerX->getValue() / 1000.)), int(halfSizeH + halfSizeH * (centerY->getValue() / 1000.)));
 
         // trick to get the correct angle (clockwise/counter-clockwise)
         rtengine::Coord p1 = draggedCenter;
@@ -989,7 +988,7 @@ bool Locallab::button1Pressed(int modifierKey)
 
                 if (lastObject == 2) {
                     //draggedlocYOffset = -draggedlocYOffset;
-                    draggedlocYOffset -= (locYT->getValue() / 200. * verti);
+                    draggedlocYOffset -= (locYT->getValue() / 2000. * verti);
                 }
             } else if (lastObject == 3) {
                 // Dragging a line to change the angle
@@ -1012,7 +1011,7 @@ bool Locallab::button1Pressed(int modifierKey)
 
                 if (lastObject == 3) {
                     draggedlocYOffset = -draggedlocYOffset;
-                    draggedlocYOffset -= (locY->getValue() / 200. * verti);
+                    draggedlocYOffset -= (locY->getValue() / 2000. * verti);
                 }
 
             }
@@ -1039,7 +1038,7 @@ bool Locallab::button1Pressed(int modifierKey)
                     draggedlocYOffset = -draggedlocYOffset;
                 }
 
-                draggedlocYOffset -= (locY->getValue() / 200. * verti);
+                draggedlocYOffset -= (locY->getValue() / 2000. * verti);
             }
         }
 
@@ -1065,7 +1064,7 @@ bool Locallab::button1Pressed(int modifierKey)
                 draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
                 //  if (lastObject==1)
                 //      draggedlocXOffset = -draggedlocXOffset;//-
-                draggedlocXOffset -= (locX->getValue() / 200. * horiz);
+                draggedlocXOffset -= (locX->getValue() / 2000. * horiz);
             } else if (lastObject == 1) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
@@ -1086,7 +1085,7 @@ bool Locallab::button1Pressed(int modifierKey)
                     draggedlocXOffset = -draggedlocXOffset;    //-
                 }
 
-                draggedlocXOffset -= (locXL->getValue() / 200. * horiz);
+                draggedlocXOffset -= (locXL->getValue() / 2000. * horiz);
             }
 
         } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
@@ -1110,7 +1109,7 @@ bool Locallab::button1Pressed(int modifierKey)
                     draggedlocXOffset = -draggedlocXOffset;    //-
                 }
 
-                draggedlocXOffset -= (locX->getValue() / 200. * horiz);
+                draggedlocXOffset -= (locX->getValue() / 2000. * horiz);
             }
         }
 
@@ -1221,7 +1220,7 @@ bool Locallab::drag1(int modifierKey)
             //else if (lastObject==3)
             // Dragging the lower locY bar
             //  currDraggedlocYOffset = -currDraggedlocYOffset + draggedlocYOffset;
-            currDraggedlocYOffset = currDraggedlocYOffset * 200. / verti;
+            currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
             if (int(currDraggedlocYOffset) != locYT->getIntValue()) {
                 locYT->setValue((int(currDraggedlocYOffset)));
@@ -1262,7 +1261,7 @@ bool Locallab::drag1(int modifierKey)
                 currDraggedlocYOffset = -currDraggedlocYOffset + draggedlocYOffset;
             }
 
-            currDraggedlocYOffset = currDraggedlocYOffset * 200. / verti;
+            currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
             if (int(currDraggedlocYOffset) != locY->getIntValue()) {
 
@@ -1308,7 +1307,7 @@ bool Locallab::drag1(int modifierKey)
                 currDraggedlocYOffset = -currDraggedlocYOffset + draggedlocYOffset;
             }
 
-            currDraggedlocYOffset = currDraggedlocYOffset * 200. / verti;
+            currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
             if (int(currDraggedlocYOffset) != locY->getIntValue()) {
                 locY->setValue((int(currDraggedlocYOffset)));
@@ -1362,7 +1361,7 @@ bool Locallab::drag1(int modifierKey)
                 currDraggedStrOffset = - currDraggedStrOffset - draggedlocXOffset;    //-
             }
 
-            currDraggedStrOffset = currDraggedStrOffset * 200. / horiz;
+            currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
             if (int(currDraggedStrOffset) != locX->getIntValue()) {
                 locX->setValue((int(currDraggedStrOffset)));
@@ -1402,7 +1401,7 @@ bool Locallab::drag1(int modifierKey)
                 currDraggedStrOffset = - currDraggedStrOffset - draggedlocXOffset;    //-
             }
 
-            currDraggedStrOffset = currDraggedStrOffset * 200. / horiz;
+            currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
             if (int(currDraggedStrOffset) != locXL->getIntValue()) {
                 locXL->setValue((int(currDraggedStrOffset)));
@@ -1446,7 +1445,7 @@ bool Locallab::drag1(int modifierKey)
                 currDraggedStrOffset = - currDraggedStrOffset - draggedlocXOffset;    //-
             }
 
-            currDraggedStrOffset = currDraggedStrOffset * 200. / horiz;
+            currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
             if (int(currDraggedStrOffset) != locX->getIntValue()) {
                 locX->setValue((int(currDraggedStrOffset)));
@@ -1546,8 +1545,8 @@ bool Locallab::drag1(int modifierKey)
         draggedCenter += provider->deltaPrevImage;
         currPos = draggedCenter;
         currPos.clip(imW, imH);
-        int newCenterX = int((double(currPos.x) - halfSizeW) / halfSizeW * 100.);
-        int newCenterY = int((double(currPos.y) - halfSizeH) / halfSizeH * 100.);
+        int newCenterX = int((double(currPos.x) - halfSizeW) / halfSizeW * 1000.);
+        int newCenterY = int((double(currPos.y) - halfSizeH) / halfSizeH * 1000.);
 
         if (newCenterX != centerX->getIntValue() || newCenterY != centerY->getIntValue()) {
             centerX->setValue(newCenterX);
