@@ -861,6 +861,9 @@ public:
     Glib::ustring Smethod;
     bool    invers;
     bool    inversrad;
+    double  hueref;
+    double  chromaref;
+    double  lumaref;
 
     LocallabParams ()
     {

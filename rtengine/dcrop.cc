@@ -813,10 +813,10 @@ void Crop::update (int todo)
 
         LUTu dummy;
         bool needslocal = params.locallab.enabled;
-        bool locutili = parent->locutili;
 
         if(needslocal) {
-            parent->ipf.Lab_Local (labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, parent->localcurve, locutili, skip);
+            bool locutili = parent->locutili;
+            parent->ipf.Lab_Local (labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, parent->localcurve, locutili, skip, parent->params.locallab.hueref, parent->params.locallab.chromaref, parent->params.locallab.lumaref);
         }
 
 

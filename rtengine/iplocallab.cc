@@ -840,7 +840,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 }
 
 
-void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk)
+void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, double &hueref, double &chromaref, double &lumaref)
 {
     if(params->locallab.enabled) {
         BENCHFUN
@@ -902,7 +902,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         // evaluate also hue
 
 
-        if (!lp.inv) {
+        if (!lp.inv && hueref == INFINITY && chromaref == INFINITY && lumaref == INFINITY) {
             //evaluate hue, chroma, luma in center spot
             int spotSize = max(1, 18 / sk);
             // very small region, don't use omp here
@@ -956,9 +956,12 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         avB = aveB / 327.68f;
         avL = aveL / 327.68f;
 
-        float hueref = xatan2f(avB, avA); //mean hue
-        float chromaref = aveChro;
-        float lumaref = avL;
+        if(hueref == INFINITY)
+            hueref = xatan2f(avB, avA); //mean hue
+        if(chromaref == INFINITY)
+            chromaref = aveChro;
+        if(lumaref == INFINITY)
+            lumaref = avL;
 
         struct local_contra lco;
 

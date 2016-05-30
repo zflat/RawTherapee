@@ -619,12 +619,19 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         nprevl->CopyFrom(oprevl);
 
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
-        locutili = false;
-        CurveFactory::localLCurve (params.locallab.lightness, 0, /*params.locallab.contrast, params.labCurve.lcurve,*/ lhist16,
-                                   localcurve,  scale == 1 ? 1 : 16, locutili);
 
         if(params.locallab.enabled) {
-            ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale );
+            locutili = false;
+            CurveFactory::localLCurve (params.locallab.lightness, 0, /*params.locallab.contrast, params.labCurve.lcurve,*/ lhist16,
+                                       localcurve,  scale == 1 ? 1 : 16, locutili);
+            params.locallab.hueref = INFINITY;
+            params.locallab.chromaref = INFINITY;
+            params.locallab.lumaref = INFINITY;
+            ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref );
+            nextParams.locallab.hueref = params.locallab.hueref;
+            nextParams.locallab.chromaref = params.locallab.chromaref;
+            nextParams.locallab.lumaref = params.locallab.lumaref;
+
         }
 
 

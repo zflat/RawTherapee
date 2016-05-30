@@ -897,6 +897,10 @@ void LocallabParams::setDefaults()
     radius = 0.;
     inversrad = false;
     strength = 0.;
+    hueref = INFINITY;
+    chromaref = INFINITY;
+    lumaref = INFINITY;
+
 }
 
 

@@ -948,7 +948,10 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                                localcurve, 1, locutili);
 
     if(params.locallab.enabled) {
-        ipf.Lab_Local(labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1);
+        params.locallab.hueref = INFINITY;
+        params.locallab.chromaref = INFINITY;
+        params.locallab.lumaref = INFINITY;
+        ipf.Lab_Local(labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
     }
 
 
