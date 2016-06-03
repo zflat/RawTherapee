@@ -5,12 +5,17 @@
 #include "rtimage.h"
 #include <iomanip>
 #include "../rtengine/rt_math.h"
+#include "options.h"
+#include <cmath>
+#include "edit.h"
 
 using namespace rtengine;
 using namespace rtengine::procparams;
 
 Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
 {
+    CurveListener::setMulti(true);
+
     editHBox = Gtk::manage (new Gtk::HBox());
     edit = Gtk::manage (new Gtk::ToggleButton());
     edit->add (*Gtk::manage (new RTImage ("editmodehand.png")));
@@ -30,6 +35,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     Gtk::Frame* blurrFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_BLUFR")) );
     blurrFrame->set_border_width(0);
     blurrFrame->set_label_align(0.025, 0.5);
+
+    Gtk::Frame* retiFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_RETI")) );
+    retiFrame->set_border_width(0);
+    retiFrame->set_label_align(0.025, 0.5);
 
     Gtk::VBox *shapeVBox = Gtk::manage ( new Gtk::VBox());
     shapeVBox->set_spacing(2);
@@ -111,6 +120,57 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     inversrad->set_active (false);
     inversradConn  = inversrad->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversradChanged) );
 
+    inversret = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    inversret->set_active (false);
+    inversretConn  = inversret->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversretChanged) );
+
+//retinex local
+    Gtk::VBox * retiBox = Gtk::manage (new Gtk::VBox());
+    retiBox->set_border_width(4);
+    retiBox->set_spacing(2);
+
+    dhbox = Gtk::manage (new Gtk::HBox ());
+    labmdh = Gtk::manage (new Gtk::Label (M("TP_LOCRETI_METHOD") + ":"));
+    dhbox->pack_start (*labmdh, Gtk::PACK_SHRINK, 1);
+
+    retinexMethod = Gtk::manage (new MyComboBoxText ());
+//   retinexMethod->append_text (M("TP_WAVE_NONE"));
+    retinexMethod->append_text (M("TP_RETINEX_LOW"));
+    retinexMethod->append_text (M("TP_RETINEX_UNIFORM"));
+    retinexMethod->append_text (M("TP_RETINEX_HIGH"));
+    retinexMethod->set_active(0);
+    retinexMethodConn = retinexMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::retinexMethodChanged) );
+    retinexMethod->set_tooltip_markup (M("TP_LOCRETI_METHOD_TOOLTIP"));
+
+    str  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_STR"), 0, 100, 1, 0));
+    str->setAdjusterListener (this);
+    neigh  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NEIGH"), 14, 150, 1, 50));
+    neigh->setAdjusterListener (this);
+    vart  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_VART"), 50, 500, 1, 200));
+    vart->setAdjusterListener (this);
+    chrrt  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHRRT"), 0, 100, 1, 0));
+    chrrt->setAdjusterListener (this);
+
+    std::vector<double> defaultCurve;
+
+    CCWcurveEditorgainT = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAIN"));
+    CCWcurveEditorgainT->setCurveListener (this);
+
+    rtengine::LocallabParams::getDefaultCCWgainCurveT(defaultCurve);
+    cTgainshape = static_cast<FlatCurveEditor*>(CCWcurveEditorgainT->addCurve(CT_Flat, "", NULL, false));
+
+    cTgainshape->setIdentityValue(0.);
+    cTgainshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
+    cTgainshape->setTooltip(M("TP_RETINEX_TRANSMISSIONGAIN_TOOLTIP"));
+
+    CCWcurveEditorgainT->curveListComplete();
+    CCWcurveEditorgainT->show();
+
+//    retiFrame->add(*retiBox);
+//    pack_start (*retiFrame);
+
+// end reti
+
     avoid = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_AVOID")));
     avoid->set_active (false);
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
@@ -152,6 +212,17 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrVBox->pack_start (*inversrad);
     blurrFrame->add(*blurrVBox);
     pack_start (*blurrFrame);
+
+    retiBox->pack_start (*retinexMethod);
+    retiBox->pack_start (*str);
+    retiBox->pack_start (*chrrt);
+    retiBox->pack_start (*neigh);
+    retiBox->pack_start (*vart);
+    retiBox->pack_start(*CCWcurveEditorgainT, Gtk::PACK_SHRINK, 4);
+    retiBox->pack_start (*inversret);
+
+    retiFrame->add(*retiBox);
+    pack_start (*retiFrame);
 
     pack_start (*transit);
     pack_start (*avoid);
@@ -224,7 +295,16 @@ Locallab::~Locallab()
     for (std::vector<Geometry*>::const_iterator i = mouseOverGeometry.begin(); i != mouseOverGeometry.end(); ++i) {
         delete *i;
     }
+
+    delete CCWcurveEditorgainT;
+
 }
+
+void Locallab::autoOpenCurve ()
+{
+    cTgainshape->openIfNonlinear();
+}
+
 
 void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
@@ -245,18 +325,29 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
+        str->setEditedState (pedited->locallab.str ? Edited : UnEdited);
+        neigh->setEditedState (pedited->locallab.neigh ? Edited : UnEdited);
+        vart->setEditedState (pedited->locallab.vart ? Edited : UnEdited);
+        chrrt->setEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
         set_inconsistent (multiImage && !pedited->locallab.enabled);
         avoid->set_inconsistent (multiImage && !pedited->locallab.avoid);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
+        cTgainshape->setUnChanged  (!pedited->locallab.ccwTgaincurve);
+        inversret->set_inconsistent (multiImage && !pedited->locallab.inversret);
 
         if (!pedited->locallab.Smethod) {
             Smethod->set_active_text(M("GENERAL_UNCHANGED"));
         }
 
+        if (!pedited->locallab.retinexMethod) {
+            retinexMethod->set_active_text(M("GENERAL_UNCHANGED"));
+        }
+
     }
 
     Smethodconn.block(true);
+    retinexMethodConn.block(true);
 
     setEnabled(pp->locallab.enabled);
     avoidConn.block (true);
@@ -268,6 +359,9 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     inversradConn.block (true);
     inversrad->set_active (pp->locallab.inversrad);
     inversradConn.block (false);
+    inversretConn.block (true);
+    inversret->set_active (pp->locallab.inversret);
+    inversretConn.block (false);
 
     degree->setValue (pp->locallab.degree);
     locY->setValue (pp->locallab.locY);
@@ -283,11 +377,20 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     transit->setValue (pp->locallab.transit);
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
+    str->setValue (pp->locallab.str);
+    neigh->setValue (pp->locallab.neigh);
+    vart->setValue (pp->locallab.vart);
+    chrrt->setValue (pp->locallab.chrrt);
+    cTgainshape->setCurve (pp->locallab.ccwTgaincurve);
 
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
     lastinversrad = pp->locallab.inversrad;
+    lastinversret = pp->locallab.inversret;
     inversChanged();
+    inversradChanged();
+    inversretChanged();
+
     updateGeometry (pp->locallab.centerX, pp->locallab.centerY, pp->locallab.locY, pp->locallab.degree,  pp->locallab.locX, pp->locallab.locYT, pp->locallab.locXL);
 
     if (pp->locallab.Smethod == "IND") {
@@ -302,6 +405,19 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     SmethodChanged();
     Smethodconn.block(false);
+
+    if (pp->locallab.retinexMethod == "low") {
+        retinexMethod->set_active (0);
+    } else if (pp->locallab.retinexMethod == "uni") {
+        retinexMethod->set_active (1);
+    } else if (pp->locallab.retinexMethod == "high") {
+        retinexMethod->set_active (2);
+//    } else if (pp->wavelet.retinexMethod == "high") {
+//        retinexMethod->set_active (3);
+    }
+
+    retinexMethodChanged ();
+    retinexMethodConn.block(false);
 
     if (pp->locallab.Smethod == "SYM" || pp->locallab.Smethod == "SYMSL") {
         locXL->setValue (locX->getValue());
@@ -427,10 +543,17 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.avoid = avoid->get_active();
     pp->locallab.invers = invers->get_active();
     pp->locallab.inversrad = inversrad->get_active();
+    pp->locallab.inversret = inversret->get_active();
+    pp->locallab.str = str->getIntValue ();
+    pp->locallab.neigh = neigh->getIntValue ();
+    pp->locallab.vart = vart->getIntValue ();
+    pp->locallab.chrrt = chrrt->getIntValue ();
+    pp->locallab.ccwTgaincurve       = cTgainshape->getCurve ();
 
     if (pedited) {
         pedited->locallab.degree = degree->getEditedState ();
         pedited->locallab.Smethod  = Smethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->locallab.retinexMethod    = retinexMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->locallab.locY = locY->getEditedState ();
         pedited->locallab.locX = locX->getEditedState ();
         pedited->locallab.locYT = locYT->getEditedState ();
@@ -447,8 +570,25 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
         pedited->locallab.invers = !invers->get_inconsistent();
+        pedited->locallab.inversret = !inversret->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
+        pedited->locallab.str = str->getEditedState ();
+        pedited->locallab.neigh = neigh->getEditedState ();
+        pedited->locallab.vart = vart->getEditedState ();
+        pedited->locallab.chrrt = chrrt->getEditedState ();
+        pedited->locallab.ccwTgaincurve        = !cTgainshape->isUnChanged ();
     }
+
+    if (retinexMethod->get_active_row_number() == 0) {
+        pp->locallab.retinexMethod = "low";
+    } else if (retinexMethod->get_active_row_number() == 1) {
+        pp->locallab.retinexMethod = "uni";
+    } else if (retinexMethod->get_active_row_number() == 2) {
+        pp->locallab.retinexMethod = "high";
+//   } else if (retinexMethod->get_active_row_number() == 3) {
+//       pp->wavelet.retinexMethod = "high";
+    }
+
 
     if (Smethod->get_active_row_number() == 0) {
         pp->locallab.Smethod = "IND";
@@ -479,6 +619,24 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pp->locallab.locX = locX->getValue();
         pp->locallab.locY = locY->getValue();
         pp->locallab.locYT = locYT->getValue();
+    }
+}
+
+void Locallab::curveChanged (CurveEditor* ce)
+{
+
+    if (listener && getEnabled()) {
+        if (ce == cTgainshape) {
+            listener->panelChanged (EvlocallabCTgainCurve, M("HISTORY_CUSTOMCURVE"));
+        }
+    }
+}
+
+void Locallab::retinexMethodChanged()
+{
+
+    if (listener) {
+        listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
     }
 }
 
@@ -602,6 +760,31 @@ void Locallab::inversradChanged ()
     }
 }
 
+void Locallab::inversretChanged ()
+{
+
+    if (batchMode) {
+        if (inversret->get_inconsistent()) {
+            inversret->set_inconsistent (false);
+            inversretConn.block (true);
+            inversret->set_active (false);
+            inversretConn.block (false);
+        } else if (lastinversret) {
+            inversret->set_inconsistent (true);
+        }
+
+        lastinversret = inversret->get_active ();
+    }
+
+    if (listener) {
+        if (getEnabled()) {
+            listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (Evlocallabinversret, M("GENERAL_DISABLED"));
+        }
+    }
+}
+
 
 void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* pedited)
 {
@@ -619,6 +802,10 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     transit->setDefault (defParams->locallab.transit);
     radius->setDefault (defParams->locallab.radius);
     strength->setDefault (defParams->locallab.strength);
+    str->setDefault (defParams->locallab.str);
+    neigh->setDefault (defParams->locallab.neigh);
+    vart->setDefault (defParams->locallab.vart);
+    chrrt->setDefault (defParams->locallab.chrrt);
 
 
     if (pedited) {
@@ -636,6 +823,10 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setDefaultEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
+        str->setDefaultEditedState (pedited->locallab.str ? Edited : UnEdited);
+        neigh->setDefaultEditedState (pedited->locallab.neigh ? Edited : UnEdited);
+        vart->setDefaultEditedState (pedited->locallab.vart ? Edited : UnEdited);
+        chrrt->setDefaultEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
     } else {
         degree->setDefaultEditedState (Irrelevant);
         locY->setDefaultEditedState (Irrelevant);
@@ -651,6 +842,10 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         radius->setDefaultEditedState (Irrelevant);
         strength->setDefaultEditedState (Irrelevant);
         transit->setDefaultEditedState (Irrelevant);
+        str->setDefaultEditedState (Irrelevant);
+        neigh->setDefaultEditedState (Irrelevant);
+        vart->setDefaultEditedState (Irrelevant);
+        chrrt->setDefaultEditedState (Irrelevant);
     }
 }
 
@@ -733,6 +928,14 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabstrength, strength->getTextValue());
         } else if (a == transit) {
             listener->panelChanged (Evlocallabtransit, transit->getTextValue());
+        } else if (a == str) {
+            listener->panelChanged (Evlocallabstr, str->getTextValue());
+        } else if (a == neigh) {
+            listener->panelChanged (Evlocallabneigh, neigh->getTextValue());
+        } else if (a == vart) {
+            listener->panelChanged (Evlocallabvart, vart->getTextValue());
+        } else if (a == chrrt) {
+            listener->panelChanged (Evlocallabchrrt, chrrt->getTextValue());
         }
 
         else if (a == centerX || a == centerY) {
@@ -815,6 +1018,10 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     radius->trimValue(pp->locallab.radius);
     strength->trimValue(pp->locallab.strength);
     transit->trimValue(pp->locallab.transit);
+    str->trimValue(pp->locallab.str);
+    neigh->trimValue(pp->locallab.neigh);
+    vart->trimValue(pp->locallab.vart);
+    chrrt->trimValue(pp->locallab.chrrt);
 }
 
 void Locallab::setBatchMode (bool batchMode)
@@ -836,12 +1043,19 @@ void Locallab::setBatchMode (bool batchMode)
     strength->showEditedCB ();
     transit->showEditedCB ();
     Smethod->append_text (M("GENERAL_UNCHANGED"));
+    str->showEditedCB ();
+    neigh->showEditedCB ();
+    vart->showEditedCB ();
+    CCWcurveEditorgainT->setBatchMode (batchMode);
+    chrrt->showEditedCB ();
 
 }
 
 void Locallab::setEditProvider (EditDataProvider* provider)
 {
     EditSubscriber::setEditProvider(provider);
+    cTgainshape->setEditProvider(provider);
+
 }
 
 void Locallab::editToggled ()

@@ -48,6 +48,8 @@ struct local_params {
     int trans;
     bool inv;
     bool invrad;
+    bool invret;
+    float str;
 };
 
 static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, struct local_params& lp)
@@ -68,8 +70,9 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     int local_transit = locallab.transit;
     double radius = locallab.radius;
     bool inverserad = locallab.inversrad;
+    bool inverseret = locallab.inversret;
     double strength = locallab.strength;
-
+    float str = (float)locallab.str;
     lp.xc = w * local_center_x;
     lp.yc = h * local_center_y;
     lp.lx = w * local_x;
@@ -85,6 +88,8 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     lp.stren = strength;
     lp.inv = inverse;
     lp.invrad = inverserad;
+    lp.invret = inverseret;
+    lp.str = str;
 }
 
 inline static float calcLocalFactor(const float lox, const float loy, const float lcx, const float dx, const float lcy, const float dy, const float ach)
@@ -266,6 +271,147 @@ void ImProcFunctions::BlurNoise_Local(const struct local_params& lp, LabImage* o
                 transformed->L[y][x] = tmp1->L[y][x];
                 transformed->a[y][x] = tmp1->a[y][x];
                 transformed->b[y][x] = tmp1->b[y][x];
+            }
+            }
+        }
+    }
+}
+void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
+{
+    BENCHFUN
+//inverse local retinex
+    float ach = (float)lp.trans / 100.f;
+
+    #pragma omp parallel for schedule(dynamic,16) if (multiThread)
+
+    for (int y = 0; y < transformed->H; y++) {
+        int loy = cy + y;
+
+        for (int x = 0; x < transformed->W; x++) {
+            int lox = cx + x;
+
+            int zone;
+            float localFactor;
+            calcTransition (lox, loy, ach, lp, zone, localFactor);
+
+            switch(zone) {
+            case 0: { // outside selection and outside transition zone => full effect, no transition
+                if(chro == 0) {
+                    transformed->L[y][x] = tmp1->L[y][x];
+                }
+
+                if(chro == 1) {
+
+                    transformed->a[y][x] = tmp1->a[y][x];
+                    transformed->b[y][x] = tmp1->b[y][x];
+                }
+
+                break;
+            }
+
+            case 1: { // inside transition zone
+                float factorx = 1.f - localFactor;
+
+                if(chro == 0) {
+                    float difL = tmp1->L[y][x] - original->L[y][x];
+                    difL *= factorx;
+                    transformed->L[y][x] = original->L[y][x] + difL;
+                }
+
+                if(chro == 1) {
+                    float difa = tmp1->a[y][x] - original->a[y][x];
+                    float difb = tmp1->b[y][x] - original->b[y][x];
+
+                    difa *= factorx;
+                    difb *= factorx;
+
+                    transformed->a[y][x] = original->a[y][x] + difa;
+                    transformed->b[y][x] = original->b[y][x] + difb;
+                }
+
+                break;
+            }
+
+            case 2: { // inside selection => no effect, keep original values
+                if(chro == 0) {
+                    transformed->L[y][x] = original->L[y][x];
+                }
+
+                if(chro == 1) {
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                }
+            }
+            }
+        }
+    }
+}
+
+
+void ImProcFunctions::Reti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
+{
+//local retinex
+    BENCHFUN
+
+    const float ach = (float)lp.trans / 100.f;
+
+    #pragma omp parallel for schedule(dynamic,16) if (multiThread)
+
+    for (int y = 0; y < transformed->H; y++) {
+        int loy = cy + y;
+
+        for (int x = 0; x < transformed->W; x++) {
+            int lox = cx + x;
+
+            int zone;
+            float localFactor;
+            calcTransition(lox, loy, ach, lp, zone, localFactor);
+
+            switch(zone) {
+            case 0: { // outside selection and outside transition zone => no effect, keep original values
+                if(chro == 0) {
+                    transformed->L[y][x] = original->L[y][x];
+                }
+
+                if(chro == 1) {
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                }
+
+                break;
+            }
+
+            case 1: { // inside transition zone
+                float factorx = localFactor;
+
+                if(chro == 0) {
+                    float difL = tmp1->L[y][x] - original->L[y][x];
+                    difL *= factorx;
+                    transformed->L[y][x] = original->L[y][x] + difL;
+                }
+
+                if(chro == 1) {
+                    float difa = tmp1->a[y][x] - original->a[y][x];
+                    float difb = tmp1->b[y][x] - original->b[y][x];
+                    difa *= factorx;
+                    difb *= factorx;
+                    transformed->a[y][x] = original->a[y][x] + difa;
+                    transformed->b[y][x] = original->b[y][x] + difb;
+                }
+
+                break;
+
+            }
+
+            case 2: { // inside selection => full effect, no transition
+                if(chro == 0) {
+                    transformed->L[y][x] = tmp1->L[y][x];
+                }
+
+                if(chro == 1) {
+                    transformed->a[y][x] = tmp1->a[y][x];
+                    transformed->b[y][x] = tmp1->b[y][x];
+                }
             }
             }
         }
@@ -840,7 +986,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 }
 
 
-void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, double &hueref, double &chromaref, double &lumaref)
+void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
 {
     if(params->locallab.enabled) {
         BENCHFUN
@@ -886,6 +1032,95 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
             delete tmp1;
         }
 
+        if(lp.str > 0.f) {
+            int GW = transformed->W;
+            int GH = transformed->H;
+
+            float *orig[GH] ALIGNED16;
+            float *origBuffer = new float[GH * GW];
+
+            for (int i = 0; i < GH; i++) {
+                orig[i] = &origBuffer[i * GW];
+            }
+
+            float *orig1[GH] ALIGNED16;
+            float *origBuffer1 = new float[GH * GW];
+
+            for (int i = 0; i < GH; i++) {
+                orig1[i] = &origBuffer1[i * GW];
+            }
+
+
+            LabImage *tmpl = new LabImage(transformed->W, transformed->H);
+
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < GH; ir += 1)
+                for(int jr = 0; jr < GW; jr += 1) {
+                    orig[ir][jr] = original->L[ir][jr];
+                    orig1[ir][jr] = transformed->L[ir][jr];
+                }
+
+            float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+            ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 0, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < GH; ir += 1)
+                for(int jr = 0; jr < GW; jr += 1) {
+                    tmpl->L[ir][jr] = orig[ir][jr];
+                }
+
+            if(!lp.invret) {
+                Reti_Local(lp, original, transformed, tmpl, cx, cy, 0);
+            } else {
+                InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 0);
+            }
+
+            if(params->locallab.chrrt > 0) {
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for(int ir = 0; ir < GH; ir += 1)
+                    for(int jr = 0; jr < GW; jr += 1) {
+                        orig[ir][jr] = sqrt(SQR(original->a[ir][jr]) + SQR(original->b[ir][jr]));
+                        orig1[ir][jr] = sqrt(SQR(transformed->a[ir][jr]) + SQR(transformed->b[ir][jr]));
+                    }
+
+                ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 1, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for(int ir = 0; ir < GH; ir += 1)
+                    for(int jr = 0; jr < GW; jr += 1) {
+                        float Chprov = orig1[ir][jr];
+                        float2 sincosval;
+                        sincosval.y = Chprov == 0.0f ? 1.f : transformed->a[ir][jr] / Chprov;
+                        sincosval.x = Chprov == 0.0f ? 0.f : transformed->b[ir][jr] / Chprov;
+                        tmpl->a[ir][jr] = orig[ir][jr] * sincosval.y;
+                        tmpl->b[ir][jr] = orig[ir][jr] * sincosval.x;
+
+                    }
+
+                if(!lp.invret) {
+                    Reti_Local(lp, original, transformed, tmpl, cx, cy, 1);
+                } else {
+                    InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 1);
+                }
+
+            }
+
+            delete tmpl;
+            delete [] origBuffer;
+            delete [] origBuffer1;
+
+        }
+
         //begin contrast and evalue hue
         // double precision for large summations
         double ave = 0.;
@@ -905,6 +1140,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         if (!lp.inv && hueref == INFINITY && chromaref == INFINITY && lumaref == INFINITY) {
             //evaluate hue, chroma, luma in center spot
             int spotSize = max(1, 18 / sk);
+
             // very small region, don't use omp here
             for (int y = max(cy, (int)(lp.yc - spotSize)); y < min(transformed->H + cy, (int)(lp.yc + spotSize + 1)); y++) {
                 for (int x = max(cx, (int)(lp.xc - spotSize)); x < min(transformed->W + cx, (int)(lp.xc + spotSize + 1)); x++) {
@@ -938,6 +1174,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
                     }
                 }
             }
+
             if(n == 0) {
                 ave = 15000.f;
                 n = 1;
@@ -956,26 +1193,38 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         avB = aveB / 327.68f;
         avL = aveL / 327.68f;
 
-        if(hueref == INFINITY)
-            hueref = xatan2f(avB, avA); //mean hue
-        if(chromaref == INFINITY)
+        if(hueref == INFINITY) {
+            hueref = xatan2f(avB, avA);    //mean hue
+        }
+
+        if(chromaref == INFINITY) {
             chromaref = aveChro;
-        if(lumaref == INFINITY)
+        }
+
+        if(lumaref == INFINITY) {
             lumaref = avL;
+        }
 
         struct local_contra lco;
 
         // we must here detect : general case, skin, sky,...foliages ???
         // delta dhue, luminance and chroma
         constexpr float ared = (M_PI - 0.05f) / 100.f;
+
         constexpr float bred = 0.05f;
+
         float dhue = ared * lp.sens + bred; //delta hue
 
         constexpr float maxh = 4.f; //amplification contrast above mean
+
         constexpr float maxl = 3.f; //reductio contrast under mean
+
         float multh = (float) fabs(lp.cont) * (maxh - 1.f) / 100.f + 1.f;
+
         float mult = (float)fabs(lp.cont) * (maxl - 1.f) / 100.f + 1.f;
+
         lco.dx = 1.f - 1.f / mult;
+
         lco.dy = 1.f - 1.f / multh;
 
 

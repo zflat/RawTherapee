@@ -1567,6 +1567,48 @@ void CurveFactory::RGBCurve (const std::vector<double>& curvePoints, LUTf & outC
 
 }
 
+LocretigainCurve::LocretigainCurve() : sum(0.f) {};
+
+void LocretigainCurve::Reset()
+{
+    lutLocretigainCurve.reset();
+    sum = 0.f;
+}
+
+void LocretigainCurve::Set(const Curve &pCurve)
+{
+    if (pCurve.isIdentity()) {
+        Reset(); // raise this value if the quality suffers from this number of samples
+        return;
+    }
+
+    lutLocretigainCurve(501); // raise this value if the quality suffers from this number of samples
+    sum = 0.f;
+
+    for (int i = 0; i < 501; i++) {
+        lutLocretigainCurve[i] = pCurve.getVal(double(i) / 500.);
+
+        if(lutLocretigainCurve[i] < 0.02f) {
+            lutLocretigainCurve[i] = 0.02f;    //avoid 0.f for wavelet : under 0.01f quasi no action for each value
+        }
+
+        sum += lutLocretigainCurve[i];
+    }
+
+    //lutLocCurve.dump("wav");
+}
+void LocretigainCurve::Set(const std::vector<double> &curvePoints)
+{
+
+    if (!curvePoints.empty() && curvePoints[0] > FCT_Linear && curvePoints[0] < FCT_Unchanged) {
+        FlatCurve tcurve(curvePoints, false, CURVES_MIN_POLY_POINTS / 2);
+        tcurve.setIdentityValue(0.);
+        Set(tcurve);
+    } else {
+        Reset();
+    }
+}
+
 
 void ColorAppearance::Reset()
 {

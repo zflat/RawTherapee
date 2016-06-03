@@ -487,6 +487,13 @@ enum ProcEvent {
     Evlocallabinversrad = 457,
     Evlocallabstrength = 458,
     Evlocallabsensi = 459,
+    EvlocallabretinexMethod = 460,
+    Evlocallabstr = 461,
+    Evlocallabneigh = 462,
+    Evlocallabvart = 463,
+    EvlocallabCTgainCurve = 464,
+    Evlocallabchrrt = 465,
+    Evlocallabinversret = 466,
     NUMOFEVENTS
 
 };

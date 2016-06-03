@@ -139,6 +139,7 @@ protected:
     WavOpacityCurveWL waOpacityCurveWL;
     RetinextransmissionCurve dehatransmissionCurve;
     RetinexgaintransmissionCurve dehagaintransmissionCurve;
+    LocretigainCurve locRETgainCurve;
 
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;

@@ -434,8 +434,15 @@ public:
     bool transit;
     bool avoid;
     bool Smethod;
+    bool retinexMethod;
+    bool str;
+    bool neigh;
+    bool vart;
     bool invers;
     bool inversrad;
+    bool inversret;
+    bool ccwTgaincurve;
+    bool chrrt;
 };
 
 class LensProfParamsEdited

@@ -9,8 +9,14 @@
 #include "toolpanel.h"
 #include "edit.h"
 #include "guiutils.h"
+#include "curveeditor.h"
+#include "curveeditorgroup.h"
+#include "toolpanel.h"
+#include "../rtengine/imagedata.h"
+#include <memory>
+#include "options.h"
 
-class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public EditSubscriber
+class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public CurveListener, public EditSubscriber
 {
 
 private:
@@ -35,12 +41,24 @@ protected:
     Adjuster* radius;
     Adjuster* strength;
     Adjuster* transit;
+    Adjuster* str;
+    Adjuster* neigh;
+    Adjuster* vart;
+    Adjuster* chrrt;
+
     Gtk::CheckButton* avoid;
     MyComboBoxText*   Smethod;
     sigc::connection  Smethodconn;
     Gtk::HBox* ctboxS;
     Gtk::CheckButton* invers;
     Gtk::CheckButton* inversrad;
+    Gtk::CheckButton* inversret;
+
+    MyComboBoxText*   retinexMethod;
+    Gtk::Label* labmdh;
+    Gtk::HBox* dhbox;
+    CurveEditorGroup* CCWcurveEditorgainT;
+    FlatCurveEditor* cTgainshape;
 
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
@@ -50,8 +68,8 @@ protected:
     double draggedlocYTOffset;
     double draggedlocXLOffset;
     rtengine::Coord draggedCenter;
-    bool lastavoid, lastinvers, lastinversrad;
-    sigc::connection  editConn, avoidConn, inversConn, inversradConn;
+    bool lastavoid, lastinvers, lastinversrad, lastinversret;
+    sigc::connection  editConn, avoidConn, inversConn, inversradConn, inversretConn, retinexMethodConn;
 
     void editToggled ();
 
@@ -75,8 +93,12 @@ public:
     void avoidChanged ();
     void inversChanged ();
     void inversradChanged ();
+    void inversretChanged ();
+    void curveChanged (CurveEditor* ce);
+    void autoOpenCurve ();
 
     void setEditProvider (EditDataProvider* provider);
+    void retinexMethodChanged();
 
     // EditSubscriber interface
     CursorShape getCursor(int objectID);

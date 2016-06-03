@@ -306,11 +306,17 @@ void ParamsEdited::set (bool v)
     locallab.radius = v;
     locallab.strength = v;
     locallab.transit = v;
+    locallab.chrrt = v;
     locallab.avoid = v;
     locallab.Smethod = v;
+    locallab.retinexMethod = v;
     locallab.invers = v;
     locallab.inversrad = v;
-
+    locallab.inversret = v;
+    locallab.str = v;
+    locallab.neigh = v;
+    locallab.vart = v;
+    locallab.ccwTgaincurve = v;
     pcvignette.enabled = v;
     pcvignette.strength = v;
     pcvignette.feather = v;
@@ -811,12 +817,14 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
         locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
         locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
+        locallab.inversret = locallab.inversret && p.locallab.inversret == other.locallab.inversret;
         locallab.degree = locallab.degree && p.locallab.degree == other.locallab.degree;
         locallab.locY = locallab.locY && p.locallab.locY == other.locallab.locY;
         locallab.locX = locallab.locX && p.locallab.locX == other.locallab.locX;
         locallab.locYT = locallab.locYT && p.locallab.locYT == other.locallab.locYT;
         locallab.locXL = locallab.locXL && p.locallab.locXL == other.locallab.locXL;
         locallab.Smethod = locallab.Smethod && p.locallab.Smethod == other.locallab.Smethod;
+        locallab.retinexMethod = locallab.retinexMethod && p.locallab.retinexMethod == other.locallab.retinexMethod;
         locallab.centerX = locallab.centerX && p.locallab.centerX == other.locallab.centerX;
         locallab.centerY = locallab.centerY && p.locallab.centerY == other.locallab.centerY;
         locallab.lightness = locallab.lightness && p.locallab.lightness == other.locallab.lightness;
@@ -826,6 +834,11 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
         locallab.transit = locallab.transit && p.locallab.transit == other.locallab.transit;
+        locallab.chrrt = locallab.chrrt && p.locallab.chrrt == other.locallab.chrrt;
+        locallab.str = locallab.str && p.locallab.str == other.locallab.str;
+        locallab.neigh = locallab.neigh && p.locallab.neigh == other.locallab.neigh;
+        locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
+        locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
         pcvignette.enabled = pcvignette.enabled && p.pcvignette.enabled == other.pcvignette.enabled;
         pcvignette.strength = pcvignette.strength && p.pcvignette.strength == other.pcvignette.strength;
         pcvignette.feather = pcvignette.feather && p.pcvignette.feather == other.pcvignette.feather;
@@ -2047,6 +2060,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.inversrad     = mods.locallab.inversrad;
     }
 
+    if (locallab.inversret) {
+        toEdit.locallab.inversret     = mods.locallab.inversret;
+    }
+
     if (locallab.degree) {
         toEdit.locallab.degree        = dontforceSet && options.baBehav[ADDSET_LOCALLAB_DEGREE] ? toEdit.locallab.degree + mods.locallab.degree : mods.locallab.degree;
     }
@@ -2069,6 +2086,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.Smethod) {
         toEdit.locallab.Smethod   = mods.locallab.Smethod;
+    }
+
+    if (locallab.retinexMethod) {
+        toEdit.locallab.retinexMethod   = mods.locallab.retinexMethod;
     }
 
     if (locallab.centerX) {
@@ -2105,6 +2126,26 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.transit) {
         toEdit.locallab.transit   = mods.locallab.transit;
+    }
+
+    if (locallab.chrrt) {
+        toEdit.locallab.chrrt   = mods.locallab.chrrt;
+    }
+
+    if (locallab.str) {
+        toEdit.locallab.str   = mods.locallab.str;
+    }
+
+    if (locallab.neigh) {
+        toEdit.locallab.neigh   = mods.locallab.neigh;
+    }
+
+    if (locallab.vart) {
+        toEdit.locallab.vart   = mods.locallab.vart;
+    }
+
+    if (locallab.ccwTgaincurve) {
+        toEdit.locallab.ccwTgaincurve   = mods.locallab.ccwTgaincurve;
     }
 
     if (pcvignette.enabled) {

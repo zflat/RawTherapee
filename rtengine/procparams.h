@@ -42,6 +42,7 @@ class WavOpacityCurveW;
 class WavOpacityCurveWL;
 class RetinextransmissionCurve;
 class RetinexgaintransmissionCurve;
+class LocretigainCurve;
 
 enum RenderingIntent {
     RI_PERCEPTUAL = INTENT_PERCEPTUAL,
@@ -859,20 +860,32 @@ public:
     int     transit;
     bool    avoid;
     Glib::ustring Smethod;
+    Glib::ustring retinexMethod;
     bool    invers;
     bool    inversrad;
+    bool    inversret;
     double  hueref;
     double  chromaref;
     double  lumaref;
+    int     str;
+    int     neigh;
+    int     vart;
+    int     chrrt;
+    std::vector<double>   ccwTgaincurve;
 
     LocallabParams ()
     {
         setDefaults();
     }
     void setDefaults();
+    void getCurves(LocretigainCurve &cTgainCurve) const;
+    static void getDefaultCCWgainCurveT(std::vector<double> &curve);
 
 
 };
+
+
+
 
 /**
   * Parameters of the post-crop vignette filter

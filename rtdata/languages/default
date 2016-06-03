@@ -676,19 +676,27 @@ HISTORY_MSG_443;Local L*a*b*
 HISTORY_MSG_444;Local - Bottom
 HISTORY_MSG_445;Local - Right
 HISTORY_MSG_446;Local - Center
-HISTORY_MSG_447;Local - Lightness
-HISTORY_MSG_448;Local - Contrast
-HISTORY_MSG_449;Local - Chrominance
-HISTORY_MSG_450;Local - Transition
-HISTORY_MSG_451;Local - Avoid color shift
-HISTORY_MSG_452;Local - Top
-HISTORY_MSG_453;Local - Left
-HISTORY_MSG_454;Local - Shape
-HISTORY_MSG_455;Local - Inverse
-HISTORY_MSG_456;Local - Radius
-HISTORY_MSG_457;Local - Inverse Blur Noise
-HISTORY_MSG_458;Local - Noise
-HISTORY_MSG_459;Local - Scope
+HISTORY_MSG_447;Local - Lightness/
+HISTORY_MSG_448;Local - Lightness
+HISTORY_MSG_449;Local - Contrast
+HISTORY_MSG_450;Local - Chrominance
+HISTORY_MSG_451;Local - Transition
+HISTORY_MSG_452;Local - Avoid color shift
+HISTORY_MSG_453;Local - Top
+HISTORY_MSG_454;Local - Left
+HISTORY_MSG_455;Local - Method
+HISTORY_MSG_456;Local - Color Inverse
+HISTORY_MSG_457;Local - Radius
+HISTORY_MSG_458;Local - Blur Inverse
+HISTORY_MSG_459;Local - Noise
+HISTORY_MSG_460;Local - Scope
+HISTORY_MSG_461;Local - Retinex method
+HISTORY_MSG_462;Local - Retinex strength
+HISTORY_MSG_463;Local - Retinex radius
+HISTORY_MSG_464;Local - Retinex contrast
+HISTORY_MSG_465;Local - Retinex Gain curve
+HISTORY_MSG_466;Local - Retinex chroma
+HISTORY_MSG_467;Local - Retinex Inverse
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1615,6 +1623,7 @@ TP_LOCALLAB_BLUFR;Blur & Noise
 TP_LOCALLAB_CENTER_X;Center X
 TP_LOCALLAB_CENTER_Y;Center Y
 TP_LOCALLAB_CHROMA;Chrominance
+TP_LOCALLAB_CHRRT;Chroma
 TP_LOCALLAB_COFR;Color & Light
 TP_LOCALLAB_CONTRAST;Contrast
 TP_LOCALLAB_INDSL;Independent (mouse + sliders)
@@ -1623,6 +1632,12 @@ TP_LOCALLAB_INVERS;Inverse
 TP_LOCALLAB_LABEL;Local L*a*b*
 TP_LOCALLAB_LIGHTNESS;Lightness
 TP_LOCALLAB_RADIUS;Radius
+TP_LOCALLAB_RETI;Retinex
+TP_LOCALLAB_TRANSMISSIONGAIN;Transmission gain
+TP_LOCRETI_METHOD;Method
+TP_LOCALLAB_STR;Strength
+TP_LOCALLAB_NEIGH;Radius
+TP_LOCALLAB_VART;Contrast
 TP_LOCALLAB_SENSI;Scope
 TP_LOCALLAB_SENSI_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.
 TP_LOCALLAB_SHFR;Shape
