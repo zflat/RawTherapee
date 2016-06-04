@@ -533,7 +533,7 @@ public:
     double green;
     double equal;
 
-    WBEntry(Glib::ustring p, enum WBTypes t, Glib::ustring l, int temp, double green, double equal) : ppLabel(p), type(t), GUILabel(l), temperature(temp), green(green), equal(equal) {};
+    WBEntry(const Glib::ustring &p, enum WBTypes t, const Glib::ustring &l, int temp, double green, double equal) : ppLabel(p), type(t), GUILabel(l), temperature(temp), green(green), equal(equal) {};
 };
 
 class WBParams
@@ -1378,14 +1378,14 @@ public:
       * @param pedited pointer to a ParamsEdited object (optional) to store which values has to be saved
       * @return Error code (=0 if all supplied filenames where created correctly)
       */
-    int     save        (Glib::ustring fname, Glib::ustring fname2 = "", bool fnameAbsolute = true, ParamsEdited* pedited = NULL);
+    int     save        (const Glib::ustring &fname, const Glib::ustring &fname2 = "", bool fnameAbsolute = true, ParamsEdited* pedited = NULL);
     /**
       * Loads the parameters from a file.
       * @param fname the name of the file
       * @params pedited pointer to a ParamsEdited object (optional) to store which values has been loaded
       * @return Error code (=0 if no error)
       */
-    int     load        (Glib::ustring fname, ParamsEdited* pedited = NULL);
+    int     load        (const Glib::ustring &fname, ParamsEdited* pedited = NULL);
 
     /** Creates a new instance of ProcParams.
       * @return a pointer to the new ProcParams instance. */
@@ -1407,7 +1407,7 @@ private:
     * @param content the text to write
     * @return Error code (=0 if no error)
     * */
-    int write (Glib::ustring &fname, Glib::ustring &content) const;
+    int write (const Glib::ustring &fname, const Glib::ustring &content) const;
 
 };
 
@@ -1437,7 +1437,7 @@ public:
     PartialProfile      (const ProcParams* pp, const ParamsEdited* pe = NULL);
     void deleteInstance ();
     void clearGeneral   ();
-    int  load           (Glib::ustring fName);
+    int  load           (const Glib::ustring &fName);
     void set            (bool v);
     const void applyTo  (ProcParams *destParams) const ;
 };

@@ -712,7 +712,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     offs->setAdjusterListener (this);
     str  = Gtk::manage (new Adjuster (M("TP_WAVELET_STR"), 0, 100, 1, 20));
     str->setAdjusterListener (this);
-    neigh  = Gtk::manage (new Adjuster (M("TP_WAVELET_NEIGH"), 6, 100, 1, 50));
+    neigh  = Gtk::manage (new Adjuster (M("TP_WAVELET_NEIGH"), 14, 150, 1, 50));
     neigh->setAdjusterListener (this);
     vart  = Gtk::manage (new Adjuster (M("TP_WAVELET_VART"), 50, 500, 1, 200));
     vart->setAdjusterListener (this);

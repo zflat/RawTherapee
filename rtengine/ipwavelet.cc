@@ -1553,7 +1553,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
                 orig[ir][jr] = dst->L[ir][jr];
             }
 
-        ImProcFunctions::MSRWav(dst->L, orig, imwidth, imheight, params->wavelet, wavRETCcurve, wavRETgainCcurve, skip, 0, 4, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        ImProcFunctions::MSRWav(dst->L, orig, imwidth, imheight, params->wavelet, wavRETCcurve, wavRETgainCcurve, skip, 0, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
         if(params->wavelet.chrrt > 0.) {
 #ifdef _OPENMP
@@ -1565,7 +1565,7 @@ SSEFUNCTION void ImProcFunctions::ip_wavelet(LabImage * lab, LabImage * dst, flo
                     resid[ir][jr] = orig[ir][jr] = sqrt(SQR(dst->a[ir][jr]) + SQR(dst->b[ir][jr]));
                 }
 
-            ImProcFunctions::MSRWav(resid, orig, imwidth, imheight, params->wavelet, wavRETCcurve, wavRETgainCcurve, skip, 1, 3, 2.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+            ImProcFunctions::MSRWav(resid, orig, imwidth, imheight, params->wavelet, wavRETCcurve, wavRETgainCcurve, skip, 1, 3, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 #ifdef _OPENMP
             #pragma omp parallel for schedule(dynamic,16)
 #endif
