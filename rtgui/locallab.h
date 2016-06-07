@@ -38,6 +38,7 @@ protected:
     Adjuster* contrast;
     Adjuster* chroma;
     Adjuster* sensi;
+    Adjuster* sensih;
     Adjuster* radius;
     Adjuster* strength;
     Adjuster* transit;

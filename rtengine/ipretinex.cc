@@ -1237,6 +1237,7 @@ void ImProcFunctions::MSRLocal(float** luminance, float** templ, const float* co
                     cdmin = cd < cdmin ? cd : cdmin;
                     luminance[i][j] = LIM( cd, 0.f, maxclip ) * str + (1.f - str) * originalLuminance[i][j];
                     //   templ[i][j] = LIM( cd, 0.f, maxclip ) * str + (1.f - str) * originalLuminance[i][j];
+                    //  luminance[i][j] = LIM( cd, 0.f, maxclip );
                 }
 
 #ifdef _OPENMP

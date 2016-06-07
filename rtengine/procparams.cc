@@ -890,6 +890,7 @@ void LocallabParams::setDefaults()
     contrast = 0;
     chroma = 0;
     sensi = 20;
+    sensih = 20;
     transit = 60;
     chrrt = 0;
     avoid = false;
@@ -2607,6 +2608,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Sensi", locallab.sensi);
         }
 
+        if (!pedited || pedited->locallab.sensih) {
+            keyFile.set_integer ("Locallab", "Sensih", locallab.sensih);
+        }
+
         if (!pedited || pedited->locallab.transit) {
             keyFile.set_integer ("Locallab", "Transit", locallab.transit);
         }
@@ -3978,6 +3983,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.sensi = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Sensih"))  {
+                locallab.sensih  = keyFile.get_integer ("Locallab", "Sensih");
+
+                if (pedited) {
+                    pedited->locallab.sensih = true;
                 }
             }
 
@@ -8187,6 +8200,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.contrast == other.locallab.contrast
         && locallab.chroma == other.locallab.chroma
         && locallab.sensi == other.locallab.sensi
+        && locallab.sensih == other.locallab.sensih
         && locallab.radius == other.locallab.radius
         && locallab.strength == other.locallab.strength
         && locallab.transit == other.locallab.transit

@@ -303,6 +303,7 @@ void ParamsEdited::set (bool v)
     locallab.contrast = v;
     locallab.chroma = v;
     locallab.sensi = v;
+    locallab.sensih = v;
     locallab.radius = v;
     locallab.strength = v;
     locallab.transit = v;
@@ -831,6 +832,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.contrast = locallab.contrast && p.locallab.contrast == other.locallab.contrast;
         locallab.chroma = locallab.chroma && p.locallab.chroma == other.locallab.chroma;
         locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
+        locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
         locallab.transit = locallab.transit && p.locallab.transit == other.locallab.transit;
@@ -2114,6 +2116,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.sensi) {
         toEdit.locallab.sensi     = mods.locallab.sensi;
+    }
+
+    if (locallab.sensih) {
+        toEdit.locallab.sensih     = mods.locallab.sensih;
     }
 
     if (locallab.radius) {

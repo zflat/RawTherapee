@@ -604,6 +604,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                                        params.labCurve.lccurve, chroma_acurve, chroma_bcurve, satcurve, lhskcurve, scale == 1 ? 1 : 16);
     }
 
+    //scale = 1;
     if (todo & (M_LUMINANCE + M_COLOR) ) {
         nprevl->CopyFrom(oprevl);
 
@@ -617,7 +618,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             params.locallab.chromaref = INFINITY;
             params.locallab.lumaref = INFINITY;
             params.locallab.getCurves(locRETgainCurve);
-
             ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;

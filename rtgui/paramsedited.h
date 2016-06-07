@@ -429,6 +429,7 @@ public:
     bool contrast;
     bool chroma;
     bool sensi;
+    bool sensih;
     bool radius;
     bool strength;
     bool transit;

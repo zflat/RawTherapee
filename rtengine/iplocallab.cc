@@ -42,7 +42,7 @@ struct local_params {
     float yc, xc;
     float lx, ly;
     float lxL, lyT;
-    int chro, cont, ligh, sens;
+    int chro, cont, ligh, sens, sensh;
     double rad;
     double stren;
     int trans;
@@ -65,6 +65,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     bool inverse = locallab.invers;
     int local_chroma = locallab.chroma;
     int local_sensi = locallab.sensi;
+    int local_sensih = locallab.sensih;
     int local_contrast = locallab.contrast;
     int local_lightness = locallab.lightness;
     int local_transit = locallab.transit;
@@ -81,6 +82,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     lp.lyT = h * local_yT;
     lp.chro = local_chroma;
     lp.sens = local_sensi;
+    lp.sensh = local_sensih;
     lp.cont = local_contrast;
     lp.ligh = local_lightness;
     lp.trans = local_transit;
@@ -348,74 +350,193 @@ void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage*
 }
 
 
-void ImProcFunctions::Reti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
+void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
 {
 //local retinex
     BENCHFUN
 
     const float ach = (float)lp.trans / 100.f;
+    /*
+        //chroma
+        constexpr float amplchsens = 2.5f;
+        constexpr float achsens = (amplchsens - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float bchsens = 1.f - 20.f * achsens;
+        const float multchro = lp.sens * achsens + bchsens;
 
-    #pragma omp parallel for schedule(dynamic,16) if (multiThread)
+        //luma
+        constexpr float ampllumsens = 2.f;
+        constexpr float alumsens = (ampllumsens - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float blumsens = 1.f - 20.f * alumsens;
+        const float multlum = lp.sens * alumsens + blumsens;
 
-    for (int y = 0; y < transformed->H; y++) {
-        int loy = cy + y;
+        //skin
+        constexpr float amplchsensskin = 1.6f;
+        constexpr float achsensskin = (amplchsensskin - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float bchsensskin = 1.f - 20.f * achsensskin;
+        const float multchroskin = lp.sens * achsensskin + bchsensskin;
+    */
+    //transition = difficult to avoid artifact with scope on flat area (sky...)
+    float strn = lp.str / 1.f;  // we can chnage 1.f by 2 or...to chnage effect
 
-        for (int x = 0; x < transformed->W; x++) {
-            int lox = cx + x;
+    constexpr float delhu = 0.1f; //between 0.05 and 0.2
+    const float aplus = (1.f - strn) / delhu;
+    const float bplus = 1.f - aplus * hueplus;
+    const float amoins = (strn - 1.f) / delhu;
+    const float bmoins = 1.f - amoins * huemoins;
+#ifdef _OPENMP
+    #pragma omp parallel if (multiThread)
+#endif
+    {
+#ifdef __SSE2__
+        float atan2Buffer[transformed->W] ALIGNED16;
+      //  float sqrtBuffer[transformed->W] ALIGNED16;
+      //  vfloat c327d68v = F2V(327.68f);
+#endif
 
-            int zone;
-            float localFactor;
-            calcTransition(lox, loy, ach, lp, zone, localFactor);
+#ifdef _OPENMP
+        #pragma omp for schedule(dynamic,16)
+#endif
 
-            switch(zone) {
-            case 0: { // outside selection and outside transition zone => no effect, keep original values
-                if(chro == 0) {
-                    transformed->L[y][x] = original->L[y][x];
-                }
+        for (int y = 0; y < transformed->H; y++) {
+#ifdef __SSE2__
+            int i = 0;
 
-                if(chro == 1) {
-                    transformed->a[y][x] = original->a[y][x];
-                    transformed->b[y][x] = original->b[y][x];
-                }
-
-                break;
+            for(; i < transformed->W - 3; i += 4) {
+                vfloat av = LVFU(original->a[y][i]);
+                vfloat bv = LVFU(original->b[y][i]);
+                STVF(atan2Buffer[i], xatan2f(bv, av));
+            //    STVF(sqrtBuffer[i], _mm_sqrt_ps(SQRV(bv) + SQRV(av)) / c327d68v);
             }
 
-            case 1: { // inside transition zone
-                float factorx = localFactor;
-
-                if(chro == 0) {
-                    float difL = tmp1->L[y][x] - original->L[y][x];
-                    difL *= factorx;
-                    transformed->L[y][x] = original->L[y][x] + difL;
-                }
-
-                if(chro == 1) {
-                    float difa = tmp1->a[y][x] - original->a[y][x];
-                    float difb = tmp1->b[y][x] - original->b[y][x];
-                    difa *= factorx;
-                    difb *= factorx;
-                    transformed->a[y][x] = original->a[y][x] + difa;
-                    transformed->b[y][x] = original->b[y][x] + difb;
-                }
-
-                break;
-
+            for(; i < transformed->W; i++) {
+                atan2Buffer[i] = xatan2f(original->b[y][i], original->a[y][i]);
+            //    sqrtBuffer[i] = sqrt(SQR(original->b[y][i]) + SQR(original->a[y][i])) / 327.68f;
             }
 
-            case 2: { // inside selection => full effect, no transition
-                if(chro == 0) {
-                    transformed->L[y][x] = tmp1->L[y][x];
+#endif
+            int loy = cy + y;
+
+            for (int x = 0; x < transformed->W; x++) {
+                int lox = cx + x;
+#ifdef __SSE2__
+                float rhue = atan2Buffer[x];
+            //    float rchro = sqrtBuffer[x];
+#else
+                float rhue = xatan2f(original->b[y][x], original->a[y][x]);
+            //    float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
+#endif
+            //    float rL = original->L[y][x] / 327.68f;
+
+                float realstr = 1.f;
+
+                bool kzon = false;
+                //transition = difficult to avoid artifact with scope on flat area (sky...)
+
+                if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
+                    if(rhue >= hueplus - delhu)  {
+                        realstr = aplus * rhue + bplus;
+                    } else if(rhue < huemoins + delhu)  {
+                        realstr = amoins * rhue + bmoins;
+                    } else {
+                        realstr = strn;
+                    }
+
+                    kzon = true;
+                } else if((hueref + dhue) >= M_PI && (rhue > huemoins  || rhue < hueplus )) {
+                    if(rhue >= hueplus - delhu  && rhue < hueplus)  {
+                        realstr = aplus * rhue + bplus;
+                    } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
+                        realstr = amoins * rhue + bmoins;
+                    } else {
+                        realstr = strn;
+                    }
+
+                    kzon = true;
                 }
 
-                if(chro == 1) {
-                    transformed->a[y][x] = tmp1->a[y][x];
-                    transformed->b[y][x] = tmp1->b[y][x];
+                if((hueref - dhue) > -M_PI && rhue < hueplus && rhue > huemoins) {
+                    if(rhue >= hueplus - delhu  && rhue < hueplus)  {
+                        realstr = aplus * rhue + bplus;
+                    } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
+                        realstr = amoins * rhue + bmoins;
+                    } else {
+                        realstr = strn;
+                    }
+
+                    kzon = true;
+                } else if((hueref - dhue) <= -M_PI && (rhue > huemoins  || rhue < hueplus )) {
+                    if(rhue >= hueplus - delhu  && rhue < hueplus)  {
+                        realstr = aplus * rhue + bplus;
+                    } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
+                        realstr = amoins * rhue + bmoins;
+                    } else {
+                        realstr = strn;
+                    }
+
+                    kzon = true;
                 }
-            }
+
+            //    float kLinf = rL / (100.f);
+            //    float kLsup = kLinf;
+
+            //    float kdiff = 0.f;
+
+                int zone;
+                float localFactor;
+                calcTransition (lox, loy, ach, lp, zone, localFactor);
+
+                switch(zone) {
+                case 0: { // outside selection and outside transition zone => no effect, keep original values
+                    if(chro == 0) {
+                        transformed->L[y][x] = original->L[y][x];
+                    }
+
+                    if(chro == 1) {
+                        transformed->a[y][x] = original->a[y][x];
+                        transformed->b[y][x] = original->b[y][x];
+                    }
+
+                    break;
+                }
+
+                case 1: { // inside transition zone
+                    float factorx = localFactor;
+
+                    if(chro == 0) {
+                        float difL = (tmp1->L[y][x]) - original->L[y][x];
+                        difL *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                        transformed->L[y][x] = original->L[y][x] + difL;
+                    }
+
+                    if(chro == 1) {
+                        float difa = tmp1->a[y][x] - original->a[y][x];
+                        float difb = tmp1->b[y][x] - original->b[y][x];
+                        difa *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                        difb *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                        transformed->a[y][x] = original->a[y][x] + difa;
+                        transformed->b[y][x] = original->b[y][x] + difb;
+                    }
+
+                    break;
+
+                }
+
+                case 2: { // inside selection => full effect, no transition
+                    if(chro == 0) {
+                        transformed->L[y][x] = tmp1->L[y][x];
+                    }
+
+                    if(chro == 1) {
+                        transformed->a[y][x] = tmp1->a[y][x];
+                        transformed->b[y][x] = tmp1->b[y][x];
+                    }
+                }
+                }
             }
         }
     }
+
+
 }
 
 void ImProcFunctions::InverseBlurNoise_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy)
@@ -1032,95 +1153,95 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
             delete tmp1;
         }
 
-        if(lp.str > 0.f) {
-            int GW = transformed->W;
-            int GH = transformed->H;
+        /*       if(lp.str > 0.f) {
+                   int GW = transformed->W;
+                   int GH = transformed->H;
 
-            float *orig[GH] ALIGNED16;
-            float *origBuffer = new float[GH * GW];
+                   float *orig[GH] ALIGNED16;
+                   float *origBuffer = new float[GH * GW];
 
-            for (int i = 0; i < GH; i++) {
-                orig[i] = &origBuffer[i * GW];
-            }
+                   for (int i = 0; i < GH; i++) {
+                       orig[i] = &origBuffer[i * GW];
+                   }
 
-            float *orig1[GH] ALIGNED16;
-            float *origBuffer1 = new float[GH * GW];
+                   float *orig1[GH] ALIGNED16;
+                   float *origBuffer1 = new float[GH * GW];
 
-            for (int i = 0; i < GH; i++) {
-                orig1[i] = &origBuffer1[i * GW];
-            }
+                   for (int i = 0; i < GH; i++) {
+                       orig1[i] = &origBuffer1[i * GW];
+                   }
 
 
-            LabImage *tmpl = new LabImage(transformed->W, transformed->H);
+                   LabImage *tmpl = new LabImage(transformed->W, transformed->H);
 
-#ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic,16)
-#endif
+        #ifdef _OPENMP
+                   #pragma omp parallel for schedule(dynamic,16)
+        #endif
 
-            for(int ir = 0; ir < GH; ir += 1)
-                for(int jr = 0; jr < GW; jr += 1) {
-                    orig[ir][jr] = original->L[ir][jr];
-                    orig1[ir][jr] = transformed->L[ir][jr];
-                }
+                   for(int ir = 0; ir < GH; ir += 1)
+                       for(int jr = 0; jr < GW; jr += 1) {
+                           orig[ir][jr] = original->L[ir][jr];
+                           orig1[ir][jr] = transformed->L[ir][jr];
+                       }
 
-            float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
-            ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 0, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-#ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic,16)
-#endif
+                   float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+                   ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 0, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        #ifdef _OPENMP
+                   #pragma omp parallel for schedule(dynamic,16)
+        #endif
 
-            for(int ir = 0; ir < GH; ir += 1)
-                for(int jr = 0; jr < GW; jr += 1) {
-                    tmpl->L[ir][jr] = orig[ir][jr];
-                }
+                   for(int ir = 0; ir < GH; ir += 1)
+                       for(int jr = 0; jr < GW; jr += 1) {
+                           tmpl->L[ir][jr] = orig[ir][jr];
+                       }
 
-            if(!lp.invret) {
-                Reti_Local(lp, original, transformed, tmpl, cx, cy, 0);
-            } else {
-                InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 0);
-            }
+                   if(!lp.invret) {
+                       Reti_Local(lp, original, transformed, tmpl, cx, cy, 0);
+                   } else {
+                       InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 0);
+                   }
 
-            if(params->locallab.chrrt > 0) {
-#ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
-#endif
+                   if(params->locallab.chrrt > 0) {
+        #ifdef _OPENMP
+                       #pragma omp parallel for schedule(dynamic,16)
+        #endif
 
-                for(int ir = 0; ir < GH; ir += 1)
-                    for(int jr = 0; jr < GW; jr += 1) {
-                        orig[ir][jr] = sqrt(SQR(original->a[ir][jr]) + SQR(original->b[ir][jr]));
-                        orig1[ir][jr] = sqrt(SQR(transformed->a[ir][jr]) + SQR(transformed->b[ir][jr]));
-                    }
+                       for(int ir = 0; ir < GH; ir += 1)
+                           for(int jr = 0; jr < GW; jr += 1) {
+                               orig[ir][jr] = sqrt(SQR(original->a[ir][jr]) + SQR(original->b[ir][jr]));
+                               orig1[ir][jr] = sqrt(SQR(transformed->a[ir][jr]) + SQR(transformed->b[ir][jr]));
+                           }
 
-                ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 1, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
-#ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic,16)
-#endif
+                       ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 1, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+        #ifdef _OPENMP
+                       #pragma omp parallel for schedule(dynamic,16)
+        #endif
 
-                for(int ir = 0; ir < GH; ir += 1)
-                    for(int jr = 0; jr < GW; jr += 1) {
-                        float Chprov = orig1[ir][jr];
-                        float2 sincosval;
-                        sincosval.y = Chprov == 0.0f ? 1.f : transformed->a[ir][jr] / Chprov;
-                        sincosval.x = Chprov == 0.0f ? 0.f : transformed->b[ir][jr] / Chprov;
-                        tmpl->a[ir][jr] = orig[ir][jr] * sincosval.y;
-                        tmpl->b[ir][jr] = orig[ir][jr] * sincosval.x;
+                       for(int ir = 0; ir < GH; ir += 1)
+                           for(int jr = 0; jr < GW; jr += 1) {
+                               float Chprov = orig1[ir][jr];
+                               float2 sincosval;
+                               sincosval.y = Chprov == 0.0f ? 1.f : transformed->a[ir][jr] / Chprov;
+                               sincosval.x = Chprov == 0.0f ? 0.f : transformed->b[ir][jr] / Chprov;
+                               tmpl->a[ir][jr] = orig[ir][jr] * sincosval.y;
+                               tmpl->b[ir][jr] = orig[ir][jr] * sincosval.x;
 
-                    }
+                           }
 
-                if(!lp.invret) {
-                    Reti_Local(lp, original, transformed, tmpl, cx, cy, 1);
-                } else {
-                    InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 1);
-                }
+                       if(!lp.invret) {
+                           Reti_Local(lp, original, transformed, tmpl, cx, cy, 1);
+                       } else {
+                           InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 1);
+                       }
 
-            }
+                   }
 
-            delete tmpl;
-            delete [] origBuffer;
-            delete [] origBuffer1;
+                   delete tmpl;
+                   delete [] origBuffer;
+                   delete [] origBuffer1;
 
-        }
-
+               }
+        */
         //begin contrast and evalue hue
         // double precision for large summations
         double ave = 0.;
@@ -1137,7 +1258,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         // evaluate also hue
 
 
-        if (!lp.inv && hueref == INFINITY && chromaref == INFINITY && lumaref == INFINITY) {
+        if ((!lp.inv  || !lp.invret)  && hueref == INFINITY && chromaref == INFINITY && lumaref == INFINITY) {
             //evaluate hue, chroma, luma in center spot
             int spotSize = max(1, 18 / sk);
 
@@ -1153,7 +1274,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
                 }
             }
 
-        } else { /*if (lp.inv) */ //exterior
+        } else if (lp.inv || lp.invret) { //exterior
             ave = 0.f;
             n = 0;
 
@@ -1213,7 +1334,9 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
 
         constexpr float bred = 0.05f;
 
-        float dhue = ared * lp.sens + bred; //delta hue
+        float dhue = ared * lp.sens + bred; //delta hue lght chroma
+		
+        float dhueret = ared * lp.sensh + bred; //delta hue retinex
 
         constexpr float maxh = 4.f; //amplification contrast above mean
 
@@ -1233,7 +1356,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         if(!lp.inv) {   //contrast interior ellipse
             const float pm = lp.cont < 0.f ? -1.f : 1.f;
             Contrast_Local(pm, lco, lumaref, av, lp, original, transformed, cx, cy);
-        } else {
+        } else if(lp.inv) {
             float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
             float multH = (float) lp.cont * (maxh - 1.f) / 100.f + 1.f;
 
@@ -1261,8 +1384,109 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
             ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy, localcurve);
         }
         //inverse
-        else {
+        else if(lp.inv) {
             InverseColorLight_Local(lp, original, transformed, cx, cy, localcurve);
+        }
+
+
+
+        if(lp.str > 0.f) {
+            int GW = transformed->W;
+            int GH = transformed->H;
+            float hueplus = hueref + dhueret;
+            float huemoins = hueref - dhueret;
+
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhueret - 2.f * M_PI;
+            }
+
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhueret + 2.f * M_PI;
+            }
+
+            float *orig[GH] ALIGNED16;
+            float *origBuffer = new float[GH * GW];
+
+            for (int i = 0; i < GH; i++) {
+                orig[i] = &origBuffer[i * GW];
+            }
+
+            float *orig1[GH] ALIGNED16;
+            float *origBuffer1 = new float[GH * GW];
+
+            for (int i = 0; i < GH; i++) {
+                orig1[i] = &origBuffer1[i * GW];
+            }
+
+
+            LabImage *tmpl = new LabImage(transformed->W, transformed->H);
+
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < GH; ir += 1)
+                for(int jr = 0; jr < GW; jr += 1) {
+                    orig[ir][jr] = original->L[ir][jr];
+                    orig1[ir][jr] = transformed->L[ir][jr];
+                }
+
+            float minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax;
+            ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 0, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+#ifdef _OPENMP
+            #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+            for(int ir = 0; ir < GH; ir += 1)
+                for(int jr = 0; jr < GW; jr += 1) {
+                    tmpl->L[ir][jr] = orig[ir][jr];
+                }
+
+            if(!lp.invret) {
+                Reti_Local(hueplus, huemoins, hueref, dhueret, chromaref, lumaref, lp, original, transformed, tmpl, cx, cy, 0);
+            } else {
+                InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 0);
+            }
+
+            if(params->locallab.chrrt > 0) {
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for(int ir = 0; ir < GH; ir += 1)
+                    for(int jr = 0; jr < GW; jr += 1) {
+                        orig[ir][jr] = sqrt(SQR(original->a[ir][jr]) + SQR(original->b[ir][jr]));
+                        orig1[ir][jr] = sqrt(SQR(transformed->a[ir][jr]) + SQR(transformed->b[ir][jr]));
+                    }
+
+                ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, GW, GH, params->locallab, sk, locRETgainCcurve, 1, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+#ifdef _OPENMP
+                #pragma omp parallel for schedule(dynamic,16)
+#endif
+
+                for(int ir = 0; ir < GH; ir += 1)
+                    for(int jr = 0; jr < GW; jr += 1) {
+                        float Chprov = orig1[ir][jr];
+                        float2 sincosval;
+                        sincosval.y = Chprov == 0.0f ? 1.f : transformed->a[ir][jr] / Chprov;
+                        sincosval.x = Chprov == 0.0f ? 0.f : transformed->b[ir][jr] / Chprov;
+                        tmpl->a[ir][jr] = orig[ir][jr] * sincosval.y;
+                        tmpl->b[ir][jr] = orig[ir][jr] * sincosval.x;
+
+                    }
+
+                if(!lp.invret) {
+                    Reti_Local(hueplus, huemoins, hueref, dhueret, chromaref, lumaref, lp, original, transformed, tmpl, cx, cy, 1);
+                } else {
+                    InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 1);
+                }
+
+            }
+
+            delete tmpl;
+            delete [] origBuffer;
+            delete [] origBuffer1;
+
         }
 
 

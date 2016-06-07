@@ -150,6 +150,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     vart->setAdjusterListener (this);
     chrrt  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHRRT"), 0, 100, 1, 0));
     chrrt->setAdjusterListener (this);
+    sensih = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIH"), 0, 100, 1, 20));
+    sensih->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensih->setAdjusterListener (this);
 
     std::vector<double> defaultCurve;
 
@@ -218,6 +221,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     retiBox->pack_start (*chrrt);
     retiBox->pack_start (*neigh);
     retiBox->pack_start (*vart);
+    retiBox->pack_start (*sensih);
     retiBox->pack_start(*CCWcurveEditorgainT, Gtk::PACK_SHRINK, 4);
     retiBox->pack_start (*inversret);
 
@@ -322,6 +326,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         contrast->setEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setEditedState (pedited->locallab.chroma ? Edited : UnEdited);
         sensi->setEditedState (pedited->locallab.sensi ? Edited : UnEdited);
+        sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -374,6 +379,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     contrast->setValue (pp->locallab.contrast);
     chroma->setValue (pp->locallab.chroma);
     sensi->setValue (pp->locallab.sensi);
+    sensih->setValue (pp->locallab.sensih);
     transit->setValue (pp->locallab.transit);
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
@@ -536,6 +542,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.contrast = contrast->getIntValue ();
     pp->locallab.chroma = chroma->getIntValue ();
     pp->locallab.sensi = sensi->getIntValue ();
+    pp->locallab.sensih = sensih->getIntValue ();
     pp->locallab.radius = radius->getValue ();
     pp->locallab.strength = strength->getValue ();
     pp->locallab.enabled = getEnabled();
@@ -564,6 +571,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.contrast = contrast->getEditedState ();
         pedited->locallab.chroma = chroma->getEditedState ();
         pedited->locallab.sensi = sensi->getEditedState ();
+        pedited->locallab.sensih = sensih->getEditedState ();
         pedited->locallab.radius = radius->getEditedState ();
         pedited->locallab.strength = strength->getEditedState ();
         pedited->locallab.transit = transit->getEditedState ();
@@ -776,6 +784,13 @@ void Locallab::inversretChanged ()
         lastinversret = inversret->get_active ();
     }
 
+    if(inversret->get_active ()) {
+        sensih->hide();
+    } else {
+        sensih->show();
+    }
+
+
     if (listener) {
         if (getEnabled()) {
             listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
@@ -799,6 +814,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     contrast->setDefault (defParams->locallab.contrast);
     chroma->setDefault (defParams->locallab.chroma);
     sensi->setDefault (defParams->locallab.sensi);
+    sensih->setDefault (defParams->locallab.sensih);
     transit->setDefault (defParams->locallab.transit);
     radius->setDefault (defParams->locallab.radius);
     strength->setDefault (defParams->locallab.strength);
@@ -820,6 +836,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         contrast->setDefaultEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setDefaultEditedState (pedited->locallab.chroma ? Edited : UnEdited);
         sensi->setDefaultEditedState (pedited->locallab.sensi ? Edited : UnEdited);
+        sensih->setDefaultEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setDefaultEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -839,6 +856,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         contrast->setDefaultEditedState (Irrelevant);
         chroma->setDefaultEditedState (Irrelevant);
         sensi->setDefaultEditedState (Irrelevant);
+        sensih->setDefaultEditedState (Irrelevant);
         radius->setDefaultEditedState (Irrelevant);
         strength->setDefaultEditedState (Irrelevant);
         transit->setDefaultEditedState (Irrelevant);
@@ -922,6 +940,8 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabchroma, chroma->getTextValue());
         } else if (a == sensi) {
             listener->panelChanged (Evlocallabsensi, sensi->getTextValue());
+        } else if (a == sensih) {
+            listener->panelChanged (Evlocallabsensih, sensih->getTextValue());
         } else if (a == radius) {
             listener->panelChanged (Evlocallabradius, radius->getTextValue());
         } else if (a == strength) {
@@ -1015,6 +1035,7 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     contrast->trimValue(pp->locallab.contrast);
     chroma->trimValue(pp->locallab.chroma);
     sensi->trimValue(pp->locallab.sensi);
+    sensih->trimValue(pp->locallab.sensih);
     radius->trimValue(pp->locallab.radius);
     strength->trimValue(pp->locallab.strength);
     transit->trimValue(pp->locallab.transit);
@@ -1039,6 +1060,7 @@ void Locallab::setBatchMode (bool batchMode)
     contrast->showEditedCB ();
     chroma->showEditedCB ();
     sensi->showEditedCB ();
+    sensih->showEditedCB ();
     radius->showEditedCB ();
     strength->showEditedCB ();
     transit->showEditedCB ();

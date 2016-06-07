@@ -855,6 +855,7 @@ public:
     int     contrast;
     int     chroma;
     int     sensi;
+    int     sensih;
     double  radius;
     double  strength;
     int     transit;

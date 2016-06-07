@@ -494,6 +494,7 @@ enum ProcEvent {
     EvlocallabCTgainCurve = 464,
     Evlocallabchrrt = 465,
     Evlocallabinversret = 466,
+    Evlocallabsensih = 467,
     NUMOFEVENTS
 
 };
