@@ -2085,10 +2085,12 @@ TP_WAVELET_SAVE_ZERO;Save L*a*b for Style and HDR++
 TP_WAVELET_SIZELAB;Size of image
 TP_WAVELET_SCA;Scale
 TP_WAVELET_SHAF;Shape and texture
+TP_WAVELET_SHAPMETHOD_TOOLTIP;Changes the way you calculate the texture, to better take into account in merging. The calculation is based on a neuronal design by combining several levels (3 or 4) decomposition in one.
 TP_WAVELET_SHAPN;Normal
 TP_WAVELET_SHAPT;Neural three
 TP_WAVELET_SHAPF;Neural four
 TP_WAVELET_SHAPIND;Neural index
+TP_WAVELET_SHAPIND_TOOLTIP;Changes the combination of levels.\nThere is no hierarchy between the index levels, nor between 'neural three' or 'neural oven'..just try
 TP_WAVELET_STR;Strength
 TP_WAVELET_CHRRT;Chroma
 TP_WAVELET_NEIGH;Radius

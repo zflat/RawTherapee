@@ -1308,7 +1308,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
     Gtk::VBox *shaVBox = Gtk::manage (new Gtk::VBox());
 
     shaFrame = Gtk::manage (new Gtk::Frame(M("TP_WAVELET_SHAF")));
-    shaFrame->set_tooltip_text (M("TP_WAVELET_SHAF_TOOLTIP"));
+  //  shaFrame->set_tooltip_text (M("TP_WAVELET_SHAF_TOOLTIP"));
 
     CCWcurveEditorsty = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_ST2CURVE"));
     CCWcurveEditorsty->setCurveListener (this);
@@ -1326,7 +1326,7 @@ Wavelet::Wavelet () : FoldableToolPanel(this, "wavelet", M("TP_WAVELET_LABEL"), 
 
     CCWcurveEditorsty2 = new CurveEditorGroup (options.lastWaveletCurvesDir, M("TP_WAVELET_ST2CURVE2"));
     CCWcurveEditorsty2->setCurveListener (this);
-    CCWcurveEditorsty2->setTooltip(M("TP_WAVELET_STYLCURVE2_TOOLTIP"));
+    CCWcurveEditorsty2->setTooltip(M("TP_WAVELET_STYLCURVE_TOOLTIP"));
 
     rtengine::WaveletParams::getDefaultsty2CurveT(defaultCurve);
     cstyshape2 = static_cast<FlatCurveEditor*>(CCWcurveEditorsty2->addCurve(CT_Flat, "", NULL, false));
