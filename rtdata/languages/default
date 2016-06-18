@@ -2090,7 +2090,7 @@ TP_WAVELET_SHAPN;Normal
 TP_WAVELET_SHAPT;Neural three
 TP_WAVELET_SHAPF;Neural four
 TP_WAVELET_SHAPIND;Neural index
-TP_WAVELET_SHAPIND_TOOLTIP;Changes the combination of levels.\nThere is no hierarchy between the index levels, nor between 'neural three' or 'neural oven'..just try
+TP_WAVELET_SHAPIND_TOOLTIP;Changes the combination of levels.\nThere is no hierarchy between the index levels, nor between 'neural three' or 'neural four'..just try
 TP_WAVELET_STR;Strength
 TP_WAVELET_CHRRT;Chroma
 TP_WAVELET_NEIGH;Radius
