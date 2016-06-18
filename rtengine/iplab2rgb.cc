@@ -117,9 +117,9 @@ void ImProcFunctions::lab2monitorRgb (LabImage* lab, Image8* image)
 
                 /* copy RGB */
                 //int R1=((int)gamma2curve[(R)])
-                data[ix++] = ((int)Color::gamma2curve[CLIP(R)]) >> 8;
-                data[ix++] = ((int)Color::gamma2curve[CLIP(G)]) >> 8;
-                data[ix++] = ((int)Color::gamma2curve[CLIP(B)]) >> 8;
+                data[ix++] = ((int)Color::gamma2curve[R]) >> 8;
+                data[ix++] = ((int)Color::gamma2curve[G]) >> 8;
+                data[ix++] = ((int)Color::gamma2curve[B]) >> 8;
             }
         }
     }
@@ -202,7 +202,7 @@ Image8* ImProcFunctions::lab2rgb (LabImage* lab, int cx, int cy, int cw, int ch,
         }
     } else {
 
-        const auto rgb_xyz = iccStore->workingSpaceMatrix (profile);
+        const auto xyz_rgb = iccStore->workingSpaceInverseMatrix (profile);
 
 #ifdef _OPENMP
         #pragma omp parallel for schedule(dynamic,16) if (multiThread)
@@ -227,11 +227,11 @@ Image8* ImProcFunctions::lab2rgb (LabImage* lab, int cx, int cy, int cw, int ch,
                 float z_ = 65535.0 * Color::f2xyz(fz) * Color::D50z;
                 float y_ = (LL > Color::epskap) ? 65535.0 * fy * fy * fy : 65535.0 * LL / Color::kappa;
 
-                Color::xyz2rgb(x_, y_, z_, R, G, B, rgb_xyz);
+                Color::xyz2rgb(x_, y_, z_, R, G, B, xyz_rgb);
 
-                image->data[ix++] = (int)Color::gamma2curve[CLIP(R)] >> 8;
-                image->data[ix++] = (int)Color::gamma2curve[CLIP(G)] >> 8;
-                image->data[ix++] = (int)Color::gamma2curve[CLIP(B)] >> 8;
+                image->data[ix++] = (int)Color::gamma2curve[R] >> 8;
+                image->data[ix++] = (int)Color::gamma2curve[G] >> 8;
+                image->data[ix++] = (int)Color::gamma2curve[B] >> 8;
             }
         }
     }

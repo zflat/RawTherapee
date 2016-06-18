@@ -139,7 +139,6 @@ void Color::init ()
     constexpr auto maxindex = 65536;
 
     cachef(maxindex, LUT_CLIP_BELOW);
-    gamma2curve(maxindex, LUT_CLIP_BELOW | LUT_CLIP_ABOVE);
     gammatab(maxindex, 0);
     gammatabThumb(maxindex, 0);
 
@@ -185,11 +184,14 @@ void Color::init ()
 #ifdef _OPENMP
         #pragma omp section
 #endif
+        {
+            for (int i = 0; i < maxindex; i++)
+            {
+                gammatab_srgb[i] = 65535.0 * gamma2(i / 65535.0);
+            }
 
-        for (int i = 0; i < maxindex; i++) {
-            gammatab_srgb[i] = gamma2curve[i] = 65535.0 * gamma2(i / 65535.0); // two lookup tables with same content but one clips and one does not clip
+            gamma2curve.share(gammatab_srgb, LUT_CLIP_BELOW | LUT_CLIP_ABOVE); // shares the buffer with gammatab_srgb but has different clip flags
         }
-
 #ifdef _OPENMP
         #pragma omp section
 #endif
@@ -1844,21 +1846,13 @@ void Color::transitred (const float HH, float const Chprov1, const float dred, c
     if(HH >= 0.15f && HH < 1.3f) {
         if (Chprov1 < dred) {
             factor = factorskin;
-        } else if(Chprov1 < (dred + protect_red))
-            // factor = (factorsat-factorskin)/protect_red*Chprov1+factorsat-(dred+protect_red)*(factorsat-factorskin)/protect_red;
-            // optimized formula
-        {
+        } else if(Chprov1 < (dred + protect_red)) {
             factor = ((factorsat - factorskin) * Chprov1 + factorsat * protect_red - (dred + protect_red) * (factorsat - factorskin)) / protect_red;
         }
-    }
-    // then test if chroma is in the extanded range
-    else if ( HH > (0.15f - deltaHH) || HH < (1.3f + deltaHH) ) {
+    } else if ( HH > (0.15f - deltaHH) && HH < (1.3f + deltaHH) ) { // test if chroma is in the extended range
         if (Chprov1 < dred) {
             factor = factorskinext;    // C=dred=55 => real max of skin tones
-        } else if (Chprov1 < (dred + protect_red)) // transition
-            // factor = (factorsat-factorskinext)/protect_red*Chprov1+factorsat-(dred+protect_red)*(factorsat-factorskinext)/protect_red;
-            // optimized formula
-        {
+        } else if (Chprov1 < (dred + protect_red)) {// transition
             factor = ((factorsat - factorskinext) * Chprov1 + factorsat * protect_red - (dred + protect_red) * (factorsat - factorskinext)) / protect_red;
         }
     }
