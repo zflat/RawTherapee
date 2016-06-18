@@ -356,25 +356,25 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
     BENCHFUN
 
     const float ach = (float)lp.trans / 100.f;
-    /*
+    
         //chroma
         constexpr float amplchsens = 2.5f;
-        constexpr float achsens = (amplchsens - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float achsens = (amplchsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
         constexpr float bchsens = 1.f - 20.f * achsens;
-        const float multchro = lp.sens * achsens + bchsens;
+        const float multchro = lp.sensh * achsens + bchsens;
 
         //luma
         constexpr float ampllumsens = 2.f;
-        constexpr float alumsens = (ampllumsens - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float alumsens = (ampllumsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
         constexpr float blumsens = 1.f - 20.f * alumsens;
-        const float multlum = lp.sens * alumsens + blumsens;
+        const float multlum = lp.sensh * alumsens + blumsens;
 
         //skin
         constexpr float amplchsensskin = 1.6f;
-        constexpr float achsensskin = (amplchsensskin - 1.f) / (100.f - 20.f); //20. default locallab.sensi
+        constexpr float achsensskin = (amplchsensskin - 1.f) / (100.f - 20.f); //20. default locallab.sensih
         constexpr float bchsensskin = 1.f - 20.f * achsensskin;
-        const float multchroskin = lp.sens * achsensskin + bchsensskin;
-    */
+        const float multchroskin = lp.sensh * achsensskin + bchsensskin;
+   
     //transition = difficult to avoid artifact with scope on flat area (sky...)
     float strn = lp.str / 1.f;  // we can chnage 1.f by 2 or...to chnage effect
 
@@ -389,8 +389,8 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
     {
 #ifdef __SSE2__
         float atan2Buffer[transformed->W] ALIGNED16;
-      //  float sqrtBuffer[transformed->W] ALIGNED16;
-      //  vfloat c327d68v = F2V(327.68f);
+        float sqrtBuffer[transformed->W] ALIGNED16;
+        vfloat c327d68v = F2V(327.68f);
 #endif
 
 #ifdef _OPENMP
@@ -405,12 +405,12 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 vfloat av = LVFU(original->a[y][i]);
                 vfloat bv = LVFU(original->b[y][i]);
                 STVF(atan2Buffer[i], xatan2f(bv, av));
-            //    STVF(sqrtBuffer[i], _mm_sqrt_ps(SQRV(bv) + SQRV(av)) / c327d68v);
+                STVF(sqrtBuffer[i], _mm_sqrt_ps(SQRV(bv) + SQRV(av)) / c327d68v);
             }
 
             for(; i < transformed->W; i++) {
                 atan2Buffer[i] = xatan2f(original->b[y][i], original->a[y][i]);
-            //    sqrtBuffer[i] = sqrt(SQR(original->b[y][i]) + SQR(original->a[y][i])) / 327.68f;
+                sqrtBuffer[i] = sqrt(SQR(original->b[y][i]) + SQR(original->a[y][i])) / 327.68f;
             }
 
 #endif
@@ -420,14 +420,15 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 int lox = cx + x;
 #ifdef __SSE2__
                 float rhue = atan2Buffer[x];
-            //    float rchro = sqrtBuffer[x];
+                float rchro = sqrtBuffer[x];
 #else
                 float rhue = xatan2f(original->b[y][x], original->a[y][x]);
-            //    float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
+                float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
             //    float rL = original->L[y][x] / 327.68f;
 
                 float realstr = 1.f;
+                float realstrch = 1.f;
 
                 bool kzon = false;
                 //transition = difficult to avoid artifact with scope on flat area (sky...)
@@ -480,6 +481,37 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
             //    float kLsup = kLinf;
 
             //    float kdiff = 0.f;
+			// I add these functions...perhaps not good
+                if(kzon) {
+                    if(lp.sensh < 60.f) { //arbitrary value
+                        if(hueref < -1.1f && hueref > -2.8f) {// detect blue sky
+                            if(chromaref > 0.f && chromaref < 35.f * multchro) { // detect blue sky
+                                if( (rhue > -2.79f && rhue < -1.11f) && (rchro < 35.f * multchro)) {
+                                    realstr *= 0.9f;
+                                } else {
+                                    realstr = 1.f;
+                                }
+                            }
+                        } else {
+                            realstr = strn;
+                        }
+
+                        if(lp.sensh < 50.f) {//&& lp.chro > 0.f
+                            if(hueref > -0.1f && hueref < 1.6f) {// detect skin
+                                if(chromaref > 0.f && chromaref < 55.f * multchroskin) { // detect skin
+                                    if( (rhue > -0.09f && rhue < 1.59f) && (rchro < 55.f * multchroskin)) {
+                                        realstr *= 0.7f;
+                                    } else {
+                                        realstr = 1.f;
+                                    }
+                                }
+                            } else {
+                                realstr = strn;
+                            }
+                        }
+                    }
+
+                }
 
                 int zone;
                 float localFactor;
