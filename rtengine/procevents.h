@@ -520,6 +520,9 @@ enum ProcEvent {
     EvWaveletbalmer2 = 490,
     EvWavbalmerres2 = 491,
     EvWavmergMethod2 = 492,
+    EvWavshapMethod = 493,
+    EvWavshapind = 494,
+    EvWavsty2Curve = 495,
     NUMOFEVENTS
 };
 }

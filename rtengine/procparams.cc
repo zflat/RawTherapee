@@ -746,7 +746,22 @@ void WaveletParams::getDefaultstyCurveT(std::vector<double> &curve)
 
 }
 
-void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, Wavmerg2Curve &cmerg2Curve, WavstyCurve &cstyCurve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
+void WaveletParams::getDefaultsty2CurveT(std::vector<double> &curve)
+{
+    double v[8] =   {   0.00, 0.50, 0.35, 0.35,
+                        0.85, 0.01, 0.35, 0.35,
+                    };
+
+    curve.resize(9);
+    curve.at(0 ) = double(FCT_MinMaxCPoints);
+
+    for (size_t i = 1; i < curve.size(); ++i) {
+        curve.at(i) = v[i - 1];
+    }
+
+}
+
+void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, Wavmerg2Curve &cmerg2Curve, WavstyCurve &cstyCurve, Wavsty2Curve &csty2Curve, WavOpacityCurveRG &opacityCurveLUTRG, WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const
 {
     cCurve.Set(this->ccwcurve);
     cTCurve.Set(this->ccwTcurve);
@@ -754,6 +769,7 @@ void WaveletParams::getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, Wavretiga
     cmergCurve.Set(this->ccwmergcurve);
     cmerg2Curve.Set(this->ccwmerg2curve);
     cstyCurve.Set(this->ccwstycurve);
+    csty2Curve.Set(this->ccwsty2curve);
     opacityCurveLUTRG.Set(this->opacityCurveRG);
     opacityCurveLUTBY.Set(this->opacityCurveBY);
     opacityCurveLUTW.Set(this->opacityCurveW);
@@ -770,6 +786,7 @@ void WaveletParams::setDefaults()
     getDefaultmergCurveT(ccwmergcurve);
     getDefaultmerg2CurveT(ccwmerg2curve);
     getDefaultstyCurveT(ccwstycurve);
+    getDefaultsty2CurveT(ccwsty2curve);
 
     getDefaultOpacityCurveRG(opacityCurveRG);
     getDefaultOpacityCurveBY(opacityCurveBY);
@@ -794,7 +811,8 @@ void WaveletParams::setDefaults()
     dirV = 60;
     dirH = 0;
     dirD = -30;
-    balmerres = 30;
+    shapind = 8;
+    balmerres = 25;
     balmerres2 = 70;
     blend = 50;
     blendc = 30;
@@ -812,6 +830,7 @@ void WaveletParams::setDefaults()
     BAmethod         = "none";
     retinexMethod   = "uni";
     retinexMethodpro   = "fina";
+    shapMethod   = "norm";
     mergevMethod = "curr";
     mergMethod = "load";
     mergBMethod = "hdr1";
@@ -906,7 +925,7 @@ void WaveletParams::setDefaults()
     }
 
     for(int i = 0; i < 9; i ++) {
-        bm[i] = 15 + 18 * i;
+        bm[i] = 15 + 12 * i;
     }
 
     for(int i = 0; i < 9; i ++) {
@@ -2869,6 +2888,10 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
             keyFile.set_integer ("Wavelet", "dirH", wavelet.dirH);
         }
 
+        if (!pedited || pedited->wavelet.shapind) {
+            keyFile.set_integer ("Wavelet", "shapind", wavelet.shapind);
+        }
+
         if (!pedited || pedited->wavelet.balmerres) {
             keyFile.set_integer ("Wavelet", "Balmerres", wavelet.balmerres);
         }
@@ -2923,6 +2946,10 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
 
         if (!pedited || pedited->wavelet.retinexMethod) {
             keyFile.set_string  ("Wavelet", "retinexMethod",  wavelet.retinexMethod);
+        }
+
+        if (!pedited || pedited->wavelet.shapMethod) {
+            keyFile.set_string  ("Wavelet", "shapMethod",  wavelet.shapMethod);
         }
 
         if (!pedited || pedited->wavelet.retinexMethodpro) {
@@ -3197,6 +3224,11 @@ int ProcParams::save (Glib::ustring fname, Glib::ustring fname2, bool fnameAbsol
         if (!pedited || pedited->wavelet.ccwstycurve)  {
             Glib::ArrayHandle<double> ccwstycurve = wavelet.ccwstycurve;
             keyFile.set_double_list("Wavelet", "StCurve", ccwstycurve);
+        }
+
+        if (!pedited || pedited->wavelet.ccwsty2curve)  {
+            Glib::ArrayHandle<double> ccwsty2curve = wavelet.ccwsty2curve;
+            keyFile.set_double_list("Wavelet", "St2Curve", ccwsty2curve);
         }
 
         if (!pedited || pedited->wavelet.pastlev) {
@@ -6402,6 +6434,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Wavelet", "shapind"))   {
+                wavelet.shapind = keyFile.get_integer ("Wavelet", "shapind");
+
+                if (pedited) {
+                    pedited->wavelet.shapind = true;
+                }
+            }
+
             if (keyFile.has_key ("Wavelet", "dirD"))   {
                 wavelet.dirD = keyFile.get_integer ("Wavelet", "dirD");
 
@@ -6611,6 +6651,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->wavelet.retinexMethod = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "shapMethod"))     {
+                wavelet.shapMethod  = keyFile.get_string  ("Wavelet", "shapMethod");
+
+                if (pedited) {
+                    pedited->wavelet.shapMethod = true;
                 }
             }
 
@@ -7093,6 +7141,14 @@ int ProcParams::load (Glib::ustring fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->wavelet.ccwstycurve = true;
+                }
+            }
+
+            if (keyFile.has_key ("Wavelet", "St2Curve")) {
+                wavelet.ccwsty2curve = keyFile.get_double_list ("Wavelet", "St2Curve");
+
+                if (pedited) {
+                    pedited->wavelet.ccwsty2curve = true;
                 }
             }
 
@@ -8682,6 +8738,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.Dirmethod == other.wavelet.Dirmethod
         && wavelet.retinexMethod == other.wavelet.retinexMethod
         && wavelet.retinexMethodpro == other.wavelet.retinexMethodpro
+        && wavelet.shapMethod == other.wavelet.shapMethod
         && wavelet.rescon == other.wavelet.rescon
         && wavelet.mergeL == other.wavelet.mergeC
         && wavelet.mergeC == other.wavelet.mergeL
@@ -8750,6 +8807,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.dirV == other.wavelet.dirV
         && wavelet.dirH == other.wavelet.dirH
         && wavelet.dirD == other.wavelet.dirD
+        && wavelet.shapind == other.wavelet.shapind
         && wavelet.balmerres == other.wavelet.balmerres
         && wavelet.balmerres2 == other.wavelet.balmerres2
         && wavelet.grad == other.wavelet.grad
@@ -8777,6 +8835,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && wavelet.ccwmergcurve == other.wavelet.ccwmergcurve
         && wavelet.ccwmerg2curve == other.wavelet.ccwmerg2curve
         && wavelet.ccwstycurve == other.wavelet.ccwstycurve
+        && wavelet.ccwsty2curve == other.wavelet.ccwsty2curve
         && wavelet.wavclCurve == other.wavelet.wavclCurve
         && wavelet.skinprotect == other.wavelet.skinprotect
         && wavelet.strength == other.wavelet.strength

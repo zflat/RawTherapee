@@ -912,7 +912,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
         if((params.wavelet.enabled)) {
             WaveletParams WaveParams = params.wavelet;
-            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, wavMER2Curve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
+            WaveParams.getCurves(wavCLVCurve, wavRETCurve, wavRETgainCurve, wavMERCurve, wavMER2Curve, wavSTYCurve, wavSTY2Curve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL);
             int kall = 0;
             progress ("Wavelet...", 100 * readyphase / numofphases);
             LabImage *unshar;
@@ -1009,7 +1009,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                             styres = new LabImage(wid1, hei1);
 
-                            ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            ipf.ip_wavelet(cropmergelab, cropmergelab, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, wavSTY2Curve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                         }
 
@@ -1017,7 +1017,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                         if(stytype == 2) {
 
-                            ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                            ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, cropmergelab, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, wavSTY2Curve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                             for(int y = 0; y < lab; y++) {
                                 for (int i = 0; i < dir; i++) {
@@ -1070,7 +1070,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 provis = params.wavelet.CLmethod;
                 params.wavelet.CLmethod = "all";
 
-                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 1, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, wavSTY2Curve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
                 unshar->CopyFrom(nprevl);
 
                 params.wavelet.CLmethod = provis;
@@ -1079,7 +1079,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             if(zerono || (zero &&  !params.wavelet.expmerge)) {
 
-                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
+                ipf.ip_wavelet(nprevl, nprevl, stylev, styres, stytype, NULL, mtwo, merge_two, 0, kall, WaveParams, wavMER2Curve, wavCLVCurve, wavRETCurve, wavRETgainCurve, wavSTYCurve, wavSTY2Curve, waOpacityCurveRG, waOpacityCurveBY, waOpacityCurveW, waOpacityCurveWL, wavclCurve, wavcontlutili, scale, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
             }
 

@@ -581,6 +581,7 @@ public:
     bool dirV;
     bool dirH;
     bool dirD;
+    bool shapind;
     bool balmerres;
     bool balmerres2;
     bool grad;
@@ -615,6 +616,7 @@ public:
     bool Backmethod;
     bool retinexMethod;
     bool retinexMethodpro;
+    bool shapMethod;
     bool Tilesmethod;
     bool usharpmethod;
     bool ushamethod;
@@ -660,6 +662,7 @@ public:
     bool ccwmergcurve;
     bool ccwmerg2curve;
     bool ccwstycurve;
+    bool ccwsty2curve;
     bool opacityCurveBY;
     bool opacityCurveRG;
     bool opacityCurveW;

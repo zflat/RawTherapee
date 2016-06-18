@@ -61,6 +61,7 @@ protected:
     CurveEditorGroup* CCWcurveEditormerg;
     CurveEditorGroup* CCWcurveEditormerg2;
     CurveEditorGroup* CCWcurveEditorsty;
+    CurveEditorGroup* CCWcurveEditorsty2;
     CurveEditorGroup* curveEditorRES;
     CurveEditorGroup* curveEditorGAM;
     CurveEditorGroup* curveEditorsty;
@@ -94,6 +95,7 @@ protected:
     FlatCurveEditor* cmergshape;
     FlatCurveEditor* cmerg2shape;
     FlatCurveEditor* cstyshape;
+    FlatCurveEditor* cstyshape2;
     Gtk::CheckButton * display;
     Gtk::CheckButton * displaylevel;
     Gtk::CheckButton * displaychro;
@@ -188,6 +190,7 @@ protected:
     Adjuster* shadows;
     Adjuster* s_tonalwidth;
     Adjuster* radius;
+    Adjuster* shapind;
 
     MyComboBoxText*   Lmethod;
     sigc::connection  Lmethodconn;
@@ -241,6 +244,8 @@ protected:
     Gtk::Frame *tranFrame;
     Gtk::Frame *gaussFrame;
     Gtk::Frame *balMFrame;
+    Gtk::Frame *shaFrame;
+    MyComboBoxText*   shapMethod;
 
     MyComboBoxText*   retinexMethod;
     Gtk::Label* labmdh;
@@ -368,7 +373,7 @@ protected:
     sigc::connection contrastPlusPressedConn;
     sigc::connection contrastMinusPressedConn;
     sigc::connection neutralchPressedConn, neutralconn;
-    sigc::connection retinexMethodConn, retinexMethodproConn;
+    sigc::connection retinexMethodConn, retinexMethodproConn, shapMethodConn;
     //  rtengine::StagedImageProcessor* ipc2;
 
     bool lastdisplay, lastdisplaygam, lastdisplayres, lastdisplaychro, lastdisplaylevel, lastmedian, lastmedianlev, lastlinkedg, lastavoid, lastlipst, lasttmr, lastcbenab;
@@ -403,6 +408,7 @@ public:
     void writeOptions (std::vector<int> &tpOpen);
     void retinexMethodChanged();
     void retinexMethodproChanged();
+    void shapMethodChanged();
     void minmaxChanged (double cdma, double cdmin, double mini, double maxi, double Tmean, double Tsigma, double Tmin, double Tmax);
     bool minmaxComputed_ ();
     void updateLabel      ();

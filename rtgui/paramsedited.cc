@@ -403,6 +403,7 @@ void ParamsEdited::set (bool v)
     wavelet.dirV = v;
     wavelet.dirH = v;
     wavelet.dirD = v;
+    wavelet.shapind = v;
     wavelet.balmerres = v;
     wavelet.balmerres2 = v;
     wavelet.grad = v;
@@ -428,6 +429,7 @@ void ParamsEdited::set (bool v)
     wavelet.Backmethod = v;
     wavelet.retinexMethod = v;
     wavelet.retinexMethodpro = v;
+    wavelet.shapMethod = v;
     wavelet.mergevMethod = v;
     wavelet.mergMethod = v;
     wavelet.mergMethod2 = v;
@@ -502,6 +504,7 @@ void ParamsEdited::set (bool v)
     wavelet.ccwmergcurve = v;
     wavelet.ccwmerg2curve = v;
     wavelet.ccwstycurve = v;
+    wavelet.ccwsty2curve = v;
     wavelet.opacityCurveRG   = v;
     wavelet.opacityCurveBY   = v;
     wavelet.opacityCurveW   = v;
@@ -968,6 +971,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.dirV = wavelet.dirV && p.wavelet.dirV == other.wavelet.dirV;
         wavelet.dirH = wavelet.dirH && p.wavelet.dirH == other.wavelet.dirH;
         wavelet.dirD = wavelet.dirD && p.wavelet.dirD == other.wavelet.dirD;
+        wavelet.shapind = wavelet.shapind && p.wavelet.shapind == other.wavelet.shapind;
         wavelet.balmerres = wavelet.balmerres && p.wavelet.balmerres == other.wavelet.balmerres;
         wavelet.balmerres2 = wavelet.balmerres2 && p.wavelet.balmerres2 == other.wavelet.balmerres2;
         wavelet.grad = wavelet.grad && p.wavelet.grad == other.wavelet.grad;
@@ -1006,6 +1010,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.BAmethod = wavelet.BAmethod && p.wavelet.BAmethod == other.wavelet.BAmethod;
         wavelet.retinexMethod = wavelet.retinexMethod && p.wavelet.retinexMethod == other.wavelet.retinexMethod;
         wavelet.retinexMethodpro = wavelet.retinexMethodpro && p.wavelet.retinexMethodpro == other.wavelet.retinexMethodpro;
+        wavelet.shapMethod = wavelet.shapMethod && p.wavelet.shapMethod == other.wavelet.shapMethod;
         wavelet.TMmethod = wavelet.TMmethod && p.wavelet.TMmethod == other.wavelet.TMmethod;
         wavelet.HSmethod = wavelet.HSmethod && p.wavelet.HSmethod == other.wavelet.HSmethod;
         wavelet.Dirmethod = wavelet.Dirmethod && p.wavelet.Dirmethod == other.wavelet.Dirmethod;
@@ -1050,6 +1055,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         wavelet.ccwmergcurve = wavelet.ccwmergcurve && p.wavelet.ccwmergcurve == other.wavelet.ccwmergcurve;
         wavelet.ccwmerg2curve = wavelet.ccwmerg2curve && p.wavelet.ccwmerg2curve == other.wavelet.ccwmerg2curve;
         wavelet.ccwstycurve = wavelet.ccwstycurve && p.wavelet.ccwstycurve == other.wavelet.ccwstycurve;
+        wavelet.ccwsty2curve = wavelet.ccwsty2curve && p.wavelet.ccwsty2curve == other.wavelet.ccwsty2curve;
         wavelet.opacityCurveRG = wavelet.opacityCurveRG && p.wavelet.opacityCurveRG == other.wavelet.opacityCurveRG;
         wavelet.opacityCurveBY = wavelet.opacityCurveBY && p.wavelet.opacityCurveBY == other.wavelet.opacityCurveBY;
         wavelet.opacityCurveW = wavelet.opacityCurveW && p.wavelet.opacityCurveW == other.wavelet.opacityCurveW;
@@ -2581,6 +2587,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.wavelet.dirD   = mods.wavelet.dirD;
     }
 
+    if (wavelet.shapind) {
+        toEdit.wavelet.shapind   = mods.wavelet.shapind;
+    }
+
     if (wavelet.balmerres) {
         toEdit.wavelet.balmerres   = mods.wavelet.balmerres;
     }
@@ -2667,6 +2677,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.retinexMethod) {
         toEdit.wavelet.retinexMethod        = mods.wavelet.retinexMethod;
+    }
+
+    if (wavelet.shapMethod) {
+        toEdit.wavelet.shapMethod        = mods.wavelet.shapMethod;
     }
 
     if (wavelet.mergMethod) {
@@ -2823,6 +2837,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (wavelet.ccwstycurve) {
         toEdit.wavelet.ccwstycurve   = mods.wavelet.ccwstycurve;
+    }
+
+    if (wavelet.ccwsty2curve) {
+        toEdit.wavelet.ccwsty2curve   = mods.wavelet.ccwsty2curve;
     }
 
     if (wavelet.opacityCurveRG) {

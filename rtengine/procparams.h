@@ -41,6 +41,7 @@ class WavretigainCurve;
 class WavmergCurve;
 class Wavmerg2Curve;
 class WavstyCurve;
+class Wavsty2Curve;
 class WavOpacityCurveRG;
 class WavOpacityCurveBY;
 class WavOpacityCurveW;
@@ -1008,6 +1009,7 @@ public:
     std::vector<double>   ccwmergcurve;
     std::vector<double>   ccwmerg2curve;
     std::vector<double>   ccwstycurve;
+    std::vector<double>   ccwsty2curve;
     std::vector<double> opacityCurveRG;
     std::vector<double> opacityCurveBY;
     std::vector<double> opacityCurveW;
@@ -1058,6 +1060,7 @@ public:
     int dirV;
     int dirH;
     int dirD;
+    int shapind;
     int balmerres;
     int balmerres2;
     int blend;
@@ -1103,6 +1106,7 @@ public:
     Glib::ustring TMmethod;
     Glib::ustring Dirmethod;
     Glib::ustring HSmethod;
+    Glib::ustring shapMethod;
     int rescon;
     int resconH;
     int reschro;
@@ -1143,7 +1147,7 @@ public:
 
     WaveletParams ();
     void setDefaults();
-    void getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, Wavmerg2Curve &cmerg2Curve, WavstyCurve &cstyCurve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
+    void getCurves(WavCurve &cCurve, WavretiCurve &cTCurve, WavretigainCurve &cTgainCurve, WavmergCurve &cmergCurve, Wavmerg2Curve &cmerg2Curve, WavstyCurve &cstyCurve, Wavsty2Curve &csty2Curve, WavOpacityCurveRG &opacityCurveLUTRG , WavOpacityCurveBY &opacityCurveLUTBY, WavOpacityCurveW &opacityCurveLUTW, WavOpacityCurveWL &opacityCurveLUTWL) const;
     static void getDefaultCCWCurve(std::vector<double> &curve);
     static void getDefaultCCWCurveT(std::vector<double> &curve);
     static void getDefaultCCWgainCurveT(std::vector<double> &curve);
@@ -1154,6 +1158,7 @@ public:
     static void getDefaultmergCurveT(std::vector<double> &curve);
     static void getDefaultmerg2CurveT(std::vector<double> &curve);
     static void getDefaultstyCurveT(std::vector<double> &curve);
+    static void getDefaultsty2CurveT(std::vector<double> &curve);
 
 };
 

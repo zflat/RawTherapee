@@ -609,6 +609,34 @@ public:
     }
 };
 
+class Wavsty2Curve
+{
+private:
+    LUTf lutWavsty2Curve;  // 0xffff range
+    void Set(const Curve &pCurve);
+
+public:
+    float sum;
+
+    virtual ~Wavsty2Curve() {};
+    Wavsty2Curve();
+    void Reset();
+    void Set(const std::vector<double> &curvePoints);
+    float getSum() const
+    {
+        return sum;
+    }
+
+    float operator[](float index) const
+    {
+        return lutWavsty2Curve[index];
+    }
+    operator bool (void) const
+    {
+        return lutWavsty2Curve;
+    }
+};
+
 
 class WavmergCurve
 {

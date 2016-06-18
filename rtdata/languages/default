@@ -715,7 +715,7 @@ HISTORY_MSG_480;W - merge - luminance style
 HISTORY_MSG_481;W - merge - chroma
 HISTORY_MSG_482;W - merge - residual style
 HISTORY_MSG_483;W - merge - style targ/prot
-HISTORY_MSG_484;W - merge - shape detection curve
+HISTORY_MSG_484;W - merge - shape detection curve hdr
 HISTORY_MSG_485;W - merge - style detection color
 HISTORY_MSG_486;W - merge - dirV
 HISTORY_MSG_487;W - merge - dirH
@@ -725,6 +725,9 @@ HISTORY_MSG_490;W - merge - luma curve++
 HISTORY_MSG_491;W - merge - luminance hdr
 HISTORY_MSG_492;W - merge - residual hdr
 HISTORY_MSG_493;W - merge - position
+HISTORY_MSG_494;W - merge - shape method
+HISTORY_MSG_495;W - merge - Neural index
+HISTORY_MSG_496;W - merge - shape detection curve sty
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -2060,7 +2063,8 @@ TP_WAVELET_RESID;Residual Image
 TP_WAVELET_RETI;Retinex in Wavelet
 TP_WAVELET_RETI_TOOLTIP;Retinex implanted in Wavelet.\nSame algoritm (simplified)as 'Retinex exposure', can threat TIF and JPG.\nCan be exploited in the process 'Residual image' and 'Final'
 TP_WAVE_NONE;None
-TP_WAVELET_ST2CURVE;Shape detection
+TP_WAVELET_ST2CURVE;Shape detection hdr
+TP_WAVELET_ST2CURVE2;Shape detection style
 TP_WAVRETI_FIN;Retinex 'Final Touchup' actived
 TP_WAVRETI_METHOD;Retinex method
 TP_WAVRETI_METHODPRO;Process located in
@@ -2080,6 +2084,11 @@ TP_WAVELET_SAVE_HDR;Save L*a*b for HDR
 TP_WAVELET_SAVE_ZERO;Save L*a*b for Style and HDR++
 TP_WAVELET_SIZELAB;Size of image
 TP_WAVELET_SCA;Scale
+TP_WAVELET_SHAF;Shape and texture
+TP_WAVELET_SHAPN;Normal
+TP_WAVELET_SHAPT;Neural three
+TP_WAVELET_SHAPF;Neural four
+TP_WAVELET_SHAPIND;Neural index
 TP_WAVELET_STR;Strength
 TP_WAVELET_CHRRT;Chroma
 TP_WAVELET_NEIGH;Radius
