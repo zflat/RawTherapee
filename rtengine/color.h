@@ -188,7 +188,50 @@ public:
     * @param l luminance channel [0; 1] (return value)
     */
     static void rgb2hsl (float r, float g, float b, float &h, float &s, float &l);
+    inline static void rgb2h(float r, float g, float b, float &h)
+    {
+
+        float m = min(r, g, b);
+        float M = max(r, g, b);
+        float C = M - m;
+
+        if (C < 0.65535f) { // 0.00001f * 65535.f
+            h = 0.f;
+        } else {
+            if ( r == M ) {
+                h = (g - b);
+            } else if ( g == M ) {
+                h = (2.f * C) + (b - r);
+            } else {
+                h = (4.f * C) + (r - g);
+            }
+
+            h /= (6.f * C);
+
+            if ( h < 0.f ) {
+                h += 1.f;
+            } else if ( h > 1.f ) {
+                h -= 1.f;
+            }
+        }
+    }
     static void rgb2hslfloat (float r, float g, float b, float &h, float &s, float &l);
+    inline static void rgb2sl(float r, float g, float b, float &s, float &l)
+    {
+
+        float m = min(r, g, b) / 65535.f;
+        float M = max(r, g, b) / 65535.f;
+        float C = M - m;
+
+        if (C < 0.00001f) {
+            s = 0.f;
+        } else {
+            l = M + m;
+            s = C / (l <= 1.f ? l : 2.f - l);
+            l *= 0.5f;
+        }
+    }
+
 #ifdef __SSE2__
     static void rgb2hsl (vfloat r, vfloat g, vfloat b, vfloat &h, vfloat &s, vfloat &l);
 #endif
@@ -714,8 +757,7 @@ public:
     * @param go green channel of output color [0 ; 65535] (return value)
     * @param bo blue channel of output color [0 ; 65535] (return value)
     */
-    static void interpolateRGBColor (float realL, float iplow, float iphigh, int algm,  const float balance, int twoc, int metchrom, bool chr, bool lum, float chromat, float luma, const float r1, const float g1, const float b1, const float xl, const float yl, const float zl, const float x2, const float y2, const float z2, int channels, const double xyz_rgb[3][3], const double rgb_xyz[3][3], float &ro, float &go, float &bo);
-
+    static void interpolateRGBColor (float realL, float iplow, float iphigh, int algm, const float balance, int twoc, int metchrom, float chromat, float luma, const float r1, const float g1, const float b1, const float xl, const float yl, const float zl, const float x2, const float y2, const float z2, const float xyz_rgb[3][3], const float rgb_xyz[3][3], float &ro, float &go, float &bo);
 
     /**
     * @brief Interpolate a hue value as the angle of a polar coordinate with hue in the [0;1] range

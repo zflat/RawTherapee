@@ -3006,6 +3006,19 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
         {wprof[2][0], wprof[2][1], wprof[2][2]}
     };
 
+    const float wipf[3][3] = {
+        {static_cast<float>(wiprof[0][0]), static_cast<float>(wiprof[0][1]), static_cast<float>(wiprof[0][2])},
+        {static_cast<float>(wiprof[1][0]), static_cast<float>(wiprof[1][1]), static_cast<float>(wiprof[1][2])},
+        {static_cast<float>(wiprof[2][0]), static_cast<float>(wiprof[2][1]), static_cast<float>(wiprof[2][2])}
+    };
+
+    const float wpf[3][3] = {
+        {static_cast<float>(wprof[0][0]), static_cast<float>(wprof[0][1]), static_cast<float>(wprof[0][2])},
+        {static_cast<float>(wprof[1][0]), static_cast<float>(wprof[1][1]), static_cast<float>(wprof[1][2])},
+        {static_cast<float>(wprof[2][0]), static_cast<float>(wprof[2][1]), static_cast<float>(wprof[2][2])}
+    };
+
+
 
     bool mixchannels = (params->chmixer.red[0] != 100 || params->chmixer.red[1] != 0     || params->chmixer.red[2] != 0   ||
                         params->chmixer.green[0] != 0 || params->chmixer.green[1] != 100 || params->chmixer.green[2] != 0 ||
@@ -3254,6 +3267,20 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
     if (hasColorToning || blackwhite || (params->dirpyrequalizer.cbdlMethod == "bef" && params->dirpyrequalizer.enabled)) {
         tmpImage = new Imagefloat(working->width, working->height);
     }
+
+    int metchrom;
+
+    if      (params->colorToning.twocolor == "Std"  ) {
+        metchrom = 0;
+    } else if (params->colorToning.twocolor == "All"  ) {
+        metchrom = 1;
+    } else if (params->colorToning.twocolor == "Separ") {
+        metchrom = 2;
+    } else if (params->colorToning.twocolor == "Two"  ) {
+        metchrom = 3;
+    }
+
+
 
     int W = working->width;
     int H = working->height;
@@ -3838,7 +3865,9 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                         }
 
                         balanS = 1.f + Balan / 100.f; //balan between 0 and 2
+                        balanS *= pow_F(strProtect, 0.4f);
                         balanH = 1.f - Balan / 100.f;
+                        balanH *= (2 * pow_F(strProtect, 0.4f));
                         float rh, gh, bh;
                         float rl, gl, bl;
                         float xh, yh, zh;
@@ -3864,7 +3893,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                 float b = btemp[ti * TS + tj];
                                 float ro, go, bo;
                                 int mode = 0;
-                                toning2col (r, g, b, ro, go, bo, iplow, iphigh, rl, gl, bl, rh, gh, bh, SatLow, SatHigh, balanS, balanH, reducac, mode, preser, strProtect);
+                                toning2col (r, g, b, ro, go, bo, iplow, iphigh, rl, gl, bl, rh, gh, bh, SatLow, SatHigh, balanS, balanH, reducac, mode, preser);
                                 rtemp[ti * TS + tj] = ro;
                                 gtemp[ti * TS + tj] = go;
                                 btemp[ti * TS + tj] = bo;
@@ -3874,26 +3903,9 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                     // color toning with colour
                     else if (params->colorToning.method == "Splitco") {
-                        /*
-                        #if 1
-                                            for (int i=istart,ti=0; i<tH; i++,ti++) {
-                                                for (int j=jstart,tj=0; j<tW; j++,tj++) {
-                                                    float r = rtemp[ti*TS+tj];
-                                                    float g = gtemp[ti*TS+tj];
-                                                    float b = btemp[ti*TS+tj];
-                                                    float ro,go,bo;
-                                                    labtoning (r, g, b, ro, go, bo, 1, 0, 1, satLimit, satLimitOpacity, ctColorCurve, ctOpacityCurve, clToningcurve, cl2Toningcurve, 0.f, 1.f, wp, wip);
-                                                    rtemp[ti*TS+tj] = CLIP(ro);//I used CLIP because there is a little bug in gamutLchonly that return 65536.ii intead of 65535 ==> crash
-                                                    gtemp[ti*TS+tj] = CLIP(go);
-                                                    btemp[ti*TS+tj] = CLIP(bo);
-                                                }
-                                            }
-                        #else
-                        */
                         float reducac = 0.3f;
                         int preser = 0;
 
-                        //bool execbal = params->colorToning.method=="Splitbal";
                         if(params->colorToning.lumamode == true) {
                             preser = 1;
                         }
@@ -3905,24 +3917,17 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                 float b = btemp[ti * TS + tj];
                                 float lumbefore = 0.299f * r + 0.587f * g + 0.114f * b;
                                 float ro, go, bo;
-                                int mode = 0;
-                                toningsmh (r, g, b, ro, go, bo, RedLow, GreenLow, BlueLow, RedMed, GreenMed, BlueMed, RedHigh, GreenHigh, BlueHigh, reducac, mode, preser, strProtect);
-                                float lumafter = 0.299f * ro + 0.587f * go + 0.114f * bo;
+                                toningsmh (r, g, b, ro, go, bo, RedLow, GreenLow, BlueLow, RedMed, GreenMed, BlueMed, RedHigh, GreenHigh, BlueHigh, reducac, 0, strProtect);
                                 float preserv = 1.f;
 
                                 if(preser == 1) {
+                                    float lumafter = 0.299f * ro + 0.587f * go + 0.114f * bo;
                                     preserv = lumbefore / lumafter;
                                 }
 
-                                ro *= preserv;
-                                go *= preserv;
-                                bo *= preserv;
-                                ro = CLIP(ro);
-                                go = CLIP(go);
-                                bo = CLIP(bo);
-                                rtemp[ti * TS + tj] = ro;
-                                gtemp[ti * TS + tj] = go;
-                                btemp[ti * TS + tj] = bo;
+                                rtemp[ti * TS + tj] = CLIP(ro * preserv);
+                                gtemp[ti * TS + tj] = CLIP(go * preserv);
+                                btemp[ti * TS + tj] = CLIP(bo * preserv);
                             }
                         }
 
@@ -3931,19 +3936,8 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                     //colortoning with shift color XYZ or Lch
                     else if (params->colorToning.method == "Lab" && opautili) {
-                        int algm = 0;
+                        int algm = 1;
                         bool twocol = true;//true=500 color   false=2 color
-                        int metchrom;
-
-                        if      (params->colorToning.twocolor == "Std"  ) {
-                            metchrom = 0;
-                        } else if (params->colorToning.twocolor == "All"  ) {
-                            metchrom = 1;
-                        } else if (params->colorToning.twocolor == "Separ") {
-                            metchrom = 2;
-                        } else if (params->colorToning.twocolor == "Two"  ) {
-                            metchrom = 3;
-                        }
 
                         if(metchrom == 3) {
                             twocol = false;
@@ -3964,24 +3958,16 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                             twoc = 1;    // 500 colours
                         }
 
-                        if      (params->colorToning.method == "Lab") {
-                            algm = 1;
-                        } else if (params->colorToning.method == "Lch") {
-                            algm = 2;    //in case of
-                        }
-
-                        if (algm <= 2) {
-                            for (int i = istart, ti = 0; i < tH; i++, ti++) {
-                                for (int j = jstart, tj = 0; j < tW; j++, tj++) {
-                                    float r = rtemp[ti * TS + tj];
-                                    float g = gtemp[ti * TS + tj];
-                                    float b = btemp[ti * TS + tj];
-                                    float ro, go, bo;
-                                    labtoning (r, g, b, ro, go, bo, algm, metchrom, twoc, satLimit, satLimitOpacity, ctColorCurve, ctOpacityCurve, clToningcurve, cl2Toningcurve, iplow, iphigh, wp, wip);
-                                    rtemp[ti * TS + tj] = CLIP(ro); //I used CLIP because there is a little bug in gamutLchonly that return 65536.ii intead of 65535 ==> crash
-                                    gtemp[ti * TS + tj] = CLIP(go);
-                                    btemp[ti * TS + tj] = CLIP(bo);
-                                }
+                        for (int i = istart, ti = 0; i < tH; i++, ti++) {
+                            for (int j = jstart, tj = 0; j < tW; j++, tj++) {
+                                float r = rtemp[ti * TS + tj];
+                                float g = gtemp[ti * TS + tj];
+                                float b = btemp[ti * TS + tj];
+                                float ro, go, bo;
+                                labtoning (r, g, b, ro, go, bo, algm, metchrom, twoc, satLimit, satLimitOpacity, ctColorCurve, ctOpacityCurve, clToningcurve, cl2Toningcurve, iplow, iphigh, wpf, wipf);
+                                rtemp[ti * TS + tj] = CLIP(ro); //I used CLIP because there is a little bug in gamutLchonly that return 65536.ii instead of 65535 ==> crash
+                                gtemp[ti * TS + tj] = CLIP(go);
+                                btemp[ti * TS + tj] = CLIP(bo);
                             }
                         }
                     } else if (params->colorToning.method.substr(0, 3) == "RGB" && opautili) {
@@ -3992,35 +3978,25 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                 float g = gtemp[ti * TS + tj];
                                 float b = btemp[ti * TS + tj];
 
-                                // Luminance = (0.299f*r + 0.587f*g + 0.114f*b)
+                                float s, l;
+                                Color::rgb2sl(r, g, b, s, l);
 
-                                float h, s, l;
-                                Color::rgb2hsl(r, g, b, h, s, l);
-
-                                float l_ = Color::gamma_srgb(l * 65535.f) / 65535.f;
+                                float l_ = Color::gammatab_srgb1[l * 65535.f];
+                                float opacityCurveVal = ctOpacityCurve.lutOpacityCurve[l_ * 500.f];
 
                                 // get the opacity and tweak it to preserve saturated colors
-                                float opacity;
-
-                                if(ctOpacityCurve) {
-                                    opacity = (1.f - min<float>(s / satLimit, 1.f) * (1.f - satLimitOpacity)) * ctOpacityCurve.lutOpacityCurve[l_ * 500.f];
-                                }
-
-                                if(!ctOpacityCurve) {
-                                    opacity = 0.f;
-                                }
-
+                                float opacity = (1.f - min(s / satLimit, 1.f) * (1.f - satLimitOpacity)) * opacityCurveVal;
                                 float r2, g2, b2;
                                 ctColorCurve.getVal(l_, r2, g2, b2);  // get the color from the color curve
 
-                                float h2, s2, l2;
-                                Color::rgb2hsl(r2, g2, b2, h2, s2, l2); // transform this new color to hsl
+                                float h;
+                                Color::rgb2h(r2, g2, b2, h); // transform this new color to hsl
 
-                                Color::hsl2rgb(h2, s + ((1.f - s) * (1.f - l) * 0.7f), l, r2, g2, b2);
+                                Color::hsl2rgbfloat(h, s + ((1.f - s) * (1.f - l) * 0.7f), l, r2, g2, b2);
 
-                                rtemp[ti * TS + tj] = r + (r2 - r) * opacity; // merge the color to the old color, depending on the opacity
-                                gtemp[ti * TS + tj] = g + (g2 - g) * opacity;
-                                btemp[ti * TS + tj] = b + (b2 - b) * opacity;
+                                rtemp[ti * TS + tj] = intp(opacity, r2, r); // merge the color to the old color, depending on the opacity
+                                gtemp[ti * TS + tj] = intp(opacity, g2, g);
+                                btemp[ti * TS + tj] = intp(opacity, b2, b);
                             }
                         }
                     }
@@ -4531,22 +4507,6 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
         //colortoning with black and white
         if (hasColorToning) {
             if(params->colorToning.method == "Splitco") {
-                /*
-                                    #if 1
-                                    for (int i=istart,ti=0; i<tH; i++,ti++) {
-                                        for (int j=jstart,tj=0; j<tW; j++,tj++) {
-                                            float r = rtemp[ti*TS+tj];
-                                            float g = gtemp[ti*TS+tj];
-                                            float b = btemp[ti*TS+tj];
-                                            float ro,go,bo;
-                                            labtoning (r, g, b, ro, go, bo, 1, 0, 1, satLimit, satLimitOpacity, ctColorCurve, ctOpacityCurve, clToningcurve, cl2Toningcurve, 0.f, 1.f, wp, wip);
-                                            rtemp[ti*TS+tj] = CLIP(ro);//I used CLIP because there is a little bug in gamutLchonly that return 65536.ii intead of 65535 ==> crash
-                                            gtemp[ti*TS+tj] = CLIP(go);
-                                            btemp[ti*TS+tj] = CLIP(bo);
-                                        }
-                                    }
-                #else
-                */
                 int preser = 0;
 
                 if(params->colorToning.lumamode == true) {
@@ -4555,7 +4515,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                 float reducac = 0.3f;
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic, 5)
+                #pragma omp parallel for schedule(dynamic, 16)
 #endif
 
                 for (int i = 0; i < tH; i++) {
@@ -4566,26 +4526,19 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                         float lumbefore = 0.299f * r + 0.587f * g + 0.114f * b;
 
-                        if(lumbefore < 65000.f  && lumbefore > 500.f) { //reduct artifacts for highlights an extrem shadows
+                        if(lumbefore < 65000.f && lumbefore > 500.f) { //reduct artifacts for highlights an extrem shadows
                             float ro, go, bo;
-                            int mode = 1;
-                            toningsmh (r, g, b, ro, go, bo, RedLow, GreenLow, BlueLow, RedMed, GreenMed, BlueMed, RedHigh, GreenHigh, BlueHigh, reducac, mode, preser, strProtect);
-                            float lumafter = 0.299f * ro + 0.587f * go + 0.114f * bo;
+                            toningsmh (r, g, b, ro, go, bo, RedLow, GreenLow, BlueLow, RedMed, GreenMed, BlueMed, RedHigh, GreenHigh, BlueHigh, reducac, 1, strProtect);
                             float preserv = 1.f;
 
                             if(preser == 1) {
+                                float lumafter = 0.299f * ro + 0.587f * go + 0.114f * bo;
                                 preserv = lumbefore / lumafter;
                             }
 
-                            ro *= preserv;
-                            go *= preserv;
-                            bo *= preserv;
-                            ro = CLIP(ro);
-                            go = CLIP(go);
-                            bo = CLIP(bo);
-                            tmpImage->r(i, j) = ro;
-                            tmpImage->g(i, j) = go;
-                            tmpImage->b(i, j) = bo;
+                            tmpImage->r(i, j) = CLIP(ro * preserv);
+                            tmpImage->g(i, j) = CLIP(go * preserv);
+                            tmpImage->b(i, j) = CLIP(bo * preserv);
                         }
                     }
                 }
@@ -4594,16 +4547,19 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
             }
 
             else if (params->colorToning.method == "Splitlr") {
-                float balanS, balanH;
                 float reducac =  0.4f;
+                float balanS = 1.f + Balan / 100.f; //balan between 0 and 2
+                balanS *= pow_F(strProtect, 0.4f);
+                float balanH = 1.f - Balan / 100.f;
+                balanH *= (2 * pow_F(strProtect, 0.4f));
+
                 int preser = 0;
 
                 if(params->colorToning.lumamode == true) {
                     preser = 1;
                 }
 
-                balanS = 1.f + Balan / 100.f; //balan between 0 and 2
-                balanH = 1.f - Balan / 100.f;
+
                 float rh, gh, bh;
                 float rl, gl, bl;
                 float xh, yh, zh;
@@ -4634,7 +4590,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                         float ro, go, bo;
                         int mode = 1;
-                        toning2col (r, g, b, ro, go, bo, iplow, iphigh, rl, gl, bl, rh, gh, bh, SatLow, SatHigh, balanS, balanH, reducac, mode, preser, strProtect);
+                        toning2col (r, g, b, ro, go, bo, iplow, iphigh, rl, gl, bl, rh, gh, bh, SatLow, SatHigh, balanS, balanH, reducac, mode, preser);
                         tmpImage->r(i, j) = ro;
                         tmpImage->g(i, j) = go;
                         tmpImage->b(i, j) = bo;
@@ -4696,7 +4652,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                             float g = tmpImage->g(i, j);
                             float b = tmpImage->b(i, j);
                             float ro, bo, go;
-                            labtoning (r, g, b, ro, go, bo, algm, metchrom,  twoc, satLimit, satLimitOpacity, ctColorCurve,  ctOpacityCurve, clToningcurve, cl2Toningcurve,  iplow, iphigh,  wp,  wip);
+                            labtoning (r, g, b, ro, go, bo, algm, metchrom,  twoc, satLimit, satLimitOpacity, ctColorCurve,  ctOpacityCurve, clToningcurve, cl2Toningcurve,  iplow, iphigh,  wpf,  wipf);
                             tmpImage->r(i, j) = CLIP(ro);
                             tmpImage->g(i, j) = CLIP(go);
                             tmpImage->b(i, j) = CLIP(bo);
@@ -4878,15 +4834,18 @@ void ImProcFunctions::retreavergb (float &r, float &g, float &b)
 **/
 void ImProcFunctions::secondeg_end (float reducac, float vinf, float &aa, float &bb, float &cc)
 {
-    float zrd = reducac; //value at me  linear =0.5
-    float v0 = vinf; //max shadows
-    float me = (1.f + v0) / 2.f; //"median" value = (v0 + 1.=/2)
+//    float zrd = reducac; //value at me  linear =0.5
+//    float v0 = vinf; //max shadows
+    float me = (1.f + vinf) / 2.f; //"median" value = (v0 + 1.=/2)
     //float a1=1.f-v0;
-    float a2 = me - v0;
-    float a3 = 1.f - v0 * v0;
-    float a4 = me * me - v0 * v0;
-    aa = (1.f + (zrd - 1.f) * (1 - v0) / a2) / (a4 * (1.f - v0) / a2 - a3);
-    bb = -(1.f + a3 * aa) / (1.f - v0);
+//    float a2 = me - vinf;
+    float a3 = 1.f - (vinf * vinf);
+    float a4 = me * me - (vinf * vinf);
+    aa = (2 * reducac - 1.f) / (a4 * 2 - a3);
+//    aa = (1.f + (reducac - 1.f) * 2.f) / (a4 * 2.f - a3);
+//    aa = (1.f + (reducac - 1.f) * (1 - vinf) / a2) / (a4 * (1.f - vinf) / a2 - a3);
+    bb = (1.f + a3 * aa) / (vinf - 1.f);
+//    bb = -(1.f + a3 * aa) / (1.f - vinf);
     cc = - (aa + bb);
 }
 
@@ -4899,11 +4858,14 @@ void ImProcFunctions::secondeg_end (float reducac, float vinf, float &aa, float 
 **/
 void ImProcFunctions::secondeg_begin (float reducac, float vend, float &aam, float &bbm)
 {
-    float zrmd = reducac; //linear = 0.5
-    float v0m = vend;
-    float mem = vend / 2.f; //(0. + 0.8)/2.f
-    aam = (1.f - zrmd * v0m / mem) / (v0m * v0m - mem * v0m); //
-    bbm = (1.f - aam * v0m * v0m) / v0m;
+//    float zrmd = reducac; //linear = 0.5
+//    float v0m = vend;
+//    float mem = vend / 2.f; //(0. + 0.8)/2.f
+    aam = (1.f - reducac * 2.f) / (vend * vend * 0.5f); //
+//    aam = (1.f - zrmd * v0m / mem) / (v0m * v0m - mem * v0m); //
+    bbm = 1.f / vend - aam * vend;
+//    bbm = (1.f - aam * vend * vend) / vend;
+//    bbm = (1.f - aam * v0m * v0m) / v0m;
 }
 
 
@@ -4926,260 +4888,200 @@ void ImProcFunctions::secondeg_begin (float reducac, float vend, float &aam, flo
 * @param BlueHigh  [0..1] value after transformations of sliders [-100..100] for highlights
 * @param reducac value of the reduction in the middle of the range for second degree increse or decrease action
 * @param mode ?
-* @param preser whether to preserve luminance (if 1) or not
 **/
-void ImProcFunctions::toningsmh (float r, float g, float b, float &ro, float &go, float &bo, float RedLow, float GreenLow, float BlueLow, float RedMed, float GreenMed, float BlueMed, float RedHigh, float GreenHigh, float BlueHigh, float reducac, int mode, int preser, float strProtect)
+void ImProcFunctions::toningsmh (float r, float g, float b, float &ro, float &go, float &bo, float RedLow, float GreenLow, float BlueLow, float RedMed, float GreenMed, float BlueMed, float RedHigh, float GreenHigh, float BlueHigh, float reducac, int mode, float strProtect)
 {
-    float bmu = mode == 1 ? 0.5f : 0.4f;
-    float RedL   = 1.f + (RedLow  - 1.f) * 0.4f;
-    float GreenL = 1.f + (GreenLow - 1.f) * 0.4f;
-    float BlueL  = 1.f + (BlueLow - 1.f) * bmu;
-    float h, s, v;
-    Color::rgb2hsv(r, g, b, h, s, v);
+    float v = max(r, g, b) / 65535.f;
+
     float ksat = 1.f;
-    float ksatlow = 1.f;
-//  float s_0=0.55f;
-//  float s_1=0.85f;
-    /*
-    if(mode==0) {//color
-        if(s < s_0) ksat=SQR((1.f/s_0)*s);
-        if(s > s_1) ksat=SQR((1.f/(s_1-1.f))*s - (1.f/(s_1-1.f)));
-    }
-    */
-    float kl = 1.f;
     float rlo = 1.f; //0.4  0.5
     float rlm = 1.5f; //1.1
     float rlh = 2.2f; //1.1
-    float rlob = bmu; //for BW old mode
+    float rlob; //for BW old mode
+
+    //second degree
+    constexpr float vLow = 0.15f;
 
     if(mode == 0) { //color
         rlo *= pow_F(strProtect, 0.4f); //0.5 ==>  0.75
+        rlob = rlo;
         rlh *= pow_F(strProtect, 0.4f);
         rlm *= pow_F(strProtect, 0.4f);
+        if(v > vLow) {
+            float aa, bb, cc;
+            secondeg_end (reducac, vLow, aa, bb, cc);
+            ksat *= aa * v * v + bb * v + cc;    //verified ==> exact
+        } else {
+            float aa, bb;
+            secondeg_begin (0.7f, vLow, aa, bb);
+            ksat *= aa * v * v + bb * v;    //ksatlow=ksat;
+        }
     } else { //bw coefficient to preserve same results as before for satlimtopacity = 0.5 (default)
         rlo = strProtect * 0.8f; //0.4
         rlob = strProtect; //0.5
         rlm = strProtect * 2.2f; //1.1
         rlh = strProtect * 2.4f; //1.2
-    }
-
-    if(mode == 0) {
-        rlob = rlo;
-    }
-
-    //second degree
-    float aa, bb, cc;
-    float v0 = 0.15f;
-
-    //fixed value of reducac=0.3
-    //secondeg_end (reducac, v0, aa, bb, cc);
-    if(mode == 1) {
         reducac = 0.5f; //black and white mode
 
-        if(v > 0.15f) {
-            kl = (-1.f / 0.85f) * v + (1.f) / 0.85f;    //Low light ==> decrease action after v=0.15
-        }
-    } else { //color
-        secondeg_end (reducac, v0, aa, bb, cc);
-        float aab, bbb;
-        secondeg_begin (0.7f, v0, aab, bbb);
-
-        if(v > v0) {
-            kl = aa * v * v + bb * v + cc;    //verified ==> exact
-        } else if (mode == 0) {
-            kl = aab * v * v + bbb * v;    //ksatlow=ksat;
+        if(v > vLow) {
+            ksat *= (-1.f / 0.85f) * v + (1.f) / 0.85f;    //Low light ==> decrease action after v=0.15
         }
     }
 
+    ksat *= 20000.f;
+
     if(RedLow != 1.f) {
-        RedL = 1.f + (RedLow - 1.f) * kl * ksat * rlo; //0.4
+        float RedL = (RedLow - 1.f) * ksat * rlo; //0.4
 
         if(RedLow >= 1.f) {
-            g -= 20000.f * (RedL - 1.f) * ksatlow;
-            b -= 20000.f * (RedL - 1.f) * ksatlow;
+            g -= RedL;
+            b -= RedL;
+            g = CLIP(g);
+            b = CLIP(b);
         } else {
-            r += 20000.f * (RedL - 1.f) * ksatlow;
+            r += RedL;
+            r = CLIP(r);
         }
-
-        r = CLIP(r);
-        g = CLIP(g);
-        b = CLIP(b);
     }
 
     if(GreenLow != 1.f) {
-        GreenL = 1.f + (GreenLow - 1.f) * kl * ksat * rlo; //0.4
+        float GreenL = (GreenLow - 1.f) * ksat * rlo; //0.4
 
         if(GreenLow >= 1.f) {
-            r -= 20000.f * (GreenL - 1.f) * ksatlow;
-            b -= 20000.f * (GreenL - 1.f) * ksatlow;
+            r -= GreenL;
+            b -= GreenL;
+            r = CLIP(r);
+            b = CLIP(b);
         } else {
-            g += 20000.f * (GreenL - 1.f) * ksatlow;
+            g += GreenL;
+            g = CLIP(g);
         }
-
-        r = CLIP(r);
-        b = CLIP(b);
-        g = CLIP(g);
     }
 
     if(BlueLow != 1.f) {
-        BlueL = 1.f + (BlueLow - 1.f) * kl * ksat * rlob;
+        float BlueL = (BlueLow - 1.f) * ksat * rlob;
 
         if(BlueLow >= 1.f) {
-            r -= 20000.f * (BlueL - 1.f) * ksatlow;
-            g -= 20000.f * (BlueL - 1.f) * ksatlow;
+            r -= BlueL;
+            g -= BlueL;
+            r = CLIP(r);
+            g = CLIP(g);
         } else {
-            b += 20000.f * (BlueL - 1.f) * ksatlow;
+            b += BlueL;
+            b = CLIP(b);
         }
-
-        r = CLIP(r);
-        g = CLIP(g);
-        b = CLIP(b);
     }
 
     // mid tones
-    float km;
-    float v0m = 0.5f; //max action
-    float v0mm = 0.5f; //max
+    constexpr float vMed = 0.5f; //max action
 
-    if(v < v0m) {
-        float aam, bbm;
-        float vend = v0m;
-        secondeg_begin (reducac, vend, aam, bbm);
-        km = aam * v * v + bbm * v; //verification = good
+    if(v < vMed) {
+        float aa, bb;
+        secondeg_begin (reducac, vMed, aa, bb);
+        rlm *= aa * v * v + bb * v; //verification = good
     } else {
-        float aamm, bbmm, ccmm;
-        secondeg_end (reducac, v0mm, aamm, bbmm, ccmm);
-        km = aamm * v * v + bbmm * v + ccmm; //verification good
+        float aa, bb, cc;
+        secondeg_end (reducac, vMed, aa, bb, cc);
+        rlm *= aa * v * v + bb * v + cc; //verification good
     }
-
-    float RedM = 1.f + (RedMed - 1.f) * rlm;
 
     if(RedMed != 1.f) {
-        RedM = 1.f + (RedMed - 1.f) * km * rlm;
-
-        if(RedMed >= 1.f) {
-            r += 20000.f * (RedM - 1.f);
-            g -= 10000.f * (RedM - 1.f);
-            b -= 10000.f * (RedM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
-        } else {
-            r += 10000.f * (RedM - 1.f);
-            g -= 20000.f * (RedM - 1.f);
-            b -= 20000.f * (RedM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
+        float RedM = (RedMed - 1.f) * rlm;
+        float factor1 = 10000.f;
+        float factor2 = 20000.f;
+        if(RedMed < 1.f) {
+            std::swap(factor1, factor2);
         }
+        r += factor2 * RedM;
+        g -= factor1 * RedM;
+        b -= factor1 * RedM;
+        r = CLIP(r);
+        g = CLIP(g);
+        b = CLIP(b);
     }
-
-    float GreenM = 1.f + (GreenMed - 1.f) * rlm;
 
     if(GreenMed != 1.f) {
-        GreenM = 1.f + (GreenMed - 1.f) * km * rlm;
-
-        if(GreenMed >= 1.f) {
-            r -= 10000.f * (GreenM - 1.f);
-            g += 20000.f * (GreenM - 1.f);
-            b -= 10000.f * (GreenM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
-        } else {
-            r -= 20000.f * (GreenM - 1.f);
-            g += 10000.f * (GreenM - 1.f);
-            b -= 20000.f * (GreenM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
+        float GreenM = (GreenMed - 1.f) * rlm;
+        float factor1 = 10000.f;
+        float factor2 = 20000.f;
+        if(GreenMed < 1.f) {
+            std::swap(factor1, factor2);
         }
+        r -= factor1 * GreenM;
+        g += factor2 * GreenM;
+        b -= factor1 * GreenM;
+        r = CLIP(r);
+        g = CLIP(g);
+        b = CLIP(b);
     }
 
-    float BlueM = 1.f + (BlueMed - 1.f) * rlm;
-
     if(BlueMed != 1.f) {
-        BlueM = 1.f + (BlueMed - 1.f) * km * rlm;
-
-        if(BlueMed >= 1.f) {
-            r -= 10000.f * (BlueM - 1.f);
-            g -= 10000.f * (BlueM - 1.f);
-            b += 20000.f * (BlueM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
-        } else {
-            r -= 20000.f * (BlueM - 1.f);
-            g -= 20000.f * (BlueM - 1.f);
-            b += 10000.f * (BlueM - 1.f);
-            r = CLIP(r);
-            g = CLIP(g);
-            b = CLIP(b);
+        float BlueM = (BlueMed - 1.f) * rlm;
+        float factor1 = 10000.f;
+        float factor2 = 20000.f;
+        if(BlueMed < 1.f) {
+            std::swap(factor1, factor2);
         }
+        r -= factor1 * BlueM;
+        g -= factor1 * BlueM;
+        b += factor2 * BlueM;
+        r = CLIP(r);
+        g = CLIP(g);
+        b = CLIP(b);
     }
 
     //high tones
-    float kh;
-    kh = 1.f;
-    float v00 = 0.8f; //max action
-    float aa0, bb0;
-    secondeg_begin (reducac, v00, aa0, bb0);
-//  float hmu=1.5f;
-//  if(mode==1) hmu=1.2f;//for BW old mode
+    constexpr float vHigh = 0.8f; //max action
 
-    if(v > v00) {
-        kh = (-1.f / (1.f - v00)) * v + (1.f) / (1.f - v00);    //High tones
+    if(v > vHigh) {
+        rlh *= (1.f - v) / (1.f - vHigh);    //High tones
     } else {
-        kh = aa0 * v * v + bb0 * v;    //verification = good
+        float aa0, bb0;
+        secondeg_begin (reducac, vHigh, aa0, bb0);
+        rlh *= aa0 * v * v + bb0 * v;    //verification = good
     }
-
-    float RedH = 1.f + (RedHigh - 1.f) * rlh;
-    float GreenH = 1.f + (GreenHigh - 1.f) * rlh;
-    float BlueH = 1.f + (BlueHigh - 1.f) * rlh; //1.2
+    rlh *= 20000.f;
 
     if(RedHigh != 1.f) {
-        RedH = 1.f + (RedHigh - 1.f) * kh * rlh; //1.2
+        float RedH = (RedHigh - 1.f) * rlh; //1.2
 
         if(RedHigh >= 1.f) {
-            r += 20000.f * (RedH - 1.f);
+            r += RedH;
             r = CLIP(r);
         } else {
-            g -= 20000.f * (RedH - 1.f);
-            b -= 20000.f * (RedH - 1.f);
+            g -= RedH;
+            b -= RedH;
+            g = CLIP(g);
+            b = CLIP(b);
         }
-
-        g = CLIP(g);
-        b = CLIP(b);
     }
 
     if(GreenHigh != 1.f) {
-        GreenH = 1.f + (GreenHigh - 1.f) * kh * rlh; //1.2
+        float GreenH = (GreenHigh - 1.f) * rlh; //1.2
 
         if(GreenHigh >= 1.f) {
-            g += 20000.f * (GreenH - 1.f);
+            g += GreenH;
             g = CLIP(g);
         } else {
-            r -= 20000.f * (GreenH - 1.f);
-            b -= 20000.f * (GreenH - 1.f);
+            r -= GreenH;
+            b -= GreenH;
+            r = CLIP(r);
+            b = CLIP(b);
         }
-
-        r = CLIP(r);
-        b = CLIP(b);
     }
 
     if(BlueHigh != 1.f) {
-        BlueH = 1.f + (BlueHigh - 1.f) * kh * rlh; //1.2
+        float BlueH = (BlueHigh - 1.f) * rlh; //1.2
 
         if(BlueHigh >= 1.f) {
-            b += 20000.f * (BlueH - 1.f);
+            b += BlueH;
             b = CLIP(b);
         } else {
-            r -= 20000.f * (BlueH - 1.f);
-            g -= 20000.f * (BlueH - 1.f);
+            r -= BlueH;
+            g -= BlueH;
+            r = CLIP(r);
+            g = CLIP(g);
         }
-
-        r = CLIP(r);
-        g = CLIP(g);
     }
 
     ro = r;
@@ -5199,144 +5101,109 @@ void ImProcFunctions::toningsmh (float r, float g, float b, float &ro, float &go
 * @param balanH [0..1] balance for highlights (same slider than for balanS)
 * @param reducac value of the reduction in the middle of the range for second degree, increase or decrease action
 **/
-void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &go, float &bo, float iplow, float iphigh, float rl, float gl, float bl, float rh, float gh, float bh, float SatLow, float SatHigh, float balanS, float balanH, float reducac, int mode, int preser, float strProtect)
+void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &go, float &bo, float iplow, float iphigh, float rl, float gl, float bl, float rh, float gh, float bh, float SatLow, float SatHigh, float balanS, float balanH, float reducac, int mode, int preser)
 {
     float lumbefore = 0.299f * r + 0.587f * g + 0.114f * b;
-    float h, s, l;
-    Color::rgb2hsl(r, g, b, h, s, l);
-    float v;
-    Color::rgb2hsv(r, g, b, h, s, v);
-    float ksat = 1.f;
-    float ksatlow = 1.f;
-    float s_0 = 0.55f;
-    float s_1 = 0.85f;
-    /*
-        if(mode==0) {//color
-            if(s < s_0) ksat=SQR((1.f/s_0)*s);
-            if(s > s_1) ksat=SQR((1.f/(s_1-1.f))*s - (1.f/(s_1-1.f)));
-        }
-        */
-    float kl = 1.f;
-    float rlo = 1.f;
-    float rlh = 2.2f;
-    rlo *= pow_F(strProtect, 0.4f); //0.5 ==> 0.75  transfered value for more action
-    rlh *= pow_F(strProtect, 0.4f);
-    //low tones
-    //second degree
-    float aa, bb, cc;
-    //fixed value of reducac =0.4;
-    secondeg_end (reducac, iplow, aa, bb, cc);
-    float aab, bbb, ccb;
-
-    secondeg_begin (0.7f, iplow, aab, bbb);
-
-    if(v > iplow) {
-        kl = aa * v * v + bb * v + cc;
-    } else if (mode == 0) {
-        kl = aab * v * v + bbb * v;
-    }
-
-    //rl gl bl
-    float RedL, GreenL, BlueL;
-    float krl = rl / (rl + gl + bl);
-    float kgl = gl / (rl + gl + bl);
-    float kbl = bl / (rl + gl + bl);
+    float v = max(r, g, b) / 65535.f;
 
     if(SatLow > 0.f) {
-        float kmgb;
 
-        if(g < 20000.f || b < 20000.f || r < 20000.f) {
-            kmgb = min(r, g, b);    //I have tested ...0.85 compromise...
-            kl *= pow((kmgb / 20000.f), 0.85f);
+        //low tones
+        //second degree
+        if(v > iplow) {
+            float aa, bb, cc;
+            //fixed value of reducac =0.4;
+            secondeg_end (reducac, iplow, aa, bb, cc);
+            balanS *= 20000.f * (aa * v * v + bb * v + cc);
+        } else if (mode == 0) {
+            float aab, bbb;
+            secondeg_begin (0.7f, iplow, aab, bbb);
+            balanS *= 20000.f * (aab * v * v + bbb * v);
         }
+        //rl gl bl
+        float krl = rl / (rl + gl + bl);
+        float kgl = gl / (rl + gl + bl);
+        float kbl = bl / (rl + gl + bl);
+        float kmgb = min(r, g, b);;
 
-        RedL = 1.f + (SatLow * krl) * kl * ksat * rlo * balanS; //0.4
+        if(kmgb < 20000.f) {
+            balanS *= pow_F((kmgb / 20000.f), 0.85f);     //I have tested ...0.85 compromise...
+        }
 
         if(krl > 0.f) {
-            g -= 20000.f * (RedL - 1.f) * ksatlow;
-            b -= 20000.f * (RedL - 1.f) * ksatlow;
+            float RedL = (SatLow * krl) * balanS; //0.4
+            g -= RedL;
+            b -= RedL;
+            g = CLIP(g);
+            b = CLIP(b);
         }
-
-        g = CLIP(g);
-        b = CLIP(b);
-
-        GreenL = 1.f + (SatLow * kgl) * kl * ksat * rlo * balanS; //0.4
 
         if(kgl > 0.f) {
-            r -= 20000.f * (GreenL - 1.f) * ksatlow;
-            b -= 20000.f * (GreenL - 1.f) * ksatlow;
+            float GreenL = (SatLow * kgl) * balanS; //0.4
+            r -= GreenL;
+            b -= GreenL;
+            r = CLIP(r);
+            b = CLIP(b);
         }
-
-        r = CLIP(r);
-        b = CLIP(b);
-
-        BlueL = 1.f + (SatLow * kbl) * kl * ksat * rlo * balanS; //0.4
 
         if(kbl > 0.f) {
-            r -= 20000.f * (BlueL - 1.f) * ksatlow;
-            g -= 20000.f * (BlueL - 1.f) * ksatlow;
+            float BlueL = (SatLow * kbl) * balanS; //0.4
+            r -= BlueL;
+            g -= BlueL;
+            r = CLIP(r);
+            g = CLIP(g);
         }
-
-        r = CLIP(r);
-        g = CLIP(g);
     }
-
-    //high tones
-    float kh = 1.f;
-    float aa0, bb0;
-    //fixed value of reducac ==0.4;
-    secondeg_begin (reducac, iphigh, aa0, bb0);
-
-    if(v > iphigh) {
-        kh = (-1.f / (1.f - iphigh)) * v + (1.f) / (1.f - iphigh);    //Low light ==> decrease action after iplow
-    } else {
-        kh = aa0 * v * v + bb0 * v;
-    }
-
-    float kmgb;
-
-    if(g > 45535.f || b > 45535.f || r > 45535.f) {
-        kmgb = max(r, g, b);
-        float cora = 1.f / (45535.f - 65535.f);
-        float corb = 1.f - cora * 45535.f;
-        float cor = kmgb * cora + corb;
-        kh *= cor;
-        /* best algo if necessary with non linear response...little differences and more time!
-        float aa=1.f /(pow(45535.f,0.65f) - pow(65535.f,0.65f));
-        float bb=1.f-aa*pow(45535.f,0.65f);
-        float cor=aa*pow(kmbg,0.65f)+bb;
-        kh*=cor;*/
-    }
-
-    float RedH, GreenH, BlueH;
-    float krh = rh / (rh + gh + bh);
-    float kgh = gh / (rh + gh + bh);
-    float kbh = bh / (rh + gh + bh);
 
     if(SatHigh > 0.f) {
-        RedH = 1.f + (SatHigh * krh) * kh * rlh * balanH; //1.2
+        //high tones
+        float aa0, bb0;
+        //fixed value of reducac ==0.4;
+        secondeg_begin (reducac, iphigh, aa0, bb0);
+
+        if(v > iphigh) {
+            balanH *= (1.f / (1.f - iphigh)) * (1.f - v);    //Low light ==> decrease action after iplow
+        } else {
+            balanH *= aa0 * v * v + bb0 * v;
+        }
+        float kmgb = max(r, g, b);
+
+        if(kmgb > 45535.f) {
+            constexpr float cora = 1.f / (45535.f - 65535.f);
+            constexpr float corb = 1.f - cora * 45535.f;
+            float cor = kmgb * cora + corb;
+            balanH *= cor;
+            /* best algo if necessary with non linear response...little differences and more time!
+            float aa=1.f /(pow(45535.f,0.65f) - pow(65535.f,0.65f));
+            float bb=1.f-aa*pow(45535.f,0.65f);
+            float cor=aa*pow(kmbg,0.65f)+bb;
+            kh*=cor;*/
+        }
+        float krh = rh / (rh + gh + bh);
+        float kgh = gh / (rh + gh + bh);
+        float kbh = bh / (rh + gh + bh);
 
         if(krh > 0.f) {
-            r += 20000.f * (RedH - 1.f);
+            float RedH = (SatHigh * krh) * balanH; //1.2
+            r += 20000.f * RedH;
             r = CLIP(r);
         }
 
         g = CLIP(g);
         b = CLIP(b);
 
-        GreenH = 1.f + (SatHigh * kgh) * kh * rlh * balanH; //1.2
-
         if(kgh > 0.f) {
-            g += 20000.f * (GreenH - 1.f);
+            float GreenH = (SatHigh * kgh) * balanH; //1.2
+            g += 20000.f * GreenH;
             g = CLIP(g);
         }
 
         r = CLIP(r);
         b = CLIP(b);
-        BlueH = 1.f + (SatHigh * kbh) * kh * rlh * balanH; //1.2
 
         if(kbh > 0.f) {
-            b += 20000.f * (BlueH - 1.f);
+            float BlueH = (SatHigh * kbh) * balanH; //1.2
+            b += 20000.f * BlueH;
             b = CLIP(b);
         }
 
@@ -5344,23 +5211,16 @@ void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &g
         g = CLIP(g);
     }
 
-    float lumafter = 0.299f * r + 0.587f * g + 0.114f * b;
     float preserv = 1.f;
 
     if(preser == 1) {
+        float lumafter = 0.299f * r + 0.587f * g + 0.114f * b;
         preserv = lumbefore / lumafter;
     }
 
-    //float preserv=lumbefore/lumafter;
-    ro = r;
-    go = g;
-    bo = b;
-    ro *= preserv;
-    go *= preserv;
-    bo *= preserv;
-    ro = CLIP(ro);
-    go = CLIP(go);
-    bo = CLIP(bo);
+    ro = CLIP(r * preserv);
+    go = CLIP(g * preserv);
+    bo = CLIP(b * preserv);
 }
 
 /**
@@ -5375,64 +5235,48 @@ void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &g
 * @param iplow iphigh [0..1] luminance
 * @param wp wip 3x3 matrix and inverse conversion rgb XYZ
 **/
-void ImProcFunctions::labtoning (float r, float g, float b, float &ro, float &go, float &bo, int algm, int metchrom, int twoc, float satLimit, float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, LUTf & clToningcurve, LUTf & cl2Toningcurve, float iplow, float iphigh, double wp[3][3], double wip[3][3]  )
+void ImProcFunctions::labtoning (float r, float g, float b, float &ro, float &go, float &bo, int algm, int metchrom, int twoc, float satLimit, float satLimitOpacity, const ColorGradientCurve &ctColorCurve, const OpacityCurve &ctOpacityCurve, LUTf &clToningcurve, LUTf &cl2Toningcurve, float iplow, float iphigh, const float wp[3][3], const float wip[3][3]  )
 {
-    float realL;
-    float h, s, l;
-    Color::rgb2hsl(r, g, b, h, s, l);
+    float l, s;
+    Color::rgb2sl(r, g, b, s, l);
     float x2, y2, z2;
     float xl, yl, zl;
 
     if(twoc != 1) {
-        l = (Color::gammatab_13_2[     l * 65535.f]) / 65535.f; //to compensate L from Lab
-        iphigh = (Color::gammatab_13_2[iphigh * 65535.f]) / 65535.f;
-        iplow  = (Color::gammatab_13_2[ iplow * 65535.f]) / 65535.f;
-    }
-
-    if(twoc == 1) {
-        ctColorCurve.getVal(l, x2, y2, z2);
-    } else {
+        l = Color::gammatab_13_2[l * 65535.f] / 65535.f; //to compensate L from Lab
+        iphigh = Color::gammatab_13_2[iphigh * 65535.f] / 65535.f;
+        iplow  = Color::gammatab_13_2[ iplow * 65535.f] / 65535.f;
         ctColorCurve.getVal(iphigh, x2, y2, z2);
         ctColorCurve.getVal(iplow, xl, yl, zl);
+    } else {
+        ctColorCurve.getVal(l, x2, y2, z2);
     }
-
-    realL = l;
-
-
-    //float opacity = ctOpacityCurve.lutOpacityCurve[l*500.f];
-    //if(params->blackwhite.enabled){satLimit=80.f;satLimitOpacity=30.f;}//force BW
 
     // get the opacity and tweak it to preserve saturated colors
-    //float l_ = Color::gamma_srgb(l*65535.f)/65535.f;
-    float opacity;
-    opacity = (1.f - min<float>(s / satLimit, 1.f) * (1.f - satLimitOpacity)) * ctOpacityCurve.lutOpacityCurve[l * 500.f];
-    float opacity2 = (1.f - min<float>(s / satLimit, 1.f) * (1.f - satLimitOpacity));
-
-    //float ro, go, bo;
-    bool chr = true;
-    bool lum = false;
-    float lm = l;
-    float chromat, luma;
-
-    if (clToningcurve[lm * 65535.f] / (lm * 65535.f) < 1.f) {
-        chromat = (clToningcurve[(lm) * 65535.f] / (lm * 65535.f)) - 1.f;   //special effect
-    } else {
-        chromat = 1.f - SQR(SQR((lm * 65535.f) / clToningcurve[(lm) * 65535.f]));   //apply C=f(L) acts  on 'a' and 'b'
-    }
-
-    if (cl2Toningcurve[lm * 65535.f] / (lm * 65535.f) < 1.f) {
-        luma = (cl2Toningcurve[(lm) * 65535.f] / (lm * 65535.f)) - 1.f;   //special effect
-    } else {
-        luma = 1.f - SQR(SQR((lm * 65535.f) / (cl2Toningcurve[(lm) * 65535.f])));   //apply C2=f(L) acts only on 'b'
-    }
-
-    int todo = 1;
-
+    float opacity = (1.f - min(s / satLimit, 1.f) * (1.f - satLimitOpacity));
     if (algm == 1) {
-        Color::interpolateRGBColor(realL, iplow, iphigh, algm, opacity, twoc, metchrom, chr, lum, chromat, luma, r, g, b, xl, yl, zl, x2, y2, z2, todo, wp, wip, ro, go, bo);
-    } else {
-        Color::interpolateRGBColor(realL, iplow, iphigh, algm, opacity2, twoc, metchrom, chr, lum, chromat, luma, r, g, b, xl, yl, zl, x2, y2, z2, todo, wp, wip, ro, go, bo);
+        opacity *= ctOpacityCurve.lutOpacityCurve[l * 500.f];
     }
+    
+    float chromat, luma;
+    if(metchrom > 0) {
+        float lm = l * 65535.f;
+        float curvVal = clToningcurve[lm];
+        if (curvVal < lm) {
+            chromat = curvVal / lm - 1.f;   //special effect
+        } else {
+            chromat = 1.f - SQR(SQR(lm / curvVal));   //apply C=f(L) acts  on 'a' and 'b'
+        }
+
+        float curv2Val = cl2Toningcurve[lm];
+        if (curv2Val < lm) {
+            luma = curv2Val / lm - 1.f;   //special effect
+        } else {
+            luma = 1.f - SQR(SQR(lm / curv2Val));   //apply C2=f(L) acts only on 'b'
+        }
+    }
+
+    Color::interpolateRGBColor(l, iplow, iphigh, algm, opacity, twoc, metchrom, chromat, luma, r, g, b, xl, yl, zl, x2, y2, z2, wp, wip, ro, go, bo);
 }
 
 

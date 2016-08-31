@@ -1310,129 +1310,76 @@ void Color::interpolateRGBColor (const float balance, const float r1, const floa
 
 
 void Color::interpolateRGBColor (float realL, float iplow, float iphigh, int algm, const float balance, int twoc, int metchrom,
-                                 bool chr, bool lum, float chromat, float luma, const float r1, const float g1, const float b1,
+                                 float chromat, float luma, const float r1, const float g1, const float b1,
                                  const float xl, const float yl, const float zl, const float x2, const float y2, const float z2,
-                                 int toDo, const double xyz_rgb[3][3], const double rgb_xyz[3][3], float &ro, float &go, float &bo)
+                                 const float xyz_rgb[3][3], const float rgb_xyz[3][3], float &ro, float &go, float &bo)
 {
-    float X1, Y1, Z1, X2, Y2, Z2, X, Y, Z, XL, YL, ZL;
-    float L1, L2, LL, a_1, b_1, a_2, b_2, a, b, a_L, b_L;
-    float c1, c2, h1, h2, cL, hL;
-    float RR, GG, BB;
-    float Lr;
-    float slc = 0.f;
-    float hh = 0.f;
-    float ll = 0.f;
-    float sh = 0.f;
-    bool LCH = false;
+    float X1, Y1, Z1, X, Y, Z;
+    float L1, L2, LL, a_1, b_1, a_2, b_2, a_L, b_L;
 
-    float ha, hb, hc, ba;
-    float c_1, h_1;
     // converting color 1 to Lab  (image)
     Color::rgbxyz(r1, g1, b1, X1, Y1, Z1, xyz_rgb);
 
     if(algm == 1) {//use H interpolate
         Color::XYZ2Lab(X1, Y1, Z1, L1, a_1, b_1);
-        //Color::Lab2Lch(a_1, b_1, c_1, h_1) ;
+        // converting color 2 to lab (universal or high)
+        Color::XYZ2Lab(x2, y2, z2, L2, a_2, b_2);
     }
 
-    // converting color l lab(low) first color
-    if(twoc == 0) { // 2 colours
-        //Color::rgbxyz(rl, gl, bl, XL, YL, ZL, xyz_rgb);
-        XL = xl;
-        YL = yl;
-        ZL = zl;
-
-        if(algm <= 1) {//use H interpolate
-            Color::XYZ2Lab(XL, YL, ZL, LL, a_L, b_L);
-        }
-    }
-
-    // converting color 2 to lab (universal or high)
-    X2 = x2;
-    Y2 = y2;
-    Z2 = z2;
-    float c_2, h_2;
-
-    if(algm == 1 ) {
-        Color::XYZ2Lab(X2, Y2, Z2, L2, a_2, b_2);
-        //Color::Lab2Lch(a_2, b_2, c_2, h_2) ;
-    }
-
-    float bal, balH, cal, calH, calm;
-    bal = balH = balance;
-    cal = calH = calm = 1.f - chromat;
-    float med = 1.f;
-    float medH = 0.f;
-    float medL = (iphigh + iplow) / 2.f;
-
-    float calan;
-    calan = chromat;
-
-    float calby;
-    calby = luma;
-
-    if(twoc == 0) { // 2 colours
-        calan = chromat;
-
-        //calculate new balance in function of (arbitrary) "med".. I hope no error !!
-        if      (realL > iplow && realL <= med) {
-            bal = realL * balance / (iplow - med) - med * balance / (iplow - med);
-        } else if (realL <= iplow) {
-            bal = realL * balance / iplow;
-        }
-
-        if      (realL > medH && realL <= iphigh) {
-            balH = realL * balance / (iphigh - medH) - medH * balance / (iphigh - medH);
-        } else if (realL > iphigh) {
-            balH = realL * balance * (iphigh - 1.f) - balance * (iphigh - 1.f);
-        }
-
-        //calculate new balance chroma
-        if      (realL > iplow && realL <= med) {
-            cal = realL * calan / (iplow - med) - med * calan / (iplow - med);
-        } else if (realL <= iplow) {
-            cal = realL * calan / iplow;
-        }
-
-        if      (realL > medH && realL <= iphigh) {
-            calH = realL * calan / (iphigh - medH) - medH * calan / (iphigh - medH);
-        } else if (realL > iphigh) {
-            calH = realL * calan;    //*(iphigh-1.f) - calan*(iphigh-1.f);//it is better without transition in highlight
-        }
-    }
-
-    float hX = 0.f;
-    float hLL, hH, ccL, ccH, llH, aaH, bbH;
+//    // converting color l lab(low) first color
+//    if(twoc == 0) { // 2 colours
+//        if(algm <= 1) {//use H interpolate
+//            Color::XYZ2Lab(xl, yl, zl, LL, a_L, b_L);
+//        }
+//    }
 
     if(algm <= 1) {
-        if(twoc == 0  && metchrom == 3) { // 2 colours  only with special "ab"
+        if(twoc == 0  && metchrom == 3) { // 2 colours only with special "ab"
             if(algm == 1) {
-                aaH = a_1 + (a_2 - a_1) * calH;
-                bbH = b_1 + (b_2 - b_1) * calH; //pass to line after
+                Color::XYZ2Lab(xl, yl, zl, LL, a_L, b_L);
+                float med = 1.f;
+                float medH = 0.f;
+                float cal, calH;
+                //calculate new balance chroma
+                if      (realL > iplow && realL <= med) {
+                    cal = realL * chromat / (iplow - med) - med * chromat / (iplow - med);
+                } else if (realL <= iplow) {
+                    cal = realL * chromat / iplow;
+                }
+
+                if      (realL > medH && realL <= iphigh) {
+                    calH = realL * chromat / (iphigh - medH) - medH * chromat / (iphigh - medH);
+                } else if (realL > iphigh) {
+                    calH = realL * chromat;    //*(iphigh-1.f) - chromat*(iphigh-1.f);//it is better without transition in highlight
+                }
+                float aaH = a_1 + (a_2 - a_1) * calH;
+                float bbH = b_1 + (b_2 - b_1) * calH; //pass to line after
                 a_1 = aaH + (a_L - aaH) * cal * balance;
                 b_1 = bbH + (b_L - bbH) * cal * balance;
             }
         } else if(twoc == 1) {
+//            float factora = balance * (metchrom == 0 ? 1.f : chromat);
+//            float factorb = balance * (metchrom == 0 ? 1.f : (metchrom == 1 ? chromat : luma));
+//            a_1 = intp(factora, a_2, a_1);
+//            b_1 = intp(factorb, b_2, b_1);
+            
             if(metchrom == 0) {
-                a_1 = a_1 + (a_2 - a_1) * balance;
-                b_1 = b_1 + (b_2 - b_1) * balance;
+                a_1 = intp(balance, a_2, a_1);
+                b_1 = intp(balance, b_2, b_1);
             } else if(metchrom == 1) {
-                a_1 = a_1 + (a_2 - a_1) * calan * balance;
-                b_1 = b_1 + (b_2 - b_1) * calan * balance;
+                a_1 = intp(chromat * balance, a_2, a_1);
+                b_1 = intp(chromat * balance, b_2, b_1);
             } else if(metchrom == 2) {
-                a_1 = a_1 + (a_2 - a_1) * calan * balance;
-                b_1 = b_1 + (b_2 - b_1) * calby * balance;
+                a_1 = intp(chromat * balance, a_2, a_1);
+                b_1 = intp(luma * balance, b_2, b_1);
             }
         }
-    } else {
-        h1 = hX;
     }
 
     Color::Lab2XYZ(L1, a_1, b_1, X, Y, Z);
 
     Color::xyz2rgb(X, Y, Z, ro, go, bo, rgb_xyz);// ro go bo in gamut
 }
-
 void Color::calcGamma (double pwr, double ts, int mode, int imax, double &gamma0, double &gamma1, double &gamma2, double &gamma3, double &gamma4, double &gamma5)
 {
     //from Dcraw (D.Coffin)
