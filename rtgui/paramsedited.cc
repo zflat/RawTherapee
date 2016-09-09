@@ -312,10 +312,13 @@ void ParamsEdited::set (bool v)
     locallab.Smethod = v;
     locallab.retinexMethod = v;
     locallab.invers = v;
+    locallab.activsp = v;
     locallab.inversrad = v;
     locallab.inversret = v;
     locallab.str = v;
     locallab.neigh = v;
+    locallab.nbspot = v;
+    locallab.anbspot = v;
     locallab.vart = v;
     locallab.ccwTgaincurve = v;
     pcvignette.enabled = v;
@@ -817,6 +820,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
         locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
+        locallab.activsp = locallab.activsp && p.locallab.activsp == other.locallab.activsp;
         locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
         locallab.inversret = locallab.inversret && p.locallab.inversret == other.locallab.inversret;
         locallab.degree = locallab.degree && p.locallab.degree == other.locallab.degree;
@@ -839,6 +843,8 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.chrrt = locallab.chrrt && p.locallab.chrrt == other.locallab.chrrt;
         locallab.str = locallab.str && p.locallab.str == other.locallab.str;
         locallab.neigh = locallab.neigh && p.locallab.neigh == other.locallab.neigh;
+        locallab.nbspot = locallab.nbspot && p.locallab.nbspot == other.locallab.nbspot;
+        locallab.anbspot = locallab.anbspot && p.locallab.anbspot == other.locallab.anbspot;
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
         pcvignette.enabled = pcvignette.enabled && p.pcvignette.enabled == other.pcvignette.enabled;
@@ -2058,6 +2064,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.invers    = mods.locallab.invers;
     }
 
+    if (locallab.activsp) {
+        toEdit.locallab.activsp    = mods.locallab.activsp;
+    }
+
     if (locallab.inversrad) {
         toEdit.locallab.inversrad     = mods.locallab.inversrad;
     }
@@ -2144,6 +2154,14 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.neigh) {
         toEdit.locallab.neigh   = mods.locallab.neigh;
+    }
+
+    if (locallab.nbspot) {
+        toEdit.locallab.nbspot   = mods.locallab.nbspot;
+    }
+
+    if (locallab.anbspot) {
+        toEdit.locallab.anbspot   = mods.locallab.anbspot;
     }
 
     if (locallab.vart) {

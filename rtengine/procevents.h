@@ -495,7 +495,11 @@ enum ProcEvent {
     Evlocallabchrrt = 465,
     Evlocallabinversret = 466,
     Evlocallabsensih = 467,
+    Evlocallabnbspot = 468,
+    Evlocallabactivsp = 469,
+    Evlocallabanbspot = 470,
     NUMOFEVENTS
+
 
 };
 }

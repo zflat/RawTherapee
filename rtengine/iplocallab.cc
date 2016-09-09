@@ -52,7 +52,7 @@ struct local_params {
     float str;
 };
 
-static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, struct local_params& lp)
+static void calcLocalParams(int **dataspot, int oW, int oH, const LocallabParams& locallab, struct local_params& lp)
 {
     int w = oW;
     int h = oH;
@@ -63,6 +63,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     double local_center_x = locallab.centerX / 2000.0 + 0.5;
     double local_center_y = locallab.centerY / 2000.0 + 0.5;
     bool inverse = locallab.invers;
+
     int local_chroma = locallab.chroma;
     int local_sensi = locallab.sensi;
     int local_sensih = locallab.sensih;
@@ -110,6 +111,7 @@ inline static float calcLocalFactor(const float lox, const float loy, const floa
     return 0.5f * (1.f + xcosf(degrad * ap + bp)); //trigo cos transition
 
 }
+
 
 static void calcTransition (const float lox, const float loy, const float ach, const local_params& lp, int &zone, float &localFactor)
 {
@@ -248,36 +250,37 @@ void ImProcFunctions::BlurNoise_Local(const struct local_params& lp, LabImage* o
             calcTransition(lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => no effect, keep original values
-                transformed->L[y][x] = original->L[y][x];
-                transformed->a[y][x] = original->a[y][x];
-                transformed->b[y][x] = original->b[y][x];
-                break;
-            }
+                case 0: { // outside selection and outside transition zone => no effect, keep original values
+                    transformed->L[y][x] = original->L[y][x];
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                    break;
+                }
 
-            case 1: { // inside transition zone
-                float factorx = localFactor;
-                float difL = tmp1->L[y][x] - original->L[y][x];
-                float difa = tmp1->a[y][x] - original->a[y][x];
-                float difb = tmp1->b[y][x] - original->b[y][x];
-                difL *= factorx;
-                difa *= factorx;
-                difb *= factorx;
-                transformed->L[y][x] = original->L[y][x] + difL;
-                transformed->a[y][x] = original->a[y][x] + difa;
-                transformed->b[y][x] = original->b[y][x] + difb;
-                break;
-            }
+                case 1: { // inside transition zone
+                    float factorx = localFactor;
+                    float difL = tmp1->L[y][x] - original->L[y][x];
+                    float difa = tmp1->a[y][x] - original->a[y][x];
+                    float difb = tmp1->b[y][x] - original->b[y][x];
+                    difL *= factorx;
+                    difa *= factorx;
+                    difb *= factorx;
+                    transformed->L[y][x] = original->L[y][x] + difL;
+                    transformed->a[y][x] = original->a[y][x] + difa;
+                    transformed->b[y][x] = original->b[y][x] + difb;
+                    break;
+                }
 
-            case 2: { // inside selection => full effect, no transition
-                transformed->L[y][x] = tmp1->L[y][x];
-                transformed->a[y][x] = tmp1->a[y][x];
-                transformed->b[y][x] = tmp1->b[y][x];
-            }
+                case 2: { // inside selection => full effect, no transition
+                    transformed->L[y][x] = tmp1->L[y][x];
+                    transformed->a[y][x] = tmp1->a[y][x];
+                    transformed->b[y][x] = tmp1->b[y][x];
+                }
             }
         }
     }
 }
+
 void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
 {
     BENCHFUN
@@ -297,84 +300,86 @@ void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage*
             calcTransition (lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => full effect, no transition
-                if(chro == 0) {
-                    transformed->L[y][x] = tmp1->L[y][x];
+                case 0: { // outside selection and outside transition zone => full effect, no transition
+                    if(chro == 0) {
+                        transformed->L[y][x] = tmp1->L[y][x];
+                    }
+
+                    if(chro == 1) {
+
+                        transformed->a[y][x] = tmp1->a[y][x];
+                        transformed->b[y][x] = tmp1->b[y][x];
+                    }
+
+                    break;
                 }
 
-                if(chro == 1) {
+                case 1: { // inside transition zone
+                    float factorx = 1.f - localFactor;
 
-                    transformed->a[y][x] = tmp1->a[y][x];
-                    transformed->b[y][x] = tmp1->b[y][x];
+                    if(chro == 0) {
+                        float difL = tmp1->L[y][x] - original->L[y][x];
+                        difL *= factorx;
+                        transformed->L[y][x] = original->L[y][x] + difL;
+                    }
+
+                    if(chro == 1) {
+                        float difa = tmp1->a[y][x] - original->a[y][x];
+                        float difb = tmp1->b[y][x] - original->b[y][x];
+
+                        difa *= factorx;
+                        difb *= factorx;
+
+                        transformed->a[y][x] = original->a[y][x] + difa;
+                        transformed->b[y][x] = original->b[y][x] + difb;
+                    }
+
+                    break;
                 }
 
-                break;
-            }
+                case 2: { // inside selection => no effect, keep original values
+                    if(chro == 0) {
+                        transformed->L[y][x] = original->L[y][x];
+                    }
 
-            case 1: { // inside transition zone
-                float factorx = 1.f - localFactor;
-
-                if(chro == 0) {
-                    float difL = tmp1->L[y][x] - original->L[y][x];
-                    difL *= factorx;
-                    transformed->L[y][x] = original->L[y][x] + difL;
+                    if(chro == 1) {
+                        transformed->a[y][x] = original->a[y][x];
+                        transformed->b[y][x] = original->b[y][x];
+                    }
                 }
-
-                if(chro == 1) {
-                    float difa = tmp1->a[y][x] - original->a[y][x];
-                    float difb = tmp1->b[y][x] - original->b[y][x];
-
-                    difa *= factorx;
-                    difb *= factorx;
-
-                    transformed->a[y][x] = original->a[y][x] + difa;
-                    transformed->b[y][x] = original->b[y][x] + difb;
-                }
-
-                break;
-            }
-
-            case 2: { // inside selection => no effect, keep original values
-                if(chro == 0) {
-                    transformed->L[y][x] = original->L[y][x];
-                }
-
-                if(chro == 1) {
-                    transformed->a[y][x] = original->a[y][x];
-                    transformed->b[y][x] = original->b[y][x];
-                }
-            }
             }
         }
     }
 }
 
 
+
 void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
 {
+
 //local retinex
     BENCHFUN
 
     const float ach = (float)lp.trans / 100.f;
-    
-        //chroma
-        constexpr float amplchsens = 2.5f;
-        constexpr float achsens = (amplchsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
-        constexpr float bchsens = 1.f - 20.f * achsens;
-        const float multchro = lp.sensh * achsens + bchsens;
 
-        //luma
-        constexpr float ampllumsens = 2.f;
-        constexpr float alumsens = (ampllumsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
-        constexpr float blumsens = 1.f - 20.f * alumsens;
-        const float multlum = lp.sensh * alumsens + blumsens;
+    //chroma
+    constexpr float amplchsens = 2.5f;
+    constexpr float achsens = (amplchsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
+    constexpr float bchsens = 1.f - 20.f * achsens;
+    const float multchro = lp.sensh * achsens + bchsens;
 
-        //skin
-        constexpr float amplchsensskin = 1.6f;
-        constexpr float achsensskin = (amplchsensskin - 1.f) / (100.f - 20.f); //20. default locallab.sensih
-        constexpr float bchsensskin = 1.f - 20.f * achsensskin;
-        const float multchroskin = lp.sensh * achsensskin + bchsensskin;
-   
+    //luma
+    constexpr float ampllumsens = 2.f;
+    constexpr float alumsens = (ampllumsens - 1.f) / (100.f - 20.f); //20. default locallab.sensih
+    constexpr float blumsens = 1.f - 20.f * alumsens;
+    const float multlum = lp.sensh * alumsens + blumsens;
+
+    //skin
+    constexpr float amplchsensskin = 1.6f;
+    constexpr float achsensskin = (amplchsensskin - 1.f) / (100.f - 20.f); //20. default locallab.sensih
+    constexpr float bchsensskin = 1.f - 20.f * achsensskin;
+    const float multchroskin = lp.sensh * achsensskin + bchsensskin;
+
     //transition = difficult to avoid artifact with scope on flat area (sky...)
     float strn = lp.str / 1.f;  // we can chnage 1.f by 2 or...to chnage effect
 
@@ -425,7 +430,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 float rhue = xatan2f(original->b[y][x], original->a[y][x]);
                 float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
-            //    float rL = original->L[y][x] / 327.68f;
+                //    float rL = original->L[y][x] / 327.68f;
 
                 float realstr = 1.f;
                 float realstrch = 1.f;
@@ -477,11 +482,11 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                     kzon = true;
                 }
 
-            //    float kLinf = rL / (100.f);
-            //    float kLsup = kLinf;
+                //    float kLinf = rL / (100.f);
+                //    float kLsup = kLinf;
 
-            //    float kdiff = 0.f;
-			// I add these functions...perhaps not good
+                //    float kdiff = 0.f;
+                // I add these functions...perhaps not good
                 if(kzon) {
                     if(lp.sensh < 60.f) { //arbitrary value
                         if(hueref < -1.1f && hueref > -2.8f) {// detect blue sky
@@ -518,51 +523,51 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 calcTransition (lox, loy, ach, lp, zone, localFactor);
 
                 switch(zone) {
-                case 0: { // outside selection and outside transition zone => no effect, keep original values
-                    if(chro == 0) {
-                        transformed->L[y][x] = original->L[y][x];
+                    case 0: { // outside selection and outside transition zone => no effect, keep original values
+                        if(chro == 0) {
+                            transformed->L[y][x] = original->L[y][x];
+                        }
+
+                        if(chro == 1) {
+                            transformed->a[y][x] = original->a[y][x];
+                            transformed->b[y][x] = original->b[y][x];
+                        }
+
+                        break;
                     }
 
-                    if(chro == 1) {
-                        transformed->a[y][x] = original->a[y][x];
-                        transformed->b[y][x] = original->b[y][x];
+                    case 1: { // inside transition zone
+                        float factorx = localFactor;
+
+                        if(chro == 0) {
+                            float difL = (tmp1->L[y][x]) - original->L[y][x];
+                            difL *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            transformed->L[y][x] = original->L[y][x] + difL;
+                        }
+
+                        if(chro == 1) {
+                            float difa = tmp1->a[y][x] - original->a[y][x];
+                            float difb = tmp1->b[y][x] - original->b[y][x];
+                            difa *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            difb *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            transformed->a[y][x] = original->a[y][x] + difa;
+                            transformed->b[y][x] = original->b[y][x] + difb;
+                        }
+
+                        break;
+
                     }
 
-                    break;
-                }
+                    case 2: { // inside selection => full effect, no transition
+                        if(chro == 0) {
+                            transformed->L[y][x] = tmp1->L[y][x];
+                        }
 
-                case 1: { // inside transition zone
-                    float factorx = localFactor;
-
-                    if(chro == 0) {
-                        float difL = (tmp1->L[y][x]) - original->L[y][x];
-                        difL *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
-                        transformed->L[y][x] = original->L[y][x] + difL;
+                        if(chro == 1) {
+                            transformed->a[y][x] = tmp1->a[y][x];
+                            transformed->b[y][x] = tmp1->b[y][x];
+                        }
                     }
-
-                    if(chro == 1) {
-                        float difa = tmp1->a[y][x] - original->a[y][x];
-                        float difb = tmp1->b[y][x] - original->b[y][x];
-                        difa *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
-                        difb *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
-                        transformed->a[y][x] = original->a[y][x] + difa;
-                        transformed->b[y][x] = original->b[y][x] + difb;
-                    }
-
-                    break;
-
-                }
-
-                case 2: { // inside selection => full effect, no transition
-                    if(chro == 0) {
-                        transformed->L[y][x] = tmp1->L[y][x];
-                    }
-
-                    if(chro == 1) {
-                        transformed->a[y][x] = tmp1->a[y][x];
-                        transformed->b[y][x] = tmp1->b[y][x];
-                    }
-                }
                 }
             }
         }
@@ -590,34 +595,34 @@ void ImProcFunctions::InverseBlurNoise_Local(const struct local_params& lp, LabI
             calcTransition (lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => full effect, no transition
-                transformed->L[y][x] = tmp1->L[y][x];
-                transformed->a[y][x] = tmp1->a[y][x];
-                transformed->b[y][x] = tmp1->b[y][x];
-                break;
-            }
+                case 0: { // outside selection and outside transition zone => full effect, no transition
+                    transformed->L[y][x] = tmp1->L[y][x];
+                    transformed->a[y][x] = tmp1->a[y][x];
+                    transformed->b[y][x] = tmp1->b[y][x];
+                    break;
+                }
 
-            case 1: { // inside transition zone
-                float difL = tmp1->L[y][x] - original->L[y][x];
-                float difa = tmp1->a[y][x] - original->a[y][x];
-                float difb = tmp1->b[y][x] - original->b[y][x];
+                case 1: { // inside transition zone
+                    float difL = tmp1->L[y][x] - original->L[y][x];
+                    float difa = tmp1->a[y][x] - original->a[y][x];
+                    float difb = tmp1->b[y][x] - original->b[y][x];
 
-                float factorx = 1.f - localFactor;
-                difL *= factorx;
-                difa *= factorx;
-                difb *= factorx;
+                    float factorx = 1.f - localFactor;
+                    difL *= factorx;
+                    difa *= factorx;
+                    difb *= factorx;
 
-                transformed->L[y][x] = original->L[y][x] + difL;
-                transformed->a[y][x] = original->a[y][x] + difa;
-                transformed->b[y][x] = original->b[y][x] + difb;
-                break;
-            }
+                    transformed->L[y][x] = original->L[y][x] + difL;
+                    transformed->a[y][x] = original->a[y][x] + difa;
+                    transformed->b[y][x] = original->b[y][x] + difb;
+                    break;
+                }
 
-            case 2: { // inside selection => no effect, keep original values
-                transformed->L[y][x] = original->L[y][x];
-                transformed->a[y][x] = original->a[y][x];
-                transformed->b[y][x] = original->b[y][x];
-            }
+                case 2: { // inside selection => no effect, keep original values
+                    transformed->L[y][x] = original->L[y][x];
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                }
             }
         }
     }
@@ -644,7 +649,6 @@ void ImProcFunctions::Contrast_Local(float pm, struct local_contra &lco, float l
     BENCHFUN
 // contrast - perhaps for 4 areas   if need
 // I tried shmap adaptaed to Lab, but no real gain and artifacts
-
     const float localtype = lumaref; // always spot area
     const float ach = (float)lp.trans / 100.f;
     float reducac;
@@ -688,75 +692,75 @@ void ImProcFunctions::Contrast_Local(float pm, struct local_contra &lco, float l
             calcTransition (lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => no effect, keep original values
-                transformed->L[y][x] = original->L[y][x];
-                transformed->a[y][x] = original->a[y][x];
-                transformed->b[y][x] = original->b[y][x];
-                break;
-            }
-
-            case 1: { // inside transition zone
-                if(original->L[y][x] < 32768.f) {
-                    float factorx = localFactor;
-                    float prov100 = original->L[y][x] / 32768.f;
-                    float prov = prov100 * 100.f;
-
-                    if(prov > localtype) {
-                        if(prov >= localtype && prov < 50.f + localtype / 2.f) {
-                            float core = (lco.alsup2 * prov + lco.blsup2) ;
-                            core *= factorx;
-                            transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core));
-                        } else {
-                            float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
-
-                            core *= factorx;
-                            transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core));
-                        }
-                    } else  { //inferior
-                        if(2.f * prov > localtype && prov < localtype)  {
-                            float core = (lco.alsup * prov + lco.blsup) ;
-                            core *= factorx;
-                            transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
-                        } else if(2.f * prov <= localtype) {
-                            float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
-
-                            core *= factorx;
-                            transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
-                        }
-                    }
-                } else {
+                case 0: { // outside selection and outside transition zone => no effect, keep original values
                     transformed->L[y][x] = original->L[y][x];
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                    break;
                 }
 
-                break;
-            }
+                case 1: { // inside transition zone
+                    if(original->L[y][x] < 32768.f) {
+                        float factorx = localFactor;
+                        float prov100 = original->L[y][x] / 32768.f;
+                        float prov = prov100 * 100.f;
 
-            case 2: { // inside selection => full effect, no transition
-                if(original->L[y][x] < 32768.f) {
-                    float prov100 = original->L[y][x] / 32768.f;
-                    float prov = prov100 * 100.f;
+                        if(prov > localtype) {
+                            if(prov >= localtype && prov < 50.f + localtype / 2.f) {
+                                float core = (lco.alsup2 * prov + lco.blsup2) ;
+                                core *= factorx;
+                                transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core));
+                            } else {
+                                float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
 
-                    if(prov > localtype) {
-                        if(prov >= localtype && prov < 50.f + localtype / 2.f) {
-                            float core = (lco.alsup2 * prov + lco.blsup2) ;
-                            transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core);
-                        } else {
-                            float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
-                            transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core);
+                                core *= factorx;
+                                transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core));
+                            }
+                        } else  { //inferior
+                            if(2.f * prov > localtype && prov < localtype)  {
+                                float core = (lco.alsup * prov + lco.blsup) ;
+                                core *= factorx;
+                                transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
+                            } else if(2.f * prov <= localtype) {
+                                float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
+
+                                core *= factorx;
+                                transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
+                            }
                         }
-                    } else  { //inferior
-                        if(2.f * prov > localtype && prov < localtype)  {
-                            float core = (lco.alsup * prov + lco.blsup) ;
-                            transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
-                        } else if(2.f * prov <= localtype) {
-                            float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
-                            transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
-                        }
+                    } else {
+                        transformed->L[y][x] = original->L[y][x];
                     }
-                } else {
-                    transformed->L[y][x] = original->L[y][x];
+
+                    break;
                 }
-            }
+
+                case 2: { // inside selection => full effect, no transition
+                    if(original->L[y][x] < 32768.f) {
+                        float prov100 = original->L[y][x] / 32768.f;
+                        float prov = prov100 * 100.f;
+
+                        if(prov > localtype) {
+                            if(prov >= localtype && prov < 50.f + localtype / 2.f) {
+                                float core = (lco.alsup2 * prov + lco.blsup2) ;
+                                transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core);
+                            } else {
+                                float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
+                                transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core);
+                            }
+                        } else  { //inferior
+                            if(2.f * prov > localtype && prov < localtype)  {
+                                float core = (lco.alsup * prov + lco.blsup) ;
+                                transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
+                            } else if(2.f * prov <= localtype) {
+                                float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
+                                transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core);
+                            }
+                        }
+                    } else {
+                        transformed->L[y][x] = original->L[y][x];
+                    }
+                }
             }
         }
     }
@@ -781,59 +785,85 @@ void ImProcFunctions::InverseContrast_Local(float ave, const local_contra& lco, 
             calcTransition (lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => full effect, no transition
-                if(original->L[y][x] < 32768.f) {
-                    float prov = original->L[y][x];
+                case 0: { // outside selection and outside transition zone => full effect, no transition
+                    if(original->L[y][x] < 32768.f) {
+                        float prov = original->L[y][x];
 
-                    if(original->L[y][x] > ave) {
-                        float kh = lco.ah * (original->L[y][x] / 327.68f) + lco.bh;
-                        original->L[y][x] = ave + kh * (original->L[y][x] - ave);
-                    } else  {
-                        float kl = lco.al * (original->L[y][x] / 327.68f) + 1.f;
-                        original->L[y][x] = ave - kl * (ave - original->L[y][x]);
+                        if(original->L[y][x] > ave) {
+                            float kh = lco.ah * (original->L[y][x] / 327.68f) + lco.bh;
+                            original->L[y][x] = ave + kh * (original->L[y][x] - ave);
+                        } else  {
+                            float kl = lco.al * (original->L[y][x] / 327.68f) + 1.f;
+                            original->L[y][x] = ave - kl * (ave - original->L[y][x]);
+                        }
+
+                        float diflc = original->L[y][x] - prov;
+                        transformed->L[y][x] =  prov + diflc;
+                    } else {
+                        transformed->L[y][x] = original->L[y][x];
                     }
 
-                    float diflc = original->L[y][x] - prov;
-                    transformed->L[y][x] =  prov + diflc;
-                } else {
-                    transformed->L[y][x] = original->L[y][x];
+                    break;
                 }
 
-                break;
-            }
+                case 1: { // inside transition zone
+                    if(original->L[y][x] < 32768.f) {
+                        float factorx = localFactor;
+                        factorx = 1.f - factorx;
+                        float prov = original->L[y][x];
 
-            case 1: { // inside transition zone
-                if(original->L[y][x] < 32768.f) {
-                    float factorx = localFactor;
-                    factorx = 1.f - factorx;
-                    float prov = original->L[y][x];
+                        if(original->L[y][x] > ave) {
+                            float kh = lco.ah * (original->L[y][x] / 327.68f) + lco.bh;
+                            original->L[y][x] = ave + kh * (original->L[y][x] - ave);
+                        } else  {
+                            float kl = lco.al * (original->L[y][x] / 327.68f) + 1.f;
+                            original->L[y][x] = ave - kl * (ave - original->L[y][x]);
+                        }
 
-                    if(original->L[y][x] > ave) {
-                        float kh = lco.ah * (original->L[y][x] / 327.68f) + lco.bh;
-                        original->L[y][x] = ave + kh * (original->L[y][x] - ave);
-                    } else  {
-                        float kl = lco.al * (original->L[y][x] / 327.68f) + 1.f;
-                        original->L[y][x] = ave - kl * (ave - original->L[y][x]);
+                        float diflc = original->L[y][x] - prov;
+                        diflc *= factorx;
+                        transformed->L[y][x] =  prov + diflc;
+
+                    } else {
+                        transformed->L[y][x] = original->L[y][x];
                     }
 
-                    float diflc = original->L[y][x] - prov;
-                    diflc *= factorx;
-                    transformed->L[y][x] =  prov + diflc;
-
-                } else {
-                    transformed->L[y][x] = original->L[y][x];
+                    break;
                 }
 
-                break;
-            }
-
-            case 2: { // inside selection => no effect, keep original values
-                transformed->L[y][x] = original->L[y][x];
-            }
+                case 2: { // inside selection => no effect, keep original values
+                    transformed->L[y][x] = original->L[y][x];
+                }
             }
         }
     }
 }
+
+static void calclight (float lum, int  koef, float &lumnew)
+{
+    if(koef > 0) {
+        lumnew = lum * (1.f + (float)koef / 100.f);
+
+        if(lumnew > 32768.f) {
+            float kc = 32768.f / lumnew;
+            lumnew = lum * (1.f + kc * (float)koef / 100.f);
+
+        }
+    }
+
+    if(koef < 0) {
+        lumnew = lum * (1.f + (float)koef / 100.f);
+
+        if(lumnew < 0.f) {
+            float kc = lum / (lum - lumnew);
+            lumnew = lum * (1.f + kc * (float)koef / 100.f);
+
+        }
+    }
+
+
+}
+
 
 void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy, const LUTf & localcurve)
 {
@@ -1051,38 +1081,55 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 calcTransition (lox, loy, ach, lp, zone, localFactor);
 
                 switch(zone) {
-                case 0: { // outside selection and outside transition zone => no effect, keep original values
-                    transformed->L[y][x] = original->L[y][x];
-                    transformed->a[y][x] = original->a[y][x];
-                    transformed->b[y][x] = original->b[y][x];
-                    break;
-                }
+                    case 0: { // outside selection and outside transition zone => no effect, keep original values
+                        transformed->L[y][x] = original->L[y][x];
+                        transformed->a[y][x] = original->a[y][x];
+                        transformed->b[y][x] = original->b[y][x];
+                        break;
+                    }
 
-                case 1: { // inside transition zone
-                    float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                    float factorx = localFactor;
-                    float fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
-                    float diflc = lightcont - original->L[y][x];
-                    diflc *= kdiff;
+                    case 1: { // inside transition zone
+                        float lumnew = original->L[y][x];
 
-                    diflc *= factorx; //transition lightess
+                        if(lp.ligh != 0) {
+                            calclight (original->L[y][x], lp.ligh , lumnew);
+                        }
 
-                    transformed->L[y][x] = original->L[y][x] + diflc;
-                    transformed->a[y][x] = original->a[y][x] * fac;
-                    transformed->b[y][x] = original->b[y][x] * fac;
-                    break;
-                }
+                        //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                        float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+                        float factorx = localFactor;
+                        float fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
+                        float diflc = lightcont - original->L[y][x];
+                        diflc *= kdiff;
 
-                case 2: { // inside selection => full effect, no transition
-                    float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                    float fac = (100.f + realchro) / 100.f; //chroma factor transition
-                    float diflc = lightcont - original->L[y][x];
-                    diflc *= kdiff;
-                    transformed->L[y][x] = original->L[y][x] + diflc;
-                    transformed->a[y][x] = original->a[y][x] * fac;
-                    transformed->b[y][x] = original->b[y][x] * fac;
+                        diflc *= factorx; //transition lightess
 
-                }
+                        transformed->L[y][x] = original->L[y][x] + diflc;
+                        transformed->a[y][x] = original->a[y][x] * fac;
+                        transformed->b[y][x] = original->b[y][x] * fac;
+                        break;
+                    }
+
+                    case 2: { // inside selection => full effect, no transition
+                        //  float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                        //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
+                        float lumnew = original->L[y][x];
+
+                        if(lp.ligh != 0) {
+                            calclight (original->L[y][x], lp.ligh , lumnew);
+                        }
+
+                        //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                        float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+
+                        float fac = (100.f + realchro) / 100.f; //chroma factor transition
+                        float diflc = lightcont - original->L[y][x];
+                        diflc *= kdiff;
+                        transformed->L[y][x] = original->L[y][x] + diflc;
+                        transformed->a[y][x] = original->a[y][x] * fac;
+                        transformed->b[y][x] = original->b[y][x] * fac;
+
+                    }
                 }
             }
         }
@@ -1108,30 +1155,50 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
             calcTransition (lox, loy, ach, lp, zone, localFactor);
 
             switch(zone) {
-            case 0: { // outside selection and outside transition zone => no effect, keep original values
-                transformed->L[y][x] = localcurve[original->L[y][x]];  //apply lightness
-                transformed->a[y][x] = original->a[y][x] * facc;
-                transformed->b[y][x] = original->b[y][x] * facc;
-                break;
-            }
+                case 0: { // outside selection and outside transition zone => no effect, keep original values
+                    float lumnew = original->L[y][x];
 
-            case 1: { // inside transition zone
-                float factorx = 1.f - localFactor;
-                float fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
-                float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                float diflc = lightcont - original->L[y][x];
-                diflc *= factorx;
-                transformed->L[y][x] = original->L[y][x] + diflc;
-                transformed->a[y][x] = original->a[y][x] * fac;
-                transformed->b[y][x] = original->b[y][x] * fac;
-                break;
-            }
+                    if(lp.ligh != 0) {
+                        calclight (original->L[y][x], lp.ligh , lumnew);
+                    }
 
-            case 2: { // inside selection => no effect, keep original values
-                transformed->L[y][x] = original->L[y][x];
-                transformed->a[y][x] = original->a[y][x];
-                transformed->b[y][x] = original->b[y][x];
-            }
+                    //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                    float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+
+
+
+                    transformed->L[y][x] = lightcont; //localcurve[original->L[y][x]];  //apply lightness
+                    transformed->a[y][x] = original->a[y][x] * facc;
+                    transformed->b[y][x] = original->b[y][x] * facc;
+                    break;
+                }
+
+                case 1: { // inside transition zone
+                    float factorx = 1.f - localFactor;
+                    float fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
+                    float lumnew = original->L[y][x];
+
+                    if(lp.ligh != 0) {
+                        calclight (original->L[y][x], lp.ligh , lumnew);
+                    }
+
+                    //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                    float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+
+                    //float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                    float diflc = lightcont - original->L[y][x];
+                    diflc *= factorx;
+                    transformed->L[y][x] = original->L[y][x] + diflc;
+                    transformed->a[y][x] = original->a[y][x] * fac;
+                    transformed->b[y][x] = original->b[y][x] * fac;
+                    break;
+                }
+
+                case 2: { // inside selection => no effect, keep original values
+                    transformed->L[y][x] = original->L[y][x];
+                    transformed->a[y][x] = original->a[y][x];
+                    transformed->b[y][x] = original->b[y][x];
+                }
             }
         }
     }
@@ -1139,7 +1206,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 }
 
 
-void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
+void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
 {
     if(params->locallab.enabled) {
         BENCHFUN
@@ -1151,7 +1218,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
 #endif
 
         struct local_params lp;
-        calcLocalParams(oW, oH, params->locallab, lp);
+        calcLocalParams(dataspot, oW, oH, params->locallab, lp);
 
         const float radius = lp.rad / (sk * 2.f); //0 to 50 ==> see skip
 
@@ -1367,7 +1434,7 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
         constexpr float bred = 0.05f;
 
         float dhue = ared * lp.sens + bred; //delta hue lght chroma
-		
+
         float dhueret = ared * lp.sensh + bred; //delta hue retinex
 
         constexpr float maxh = 4.f; //amplification contrast above mean
@@ -1384,11 +1451,11 @@ void ImProcFunctions::Lab_Local(LabImage* original, LabImage* transformed, int s
 
 
 
-
         if(!lp.inv) {   //contrast interior ellipse
             const float pm = lp.cont < 0.f ? -1.f : 1.f;
             Contrast_Local(pm, lco, lumaref, av, lp, original, transformed, cx, cy);
         } else if(lp.inv) {
+
             float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
             float multH = (float) lp.cont * (maxh - 1.f) / 100.f + 1.f;
 

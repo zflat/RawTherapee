@@ -8,6 +8,7 @@
 #include "options.h"
 #include <cmath>
 #include "edit.h"
+#include "guiutils.h"
 
 using namespace rtengine;
 using namespace rtengine::procparams;
@@ -23,6 +24,18 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     editConn = edit->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::editToggled) );
     editHBox->pack_start(*edit, Gtk::PACK_SHRINK, 0);
     pack_start (*editHBox, Gtk::PACK_SHRINK, 0);
+
+    nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, 5, 1, 1));
+    nbspot->setAdjusterListener (this);
+    nbspot->set_tooltip_text (M("TP_LOCALLAB_NBSPOT_TOOLTIP"));
+
+    anbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_ANBSPOT"), 0, 1, 1, 0));
+    anbspot->setAdjusterListener (this);
+    anbspot->set_tooltip_text (M("TP_LOCALLAB_ANBSPOT_TOOLTIP"));
+
+    activsp = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_ACTIV")));
+    activsp->set_active (false);
+    activspConn  = activsp->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::activspChanged) );
 
     Gtk::Frame* shapeFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_SHFR")) );
     shapeFrame->set_border_width(0);
@@ -177,6 +190,8 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     avoid = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_AVOID")));
     avoid->set_active (false);
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
+    pack_start (*nbspot);
+    pack_start (*anbspot);
 
     ctboxS->pack_start (*Smethod);
     shapeVBox->pack_start (*ctboxS);
@@ -206,6 +221,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start (*invers);
+    //colorVBox->pack_start (*activsp);
 
     colorFrame->add(*colorVBox);
     pack_start (*colorFrame);
@@ -310,6 +326,82 @@ void Locallab::autoOpenCurve ()
 }
 
 
+int localChangedUI (void* data)
+{
+//  MyMutex* locMutex = NULL;
+//  locMutex = new MyMutex;
+//  locMutex->lock ();
+
+    GThreadLock lock;
+    (static_cast<Locallab*>(data))->localComputed_ ();
+    // locMutex->unlock ();
+    // delete locMutex;
+
+    return 0;
+}
+
+
+bool Locallab::localComputed_ ()
+{
+//   MyMutex* locMutex = NULL;
+//   locMutex = new MyMutex;
+//   locMutex->lock ();
+
+    disableListener ();
+    locX->setValue(nextdatasp[3]);
+    locY->setValue(nextdatasp[4]);
+    locYT->setValue(nextdatasp[5]);
+    locXL->setValue(nextdatasp[6]);
+    centerX->setValue(nextdatasp[7]);
+    centerY->setValue(nextdatasp[8]);
+
+    lightness->setValue(nextdatasp[9]);
+
+    contrast->setValue(nextdatasp[10]);
+    chroma->setValue(nextdatasp[11]);
+    sensi->setValue(nextdatasp[12]);
+    transit->setValue(nextdatasp[13]);
+
+    radius->setValue(nextdatasp[17]);
+    strength->setValue(nextdatasp[18]);
+
+    str->setValue(nextdatasp[20]);
+    chrrt->setValue(nextdatasp[21]);
+    neigh->setValue(nextdatasp[22]);
+    vart->setValue(nextdatasp[23]);
+    sensih->setValue(nextdatasp[24]);
+    // we must also probably manage Invers and combobox !
+    //adjusterChanged(nbspot, nbspot->getValue());
+    /*
+       if(anbspot->getValue() == 0) {
+           anbspot->setValue(1);
+           adjusterChanged(anbspot, 1);
+       } else if(anbspot->getValue() == 1) {
+           anbspot->setValue(0);
+           adjusterChanged(anbspot, 0);
+       }
+    */
+    enableListener ();
+
+//   locMutex->unlock ();
+//   delete locMutex;
+
+    return false;
+}
+
+void Locallab::localChanged  (int **datasp, int sp)
+{
+    //  printf("localchanged\n");
+
+    for(int i = 3; i < 27; i++) {
+        nextdatasp[i] = datasp[i][sp];
+
+    }
+
+    g_idle_add (localChangedUI, this);
+}
+
+
 void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
     disableListener ();
@@ -329,6 +421,8 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
+        nbspot->setEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
+        anbspot->setEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
         str->setEditedState (pedited->locallab.str ? Edited : UnEdited);
         neigh->setEditedState (pedited->locallab.neigh ? Edited : UnEdited);
@@ -336,6 +430,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         chrrt->setEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
         set_inconsistent (multiImage && !pedited->locallab.enabled);
         avoid->set_inconsistent (multiImage && !pedited->locallab.avoid);
+        activsp->set_inconsistent (multiImage && !pedited->locallab.activsp);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
         cTgainshape->setUnChanged  (!pedited->locallab.ccwTgaincurve);
@@ -358,6 +453,9 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     avoidConn.block (true);
     avoid->set_active (pp->locallab.avoid);
     avoidConn.block (false);
+    activspConn.block (true);
+    activsp->set_active (pp->locallab.activsp);
+    activspConn.block (false);
     inversConn.block (true);
     invers->set_active (pp->locallab.invers);
     inversConn.block (false);
@@ -385,14 +483,19 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     strength->setValue (pp->locallab.strength);
     str->setValue (pp->locallab.str);
     neigh->setValue (pp->locallab.neigh);
+    nbspot->setValue (pp->locallab.nbspot);
+    anbspot->setValue (pp->locallab.anbspot);
     vart->setValue (pp->locallab.vart);
     chrrt->setValue (pp->locallab.chrrt);
     cTgainshape->setCurve (pp->locallab.ccwTgaincurve);
+    lastactivsp = pp->locallab.activsp;
+    lastanbspot = pp->locallab.anbspot;
 
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
     lastinversrad = pp->locallab.inversrad;
     lastinversret = pp->locallab.inversret;
+    activspChanged();
     inversChanged();
     inversradChanged();
     inversretChanged();
@@ -548,11 +651,14 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.enabled = getEnabled();
     pp->locallab.transit = transit->getIntValue ();
     pp->locallab.avoid = avoid->get_active();
+    pp->locallab.activsp = activsp->get_active();
     pp->locallab.invers = invers->get_active();
     pp->locallab.inversrad = inversrad->get_active();
     pp->locallab.inversret = inversret->get_active();
     pp->locallab.str = str->getIntValue ();
     pp->locallab.neigh = neigh->getIntValue ();
+    pp->locallab.nbspot = nbspot->getIntValue ();
+    pp->locallab.anbspot = anbspot->getIntValue ();
     pp->locallab.vart = vart->getIntValue ();
     pp->locallab.chrrt = chrrt->getIntValue ();
     pp->locallab.ccwTgaincurve       = cTgainshape->getCurve ();
@@ -578,10 +684,13 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
         pedited->locallab.invers = !invers->get_inconsistent();
+        pedited->locallab.activsp = !activsp->get_inconsistent();
         pedited->locallab.inversret = !inversret->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
         pedited->locallab.str = str->getEditedState ();
         pedited->locallab.neigh = neigh->getEditedState ();
+        pedited->locallab.nbspot = nbspot->getEditedState ();
+        pedited->locallab.anbspot = anbspot->getEditedState ();
         pedited->locallab.vart = vart->getEditedState ();
         pedited->locallab.chrrt = chrrt->getEditedState ();
         pedited->locallab.ccwTgaincurve        = !cTgainshape->isUnChanged ();
@@ -743,6 +852,32 @@ void Locallab::inversChanged ()
     }
 }
 
+void Locallab::activspChanged ()
+{
+
+    if (batchMode) {
+        if (activsp->get_inconsistent()) {
+            activsp->set_inconsistent (false);
+            activspConn.block (true);
+            activsp->set_active (false);
+            activspConn.block (false);
+        } else if (lastactivsp) {
+            activsp->set_inconsistent (true);
+        }
+
+        lastactivsp = activsp->get_active ();
+    }
+
+
+    if (listener) {
+        if (getEnabled()) {
+            listener->panelChanged (Evlocallabactivsp, M("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (Evlocallabactivsp, M("GENERAL_DISABLED"));
+        }
+    }
+}
+
 void Locallab::inversradChanged ()
 {
 
@@ -820,6 +955,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     strength->setDefault (defParams->locallab.strength);
     str->setDefault (defParams->locallab.str);
     neigh->setDefault (defParams->locallab.neigh);
+    nbspot->setDefault (defParams->locallab.nbspot);
+    anbspot->setDefault (defParams->locallab.anbspot);
     vart->setDefault (defParams->locallab.vart);
     chrrt->setDefault (defParams->locallab.chrrt);
 
@@ -842,6 +979,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
         str->setDefaultEditedState (pedited->locallab.str ? Edited : UnEdited);
         neigh->setDefaultEditedState (pedited->locallab.neigh ? Edited : UnEdited);
+        nbspot->setDefaultEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
+        anbspot->setDefaultEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         vart->setDefaultEditedState (pedited->locallab.vart ? Edited : UnEdited);
         chrrt->setDefaultEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
     } else {
@@ -862,6 +1001,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         transit->setDefaultEditedState (Irrelevant);
         str->setDefaultEditedState (Irrelevant);
         neigh->setDefaultEditedState (Irrelevant);
+        nbspot->setDefaultEditedState (Irrelevant);
+        anbspot->setDefaultEditedState (Irrelevant);
         vart->setDefaultEditedState (Irrelevant);
         chrrt->setDefaultEditedState (Irrelevant);
     }
@@ -952,6 +1093,10 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabstr, str->getTextValue());
         } else if (a == neigh) {
             listener->panelChanged (Evlocallabneigh, neigh->getTextValue());
+        } else if (a == nbspot) {
+            listener->panelChanged (Evlocallabnbspot, nbspot->getTextValue());
+        } else if (a == anbspot) {
+            listener->panelChanged (Evlocallabanbspot, anbspot->getTextValue());
         } else if (a == vart) {
             listener->panelChanged (Evlocallabvart, vart->getTextValue());
         } else if (a == chrrt) {
@@ -1041,6 +1186,8 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     transit->trimValue(pp->locallab.transit);
     str->trimValue(pp->locallab.str);
     neigh->trimValue(pp->locallab.neigh);
+    nbspot->trimValue(pp->locallab.nbspot);
+    anbspot->trimValue(pp->locallab.anbspot);
     vart->trimValue(pp->locallab.vart);
     chrrt->trimValue(pp->locallab.chrrt);
 }
@@ -1067,6 +1214,8 @@ void Locallab::setBatchMode (bool batchMode)
     Smethod->append_text (M("GENERAL_UNCHANGED"));
     str->showEditedCB ();
     neigh->showEditedCB ();
+    nbspot->showEditedCB ();
+    anbspot->showEditedCB ();
     vart->showEditedCB ();
     CCWcurveEditorgainT->setBatchMode (batchMode);
     chrrt->showEditedCB ();
@@ -1092,51 +1241,51 @@ void Locallab::editToggled ()
 CursorShape Locallab::getCursor(int objectID)
 {
     switch (objectID) {
-    case (2): {
-        int angle = degree->getIntValue();
+        case (2): {
+            int angle = degree->getIntValue();
 
-        if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
-            return CSMove1DV;
-        }
+            if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
+                return CSMove1DV;
+            }
 
-        return CSMove1DH;
-    }
-
-    case (3): {
-        int angle = degree->getIntValue();
-
-        if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
-            return CSMove1DV;
-        }
-
-        return CSMove1DH;
-    }
-
-    case (0): {
-        int angle = degree->getIntValue();
-
-        if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
             return CSMove1DH;
         }
 
-        return CSMove1DV;
-    }
+        case (3): {
+            int angle = degree->getIntValue();
 
-    case (1): {
-        int angle = degree->getIntValue();
+            if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
+                return CSMove1DV;
+            }
 
-        if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
             return CSMove1DH;
         }
 
-        return CSMove1DV;
-    }
+        case (0): {
+            int angle = degree->getIntValue();
 
-    case (4):
-        return CSMove2D;
+            if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
+                return CSMove1DH;
+            }
 
-    default:
-        return CSOpenHand;
+            return CSMove1DV;
+        }
+
+        case (1): {
+            int angle = degree->getIntValue();
+
+            if (angle < -135 || (angle >= -45 && angle <= 45) || angle > 135) {
+                return CSMove1DH;
+            }
+
+            return CSMove1DV;
+        }
+
+        case (4):
+            return CSMove2D;
+
+        default:
+            return CSOpenHand;
     }
 }
 

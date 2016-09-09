@@ -44,6 +44,7 @@ protected:
     Imagefloat*  origCrop;   // "one chunk" allocation
     LabImage*    laboCrop;   // "one chunk" allocation
     LabImage*    labnCrop;   // "one chunk" allocation
+//   LabImage*    lablocCrop;   // "one chunk" allocation
     Image8*      cropImg;    // "one chunk" allocation
     float *      cbuf_real;  // "one chunk" allocation
     SHMap*       cshmap;     // per line allocation

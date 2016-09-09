@@ -1618,7 +1618,6 @@ TP_LENSPROFILE_LABEL;Lens Correction Profile
 TP_LENSPROFILE_USECA;Chromatic aberration correction
 TP_LENSPROFILE_USEDIST;Distortion correction
 TP_LENSPROFILE_USEVIGN;Vignetting correction
-<<<<<<< HEAD
 TP_LOCALLAB_AVOID;Avoid color shift
 TP_LOCALLAB_BLUFR;Blur & Noise
 TP_LOCALLAB_CENTER_X;Center X
@@ -1631,6 +1630,10 @@ TP_LOCALLAB_INDSL;Independent (mouse + sliders)
 TP_LOCALLAB_IND;Independent (mouse)
 TP_LOCALLAB_INVERS;Inverse
 TP_LOCALLAB_LABEL;Local L*a*b*
+TP_LOCALLAB_NBSPOT;Control points
+TP_LOCALLAB_NBSPOT_TOOLTIP;Add multiple control points and select
+TP_LOCALLAB_ANBSPOT;Help to Move Control point
+TP_LOCALLAB_ANBSPOT_TOOLTIP;Provisory control (I hope somebody can help to manage events!! and suppress this bad function)
 TP_LOCALLAB_LIGHTNESS;Lightness
 TP_LOCALLAB_RADIUS;Radius
 TP_LOCALLAB_RETI;Retinex
@@ -1656,9 +1659,6 @@ TP_LOCAL_HEIGHT_T;Top
 TP_LOCAL_WIDTH;Right
 TP_LOCAL_WIDTH_L;Left
 TP_NEUTRAL;Neutral
-=======
-TP_NEUTRAL;Reset
->>>>>>> master
 TP_NEUTRAL_TIP;Resets exposure sliders to neutral values.\nApplies to the same controls that Auto Levels applies to, regardless of whether you used Auto Levels or not.
 TP_PCVIGNETTE_FEATHER;Feather
 TP_PCVIGNETTE_FEATHER_TOOLTIP;Feathering:\n0 = corners only,\n50 = halfway to center,\n100 = to center.

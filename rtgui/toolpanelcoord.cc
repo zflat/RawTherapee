@@ -505,6 +505,7 @@ void ToolPanelCoordinator::initImage (rtengine::StagedImageProcessor* ipc_, bool
         ipc->setAutoChromaListener (dirpyrdenoise);
         ipc->setWaveletListener (wavelet);
         ipc->setRetinexListener (retinex);
+        ipc->setlocalListener (locallab);
 
         ipc->setSizeListener (crop);
         ipc->setSizeListener (resize);
@@ -799,35 +800,35 @@ bool ToolPanelCoordinator::handleShortcutKey (GdkEventKey* event)
 
     if (alt) {
         switch(event->keyval) {
-        case GDK_e:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*exposurePanelSW));
-            return true;
-
-        case GDK_d:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*detailsPanelSW));
-            return true;
-
-        case GDK_c:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*colorPanelSW));
-            return true;
-
-        case GDK_t:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*transformPanelSW));
-            return true;
-
-        case GDK_r:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*rawPanelSW));
-            return true;
-
-        case GDK_w:
-            toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*waveletPanelSW));
-            return true;
-
-        case GDK_m:
-            if (metadataPanel) {
-                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*metadataPanel));
+            case GDK_e:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*exposurePanelSW));
                 return true;
-            }
+
+            case GDK_d:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*detailsPanelSW));
+                return true;
+
+            case GDK_c:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*colorPanelSW));
+                return true;
+
+            case GDK_t:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*transformPanelSW));
+                return true;
+
+            case GDK_r:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*rawPanelSW));
+                return true;
+
+            case GDK_w:
+                toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*waveletPanelSW));
+                return true;
+
+            case GDK_m:
+                if (metadataPanel) {
+                    toolPanelNotebook->set_current_page (toolPanelNotebook->page_num(*metadataPanel));
+                    return true;
+                }
         }
     }
 
@@ -877,24 +878,24 @@ void ToolPanelCoordinator::toolSelected (ToolMode tool)
     GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
 
     switch (tool) {
-    case TMCropSelect:
-        crop->setExpanded(true);
-        toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*transformPanelSW));
-        break;
+        case TMCropSelect:
+            crop->setExpanded(true);
+            toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*transformPanelSW));
+            break;
 
-    case TMSpotWB:
-        whitebalance->setExpanded(true);
-        toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*colorPanelSW));
-        break;
+        case TMSpotWB:
+            whitebalance->setExpanded(true);
+            toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*colorPanelSW));
+            break;
 
-    case TMStraighten:
-        lensgeom->setExpanded(true);
-        rotate->setExpanded(true);
-        toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*transformPanelSW));
-        break;
+        case TMStraighten:
+            lensgeom->setExpanded(true);
+            rotate->setExpanded(true);
+            toolPanelNotebook->set_current_page(toolPanelNotebook->page_num(*transformPanelSW));
+            break;
 
-    default:
-        break;
+        default:
+            break;
     }
 }
 

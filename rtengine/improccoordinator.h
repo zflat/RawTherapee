@@ -57,6 +57,7 @@ protected:
     Imagefloat *oprevi;
     LabImage *oprevl;
     LabImage *nprevl;
+//   LabImage *nprevloc;
     Image8 *previmg;
     Image8 *workimg;
     CieImage *ncie;
@@ -159,6 +160,8 @@ protected:
     AutoExpListener* aeListener;
     AutoCamListener* acListener;
     AutoBWListener* abwListener;
+    localListener* aloListener;
+
     AutoColorTonListener* actListener;
     AutoChromaListener* adnListener;
     WaveletListener* awavListener;
@@ -189,6 +192,7 @@ protected:
     int  changeSinceLast;
     bool updaterRunning;
     ProcParams nextParams;
+    ProcParams nextParams2;
     bool destroying;
     bool utili;
     bool locutili;
@@ -199,6 +203,7 @@ protected:
     bool clcutili;
     bool opautili;
     bool wavcontlutili;
+    int **dataspot;
     void startProcessing ();
     void process ();
 
@@ -304,6 +309,11 @@ public:
     {
         abwListener = abw;
     }
+    void setlocalListener   (localListener* alo)
+    {
+        aloListener = alo;
+    }
+
     void setAutoColorTonListener   (AutoColorTonListener* bwct)
     {
         actListener = bwct;

@@ -16,7 +16,7 @@
 #include <memory>
 #include "options.h"
 
-class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public CurveListener, public EditSubscriber
+class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public rtengine::localListener, public CurveListener, public EditSubscriber
 {
 
 private:
@@ -46,6 +46,8 @@ protected:
     Adjuster* neigh;
     Adjuster* vart;
     Adjuster* chrrt;
+    Adjuster* nbspot;
+    Adjuster* anbspot;
 
     Gtk::CheckButton* avoid;
     MyComboBoxText*   Smethod;
@@ -54,13 +56,14 @@ protected:
     Gtk::CheckButton* invers;
     Gtk::CheckButton* inversrad;
     Gtk::CheckButton* inversret;
+    Gtk::CheckButton* activsp;
 
     MyComboBoxText*   retinexMethod;
     Gtk::Label* labmdh;
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-
+    int nextdatasp[27];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -69,8 +72,9 @@ protected:
     double draggedlocYTOffset;
     double draggedlocXLOffset;
     rtengine::Coord draggedCenter;
-    bool lastavoid, lastinvers, lastinversrad, lastinversret;
-    sigc::connection  editConn, avoidConn, inversConn, inversradConn, inversretConn, retinexMethodConn;
+    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivsp;
+    int lastanbspot;
+    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, retinexMethodConn;
 
     void editToggled ();
 
@@ -92,11 +96,14 @@ public:
     void setAdjusterBehavior (bool degreeadd, bool locYadd, bool locXadd, bool locYTadd, bool locXLadd, bool centeradd, bool lightnessadd, bool contrastadd, bool chromaadd, bool sensiadd, bool transitadd, bool radiusadd, bool strengthadd);
     void trimValues          (rtengine::procparams::ProcParams* pp);
     void avoidChanged ();
+    void activspChanged ();
     void inversChanged ();
     void inversradChanged ();
     void inversretChanged ();
     void curveChanged (CurveEditor* ce);
     void autoOpenCurve ();
+    void localChanged           (int **datasp, int sp);
+    bool localComputed_         ();
 
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();

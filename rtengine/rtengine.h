@@ -310,6 +310,15 @@ public :
 
 };
 
+class localListener
+{
+public :
+    virtual ~localListener() {}
+    virtual void localChanged (int **datasp, int sp) {}
+
+};
+
+
 class WaveletListener
 {
 public :
@@ -411,6 +420,7 @@ public:
     virtual void        setPreviewImageListener (PreviewImageListener* l) = 0;
     virtual void        setAutoCamListener      (AutoCamListener* l) = 0;
     virtual void        setAutoBWListener       (AutoBWListener* l) = 0;
+    virtual void        setlocalListener        (localListener* l) = 0;
     virtual void        setAutoColorTonListener (AutoColorTonListener* l) = 0;
     virtual void        setAutoChromaListener   (AutoChromaListener* l) = 0;
     virtual void        setRetinexListener      (RetinexListener* l) = 0;

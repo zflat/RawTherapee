@@ -897,6 +897,7 @@ void LocallabParams::setDefaults()
     Smethod = "IND";
     retinexMethod = "high";
     invers = false;
+    activsp = false;
     radius = 0.;
     inversrad = false;
     inversret = false;
@@ -907,6 +908,8 @@ void LocallabParams::setDefaults()
     str = 0;
     neigh = 50;
     vart = 200;
+    nbspot = 1;
+    anbspot = 0;
     getDefaultCCWgainCurveT(ccwTgaincurve);
 
 }
@@ -1467,29 +1470,29 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring method;
 
             switch (toneCurve.curveMode) {
-            case (ToneCurveParams::TC_MODE_STD):
-                method = "Standard";
-                break;
+                case (ToneCurveParams::TC_MODE_STD):
+                    method = "Standard";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_FILMLIKE):
-                method = "FilmLike";
-                break;
+                case (ToneCurveParams::TC_MODE_FILMLIKE):
+                    method = "FilmLike";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_SATANDVALBLENDING):
-                method = "SatAndValueBlending";
-                break;
+                case (ToneCurveParams::TC_MODE_SATANDVALBLENDING):
+                    method = "SatAndValueBlending";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_WEIGHTEDSTD):
-                method = "WeightedStd";
-                break;
+                case (ToneCurveParams::TC_MODE_WEIGHTEDSTD):
+                    method = "WeightedStd";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_LUMINANCE):
-                method = "Luminance";
-                break;
+                case (ToneCurveParams::TC_MODE_LUMINANCE):
+                    method = "Luminance";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_PERCEPTUAL):
-                method = "Perceptual";
-                break;
+                case (ToneCurveParams::TC_MODE_PERCEPTUAL):
+                    method = "Perceptual";
+                    break;
             }
 
             keyFile.set_string  ("Exposure", "CurveMode", method);
@@ -1499,29 +1502,29 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring method;
 
             switch (toneCurve.curveMode2) {
-            case (ToneCurveParams::TC_MODE_STD):
-                method = "Standard";
-                break;
+                case (ToneCurveParams::TC_MODE_STD):
+                    method = "Standard";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_FILMLIKE):
-                method = "FilmLike";
-                break;
+                case (ToneCurveParams::TC_MODE_FILMLIKE):
+                    method = "FilmLike";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_SATANDVALBLENDING):
-                method = "SatAndValueBlending";
-                break;
+                case (ToneCurveParams::TC_MODE_SATANDVALBLENDING):
+                    method = "SatAndValueBlending";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_WEIGHTEDSTD):
-                method = "WeightedStd";
-                break;
+                case (ToneCurveParams::TC_MODE_WEIGHTEDSTD):
+                    method = "WeightedStd";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_LUMINANCE):
-                method = "Luminance";
-                break;
+                case (ToneCurveParams::TC_MODE_LUMINANCE):
+                    method = "Luminance";
+                    break;
 
-            case (ToneCurveParams::TC_MODE_PERCEPTUAL):
-                method = "Perceptual";
-                break;
+                case (ToneCurveParams::TC_MODE_PERCEPTUAL):
+                    method = "Perceptual";
+                    break;
             }
 
             keyFile.set_string  ("Exposure", "CurveMode2", method);
@@ -1777,21 +1780,21 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring mode;
 
             switch (blackwhite.beforeCurveMode) {
-            case (BlackWhiteParams::TC_MODE_STD_BW):
-                mode  = "Standard";
-                break;
+                case (BlackWhiteParams::TC_MODE_STD_BW):
+                    mode  = "Standard";
+                    break;
 
-            case (BlackWhiteParams::TC_MODE_FILMLIKE_BW):
-                mode  = "FilmLike";
-                break;
+                case (BlackWhiteParams::TC_MODE_FILMLIKE_BW):
+                    mode  = "FilmLike";
+                    break;
 
-            case (BlackWhiteParams::TC_MODE_SATANDVALBLENDING_BW):
-                mode = "SatAndValueBlending";
-                break;
+                case (BlackWhiteParams::TC_MODE_SATANDVALBLENDING_BW):
+                    mode = "SatAndValueBlending";
+                    break;
 
-            case (BlackWhiteParams::TC_MODE_WEIGHTEDSTD_BW):
-                mode = "WeightedStd";
-                break;
+                case (BlackWhiteParams::TC_MODE_WEIGHTEDSTD_BW):
+                    mode = "WeightedStd";
+                    break;
             }
 
             keyFile.set_string  ("Black & White", "BeforeCurveMode", mode);
@@ -1801,16 +1804,16 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring mode;
 
             switch (blackwhite.afterCurveMode) {
-            case (BlackWhiteParams::TC_MODE_STD_BW):
-                mode = "Standard";
-                break;
+                case (BlackWhiteParams::TC_MODE_STD_BW):
+                    mode = "Standard";
+                    break;
 
-            case (BlackWhiteParams::TC_MODE_WEIGHTEDSTD_BW):
-                mode = "WeightedStd";
-                break;
+                case (BlackWhiteParams::TC_MODE_WEIGHTEDSTD_BW):
+                    mode = "WeightedStd";
+                    break;
 
-            default:
-                break;
+                default:
+                    break;
             }
 
             keyFile.set_string  ("Black & White", "AfterCurveMode", mode);
@@ -2153,13 +2156,13 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring method;
 
             switch (colorappearance.curveMode) {
-            case (ColorAppearanceParams::TC_MODE_LIGHT):
-                method = "Lightness";
-                break;
+                case (ColorAppearanceParams::TC_MODE_LIGHT):
+                    method = "Lightness";
+                    break;
 
-            case (ColorAppearanceParams::TC_MODE_BRIGHT):
-                method = "Brightness";
-                break;
+                case (ColorAppearanceParams::TC_MODE_BRIGHT):
+                    method = "Brightness";
+                    break;
             }
 
             keyFile.set_string  ("Color appearance", "CurveMode", method);
@@ -2169,13 +2172,13 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring method;
 
             switch (colorappearance.curveMode2) {
-            case (ColorAppearanceParams::TC_MODE_LIGHT):
-                method = "Lightness";
-                break;
+                case (ColorAppearanceParams::TC_MODE_LIGHT):
+                    method = "Lightness";
+                    break;
 
-            case (ColorAppearanceParams::TC_MODE_BRIGHT):
-                method = "Brightness";
-                break;
+                case (ColorAppearanceParams::TC_MODE_BRIGHT):
+                    method = "Brightness";
+                    break;
             }
 
             keyFile.set_string  ("Color appearance", "CurveMode2", method);
@@ -2185,17 +2188,17 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring method;
 
             switch (colorappearance.curveMode3) {
-            case (ColorAppearanceParams::TC_MODE_CHROMA):
-                method = "Chroma";
-                break;
+                case (ColorAppearanceParams::TC_MODE_CHROMA):
+                    method = "Chroma";
+                    break;
 
-            case (ColorAppearanceParams::TC_MODE_SATUR):
-                method = "Saturation";
-                break;
+                case (ColorAppearanceParams::TC_MODE_SATUR):
+                    method = "Saturation";
+                    break;
 
-            case (ColorAppearanceParams::TC_MODE_COLORF):
-                method = "Colorfullness";
-                break;
+                case (ColorAppearanceParams::TC_MODE_COLORF):
+                    method = "Colorfullness";
+                    break;
 
             }
 
@@ -2548,6 +2551,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Locallab", "Invers", locallab.invers);
         }
 
+        if (!pedited || pedited->locallab.activsp) {
+            keyFile.set_boolean ("Locallab", "Activsp", locallab.activsp);
+        }
+
         if (!pedited || pedited->locallab.inversrad) {
             keyFile.set_boolean ("Locallab", "Inversrad", locallab.inversrad);
         }
@@ -2626,6 +2633,14 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->locallab.neigh) {
             keyFile.set_integer ("Locallab", "Neigh", locallab.neigh);
+        }
+
+        if (!pedited || pedited->locallab.nbspot) {
+            keyFile.set_integer ("Locallab", "Nbspot", locallab.nbspot);
+        }
+
+        if (!pedited || pedited->locallab.anbspot) {
+            keyFile.set_integer ("Locallab", "ANbspot", locallab.anbspot);
         }
 
         if (!pedited || pedited->locallab.vart) {
@@ -2817,22 +2832,22 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             Glib::ustring intent;
 
             switch (icm.outputIntent) {
-            default:
-            case RI_PERCEPTUAL:
-                intent = "Perceptual";
-                break;
+                default:
+                case RI_PERCEPTUAL:
+                    intent = "Perceptual";
+                    break;
 
-            case RI_RELATIVE:
-                intent = "Relative";
-                break;
+                case RI_RELATIVE:
+                    intent = "Relative";
+                    break;
 
-            case RI_SATURATION:
-                intent = "Saturation";
-                break;
+                case RI_SATURATION:
+                    intent = "Saturation";
+                    break;
 
-            case RI_ABSOLUTE:
-                intent = "Absolute";
-                break;
+                case RI_ABSOLUTE:
+                    intent = "Absolute";
+                    break;
             }
 
             keyFile.set_string  ("Color Management", "OutputProfileIntent", intent);
@@ -3882,6 +3897,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "Activsp"))  {
+                locallab.activsp  = keyFile.get_boolean ("Locallab", "Activsp");
+
+                if (pedited) {
+                    pedited->locallab.activsp = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Inversrad"))  {
                 locallab.inversrad  = keyFile.get_boolean ("Locallab", "Inversrad");
 
@@ -4023,6 +4046,22 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.neigh = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Nbspot"))  {
+                locallab.nbspot  = keyFile.get_integer ("Locallab", "Nbspot");
+
+                if (pedited) {
+                    pedited->locallab.nbspot = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "ANbspot"))  {
+                locallab.anbspot  = keyFile.get_integer ("Locallab", "ANbspot");
+
+                if (pedited) {
+                    pedited->locallab.anbspot = true;
                 }
             }
 
@@ -8185,6 +8224,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.enabled == other.locallab.enabled
         && locallab.avoid == other.locallab.avoid
         && locallab.invers == other.locallab.invers
+        && locallab.activsp == other.locallab.activsp
         && locallab.inversrad == other.locallab.inversrad
         && locallab.inversret == other.locallab.inversret
         && locallab.degree == other.locallab.degree
@@ -8207,6 +8247,8 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.chrrt == other.locallab.chrrt
         && locallab.str == other.locallab.str
         && locallab.neigh == other.locallab.neigh
+        && locallab.nbspot == other.locallab.nbspot
+        && locallab.anbspot == other.locallab.anbspot
         && locallab.vart == other.locallab.vart
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve
         && pcvignette.enabled == other.pcvignette.enabled

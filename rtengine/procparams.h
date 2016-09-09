@@ -863,6 +863,7 @@ public:
     Glib::ustring Smethod;
     Glib::ustring retinexMethod;
     bool    invers;
+    bool    activsp;
     bool    inversrad;
     bool    inversret;
     double  hueref;
@@ -870,6 +871,8 @@ public:
     double  lumaref;
     int     str;
     int     neigh;
+    int     nbspot;
+    int     anbspot;
     int     vart;
     int     chrrt;
     std::vector<double>   ccwTgaincurve;

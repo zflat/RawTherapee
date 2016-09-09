@@ -438,7 +438,10 @@ public:
     bool retinexMethod;
     bool str;
     bool neigh;
+    bool nbspot;
+    bool anbspot;
     bool vart;
+    bool activsp;
     bool invers;
     bool inversrad;
     bool inversret;
