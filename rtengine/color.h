@@ -223,13 +223,14 @@ public:
         float M = max(r, g, b) / 65535.f;
         float C = M - m;
 
+        l = M + m;
+
         if (C < 0.00001f) {
             s = 0.f;
         } else {
-            l = M + m;
             s = C / (l <= 1.f ? l : 2.f - l);
-            l *= 0.5f;
         }
+        l *= 0.5f;
     }
 
 #ifdef __SSE2__
