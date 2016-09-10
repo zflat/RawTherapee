@@ -4663,9 +4663,9 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
             }
 
             else if (params->colorToning.method.substr(0, 3) == "RGB"  && opautili) {
-                // color toning
+                // colour toning
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic, 5)
+                #pragma omp parallel for schedule(dynamic, 16)
 #endif
 
                 for (int i = 0; i < tH; i++) {
@@ -4674,23 +4674,22 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                         float g = tmpImage->g(i, j);
                         float b = tmpImage->b(i, j);
 
-                        // Luminance = (0.299f*r + 0.587f*g + 0.114f*b)
+                        float l = (min(r,g,b) + max(r,g,b)) * 0.5f;
 
-                        float h, s, l;
-                        Color::rgb2hsl(r, g, b, h, s, l);
+                        float l_ = Color::gammatab_srgb1[l];
 
-                        float l_ = Color::gamma_srgb(l * 65535.f) / 65535.f;
+                        l /= 65535.f;
 
-                        // get the opacity and tweak it to preserve saturated colors
+                        // get the opacity and tweak it to preserve saturated colours
                         float opacity = ctOpacityCurve.lutOpacityCurve[l_ * 500.f] / 4.f;
 
                         float r2, g2, b2;
-                        ctColorCurve.getVal(l_, r2, g2, b2);  // get the color from the color curve
+                        ctColorCurve.getVal(l_, r2, g2, b2);  // get the colour from the colour curve
 
                         float h2, s2, l2;
-                        Color::rgb2hsl(r2, g2, b2, h2, s2, l2); // transform this new color to hsl
+                        Color::rgb2hslfloat(r2, g2, b2, h2, s2, l2); // transform this new colour to hsl
 
-                        Color::hsl2rgb(h2, s2, l, r2, g2, b2);
+                        Color::hsl2rgbfloat(h2, s2, l, r2, g2, b2);
 
                         tmpImage->r(i, j) = r + (r2 - r) * opacity;
                         tmpImage->g(i, j) = g + (g2 - g) * opacity;
