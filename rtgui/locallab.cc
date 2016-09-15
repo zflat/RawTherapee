@@ -9,6 +9,8 @@
 #include <cmath>
 #include "edit.h"
 #include "guiutils.h"
+//#include "../rtengine/refreshmap.h"
+//#include "../rtengine/improccoordinator.h"
 
 using namespace rtengine;
 using namespace rtengine::procparams;
@@ -26,6 +28,12 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     pack_start (*editHBox, Gtk::PACK_SHRINK, 0);
 
     nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, 5, 1, 1));
+
+    if (nbspot->delay < 200) {
+        nbspot->delay = 200;
+    }
+
+
     nbspot->setAdjusterListener (this);
     nbspot->set_tooltip_text (M("TP_LOCALLAB_NBSPOT_TOOLTIP"));
 
@@ -192,7 +200,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
     pack_start (*nbspot);
     pack_start (*anbspot);
-
+    anbspot->hide();
     ctboxS->pack_start (*Smethod);
     shapeVBox->pack_start (*ctboxS);
 
@@ -221,7 +229,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start (*invers);
-    //colorVBox->pack_start (*activsp);
+//   colorVBox->pack_start (*activsp);
 
     colorFrame->add(*colorVBox);
     pack_start (*colorFrame);
@@ -328,14 +336,9 @@ void Locallab::autoOpenCurve ()
 
 int localChangedUI (void* data)
 {
-//  MyMutex* locMutex = NULL;
-//  locMutex = new MyMutex;
-//  locMutex->lock ();
 
     GThreadLock lock;
     (static_cast<Locallab*>(data))->localComputed_ ();
-    // locMutex->unlock ();
-    // delete locMutex;
 
     return 0;
 }
@@ -343,10 +346,10 @@ int localChangedUI (void* data)
 
 bool Locallab::localComputed_ ()
 {
-//   MyMutex* locMutex = NULL;
-//   locMutex = new MyMutex;
-//   locMutex->lock ();
-
+    MyMutex* locMutex = NULL;
+    locMutex = new MyMutex;
+    locMutex->lock ();
+    //  int light;
     disableListener ();
     locX->setValue(nextdatasp[3]);
     locY->setValue(nextdatasp[4]);
@@ -361,38 +364,72 @@ bool Locallab::localComputed_ ()
     chroma->setValue(nextdatasp[11]);
     sensi->setValue(nextdatasp[12]);
     transit->setValue(nextdatasp[13]);
-
+    /*
+        if(nextdatasp[14] == 0) {
+            invers->set_active (false);
+        } else {
+            invers->set_active (true);
+        }
+    */
     radius->setValue(nextdatasp[17]);
     strength->setValue(nextdatasp[18]);
-
+    /*
+        if(nextdatasp[19] == 0) {
+            inversrad->set_active (false);
+        } else {
+            inversrad->set_active (true);
+        }
+    */
     str->setValue(nextdatasp[20]);
     chrrt->setValue(nextdatasp[21]);
     neigh->setValue(nextdatasp[22]);
     vart->setValue(nextdatasp[23]);
     sensih->setValue(nextdatasp[24]);
-    // we must also probably manage Invers and combobox !
-    //adjusterChanged(nbspot, nbspot->getValue());
     /*
-       if(anbspot->getValue() == 0) {
-           anbspot->setValue(1);
-           adjusterChanged(anbspot, 1);
-       } else if(anbspot->getValue() == 1) {
-           anbspot->setValue(0);
-           adjusterChanged(anbspot, 0);
-       }
+        if(nextdatasp[25] == 0) {
+            inversret->set_active (false);
+        } else {
+            inversret->set_active (true);
+        }
     */
+    // we must also probably manage combobox !
+//  int cal = 0;
+//   ImProcCoordinator* par;
+//  par->updatePreviewImage (1);
     enableListener ();
 
-//   locMutex->unlock ();
-//   delete locMutex;
+    if(anbspot->getValue() == 0) {
+        anbspot->setValue(1);
+
+        if (anbspot->delay < 200) {
+            anbspot->delay = 200;
+        }
+
+        adjusterChanged(anbspot, 1);
+
+    } else if(anbspot->getValue() == 1) {
+        anbspot->setValue(0);
+
+        if (anbspot->delay < 200) {
+            anbspot->delay = 200;
+        }
+
+        adjusterChanged(anbspot, 0);
+
+    }
+
+    if (listener) {
+        listener->panelChanged (Evlocallabanbspot, anbspot->getTextValue());
+    }
+
+    locMutex->unlock ();
+    delete locMutex;
 
     return false;
 }
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    //  printf("localchanged\n");
-
     for(int i = 3; i < 27; i++) {
         nextdatasp[i] = datasp[i][sp];
 
@@ -527,6 +564,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     retinexMethodChanged ();
     retinexMethodConn.block(false);
+    anbspot->hide();
 
     if (pp->locallab.Smethod == "SYM" || pp->locallab.Smethod == "SYMSL") {
         locXL->setValue (locX->getValue());
@@ -870,6 +908,8 @@ void Locallab::activspChanged ()
 
 
     if (listener) {
+        printf("activ\n");
+
         if (getEnabled()) {
             listener->panelChanged (Evlocallabactivsp, M("GENERAL_ENABLED"));
         } else {
@@ -1012,6 +1052,7 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
 {
 
     updateGeometry (int(centerX->getValue()), int(centerY->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue() );
+    anbspot->hide();
 
     if (listener && getEnabled()) {
         if (a == degree) {

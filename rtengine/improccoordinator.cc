@@ -897,10 +897,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             //  printf("realspotimpro=%d data=%d   cx=%d cy=%d\n", realspot, dataspot[16][0], dataspot[7][sp], dataspot[8][sp]);
 
             if(aloListener && realspot != dataspot[16][0]) {
-                //  todo |= M_LUMACURVE;//is it usefull ??
                 // or use of adjusterchanged in locallab.cc for anbspot or nbspot ??
                 // or other improvment ??
                 aloListener->localChanged(dataspot, sp);
+                todo |= M_LUMACURVE;//is it usefull ??
+
             }
 
 

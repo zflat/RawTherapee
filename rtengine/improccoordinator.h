@@ -223,6 +223,7 @@ public:
     void        endUpdateParams (ProcEvent change);  // must be called after beginUpdateParams, triggers update
     void        endUpdateParams (int changeFlags);
     void        stopProcessing ();
+//    void updatePreviewImage (int todo, Crop* cropCall = NULL);
 
 
     void setPreviewScale    (int scale)
