@@ -229,7 +229,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start (*invers);
-//   colorVBox->pack_start (*activsp);
+    //colorVBox->pack_start (*activsp);
 
     colorFrame->add(*colorVBox);
     pack_start (*colorFrame);
@@ -349,8 +349,8 @@ bool Locallab::localComputed_ ()
     MyMutex* locMutex = NULL;
     locMutex = new MyMutex;
     locMutex->lock ();
-    //  int light;
     disableListener ();
+    //center and cursor
     locX->setValue(nextdatasp[3]);
     locY->setValue(nextdatasp[4]);
     locYT->setValue(nextdatasp[5]);
@@ -358,51 +358,76 @@ bool Locallab::localComputed_ ()
     centerX->setValue(nextdatasp[7]);
     centerY->setValue(nextdatasp[8]);
 
+    //sliders
     lightness->setValue(nextdatasp[9]);
-
     contrast->setValue(nextdatasp[10]);
     chroma->setValue(nextdatasp[11]);
     sensi->setValue(nextdatasp[12]);
     transit->setValue(nextdatasp[13]);
-    /*
-        if(nextdatasp[14] == 0) {
-            invers->set_active (false);
-        } else {
-            invers->set_active (true);
-        }
-    */
+
+    //inverse
+    if(nextdatasp[14] == 0) {
+        invers->set_active (false);
+    } else {
+        invers->set_active (true);
+    }
+
+    //method cursor
+    if (nextdatasp[15] == 0) {
+        Smethod->set_active (0);
+    } else if (nextdatasp[15] == 1) {
+        Smethod->set_active (1);
+    } else if (nextdatasp[15] == 2) {
+        Smethod->set_active (2);
+    } else if (nextdatasp[15] == 3) {
+        Smethod->set_active (3);
+    }
+
+    //sliders blurr
     radius->setValue(nextdatasp[17]);
     strength->setValue(nextdatasp[18]);
-    /*
-        if(nextdatasp[19] == 0) {
-            inversrad->set_active (false);
-        } else {
-            inversrad->set_active (true);
-        }
-    */
+
+    //inverse
+    if(nextdatasp[19] == 0) {
+        inversrad->set_active (false);
+    } else {
+        inversrad->set_active (true);
+    }
+
+    //sliders retinex
     str->setValue(nextdatasp[20]);
     chrrt->setValue(nextdatasp[21]);
     neigh->setValue(nextdatasp[22]);
     vart->setValue(nextdatasp[23]);
     sensih->setValue(nextdatasp[24]);
-    /*
-        if(nextdatasp[25] == 0) {
-            inversret->set_active (false);
-        } else {
-            inversret->set_active (true);
-        }
-    */
-    // we must also probably manage combobox !
-//  int cal = 0;
+
+    //inverse
+    if(nextdatasp[25] == 0) {
+        inversret->set_active (false);
+    } else {
+        inversret->set_active (true);
+    }
+
+    //method retinex
+    if (nextdatasp[26] == 0) {
+        retinexMethod->set_active (0);
+    } else if (nextdatasp[26] == 1) {
+        retinexMethod->set_active (1);
+    } else if (nextdatasp[27] == 2) {
+        retinexMethod->set_active (2);
+    }
+
+
 //   ImProcCoordinator* par;
 //  par->updatePreviewImage (1);
     enableListener ();
 
+    //update all sliders by this strange process!
     if(anbspot->getValue() == 0) {
         anbspot->setValue(1);
 
-        if (anbspot->delay < 200) {
-            anbspot->delay = 200;
+        if (anbspot->delay < 100) {
+            anbspot->delay = 100;
         }
 
         adjusterChanged(anbspot, 1);
@@ -410,16 +435,37 @@ bool Locallab::localComputed_ ()
     } else if(anbspot->getValue() == 1) {
         anbspot->setValue(0);
 
-        if (anbspot->delay < 200) {
-            anbspot->delay = 200;
+        if (anbspot->delay < 100) {
+            anbspot->delay = 100;
         }
 
         adjusterChanged(anbspot, 0);
 
     }
 
-    if (listener) {
+    //add events for each cases
+    if (listener) { //for all sliders
         listener->panelChanged (Evlocallabanbspot, anbspot->getTextValue());
+    }
+
+    if (listener) {//for inverse color
+        listener->panelChanged (Evlocallabinvers, M("GENERAL_ENABLED"));
+    }
+
+    if (listener) {//for inverse blurr
+        listener->panelChanged (Evlocallabinversrad, M("GENERAL_ENABLED"));
+    }
+
+    if (listener) {//for inverse retinex
+        listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
+    }
+
+    if (listener) {//for Smethod : position of mouse cursor
+        listener->panelChanged (EvlocallabSmet, Smethod->get_active_text ());
+    }
+
+    if (listener) {//for retinex method
+        listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
     }
 
     locMutex->unlock ();

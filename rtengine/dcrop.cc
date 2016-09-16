@@ -966,7 +966,7 @@ void Crop::update (int todo)
                         params.locallab.sensi = dataspotd[12][sp];
                         params.locallab.transit = dataspotd[13][sp];
 
-                        if(dataspotd[14][0] ==  0) {
+                        if(dataspotd[14][sp] ==  0) {
                             params.locallab.invers = 0;
                         } else {
                             params.locallab.invers = 1;
@@ -985,7 +985,7 @@ void Crop::update (int todo)
                         params.locallab.radius = (float) (dataspotd[17][sp]) / 10.f;
                         params.locallab.strength = (float) (dataspotd[18][sp]) / 10.f;
 
-                        if(dataspotd[19][0] ==  0) {
+                        if(dataspotd[19][sp] ==  0) {
                             params.locallab.inversrad = 0;
                         } else {
                             params.locallab.inversrad = 1;
@@ -997,7 +997,7 @@ void Crop::update (int todo)
                         params.locallab.vart = dataspotd[23][sp];
                         params.locallab.sensih = dataspotd[24][sp];
 
-                        if(dataspotd[25][0] ==  0) {
+                        if(dataspotd[25][sp] ==  0) {
                             params.locallab.inversret = 0;
                         } else {
                             params.locallab.inversret = 1;

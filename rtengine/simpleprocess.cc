@@ -1097,7 +1097,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.sensi = dataspots[12][sp];
                     params.locallab.transit = dataspots[13][sp];
 
-                    if(dataspots[14][0] ==  0) {
+                    if(dataspots[14][sp] ==  0) {
                         params.locallab.invers = 0;
                     } else {
                         params.locallab.invers = 1;
@@ -1116,7 +1116,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.radius = (float) (dataspots[17][sp]) / 10.f;
                     params.locallab.strength = (float) (dataspots[18][sp]) / 10.f;
 
-                    if(dataspots[19][0] ==  0) {
+                    if(dataspots[19][sp] ==  0) {
                         params.locallab.inversrad = 0;
                     } else {
                         params.locallab.inversrad = 1;
@@ -1128,7 +1128,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.vart = dataspots[23][sp];
                     params.locallab.sensih = dataspots[24][sp];
 
-                    if(dataspots[25][0] ==  0) {
+                    if(dataspots[25][sp] ==  0) {
                         params.locallab.inversret = 0;
                     } else {
                         params.locallab.inversret = 1;

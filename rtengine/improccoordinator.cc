@@ -840,7 +840,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.sensi = dataspot[12][sp];
                     params.locallab.transit = dataspot[13][sp];
 
-                    if(dataspot[14][0] ==  0) {
+                    if(dataspot[14][sp] ==  0) {
                         params.locallab.invers = 0;
                     } else {
                         params.locallab.invers = 1;
@@ -859,7 +859,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.radius = (float) (dataspot[17][sp]) / 10.f;
                     params.locallab.strength = (float) (dataspot[18][sp]) / 10.f;
 
-                    if(dataspot[19][0] ==  0) {
+                    if(dataspot[19][sp] ==  0) {
                         params.locallab.inversrad = 0;
                     } else {
                         params.locallab.inversrad = 1;
@@ -871,7 +871,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.vart = dataspot[23][sp];
                     params.locallab.sensih = dataspot[24][sp];
 
-                    if(dataspot[25][0] ==  0) {
+                    if(dataspot[25][sp] ==  0) {
                         params.locallab.inversret = 0;
                     } else {
                         params.locallab.inversret = 1;
