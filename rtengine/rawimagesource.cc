@@ -421,25 +421,6 @@ extern const Settings* settings;
 #define ABS(a) ((a)<0?-(a):(a))
 #define DIST(a,b) (ABS(a-b))
 
-#define PIX_SORT(a,b) { if ((a)>(b)) {temp=(a);(a)=(b);(b)=temp;} }
-
-#define med3x3(a0,a1,a2,a3,a4,a5,a6,a7,a8,median) { \
-p[0]=a0; p[1]=a1; p[2]=a2; p[3]=a3; p[4]=a4; p[5]=a5; p[6]=a6; p[7]=a7; p[8]=a8; \
-PIX_SORT(p[1],p[2]); PIX_SORT(p[4],p[5]); PIX_SORT(p[7],p[8]); \
-PIX_SORT(p[0],p[1]); PIX_SORT(p[3],p[4]); PIX_SORT(p[6],p[7]); \
-PIX_SORT(p[1],p[2]); PIX_SORT(p[4],p[5]); PIX_SORT(p[7],p[8]); \
-PIX_SORT(p[0],p[3]); PIX_SORT(p[5],p[8]); PIX_SORT(p[4],p[7]); \
-PIX_SORT(p[3],p[6]); PIX_SORT(p[1],p[4]); PIX_SORT(p[2],p[5]); \
-PIX_SORT(p[4],p[7]); PIX_SORT(p[4],p[2]); PIX_SORT(p[6],p[4]); \
-PIX_SORT(p[4],p[2]); median=p[4];} //a4 is the median
-
-#define med5(a0,a1,a2,a3,a4,median) { \
-p[0]=a0; p[1]=a1; p[2]=a2; p[3]=a3; p[4]=a4; \
-PIX_SORT(p[0],p[1]) ; PIX_SORT(p[3],p[4]) ; PIX_SORT(p[0],p[3]) ; \
-PIX_SORT(p[1],p[4]) ; PIX_SORT(p[1],p[2]) ; PIX_SORT(p[2],p[3]) ; \
-PIX_SORT(p[1],p[2]) ; median=p[2] ;}
-
-
 RawImageSource::RawImageSource ()
     : ImageSource()
     , plistener(NULL)
@@ -714,7 +695,7 @@ void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* ima
     rm /= area;
     gm /= area;
     bm /= area;
-
+    bool doHr = (hrp.hrenabled && hrp.method != "Color");
 #ifdef _OPENMP
     #pragma omp parallel if(!d1x)       // omp disabled for D1x to avoid race conditions (see Issue 1088 http://code.google.com/p/rawtherapee/issues/detail?id=1088)
     {
@@ -801,8 +782,8 @@ void RawImageSource::getImage (const ColorTemp &ctemp, int tran, Imagefloat* ima
             }
 
             //process all highlight recovery other than "Color"
-            if (hrp.hrenabled && hrp.method != "Color") {
-                hlRecovery (hrp.method, line_red, line_grn, line_blue, i, sx1, imwidth, skip, raw, hlmax);
+            if (doHr) {
+                hlRecovery (hrp.method, line_red, line_grn, line_blue, imwidth, hlmax);
             }
 
             if(d1x) {
@@ -1339,12 +1320,10 @@ SSEFUNCTION int RawImageSource::findHotDeadPixels( PixelsMap &bpMap, float thres
 #endif
 
         for (int i = 2; i < H - 2; i++) {
-            float p[9], temp; // we need this for med3x3 macro
-
             for (int j = 2; j < W - 2; j++) {
-                med3x3(rawData[i - 2][j - 2], rawData[i - 2][j], rawData[i - 2][j + 2],
-                       rawData[i][j - 2], rawData[i][j], rawData[i][j + 2],
-                       rawData[i + 2][j - 2], rawData[i + 2][j], rawData[i + 2][j + 2], temp);
+                const float& temp = median(rawData[i - 2][j - 2], rawData[i - 2][j], rawData[i - 2][j + 2],
+                                           rawData[i][j - 2], rawData[i][j], rawData[i][j + 2],
+                                           rawData[i + 2][j - 2], rawData[i + 2][j], rawData[i + 2][j + 2]);
                 cfablur[i * W + j] = rawData[i][j] - temp;
             }
         }
@@ -1663,8 +1642,9 @@ int RawImageSource::load (const Glib::ustring &fname, bool batch)
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &lensProf, const CoarseTransformParams& coarse)
+void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &lensProf, const CoarseTransformParams& coarse, bool prepareDenoise)
 {
+//    BENCHFUN
     MyTime t1, t2;
     t1.set();
 
@@ -1676,25 +1656,27 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
             rid = dfm.searchDarkFrame( raw.dark_frame );
         }
     } else {
-        rid = dfm.searchDarkFrame( ri->get_maker(), ri->get_model(), ri->get_ISOspeed(), ri->get_shutter(), ri->get_timestamp());
+        rid = dfm.searchDarkFrame(idata->getMake(), idata->getModel(), idata->getISOSpeed(), idata->getShutterSpeed(), idata->getDateTimeAsTS());
     }
 
     if( rid && settings->verbose) {
         printf( "Subtracting Darkframe:%s\n", rid->get_filename().c_str());
     }
 
-    PixelsMap bitmapBads(W, H);
+    PixelsMap *bitmapBads = nullptr;
+
     int totBP = 0; // Hold count of bad pixels to correct
 
     if(ri->zeroIsBad()) { // mark all pixels with value zero as bad, has to be called before FF and DF. dcraw sets this flag only for some cameras (mainly Panasonic and Leica)
+        bitmapBads = new PixelsMap(W, H);
 #ifdef _OPENMP
-        #pragma omp parallel for reduction(+:totBP)
+        #pragma omp parallel for reduction(+:totBP) schedule(dynamic,16)
 #endif
 
         for(int i = 0; i < H; i++)
             for(int j = 0; j < W; j++) {
                 if(ri->data[i][j] == 0.f) {
-                    bitmapBads.set(j, i);
+                    bitmapBads->set(j, i);
                     totBP++;
                 }
             }
@@ -1705,7 +1687,6 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
     }
 
     //FLATFIELD start
-    Glib::ustring newFF = raw.ff_file;
     RawImage *rif = NULL;
 
     if (!raw.ff_AutoSelect) {
@@ -1731,7 +1712,11 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
     std::vector<badPix> *bp = dfm.getBadPixels( ri->get_maker(), ri->get_model(), idata->getSerialNumber() );
 
     if( bp ) {
-        totBP += bitmapBads.set( *bp );
+        if(!bitmapBads) {
+            bitmapBads = new PixelsMap(W, H);
+        }
+
+        totBP += bitmapBads->set( *bp );
 
         if( settings->verbose ) {
             std::cout << "Correcting " << bp->size() << " pixels from .badpixels" << std::endl;
@@ -1742,13 +1727,17 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
     bp = 0;
 
     if( raw.df_autoselect ) {
-        bp = dfm.getHotPixels( ri->get_maker(), ri->get_model(), ri->get_ISOspeed(), ri->get_shutter(), ri->get_timestamp());
+        bp = dfm.getHotPixels(idata->getMake(), idata->getModel(), idata->getISOSpeed(), idata->getShutterSpeed(), idata->getDateTimeAsTS());
     } else if( !raw.dark_frame.empty() ) {
         bp = dfm.getHotPixels( raw.dark_frame );
     }
 
     if(bp) {
-        totBP += bitmapBads.set( *bp );
+        if(!bitmapBads) {
+            bitmapBads = new PixelsMap(W, H);
+        }
+
+        totBP += bitmapBads->set( *bp );
 
         if( settings->verbose && !bp->empty()) {
             std::cout << "Correcting " << bp->size() << " hotpixels from darkframe" << std::endl;
@@ -1787,7 +1776,11 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
             plistener->setProgress (0.0);
         }
 
-        int nFound = findHotDeadPixels( bitmapBads, raw.hotdeadpix_thresh, raw.hotPixelFilter, raw.deadPixelFilter );
+        if(!bitmapBads) {
+            bitmapBads = new PixelsMap(W, H);
+        }
+
+        int nFound = findHotDeadPixels( *bitmapBads, raw.hotdeadpix_thresh, raw.hotPixelFilter, raw.deadPixelFilter );
         totBP += nFound;
 
         if( settings->verbose && nFound > 0) {
@@ -1845,11 +1838,11 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
 
     if( totBP )
         if ( ri->getSensorType() == ST_BAYER ) {
-            interpolateBadPixelsBayer( bitmapBads );
+            interpolateBadPixelsBayer( *bitmapBads );
         } else if ( ri->getSensorType() == ST_FUJI_XTRANS ) {
-            interpolateBadPixelsXtrans( bitmapBads );
+            interpolateBadPixelsXtrans( *bitmapBads );
         } else {
-            interpolateBadPixelsNColours( bitmapBads, ri->get_colors() );
+            interpolateBadPixelsNColours( *bitmapBads, ri->get_colors() );
         }
 
     if ( ri->getSensorType() == ST_BAYER && raw.bayersensor.linenoise > 0 ) {
@@ -1874,7 +1867,7 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
         processRawWhitepoint(raw.expos, raw.preser);
     }
 
-    if(dirpyrdenoiseExpComp == INFINITY) {
+    if(prepareDenoise && dirpyrdenoiseExpComp == INFINITY) {
         LUTu aehist;
         int aehistcompr;
         double clip = 0;
@@ -1887,6 +1880,10 @@ void RawImageSource::preprocess  (const RAWParams &raw, const LensProfParams &le
 
     if( settings->verbose ) {
         printf("Preprocessing: %d usec\n", t2.etime(t1));
+    }
+
+    if(bitmapBads) {
+        delete bitmapBads;
     }
 
     return;
@@ -2674,7 +2671,7 @@ void RawImageSource::HLRecovery_Global(ToneCurveParams hrp)
 
 void RawImageSource::processFlatField(const RAWParams &raw, RawImage *riFlatFile, unsigned short black[4])
 {
-    BENCHFUN
+//    BENCHFUN
     float *cfablur = (float (*)) malloc (H * W * sizeof * cfablur);
     int BS = raw.ff_BlurRadius;
     BS += BS & 1;
@@ -2978,13 +2975,17 @@ void RawImageSource::copyOriginalPixels(const RAWParams &raw, RawImage *src, Raw
                 for (int col = 0; col < W; col++) {
                     int c  = FC(row, col);
                     int c4 = ( c == 1 && !(row & 1) ) ? 3 : c;
-                    rawData[row][col]   = max(src->data[row][col] + black[c4] - riDark->data[row][col], 0.0f);
+                    rawData[row][col] = max(src->data[row][col] + black[c4] - riDark->data[row][col], 0.0f);
                 }
             }
         } else {
+#ifdef _OPENMP
+            #pragma omp parallel for
+#endif
+
             for (int row = 0; row < H; row++) {
                 for (int col = 0; col < W; col++) {
-                    rawData[row][col]   = src->data[row][col];
+                    rawData[row][col] = src->data[row][col];
                 }
             }
         }
@@ -3513,17 +3514,12 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
     vfloat* pre2 = &buffer[3];
     vfloat* post1 = &buffer[6];
     vfloat* post2 = &buffer[9];
-
-    vfloat middle[6];
-
 #else
     float buffer[12];
     float* pre1 = &buffer[0];
     float* pre2 = &buffer[3];
     float* post1 = &buffer[6];
     float* post2 = &buffer[9];
-
-    float middle[6];
 #endif
 
     int px = (row_from - 1) % 3, cx = row_from % 3, nx = 0;
@@ -3547,7 +3543,6 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
 #ifdef __SSE2__
         pre1[0] = _mm_setr_ps(rbconv_I[px][0], rbconv_Q[px][0], 0, 0) , pre1[1] = _mm_setr_ps(rbconv_I[cx][0], rbconv_Q[cx][0], 0, 0), pre1[2] = _mm_setr_ps(rbconv_I[nx][0], rbconv_Q[nx][0], 0, 0);
         pre2[0] = _mm_setr_ps(rbconv_I[px][1], rbconv_Q[px][1], 0, 0) , pre2[1] = _mm_setr_ps(rbconv_I[cx][1], rbconv_Q[cx][1], 0, 0), pre2[2] = _mm_setr_ps(rbconv_I[nx][1], rbconv_Q[nx][1], 0, 0);
-        vfloat temp[7];
 
         // fill first element in rbout_I and rbout_Q
         rbout_I[cx][0] = rbconv_I[cx][0];
@@ -3556,13 +3551,12 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
         // median I channel
         for (int j = 1; j < W - 2; j += 2) {
             post1[0] = _mm_setr_ps(rbconv_I[px][j + 1], rbconv_Q[px][j + 1], 0, 0), post1[1] = _mm_setr_ps(rbconv_I[cx][j + 1], rbconv_Q[cx][j + 1], 0, 0), post1[2] = _mm_setr_ps(rbconv_I[nx][j + 1], rbconv_Q[nx][j + 1], 0, 0);
-            VMIDDLE4OF6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2], middle[0], middle[1], middle[2], middle[3], middle[4], middle[5], temp[0]);
-            vfloat medianval;
-            VMEDIAN7(pre1[0], pre1[1], pre1[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], medianval);
+            const auto middle = middle4of6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2]);
+            vfloat medianval = median(pre1[0], pre1[1], pre1[2], middle[0], middle[1], middle[2], middle[3]);
             rbout_I[cx][j] = medianval[0];
             rbout_Q[cx][j] = medianval[1];
             post2[0] = _mm_setr_ps(rbconv_I[px][j + 2], rbconv_Q[px][j + 2], 0, 0), post2[1] = _mm_setr_ps(rbconv_I[cx][j + 2], rbconv_Q[cx][j + 2], 0, 0), post2[2] = _mm_setr_ps(rbconv_I[nx][j + 2], rbconv_Q[nx][j + 2], 0, 0);
-            VMEDIAN7(post2[0], post2[1], post2[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], medianval);
+            medianval = median(post2[0], post2[1], post2[2], middle[0], middle[1], middle[2], middle[3]);
             rbout_I[cx][j + 1] = medianval[0];
             rbout_Q[cx][j + 1] = medianval[1];
             std::swap(pre1, post1);
@@ -3578,7 +3572,6 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
 #else
         pre1[0] = rbconv_I[px][0], pre1[1] = rbconv_I[cx][0], pre1[2] = rbconv_I[nx][0];
         pre2[0] = rbconv_I[px][1], pre2[1] = rbconv_I[cx][1], pre2[2] = rbconv_I[nx][1];
-        float temp[7];
 
         // fill first element in rbout_I
         rbout_I[cx][0] = rbconv_I[cx][0];
@@ -3586,10 +3579,10 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
         // median I channel
         for (int j = 1; j < W - 2; j += 2) {
             post1[0] = rbconv_I[px][j + 1], post1[1] = rbconv_I[cx][j + 1], post1[2] = rbconv_I[nx][j + 1];
-            MIDDLE4OF6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2], middle[0], middle[1], middle[2], middle[3], middle[4], middle[5], temp[0]);
-            MEDIAN7(pre1[0], pre1[1], pre1[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], rbout_I[cx][j]);
+            const auto middle = middle4of6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2]);
+            rbout_I[cx][j] = median(pre1[0], pre1[1], pre1[2], middle[0], middle[1], middle[2], middle[3]);
             post2[0] = rbconv_I[px][j + 2], post2[1] = rbconv_I[cx][j + 2], post2[2] = rbconv_I[nx][j + 2];
-            MEDIAN7(post2[0], post2[1], post2[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], rbout_I[cx][j + 1]);
+            rbout_I[cx][j + 1] = median(post2[0], post2[1], post2[2], middle[0], middle[1], middle[2], middle[3]);
             std::swap(pre1, post1);
             std::swap(pre2, post2);
         }
@@ -3607,10 +3600,10 @@ void RawImageSource::processFalseColorCorrectionThread  (Imagefloat* im, array2D
         // median Q channel
         for (int j = 1; j < W - 2; j += 2) {
             post1[0] = rbconv_Q[px][j + 1], post1[1] = rbconv_Q[cx][j + 1], post1[2] = rbconv_Q[nx][j + 1];
-            MIDDLE4OF6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2], middle[0], middle[1], middle[2], middle[3], middle[4], middle[5], temp[0]);
-            MEDIAN7(pre1[0], pre1[1], pre1[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], rbout_Q[cx][j]);
+            const auto middle = middle4of6(pre2[0], pre2[1], pre2[2], post1[0], post1[1], post1[2]);
+            rbout_Q[cx][j] = median(pre1[0], pre1[1], pre1[2], middle[0], middle[1], middle[2], middle[3]);
             post2[0] = rbconv_Q[px][j + 2], post2[1] = rbconv_Q[cx][j + 2], post2[2] = rbconv_Q[nx][j + 2];
-            MEDIAN7(post2[0], post2[1], post2[2], middle[1], middle[2], middle[3], middle[4], temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], rbout_Q[cx][j + 1]);
+            rbout_Q[cx][j + 1] = median(post2[0], post2[1], post2[2], middle[0], middle[1], middle[2], middle[3]);
             std::swap(pre1, post1);
             std::swap(pre2, post2);
         }
@@ -4403,7 +4396,7 @@ void RawImageSource::HLRecovery_CIELab (float* rin, float* gin, float* bin, floa
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-void RawImageSource::hlRecovery (std::string method, float* red, float* green, float* blue, int i, int sx1, int width, int skip, const RAWParams &raw, float* hlmax )
+void RawImageSource::hlRecovery (std::string method, float* red, float* green, float* blue, int width, float* hlmax )
 {
 
     if (method == "Luminance") {
@@ -4428,7 +4421,7 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
 
     histogram(65536 >> histcompr);
     histogram.clear();
-    const float refwb[3] = {static_cast<float>(refwb_red), static_cast<float>(refwb_green), static_cast<float>(refwb_blue)};
+    const float refwb[3] = {static_cast<float>(refwb_red  / (1 << histcompr)), static_cast<float>(refwb_green / (1 << histcompr)), static_cast<float>(refwb_blue / (1 << histcompr))};
 
 #ifdef _OPENMP
     #pragma omp parallel
@@ -4437,7 +4430,7 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
         LUTu tmphistogram(histogram.getSize());
         tmphistogram.clear();
 #ifdef _OPENMP
-        #pragma omp for nowait
+        #pragma omp for schedule(dynamic,16) nowait
 #endif
 
         for (int i = border; i < H - border; i++) {
@@ -4445,22 +4438,50 @@ void RawImageSource::getAutoExpHistogram (LUTu & histogram, int& histcompr)
             getRowStartEnd (i, start, end);
 
             if (ri->getSensorType() == ST_BAYER) {
-                for (int j = start; j < end; j++) {
-                    tmphistogram[(int)(refwb[ri->FC(i, j)] * rawData[i][j]) >> histcompr] += 4;
+                // precalculate factors to avoid expensive per pixel calculations
+                float refwb0 =  refwb[ri->FC(i, start)];
+                float refwb1 =  refwb[ri->FC(i, start + 1)];
+                int j;
+
+                for (j = start; j < end - 1; j += 2) {
+                    tmphistogram[(int)(refwb0 * rawData[i][j])] += 4;
+                    tmphistogram[(int)(refwb1 * rawData[i][j + 1])] += 4;
+                }
+
+                if(j < end) {
+                    tmphistogram[(int)(refwb0 * rawData[i][j])] += 4;
                 }
             } else if (ri->getSensorType() == ST_FUJI_XTRANS) {
-                for (int j = start; j < end; j++) {
-                    tmphistogram[(int)(refwb[ri->XTRANSFC(i, j)] * rawData[i][j]) >> histcompr] += 4;
+                // precalculate factors to avoid expensive per pixel calculations
+                float refwb0 =  refwb[ri->XTRANSFC(i, start)];
+                float refwb1 =  refwb[ri->XTRANSFC(i, start + 1)];
+                float refwb2 =  refwb[ri->XTRANSFC(i, start + 2)];
+                float refwb3 =  refwb[ri->XTRANSFC(i, start + 3)];
+                float refwb4 =  refwb[ri->XTRANSFC(i, start + 4)];
+                float refwb5 =  refwb[ri->XTRANSFC(i, start + 5)];
+                int j;
+
+                for (j = start; j < end - 5; j += 6) {
+                    tmphistogram[(int)(refwb0 * rawData[i][j])] += 4;
+                    tmphistogram[(int)(refwb1 * rawData[i][j + 1])] += 4;
+                    tmphistogram[(int)(refwb2 * rawData[i][j + 2])] += 4;
+                    tmphistogram[(int)(refwb3 * rawData[i][j + 3])] += 4;
+                    tmphistogram[(int)(refwb4 * rawData[i][j + 4])] += 4;
+                    tmphistogram[(int)(refwb5 * rawData[i][j + 5])] += 4;
+                }
+
+                for (; j < end; j++) {
+                    tmphistogram[(int)(refwb[ri->XTRANSFC(i, j)] * rawData[i][j])] += 4;
                 }
             } else if (ri->get_colors() == 1) {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[(int)(refwb_red *  rawData[i][j]) >> histcompr]++;
+                    tmphistogram[(int)(refwb_red *  rawData[i][j])]++;
                 }
             } else {
                 for (int j = start; j < end; j++) {
-                    tmphistogram[CLIP((int)(refwb_red *  rawData[i][3 * j + 0])) >> histcompr]++;
-                    tmphistogram[CLIP((int)(refwb_green * rawData[i][3 * j + 1])) >> histcompr] += 2;
-                    tmphistogram[CLIP((int)(refwb_blue * rawData[i][3 * j + 2])) >> histcompr]++;
+                    tmphistogram[CLIP((int)(refwb_red *  rawData[i][3 * j + 0]))]++;
+                    tmphistogram[CLIP((int)(refwb_green * rawData[i][3 * j + 1]))] += 2;
+                    tmphistogram[CLIP((int)(refwb_blue * rawData[i][3 * j + 2]))]++;
                 }
             }
         }
@@ -4508,7 +4529,7 @@ void RawImageSource::getRAWHistogram (LUTu & histRedRaw, LUTu & histGreenRaw, LU
 
 #ifdef _OPENMP
     int numThreads;
-    // reduce the number of threads under certain conditions to avoid overhaed of too many critical regions
+    // reduce the number of threads under certain conditions to avoid overhead of too many critical regions
     numThreads = sqrt((((H - 2 * border) * (W - 2 * border)) / 262144.f));
     numThreads = std::min(std::max(numThreads, 1), omp_get_max_threads());
 
@@ -5206,11 +5227,4 @@ void RawImageSource::cleanup ()
     delete phaseOneIccCurveInv;
 }
 
-#undef PIX_SORT
-#undef med3x3
-
 } /* namespace */
-
-#undef PIX_SORT
-#undef med3x3
-

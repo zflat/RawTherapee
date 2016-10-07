@@ -106,7 +106,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     ImProcFunctions ipf (&params, true);
 
     PreviewProps pp (0, 0, fw, fh, 1);
-    imgsrc->preprocess( params.raw, params.lensProf, params.coarse);
+    imgsrc->preprocess( params.raw, params.lensProf, params.coarse, params.dirpyrDenoise.enabled);
 
     if (params.toneCurve.autoexp) {// this enabled HLRecovery
         LUTu histRedRaw(256), histGreenRaw(256), histBlueRaw(256);
@@ -1362,7 +1362,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         LUTf CAMBrightCurveJ;
         LUTf CAMBrightCurveQ;
-        float CAMMean;
+        float CAMMean = NAN;
 
         if (params.sharpening.enabled) {
             float d;

@@ -131,7 +131,7 @@ const float d65_white[3] = { 0.950456, 1, 1.088754 };
 #define MIN(a,b) rtengine::min(a,static_cast<__typeof__(a)>(b))
 #define MAX(a,b) rtengine::max(a,static_cast<__typeof__(a)>(b))
 #define LIM(x,min,max) rtengine::LIM(x,static_cast<__typeof__(x)>(min),static_cast<__typeof__(x)>(max))
-#define ULIM(x,y,z) rtengine::ULIM(x,static_cast<__typeof__(x)>(y),static_cast<__typeof__(x)>(z))
+#define ULIM(x,y,z) rtengine::median(x,static_cast<__typeof__(x)>(y),static_cast<__typeof__(x)>(z))
 #define CLIP(x) rtengine::CLIP(x)
 #define SWAP(a,b) { a=a+b; b=a-b; a=a-b; }
 
@@ -895,6 +895,7 @@ ushort * CLASS ljpeg_row (int jrow, struct jhead *jh)
 void CLASS lossless_jpeg_load_raw()
 {
   struct jhead jh;
+  int row=0, col=0;
 
   if (!ljpeg_start (&jh, 0)) return;
   int jwide = jh.wide * jh.clrs;
@@ -917,8 +918,6 @@ void CLASS lossless_jpeg_load_raw()
      #pragma omp section
 #endif
     {
-  int row=0, col=0;
-
     if (load_flags & 1)
       row = jrow & 1 ? height-1-jrow/2 : jrow/2;
     for (int jcol=0; jcol < jwide; jcol++) {
@@ -3222,7 +3221,10 @@ void CLASS smal_decode_segment (unsigned seg[2][2], int holes)
       diff = diff ? -diff : 0x80;
     if (ftell(ifp) + 12 >= seg[1][1])
       diff = 0;
-    raw_image[pix] = pred[pix & 1] += diff;
+    if(pix>=raw_width*raw_height)
+      derror();
+    else
+      raw_image[pix] = pred[pix & 1] += diff;
     if (!(pix & 1) && HOLE(pix / raw_width)) pix += 2;
   }
   maximum = 0xff;
@@ -9316,13 +9318,15 @@ konica_400z:
       width -= 6;
   } else if (!strcmp(make,"Sony") && raw_width == 7392) {
     width -= 30;
-  } else if (!strcmp(make,"Sony") && raw_width == 8000) {
-    width -= 32;
-    if (!strncmp(model,"DSC",3)) {
-      tiff_bps = 14;
-      load_raw = &CLASS unpacked_load_raw;
-      black = 512;
-    }
+// this was introduced with update to dcraw 9.27
+// but led to broken decode for compressed files from Sony DSC-RX1RM2
+//  } else if (!strcmp(make,"Sony") && raw_width == 8000) {
+//    width -= 32;
+//    if (!strncmp(model,"DSC",3)) {
+//      tiff_bps = 14;
+//      load_raw = &CLASS unpacked_load_raw;
+//      black = 512;
+//    }
   } else if (!strcmp(model,"DSLR-A100")) {
     if (width == 3880) {
       height--;

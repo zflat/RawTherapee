@@ -1105,8 +1105,8 @@ void ProcParams::setDefaults ()
     prsharpening.edges_tolerance  = 1800;
     prsharpening.halocontrol      = false;
     prsharpening.halocontrol_amount = 85;
-    prsharpening.method           = "usm";
-    prsharpening.deconvradius     = 0.5;
+    prsharpening.method           = "rld";
+    prsharpening.deconvradius     = 0.45;
     prsharpening.deconviter       = 100;
     prsharpening.deconvdamping    = 0;
     prsharpening.deconvamount     = 100;
@@ -1216,10 +1216,10 @@ void ProcParams::setDefaults ()
     crop.y          = -1;
     crop.w          = 15000;
     crop.h          = 15000;
-    crop.fixratio   = false;
+    crop.fixratio   = true;
     crop.ratio      = "3:2";
     crop.orientation = "As Image";
-    crop.guide      = "Rule of thirds";
+    crop.guide      = "Frame";
 
     coarse.setDefaults();
 
@@ -3579,14 +3579,14 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         // save exif change list
         if (!pedited || pedited->exif) {
-            for (ExifPairs::const_iterator i = exif.begin(); i != exif.end(); i++) {
+            for (ExifPairs::const_iterator i = exif.begin(); i != exif.end(); ++i) {
                 keyFile.set_string ("Exif", i->first, i->second);
             }
         }
 
         // save iptc change list
         if (!pedited || pedited->iptc) {
-            for (IPTCPairs::const_iterator i = iptc.begin(); i != iptc.end(); i++) {
+            for (IPTCPairs::const_iterator i = iptc.begin(); i != iptc.end(); ++i) {
                 Glib::ArrayHandle<Glib::ustring> values = i->second;
                 keyFile.set_string_list ("IPTC", i->first, values);
             }
@@ -7922,7 +7922,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 for (
                     std::vector<Glib::ustring>::iterator currLoadedTagValue = currIptc.begin();
                     currLoadedTagValue != currIptc.end();
-                    currLoadedTagValue++) {
+                    ++currLoadedTagValue) {
                     iptc[keys[i]].push_back(currLoadedTagValue->data());
                 }
 

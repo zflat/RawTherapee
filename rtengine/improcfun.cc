@@ -612,8 +612,7 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
                         Jpro = (CAMBrightCurveJ[(float)(Jpro * 327.68)]) / 327.68; //ligthness CIECAM02 + contrast
                         double sres;
                         double Sp = spro / 100.0;
-                        double parsat = 1.5;
-                        parsat = 1.5; //parsat=1.5 =>saturation  ; 1.8 => chroma ; 2.5 => colorfullness (personal evaluation)
+                        double parsat = 1.5; //parsat=1.5 =>saturation  ; 1.8 => chroma ; 2.5 => colorfullness (personal evaluation)
 
                         if(schr == -100.0) {
                             schr = -99.8;
@@ -1669,86 +1668,12 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
         const ColorAppearanceParams::eCTCModeId curveMode3 = params->colorappearance.curveMode3;
         const bool hasColCurve3 = bool(customColCurve3);
 
-        if(settings->viewinggreySc == 0) { //auto
-            if     (mean < 15.f) {
-                yb = 3.0f;
-            } else if(mean < 30.f) {
-                yb = 5.0f;
-            } else if(mean < 40.f) {
-                yb = 10.0f;
-            } else if(mean < 45.f) {
-                yb = 15.0f;
-            } else if(mean < 50.f) {
-                yb = 18.0f;
-            } else if(mean < 55.f) {
-                yb = 23.0f;
-            } else if(mean < 60.f) {
-                yb = 30.0f;
-            } else if(mean < 70.f) {
-                yb = 40.0f;
-            } else if(mean < 80.f) {
-                yb = 60.0f;
-            } else if(mean < 90.f) {
-                yb = 80.0f;
-            } else {
-                yb = 90.0f;
-            }
-        } else if(settings->viewinggreySc == 1) {
-            yb = 18.0f;    //fixed
-        }
+        bool needJ = (alg == 0 || alg == 1 || alg == 3);
+        bool needQ = (alg == 2 || alg == 3);
+        LUTu hist16J;
+        LUTu hist16Q;
 
-
-        const bool highlight = params->toneCurve.hrenabled; //Get the value if "highlight reconstruction" is activated
-
-        const int gamu = (params->colorappearance.gamut == true) ? 1 : 0;
-        xw = 100.0f * Xw;
-        yw = 100.0f * Yw;
-        zw = 100.0f * Zw;
-        float xw1, yw1, zw1, xw2, yw2, zw2;
-
-        // settings of WB: scene and viewing
-        if(params->colorappearance.wbmodel == "RawT") {
-            xw1 = 96.46f;    //use RT WB; CAT 02 is used for output device (see prefreneces)
-            yw1 = 100.0f;
-            zw1 = 82.445f;
-            xw2 = xwd;
-            yw2 = ywd;
-            zw2 = zwd;
-        } else if(params->colorappearance.wbmodel == "RawTCAT02") {
-            xw1 = xw;    // Settings RT WB are used for CAT02 => mix , CAT02 is use for output device (screen: D50 D65, projector: lamp, LED) see preferences
-            yw1 = yw;
-            zw1 = zw;
-            xw2 = xwd;
-            yw2 = ywd;
-            zw2 = zwd;
-        }
-
-        float cz, wh, pfl;
-        Ciecam02::initcam1float(gamu, yb, pilot, f, la, xw, yw, zw, n, d, nbb, ncb, cz, aw, wh, pfl, fl, c);
-        const float pow1 = pow_F( 1.64f - pow_F( 0.29f, n ), 0.73f );
-        float nj, dj, nbbj, ncbj, czj, awj, flj;
-        Ciecam02::initcam2float(gamu, yb2, f2,  la2,  xw2,  yw2,  zw2, nj, dj, nbbj, ncbj, czj, awj, flj);
-        const float reccmcz = 1.f / (c2 * czj);
-        const float pow1n = pow_F( 1.64f - pow_F( 0.29f, nj ), 0.73f );
-
-        const float epsil = 0.0001f;
-        const float w_h = wh + epsil;
-        const float coefQ = 32767.f / wh;
-        const float a_w = aw;
-        const float c_ = c;
-        const float f_l = fl;
-        const float coe = pow_F(fl, 0.25f);
-        const float QproFactor = ( 0.4f / c ) * ( aw + 4.0f ) ;
-        const bool LabPassOne = !((params->colorappearance.tonecie && (epdEnabled)) || (params->sharpening.enabled && settings->autocielab && execsharp)
-                                  || (params->dirpyrequalizer.enabled && settings->autocielab) || (params->defringe.enabled && settings->autocielab)  || (params->sharpenMicro.enabled && settings->autocielab)
-                                  || (params->impulseDenoise.enabled && settings->autocielab) ||  (params->colorappearance.badpixsl > 0 && settings->autocielab));
-
-
-        if(CAMBrightCurveJ.dirty || CAMBrightCurveQ.dirty) {
-            bool needJ = (alg == 0 || alg == 1 || alg == 3);
-            bool needQ = (alg == 2 || alg == 3);
-            LUTu hist16J;
-            LUTu hist16Q;
+        if((needJ && CAMBrightCurveJ.dirty) || (needQ && CAMBrightCurveQ.dirty) || (std::isnan(mean) && settings->viewinggreySc != 0)) {
 
             if (needJ) {
                 hist16J (32768);
@@ -1843,31 +1768,112 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
                     }
 
                 }
+
+                if(std::isnan(mean)) {
+                    mean = (sum / ((height) * width)) / 327.68f; //for Yb  for all image...if one day "pipette" we can adapt Yb for each zone
+                }
             }
 
 
-            //mean=(sum/((endh-begh)*width))/327.68f;//for Yb  for all image...if one day "pipette" we can adapt Yb for each zone
-            mean = (sum / ((height) * width)) / 327.68f; //for Yb  for all image...if one day "pipette" we can adapt Yb for each zone
 
             //evaluate lightness, contrast
-            if (needJ) {
-                if (!CAMBrightCurveJ) {
-                    CAMBrightCurveJ(32768, LUT_CLIP_ABOVE);
-                    CAMBrightCurveJ.dirty = false;
-                }
+        }
 
-                Ciecam02::curveJfloat (params->colorappearance.jlight, params->colorappearance.contrast, hist16J, CAMBrightCurveJ);//lightness and contrast J
-                CAMBrightCurveJ /= 327.68f;
+        if(settings->viewinggreySc == 0) { //auto
+            if     (mean < 15.f) {
+                yb = 3.0f;
+            } else if(mean < 30.f) {
+                yb = 5.0f;
+            } else if(mean < 40.f) {
+                yb = 10.0f;
+            } else if(mean < 45.f) {
+                yb = 15.0f;
+            } else if(mean < 50.f) {
+                yb = 18.0f;
+            } else if(mean < 55.f) {
+                yb = 23.0f;
+            } else if(mean < 60.f) {
+                yb = 30.0f;
+            } else if(mean < 70.f) {
+                yb = 40.0f;
+            } else if(mean < 80.f) {
+                yb = 60.0f;
+            } else if(mean < 90.f) {
+                yb = 80.0f;
+            } else {
+                yb = 90.0f;
+            }
+        } else if(settings->viewinggreySc == 1) {
+            yb = 18.0f;    //fixed
+        }
+
+        const bool highlight = params->toneCurve.hrenabled; //Get the value if "highlight reconstruction" is activated
+
+        const int gamu = (params->colorappearance.gamut == true) ? 1 : 0;
+        xw = 100.0f * Xw;
+        yw = 100.0f * Yw;
+        zw = 100.0f * Zw;
+        float xw1, yw1, zw1, xw2, yw2, zw2;
+
+        // settings of WB: scene and viewing
+        if(params->colorappearance.wbmodel == "RawT") {
+            xw1 = 96.46f;    //use RT WB; CAT 02 is used for output device (see prefreneces)
+            yw1 = 100.0f;
+            zw1 = 82.445f;
+            xw2 = xwd;
+            yw2 = ywd;
+            zw2 = zwd;
+        } else if(params->colorappearance.wbmodel == "RawTCAT02") {
+            xw1 = xw;    // Settings RT WB are used for CAT02 => mix , CAT02 is use for output device (screen: D50 D65, projector: lamp, LED) see preferences
+            yw1 = yw;
+            zw1 = zw;
+            xw2 = xwd;
+            yw2 = ywd;
+            zw2 = zwd;
+        }
+
+        float cz, wh, pfl;
+        Ciecam02::initcam1float(gamu, yb, pilot, f, la, xw, yw, zw, n, d, nbb, ncb, cz, aw, wh, pfl, fl, c);
+        const float pow1 = pow_F( 1.64f - pow_F( 0.29f, n ), 0.73f );
+        float nj, dj, nbbj, ncbj, czj, awj, flj;
+        Ciecam02::initcam2float(gamu, yb2, f2,  la2,  xw2,  yw2,  zw2, nj, dj, nbbj, ncbj, czj, awj, flj);
+        const float reccmcz = 1.f / (c2 * czj);
+        const float pow1n = pow_F( 1.64f - pow_F( 0.29f, nj ), 0.73f );
+
+        const float epsil = 0.0001f;
+        const float w_h = wh + epsil;
+        const float coefQ = 32767.f / wh;
+        const float a_w = aw;
+        const float c_ = c;
+        const float f_l = fl;
+        const float coe = pow_F(fl, 0.25f);
+        const float QproFactor = ( 0.4f / c ) * ( aw + 4.0f ) ;
+        const bool LabPassOne = !((params->colorappearance.tonecie && (epdEnabled)) || (params->sharpening.enabled && settings->autocielab && execsharp)
+                                  || (params->dirpyrequalizer.enabled && settings->autocielab) || (params->defringe.enabled && settings->autocielab)  || (params->sharpenMicro.enabled && settings->autocielab)
+                                  || (params->impulseDenoise.enabled && settings->autocielab) ||  (params->colorappearance.badpixsl > 0 && settings->autocielab));
+
+
+        if (needJ) {
+            if (!CAMBrightCurveJ) {
+                CAMBrightCurveJ(32768, LUT_CLIP_ABOVE);
             }
 
-            if (needQ) {
-                if (!CAMBrightCurveQ) {
-                    CAMBrightCurveQ(32768, LUT_CLIP_ABOVE);
-                    CAMBrightCurveQ.dirty = false;
-                }
+            if(CAMBrightCurveJ.dirty) {
+                Ciecam02::curveJfloat (params->colorappearance.jlight, params->colorappearance.contrast, hist16J, CAMBrightCurveJ);//lightness and contrast J
+                CAMBrightCurveJ /= 327.68f;
+                CAMBrightCurveJ.dirty = false;
+            }
+        }
 
+        if (needQ) {
+            if (!CAMBrightCurveQ) {
+                CAMBrightCurveQ(32768, LUT_CLIP_ABOVE);
+            }
+
+            if(CAMBrightCurveQ.dirty) {
                 Ciecam02::curveJfloat (params->colorappearance.qbright, params->colorappearance.qcontrast, hist16Q, CAMBrightCurveQ);//brightness and contrast Q
                 CAMBrightCurveQ /= coefQ;
+                CAMBrightCurveQ.dirty = false;
             }
         }
 
@@ -2240,17 +2246,17 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
                             int sk = 1;
                             float ko = 1.f / coef;
                             Color::skinredfloat(Jpro, hpro, Cc, Ccold, dred, protect_red, sk, rstprotection, ko, Cpro);
-
-                            if(Jpro < 1.f && Cpro > 12.f) {
-                                Cpro = 12.f;    //reduce artifacts by "pseudo gamut control CIECAM"
-                            } else if(Jpro < 2.f && Cpro > 15.f) {
-                                Cpro = 15.f;
-                            } else if(Jpro < 4.f && Cpro > 30.f) {
-                                Cpro = 30.f;
-                            } else if(Jpro < 7.f && Cpro > 50.f) {
-                                Cpro = 50.f;
-                            }
-
+                            /*
+                                                        if(Jpro < 1.f && Cpro > 12.f) {
+                                                            Cpro = 12.f;    //reduce artifacts by "pseudo gamut control CIECAM"
+                                                        } else if(Jpro < 2.f && Cpro > 15.f) {
+                                                            Cpro = 15.f;
+                                                        } else if(Jpro < 4.f && Cpro > 30.f) {
+                                                            Cpro = 30.f;
+                                                        } else if(Jpro < 7.f && Cpro > 50.f) {
+                                                            Cpro = 50.f;
+                                                        }
+                            */
                         } else if (curveMode3 == ColorAppearanceParams::TC_MODE_SATUR) { //
                             float parsat = 0.8f; //0.6
                             float coef = 327.68f / parsat;
@@ -2282,17 +2288,17 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
                             int sk = 0;
                             float ko = 1.f / coef;
                             Color::skinredfloat(Jpro, hpro, Mm, Mold, dred, protect_red, sk, rstprotection, ko, Mpro);
-
-                            if(Jpro < 1.f && Mpro > 12.f * coe) {
-                                Mpro = 12.f * coe;    //reduce artifacts by "pseudo gamut control CIECAM"
-                            } else if(Jpro < 2.f && Mpro > 15.f * coe) {
-                                Mpro = 15.f * coe;
-                            } else if(Jpro < 4.f && Mpro > 30.f * coe) {
-                                Mpro = 30.f * coe;
-                            } else if(Jpro < 7.f && Mpro > 50.f * coe) {
-                                Mpro = 50.f * coe;
-                            }
-
+                            /*
+                                                        if(Jpro < 1.f && Mpro > 12.f * coe) {
+                                                            Mpro = 12.f * coe;    //reduce artifacts by "pseudo gamut control CIECAM"
+                                                        } else if(Jpro < 2.f && Mpro > 15.f * coe) {
+                                                            Mpro = 15.f * coe;
+                                                        } else if(Jpro < 4.f && Mpro > 30.f * coe) {
+                                                            Mpro = 30.f * coe;
+                                                        } else if(Jpro < 7.f && Mpro > 50.f * coe) {
+                                                            Mpro = 50.f * coe;
+                                                        }
+                            */
                             Cpro = Mpro / coe;
                         }
                     }
@@ -2856,54 +2862,29 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
 
 void ImProcFunctions::moyeqt (Imagefloat* working, float &moyS, float &eqty)
 {
-//  MyTime t1e,t2e;
-//  t1e.set();
+    BENCHFUN
 
     int tHh = working->height;
     int tWw = working->width;
-    float moy = 0.f;
-    float eqt = 0.f;
-    #pragma omp parallel
-    {
-        float mo = 0.f;
-#ifndef _DEBUG
-        #pragma omp for reduction(+:moy)
+    double moy = 0.0;
+    double sqrs = 0.0;
+
+#ifdef _OPENMP
+    #pragma omp parallel for reduction(+:moy,sqrs) schedule(dynamic,16)
 #endif
 
-        for (int i = 0; i < tHh; i++) {
-            for (int j = 0; j < tWw; j++) {
-                float r = CLIP(working->r(i, j));
-                float g = CLIP(working->g(i, j));
-                float b = CLIP(working->b(i, j));
-                float h, s, v;
-                Color::rgb2hsv(r, g, b, h, s, v);
-                moy += s;
-            }
-        }
-
-        mo = moy / (tHh * tWw);
-        moyS = mo;
-#ifndef _DEBUG
-        #pragma omp for reduction(+:eqt)
-#endif
-
-        for (int i = 0; i < tHh; i++) {
-            for (int j = 0; j < tWw; j++) {
-                float r = CLIP(working->r(i, j));
-                float g = CLIP(working->g(i, j));
-                float b = CLIP(working->b(i, j));
-                float h, s, v;
-                Color::rgb2hsv(r, g, b, h, s, v);
-                eqt += SQR(s - mo);
-            }
+    for (int i = 0; i < tHh; i++) {
+        for (int j = 0; j < tWw; j++) {
+            float s = Color::rgb2s(CLIP(working->r(i, j)), CLIP(working->g(i, j)), CLIP(working->b(i, j)));
+            moy += s;
+            sqrs += SQR(s);
         }
     }
-    eqt = eqt / (tHh * tWw);
-    eqty = (sqrt(eqt));
 
-    //  t2e.set();
-    //  printf("Moyeqt:%d\n", t2e.etime(t1e));
-
+    moy /= (tHh * tWw);
+    sqrs /= (tHh * tWw);
+    eqty = sqrt(sqrs - SQR(moy));
+    moyS = moy;
 }
 
 static inline void
@@ -2969,17 +2950,17 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
     if (editID != EUID_None) {
         switch  (pipetteBuffer->getDataProvider()->getCurrSubscriber()->getPipetteBufferType()) {
-        case (BT_IMAGEFLOAT):
-            editImgFloat = pipetteBuffer->getImgFloatBuffer();
-            break;
+            case (BT_IMAGEFLOAT):
+                editImgFloat = pipetteBuffer->getImgFloatBuffer();
+                break;
 
-        case (BT_LABIMAGE):
-            editLab = pipetteBuffer->getLabBuffer();
-            break;
+            case (BT_LABIMAGE):
+                editLab = pipetteBuffer->getLabBuffer();
+                break;
 
-        case (BT_SINGLEPLANE_FLOAT):
-            editWhatever = pipetteBuffer->getSinglePlaneBuffer();
-            break;
+            case (BT_SINGLEPLANE_FLOAT):
+                editWhatever = pipetteBuffer->getSinglePlaneBuffer();
+                break;
         }
     }
 
@@ -2997,21 +2978,25 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
     TMatrix wprof = iccStore->workingSpaceMatrix (params->icm.working);
     TMatrix wiprof = iccStore->workingSpaceInverseMatrix (params->icm.working);
 
-    double toxyz[3][3] = {
+    float toxyz[3][3] = {
         {
-            ( wprof[0][0] / Color::D50x),
-            ( wprof[0][1] / Color::D50x),
-            ( wprof[0][2] / Color::D50x)
+            static_cast<float>( wprof[0][0] / Color::D50x),
+            static_cast<float>( wprof[0][1] / Color::D50x),
+            static_cast<float>( wprof[0][2] / Color::D50x)
         }, {
-            ( wprof[1][0]),
-            ( wprof[1][1]),
-            ( wprof[1][2])
+            static_cast<float>( wprof[1][0]),
+            static_cast<float>( wprof[1][1]),
+            static_cast<float>( wprof[1][2])
         }, {
-            ( wprof[2][0] / Color::D50z),
-            ( wprof[2][1] / Color::D50z),
-            ( wprof[2][2] / Color::D50z)
+            static_cast<float>( wprof[2][0] / Color::D50z),
+            static_cast<float>( wprof[2][1] / Color::D50z),
+            static_cast<float>( wprof[2][2] / Color::D50z)
         }
     };
+    float maxFactorToxyz = max(toxyz[1][0],toxyz[1][1],toxyz[1][2]);
+    float equalR = maxFactorToxyz / toxyz[1][0];
+    float equalG = maxFactorToxyz / toxyz[1][1];
+    float equalB = maxFactorToxyz / toxyz[1][2];
 
     //inverse matrix user select
     double wip[3][3] = {
@@ -3648,60 +3633,52 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                         for (int i = istart, ti = 0; i < tH; i++, ti++) {
                             for (int j = jstart, tj = 0; j < tW; j++, tj++) {
-                                float r1, g1, b1, r2, g2, b2, L_1, L_2, Lfactor, a_1, b_1, x_, y_, z_, R, G, B ;
-                                float y, fy, yy, fyy, x, z, fx, fz;
-
                                 // rgb values before RGB curves
-                                r1 = rtemp[ti * TS + tj] ;
-                                g1 = gtemp[ti * TS + tj] ;
-                                b1 = btemp[ti * TS + tj] ;
+                                float r = rtemp[ti * TS + tj] ;
+                                float g = gtemp[ti * TS + tj] ;
+                                float b = btemp[ti * TS + tj] ;
                                 //convert to Lab to get a&b before RGB curves
-                                x = toxyz[0][0] * r1 + toxyz[0][1] * g1 + toxyz[0][2] * b1;
-                                y = toxyz[1][0] * r1 + toxyz[1][1] * g1 + toxyz[1][2] * b1;
-                                z = toxyz[2][0] * r1 + toxyz[2][1] * g1 + toxyz[2][2] * b1;
+                                float x = toxyz[0][0] * r + toxyz[0][1] * g + toxyz[0][2] * b;
+                                float y = toxyz[1][0] * r + toxyz[1][1] * g + toxyz[1][2] * b;
+                                float z = toxyz[2][0] * r + toxyz[2][1] * g + toxyz[2][2] * b;
 
-                                fx = (x < 65535.0f ? Color::cachef[std::max(x, 0.f)] : 327.68f * std::cbrt(x / MAXVALF));
-                                fy = (y < 65535.0f ? Color::cachef[std::max(y, 0.f)] : 327.68f * std::cbrt(y / MAXVALF));
-                                fz = (z < 65535.0f ? Color::cachef[std::max(z, 0.f)] : 327.68f * std::cbrt(z / MAXVALF));
+                                float fx = x < MAXVALF ? Color::cachef[x] : 327.68f * std::cbrt(x / MAXVALF);
+                                float fy = y < MAXVALF ? Color::cachef[y] : 327.68f * std::cbrt(y / MAXVALF);
+                                float fz = z < MAXVALF ? Color::cachef[z] : 327.68f * std::cbrt(z / MAXVALF);
 
-                                L_1 = (116.0f *  fy - 5242.88f); //5242.88=16.0*327.68;
-                                a_1 = (500.0f * (fx - fy) );
-                                b_1 = (200.0f * (fy - fz) );
+                                float a_1 = 500.0f * (fx - fy);
+                                float b_1 = 200.0f * (fy - fz);
 
                                 // rgb values after RGB curves
                                 if (rCurve) {
-                                    r2 = rCurve[ rtemp[ti * TS + tj]];
-                                } else {
-                                    r2 = r1;
+                                    float rNew = rCurve[r];
+                                    r += (rNew - r) * equalR;
                                 }
 
                                 if (gCurve) {
-                                    g2 = gCurve[ gtemp[ti * TS + tj]];
-                                } else {
-                                    g2 = g1;
+                                    float gNew = gCurve[g];
+                                    g += (gNew - g) * equalG;
                                 }
 
                                 if (bCurve) {
-                                    b2 = bCurve[ btemp[ti * TS + tj]];
-                                } else {
-                                    b2 = b1;
+                                    float bNew = bCurve[b];
+                                    b += (bNew - b) * equalB;
                                 }
 
                                 // Luminosity after
                                 // only Luminance in Lab
-                                yy = toxyz[1][0] * r2 + toxyz[1][1] * g2 + toxyz[1][2] * b2;
-                                fyy = (yy < 65535.0f ? Color::cachef[std::max(yy, 0.f)] : 327.68f * std::cbrt(yy / MAXVALF));
-                                L_2 = (116.0f *  fyy - 5242.88f);
+                                float newy = toxyz[1][0] * r + toxyz[1][1] * g + toxyz[1][2] * b;
+                                float newfy = newy < MAXVALF ? Color::cachef[newy] : 327.68f * std::cbrt(newy / MAXVALF);
+                                float L_2 = 116.0f * newfy - 5242.88f;
 
                                 //gamut control
                                 if(settings->rgbcurveslumamode_gamut) {
-                                    float RR, GG, BB;
-                                    float HH, Lpro, Chpro;
-                                    Lpro = L_2 / 327.68f;
-                                    Chpro = sqrt(SQR(a_1) + SQR(b_1)) / 327.68f;
-                                    HH = xatan2f(b_1, a_1);
-                                    // According to mathematical laws we can get the sin and cos of HH by simple operations
-                                    float2  sincosval;
+                                    float Lpro = L_2 / 327.68f;
+                                    float Chpro = sqrtf(SQR(a_1) + SQR(b_1)) / 327.68f;
+                                    float HH = NAN; // we set HH to NAN, because then it will be calculated in Color::gamutLchonly only if needed
+//                                    float HH = xatan2f(b_1, a_1);
+                                    // According to mathematical laws we can get the sin and cos of HH by simple operations even if we don't calculate HH
+                                    float2 sincosval;
 
                                     if(Chpro == 0.0f) {
                                         sincosval.y = 1.0f;
@@ -3715,30 +3692,18 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                     bool neg = false;
                                     bool more_rgb = false;
                                     //gamut control : Lab values are in gamut
-                                    Color::gamutLchonly(HH, Lpro, Chpro, RR, GG, BB, wip, highlight, 0.15f, 0.96f, neg, more_rgb);
+                                    Color::gamutLchonly(HH, sincosval, Lpro, Chpro, rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj], wip, highlight, 0.15f, 0.96f, neg, more_rgb);
 #else
                                     //gamut control : Lab values are in gamut
-                                    Color::gamutLchonly(HH, Lpro, Chpro, RR, GG, BB, wip, highlight, 0.15f, 0.96f);
+                                    Color::gamutLchonly(HH, sincosval, Lpro, Chpro, rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj], wip, highlight, 0.15f, 0.96f);
 #endif
-
-                                    //Color::gamutLchonly(HH,Lpro,Chpro, RR, GG, BB, wip, highlight, 0.15f, 0.96f);
-
-
-
-//                              float2 sincosval = xsincosf(HH);
-
-                                    L_2 = Lpro * 327.68f;
-                                    a_1 = 327.68f * Chpro * sincosval.y;
-                                    b_1 = 327.68f * Chpro * sincosval.x;
-                                } //end of gamut control
-
-                                //calculate RGB with L_2 and old value of a and b
-                                Color::Lab2XYZ(L_2, a_1, b_1, x_, y_, z_) ;
-                                Color::xyz2rgb(x_, y_, z_, R, G, B, wip);
-
-                                rtemp[ti * TS + tj] = R;
-                                gtemp[ti * TS + tj] = G;
-                                btemp[ti * TS + tj] = B;
+                                //end of gamut control
+                                } else {
+                                    float x_, y_, z_;
+                                    //calculate RGB with L_2 and old value of a and b
+                                    Color::Lab2XYZ(L_2, a_1, b_1, x_, y_, z_) ;
+                                    Color::xyz2rgb(x_, y_, z_, rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj], wip);
+                                }
                             }
                         }
                     }
@@ -4134,36 +4099,47 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                                 // --------------------------------------------------
 
+#ifndef __SSE2__
                                 //gamma correction: pseudo TRC curve
                                 if (hasgammabw) {
                                     Color::trcGammaBW (r, g, b, gammabwr, gammabwg, gammabwb);
                                 }
-
+#endif
                                 rtemp[ti * TS + tj] = r;
                                 gtemp[ti * TS + tj] = g;
                                 btemp[ti * TS + tj] = b;
                             }
+#ifdef __SSE2__
+                            if (hasgammabw) {
+                                //gamma correction: pseudo TRC curve
+                                Color::trcGammaBWRow (&rtemp[ti * TS], &gtemp[ti * TS], &btemp[ti * TS], tW - jstart, gammabwr, gammabwg, gammabwb);
+                            }
+#endif
+
                         }
-                    } else if (algm == 1) { //Luminance mixer in Lab mode to avoid artifacts
+                    } else if (algm == 1) { //Luminance mixer in Lab mode to avoid artefacts
                         for (int i = istart, ti = 0; i < tH; i++, ti++) {
                             for (int j = jstart, tj = 0; j < tW; j++, tj++) {
-                                //rgb=>lab
-                                float r = rtemp[ti * TS + tj];
-                                float g = gtemp[ti * TS + tj];
-                                float b = btemp[ti * TS + tj];
+                                //rgb => xyz
                                 float X, Y, Z;
+                                Color::rgbxyz(rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj], X, Y, Z, wp);
+                                //xyz => Lab
                                 float L, aa, bb;
-                                Color::rgbxyz(r, g, b, X, Y, Z, wp);
-                                //convert Lab
                                 Color::XYZ2Lab(X, Y, Z, L, aa, bb);
-                                //end rgb=>lab
-                                //lab ==> Ch
-                                float CC = sqrt(SQR(aa / 327.68f) + SQR(bb / 327.68f)); //CC chromaticity in 0..180 or more
+                                float CC = sqrtf(SQR(aa) + SQR(bb)) / 327.68f; //CC chromaticity in 0..180 or more
                                 float HH = xatan2f(bb, aa); // HH hue in -3.141  +3.141
-                                float l_r;//Luminance Lab in 0..1
-                                l_r = L / 32768.f;
+                                float2 sincosval;
+
+                                if(CC == 0.0f) {
+                                    sincosval.y = 1.f;
+                                    sincosval.x = 0.0f;
+                                } else {
+                                    sincosval.y = aa / (CC * 327.68f);
+                                    sincosval.x = bb / (CC * 327.68f);
+                                }
 
                                 if (bwlCurveEnabled) {
+                                    L /= 32768.f;
                                     double hr = Color::huelab_to_huehsv2(HH);
                                     float valparam = float((bwlCurve->getVal(hr) - 0.5f) * 2.0f); //get l_r=f(H)
                                     float kcc = (CC / 70.f); //take Chroma into account...70 "middle" of chromaticity (arbitrary and simple), one can imagine other algorithme
@@ -4171,48 +4147,43 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                     valparam *= kcc;
 
                                     if(valparam > 0.f) {
-                                        l_r = (1.f - valparam) * l_r + valparam * (1.f - SQR(SQR(SQR(SQR(1.f - min(l_r, 1.0f))))));   // SQR (SQR((SQR)  to increase action in low light
+                                        L = (1.f - valparam) * L + valparam * (1.f - SQR(SQR(SQR(SQR(1.f - min(L, 1.0f))))));   // SQR (SQR((SQR)  to increase action in low light
                                     } else {
-                                        l_r *= (1.f + valparam);    //for negative
+                                        L *= (1.f + valparam);    //for negative
                                     }
+                                    L *= 32768.f;
                                 }
 
-                                L = l_r * 32768.f;
                                 float RR, GG, BB;
-                                float Lr;
-                                Lr = L / 327.68f; //for gamutlch
+                                L /= 327.68f;
 #ifdef _DEBUG
                                 bool neg = false;
                                 bool more_rgb = false;
                                 //gamut control : Lab values are in gamut
-                                Color::gamutLchonly(HH, Lr, CC, RR, GG, BB, wip, highlight, 0.15f, 0.96f, neg, more_rgb);
+                                Color::gamutLchonly(HH, sincosval, L, CC, RR, GG, BB, wip, highlight, 0.15f, 0.96f, neg, more_rgb);
 #else
                                 //gamut control : Lab values are in gamut
-                                Color::gamutLchonly(HH, Lr, CC, RR, GG, BB, wip, highlight, 0.15f, 0.96f);
+                                Color::gamutLchonly(HH, sincosval, L, CC, RR, GG, BB, wip, highlight, 0.15f, 0.96f);
 #endif
-                                //convert CH ==> ab
-                                L = Lr * 327.68f;
-                                //  float a_,b_;
-                                //  a_=0.f;//grey
-                                //  b_=0.f;//grey
-                                //convert lab=>rgb
-                                Color::Lab2XYZ(L, 0.f, 0.f, X, Y, Z);
-                                float rr_, gg_, bb_;
-                                Color::xyz2rgb(X, Y, Z, rr_, gg_, bb_, wip);
-                                rtemp[ti * TS + tj] = gtemp[ti * TS + tj] = btemp[ti * TS + tj] = rr_;
-                                //  tmpImage->r(i,j) = tmpImage->g(i,j) = tmpImage->b(i,j) = CLIP(val[0]*kcorec);
-
+                                L *= 327.68f;
+                                //convert l => rgb
+                                Color::L2XYZ(L, X, Y, Z);
+                                float newRed; // We use the red channel for bw
+                                Color::xyz2r(X, Y, Z, newRed, wip);
+                                rtemp[ti * TS + tj] = gtemp[ti * TS + tj] = btemp[ti * TS + tj] = newRed;
+#ifndef __SSE2__
                                 if (hasgammabw) {
+                                    //gamma correction: pseudo TRC curve
                                     Color::trcGammaBW (rtemp[ti * TS + tj], gtemp[ti * TS + tj], btemp[ti * TS + tj], gammabwr, gammabwg, gammabwb);
                                 }
-
-                                //gamma correction: pseudo TRC curve
-                                //  if (hasgammabw)
-                                //      Color::trcGammaBW (rr_, gg_, bb_, gammabwr, gammabwg, gammabwb);
-                                //  rtemp[ti*TS+tj] = rr_;
-                                //  gtemp[ti*TS+tj] = gg_;
-                                //  btemp[ti*TS+tj] = bb_;
+#endif
                             }
+#ifdef __SSE2__
+                            if (hasgammabw) {
+                                //gamma correction: pseudo TRC curve
+                                Color::trcGammaBWRow (&rtemp[ti * TS], &gtemp[ti * TS], &btemp[ti * TS], tW - jstart, gammabwr, gammabwg, gammabwb);
+                            }
+#endif
                         }
                     }
                 }
@@ -4418,13 +4389,10 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
         if (algm == 2) { //channel-mixer
             //end auto chmix
-            float mix[3][3];
-
             if (computeMixerAuto) {
                 // auto channel-mixer
-
 #ifdef _OPENMP
-                #pragma omp parallel for schedule(dynamic, 5) reduction(+:nr,ng,nb)
+                #pragma omp parallel for schedule(dynamic, 16) reduction(+:nr,ng,nb)
 #endif
 
                 for (int i = 0; i < tH; i++) {
@@ -4463,44 +4431,29 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                                            bwr, bwg, bwb, mixerOrange, mixerYellow, mixerCyan, mixerPurple, mixerMagenta,
                                            params->blackwhite.autoc, complem, kcorec, rrm, ggm, bbm);
 
-            mix[0][0] = bwr;
-            mix[1][0] = bwr;
-            mix[2][0] = bwr;
-            mix[0][1] = bwg;
-            mix[1][1] = bwg;
-            mix[2][1] = bwg;
-            mix[0][2] = bwb;
-            mix[1][2] = bwb;
-            mix[2][2] = bwb;
-
 #ifdef _OPENMP
-            #pragma omp parallel for schedule(dynamic, 5)
+            #pragma omp parallel for schedule(dynamic, 16)
 #endif
 
             for (int i = 0; i < tH; i++) {
-                float in[3], val[3];
-
                 for (int j = 0; j < tW; j++) {
-                    in[0] = tmpImage->r(i, j);
-                    in[1] = tmpImage->g(i, j);
-                    in[2] = tmpImage->b(i, j);
 
                     //mix channel
-                    for (int end = 0; end < 3 ; end++) {
-                        val[end] = 0.f;
+                    tmpImage->r(i, j) = tmpImage->g(i, j) = tmpImage->b(i, j) = CLIP((bwr * tmpImage->r(i, j) + bwg * tmpImage->g(i, j) + bwb * tmpImage->b(i, j)) * kcorec);
 
-                        for (int beg = 0; beg < 3 ; beg++) {
-                            val[end] += mix[end][beg] * in[beg];
-                        }
-                    }
-
-                    tmpImage->r(i, j) = tmpImage->g(i, j) = tmpImage->b(i, j) = CLIP(val[0] * kcorec);
-
+#ifndef __SSE2__
                     //gamma correction: pseudo TRC curve
                     if (hasgammabw) {
                         Color::trcGammaBW (tmpImage->r(i, j), tmpImage->g(i, j), tmpImage->b(i, j), gammabwr, gammabwg, gammabwb);
                     }
+#endif
                 }
+#ifdef __SSE2__
+                if (hasgammabw) {
+                    //gamma correction: pseudo TRC curve
+                    Color::trcGammaBWRow (tmpImage->r(i), tmpImage->g(i), tmpImage->b(i), tW, gammabwr, gammabwg, gammabwb);
+                }
+#endif
             }
         }
 
@@ -4803,36 +4756,21 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                 float fx, fy, fz;
 
-                fx = (x < 65535.0f ? Color::cachef[std::max(x, 0.f)] : 327.68f * std::cbrt(x / MAXVALF));
-                fy = (y < 65535.0f ? Color::cachef[std::max(y, 0.f)] : 327.68f * std::cbrt(y / MAXVALF));
-                fz = (z < 65535.0f ? Color::cachef[std::max(z, 0.f)] : 327.68f * std::cbrt(z / MAXVALF));
+                fx = (x < MAXVALF ? Color::cachef[x] : 327.68f * std::cbrt(x / MAXVALF));
+                fy = (y < MAXVALF ? Color::cachef[y] : 327.68f * std::cbrt(y / MAXVALF));
+                fz = (z < MAXVALF ? Color::cachef[z] : 327.68f * std::cbrt(z / MAXVALF));
 
-                lab->L[i][j] = (116.0f *  fy - 5242.88f); //5242.88=16.0*327.68;
-                lab->a[i][j] = (500.0f * (fx - fy) );
-                lab->b[i][j] = (200.0f * (fy - fz) );
-
-
-                //test for color accuracy
-                /*float fy = (0.00862069 * lab->L[i][j])/327.68 + 0.137932; // (L+16)/116
-                float fx = (0.002 * lab->a[i][j])/327.68 + fy;
-                float fz = fy - (0.005 * lab->b[i][j])/327.68;
-
-                float x_ = 65535*Lab2xyz(fx)*Color::D50x;
-                float y_ = 65535*Lab2xyz(fy);
-                float z_ = 65535*Lab2xyz(fz)*Color::D50z;
-
-                int R,G,B;
-                xyz2srgb(x_,y_,z_,R,G,B);
-                r=(float)R; g=(float)G; b=(float)B;
-                float xxx=1;*/
-
+                lab->L[i][j] = 116.0f *  fy - 5242.88f; //5242.88=16.0*327.68;
+                lab->a[i][j] = 500.0f * (fx - fy);
+                lab->b[i][j] = 200.0f * (fy - fz);
             }
         }
 
 
-        if(tmpImage) {
-            delete tmpImage;
-        }
+    }
+
+    if (tmpImage) {
+        delete tmpImage;
     }
 
     if (hCurveEnabled) {
@@ -4965,7 +4903,6 @@ void ImProcFunctions::toningsmh (float r, float g, float b, float &ro, float &go
         if(s > s_1) ksat=SQR((1.f/(s_1-1.f))*s - (1.f/(s_1-1.f)));
     }
     */
-    ksat = 1.f;
     float kl = 1.f;
     float rlo = 1.f; //0.4  0.5
     float rlm = 1.5f; //1.1
@@ -5236,7 +5173,6 @@ void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &g
             if(s > s_1) ksat=SQR((1.f/(s_1-1.f))*s - (1.f/(s_1-1.f)));
         }
         */
-    ksat = 1.f;
     float kl = 1.f;
     float rlo = 1.f;
     float rlh = 2.2f;
@@ -5304,7 +5240,6 @@ void ImProcFunctions::toning2col (float r, float g, float b, float &ro, float &g
 
     //high tones
     float kh = 1.f;
-    kh = 1.f;
     float aa0, bb0;
     //fixed value of reducac ==0.4;
     secondeg_begin (reducac, iphigh, aa0, bb0);
@@ -5497,17 +5432,17 @@ SSEFUNCTION void ImProcFunctions::chromiLuminanceCurve (PipetteBuffer *pipetteBu
             editPipette = true;
 
             switch  (pipetteBuffer->getDataProvider()->getCurrSubscriber()->getPipetteBufferType()) {
-            case (BT_IMAGEFLOAT):
-                editImgFloat = pipetteBuffer->getImgFloatBuffer();
-                break;
+                case (BT_IMAGEFLOAT):
+                    editImgFloat = pipetteBuffer->getImgFloatBuffer();
+                    break;
 
-            case (BT_LABIMAGE):
-                editLab = pipetteBuffer->getLabBuffer();
-                break;
+                case (BT_LABIMAGE):
+                    editLab = pipetteBuffer->getLabBuffer();
+                    break;
 
-            case (BT_SINGLEPLANE_FLOAT):
-                editWhatever = pipetteBuffer->getSinglePlaneBuffer();
-                break;
+                case (BT_SINGLEPLANE_FLOAT):
+                    editWhatever = pipetteBuffer->getSinglePlaneBuffer();
+                    break;
             }
         }
     }
