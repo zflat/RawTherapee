@@ -701,7 +701,7 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
     ImProcFunctions::secondeg_begin (reducac, vi, lco.aa, lco.bb);//parabolic
     ImProcFunctions::secondeg_end (reducac, vinf, lco.aaa, lco.bbb, lco.ccc);//parabolic
 
-    printf("huref=%f huplus=%f huemoins=%f dhue=%f\n", hueref, hueplus, huemoins, dhue);
+ //   printf("huref=%f huplus=%f huemoins=%f dhue=%f\n", hueref, hueplus, huemoins, dhue);
 
 #ifdef _OPENMP
     #pragma omp parallel for schedule(dynamic,16) if (multiThread)
