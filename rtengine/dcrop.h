@@ -78,6 +78,7 @@ protected:
 public:
     Crop             (ImProcCoordinator* parent, EditDataProvider *editDataProvider, bool isDetailWindow);
     virtual ~Crop    ();
+ //   MyMutex* locMutex;
 
     void mLock       ()
     {

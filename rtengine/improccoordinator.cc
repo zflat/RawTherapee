@@ -620,6 +620,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         if(params.locallab.enabled) {
             MyMutex* locMutex = NULL;
             locMutex = new MyMutex;
+            // MyMutex::MyLock lock(mProcessing);
+
             locMutex->lock ();
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
             ifstream fic(datalab, ios::in);

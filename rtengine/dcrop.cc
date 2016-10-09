@@ -589,6 +589,7 @@ void Crop::update (int todo)
             params.dirpyrDenoise.redchro = maxr;
             params.dirpyrDenoise.bluechro = maxb;
             parent->denoiseInfoStore.valid = true;
+
             if(parent->adnListener) {
                 parent->adnListener->chromaChanged(params.dirpyrDenoise.chroma, params.dirpyrDenoise.redchro, params.dirpyrDenoise.bluechro);
             }
@@ -796,12 +797,15 @@ void Crop::update (int todo)
         params.locallab.getCurves(locRETgainCurve);
         bool tyty = false;
 
-        if(needslocal) {
+        if(needslocal ) {
             //   if(tyty==true) {
-
+            //if(skip == 1) GThreadLock lock;
             MyMutex* locMutex = NULL;
+            locMutex = NULL;
             locMutex = new MyMutex;
             locMutex->lock ();
+            //  MyMutex::MyLock lock(parent->mProcessing);  // Also used in improccoord
+
             Glib::ustring datalab = parent->imgsrc->getFileName() + ".mip";
 
             ifstream fich(datalab, ios::in);
