@@ -296,12 +296,6 @@ public:
     {
         return toolBar;
     }
-    void removeWbTool()
-    {
-        if (toolBar) {
-            toolBar->removeWbTool();
-        }
-    }
     int  getSpotWBRectSize ();
     CropGUIListener* startCropEditing (Thumbnail* thm = NULL)
     {
