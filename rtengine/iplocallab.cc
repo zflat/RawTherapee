@@ -696,8 +696,6 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
     ImProcFunctions::secondeg_begin (reducac, vi, lco.aa, lco.bb);//parabolic
     ImProcFunctions::secondeg_end (reducac, vinf, lco.aaa, lco.bbb, lco.ccc);//parabolic
 
-//   printf("huref=%f huplus=%f huemoins=%f dhue=%f\n", hueref, hueplus, huemoins, dhue);
-
 #ifdef _OPENMP
     #pragma omp parallel if (multiThread)
 #endif
@@ -742,7 +740,7 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
                 float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
                 int zone;
-                float localFactor;
+                float localFactor = 1.f;
                 calcTransition (lox, loy, ach, lp, zone, localFactor);
                 float khu = 0.f;
                 float kch = 1.f;
@@ -1153,7 +1151,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
 
                 float kch = 1.f;
-                float khu = 0.f;
+                float khu = 0.1f;
                 float fach = 1.f;
 
                 if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
@@ -1338,7 +1336,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         float factorx = localFactor;
                         float fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        diflc *= kdiff * kch * fach;
+                        kdiff *= kch;
+                        diflc *= kdiff ;//* kch * fach;
 
                         diflc *= factorx; //transition lightess
 
@@ -1362,13 +1361,15 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
 
                         float fac = (100.f + realchro) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        diflc *= kdiff * kch * fach;
+                        kdiff *= kch;
+                        diflc *= kdiff ;//* kch * fach;
                         transformed->L[y][x] = original->L[y][x] + diflc;
                         transformed->a[y][x] = original->a[y][x] * fac;
                         transformed->b[y][x] = original->b[y][x] * fac;
 
                     }
                 }
+
             }
         }
     }
