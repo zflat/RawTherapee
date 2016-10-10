@@ -1151,7 +1151,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
 
                 float kch = 1.f;
-                float khu = 0.1f;
+                float khu = 0.f;
                 float fach = 1.f;
 
                 if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
@@ -1336,8 +1336,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         float factorx = localFactor;
                         float fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        kdiff *= kch;
-                        diflc *= kdiff ;//* kch * fach;
+                        kdiff *= kch * fach;
+                        diflc *= kdiff ;
 
                         diflc *= factorx; //transition lightess
 
@@ -1361,8 +1361,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
 
                         float fac = (100.f + realchro) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        kdiff *= kch;
-                        diflc *= kdiff ;//* kch * fach;
+                        kdiff *= kch * fach;
+                        diflc *= kdiff ;
                         transformed->L[y][x] = original->L[y][x] + diflc;
                         transformed->a[y][x] = original->a[y][x] * fac;
                         transformed->b[y][x] = original->b[y][x] * fac;
