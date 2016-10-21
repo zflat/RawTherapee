@@ -1072,6 +1072,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
     const float ahu = 1.f / (2.8f * lp.sens - 280.f);
     const float bhu = 1.f - ahu * 2.8f * lp.sens;
 
+    const float alum = 1.f / (lp.sens - 100.f);
+    const float blum = 1.f - alum * lp.sens;
 
     //luma
     constexpr float lumdelta = 11.f; //11
@@ -1149,10 +1151,12 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float deltachro = fabs(rchro - chromaref);
                 float deltahue = fabs(rhue - hueref);
                 float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
+                float deltaL = fabs (lumaref - rL); //between 0 and 100
 
                 float kch = 1.f;
                 float khu = 0.f;
                 float fach = 1.f;
+                float falu = 1.f;
 
                 if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
                     kch = 1.f;
@@ -1252,6 +1256,13 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     if (rchro < kcr) {
                         fach *= (1.f / (kcr * kcr)) * rchro * rchro;
                     }
+
+                    if(deltaL <  lp.sens) {
+                        falu = 1.f;
+                    } else {
+                        falu = alum * deltaL + blum;
+                    }
+
                 }
 
                 if(kzon) {
@@ -1342,8 +1353,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         diflc *= factorx; //transition lightess
 
                         transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac;
-                        transformed->b[y][x] = original->b[y][x] * fac;
+                        transformed->a[y][x] = original->a[y][x] * fac * falu;
+                        transformed->b[y][x] = original->b[y][x] * fac * falu;
                         break;
                     }
 
@@ -1364,8 +1375,8 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         kdiff *= kch * fach;
                         diflc *= kdiff ;
                         transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac;
-                        transformed->b[y][x] = original->b[y][x] * fac;
+                        transformed->a[y][x] = original->a[y][x] * fac * falu;
+                        transformed->b[y][x] = original->b[y][x] * fac * falu;
 
                     }
                 }
