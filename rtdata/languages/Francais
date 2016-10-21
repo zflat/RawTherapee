@@ -632,6 +632,7 @@ HISTORY_MSG_403;O - NB - Sensibilité des bords
 HISTORY_MSG_404;O - NB - Base amplification
 HISTORY_MSG_405;O - Débruitage - Niveau 4
 HISTORY_MSG_406;O - NB - Pixels voisins
+HISTORY_MSG_443;Compensation du Point Noir de Sortie
 HISTORY_NEWSNAPSHOT;Ajouter
 HISTORY_NEWSNAPSHOT_TOOLTIP;Raccourci: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Capture
@@ -954,6 +955,7 @@ PREFERENCES_MENUGROUPRANK;Classement
 PREFERENCES_MENUOPTIONS;Options du menu
 PREFERENCES_METADATA;Metadonnées
 PREFERENCES_MIN;Mini (100x115)
+PREFERENCES_MONBPC;Compensation du Point Noir pour la transformation L*a*b*->Moniteur
 PREFERENCES_MULTITAB;Éditeurs multiple
 PREFERENCES_MULTITABDUALMON;Éditeurs multiple, si possible sur un second moniteur
 PREFERENCES_NAVGUIDEBRUSH;Couleur du cadre dans le Navigateur
@@ -1083,6 +1085,8 @@ SAVEDLG_SUBSAMP_3;Meilleure qualité
 SAVEDLG_TIFFUNCOMPRESSED;TIFF non compressé
 SAVEDLG_WARNFILENAME;Le fichier sera nommé
 SHCSELECTOR_TOOLTIP;Cliquez le bouton droit de la souris\npour réinitialiser la position de ces 3 curseurs
+SOFTPROOF_GAMUTCHECK_TOOLTIP;Si activé, indique en gris les pixels dont la couleurs est en dehors du gamut du profile de sortie
+SOFTPROOF_TOOLTIP;Épreuvage écran\nSi activé, simule le rendu généré par le profiles de sortie de l'outil ICM. Particulièrement utile pour simuler le rendu en sortie d'imprimante.
 THRESHOLDSELECTOR_B;Bas
 THRESHOLDSELECTOR_BL;Bas-gauche
 THRESHOLDSELECTOR_BR;Bas-droite
@@ -1312,7 +1316,6 @@ TP_DIRPYRDENOISE_CUR;Courbe
 TP_DIRPYRDENOISE_CURVEEDITOR_CC;Chroma
 TP_DIRPYRDENOISE_CURVEEDITOR_CC_TOOLTIP;Augmente (multiplie) la valeur de tousles curseurs de chrominance.\nCette courbe vous permet d'ajuster la force de la réduction de bruit chromatique en fonction de la chromaticité, par exemple pour augmenter l'action dans les zones peu saturées et pour la réduire dans ceux celles très saturées.
 TP_DIRPYRDENOISE_CURVEEDITOR_L_TOOLTIP;Module l'action du débruitage de 'Luminance'
-TP_DIRPYRDENOISE_ENABLED_TOOLTIP;Peut être utilisé sur les images raw et non-raw.\n\nPour les images non-raw, la réduction de bruit de luminance dépend du gamma du profil couleur d'entée. Un gamma sRGB est supposé, c'est pourquoi si l'image a un profil couleur d'un gamma différent, la réduction de bruit de luminance variera.
 TP_DIRPYRDENOISE_ENH;Mode amélioré
 TP_DIRPYRDENOISE_ENH_TOOLTIP;Augmente la qualité du débruitage, mais augmente le temps de traitement d'environ 20%
 TP_DIRPYRDENOISE_GAMMA;Gamma
@@ -1327,13 +1330,11 @@ TP_DIRPYRDENOISE_LPLABM;L* pondéré (faiblement) + a*b* (normal)
 TP_DIRPYRDENOISE_LTYPE;Contrôle de luminance
 TP_DIRPYRDENOISE_LUMA;Luminance
 TP_DIRPYRDENOISE_LUMAFR;Luminance
-TP_DIRPYRDENOISE_LUMAFR_TOOLTIP;Ondelettes pour la luminance et transformé de Fourier pour les détails de luminance
 TP_DIRPYRDENOISE_MAN;Manuel
 TP_DIRPYRDENOISE_MANU;Manuel
 TP_DIRPYRDENOISE_MED;Filtre Médian
 TP_DIRPYRDENOISE_MEDMETHOD;Méthode
 TP_DIRPYRDENOISE_MEDTYPE;Type de médiane
-TP_DIRPYRDENOISE_MED_TOOLTIP;Active le débruitage médian
 TP_DIRPYRDENOISE_METHOD;Méthode
 TP_DIRPYRDENOISE_METHOD11;Qualité
 TP_DIRPYRDENOISE_METHOD11_TOOLTIP;La qualité peut être adapté à la trame du bruit. Régler sur "haut" augmentera l'effet de la réduction de bruit au prix d'un temps de traitement plus long.
@@ -1456,6 +1457,8 @@ TP_ICM_APPLYLOOKTABLE;Table de recherche
 TP_ICM_APPLYLOOKTABLE_TOOLTIP;Utilise la table de recherche (LUT) contenu dans le profil DCP. Ce réglage n'est possible que si le profil DCP sélectionné en contient une.
 TP_ICM_BLENDCMSMATRIX;Mélange des hautes lumières\ndu profil ICC avec la matrice
 TP_ICM_BLENDCMSMATRIX_TOOLTIP;Activer la récupération des zones brûlées lorsque les profils ICC basés sur la LUT sont utilisés
+TP_ICM_BPC;Compensation du  Point Noir
+TP_ICM_BPC_TOOLTIP;Activez ceci pour faire correspondre le canal Luminosité à l'espace couleur de sortie avec un Point Blanc fixe
 TP_ICM_DCPILLUMINANT;Illuminant
 TP_ICM_DCPILLUMINANT_INTERPOLATED;Interpolé
 TP_ICM_DCPILLUMINANT_TOOLTIP;Sélectionne quel illuminant DCP inclus utiliser. La valeur par défaut est "Interpolé", qui est un mix entre les 2 profils inclus basé sur la Balance des Blancs choisie. Ce paramètre n'est actif que si un fichier DCP Bi-Illuminant avec support de l'interpolation est choisi.

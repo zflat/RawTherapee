@@ -61,14 +61,6 @@ ImProcFunctions::~ImProcFunctions ()
     if (monitorTransform) {
         cmsDeleteTransform (monitorTransform);
     }
-
-    if (output2monitorTransform) {
-        cmsDeleteTransform (output2monitorTransform);
-    }
-
-    if (lab2outputTransform) {
-        cmsDeleteTransform (lab2outputTransform);
-    }
 }
 
 void ImProcFunctions::setScale (double iscale)
@@ -76,24 +68,14 @@ void ImProcFunctions::setScale (double iscale)
     scale = iscale;
 }
 
-void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, const Glib::ustring& monitorProfile, RenderingIntent monitorIntent)
+void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, const Glib::ustring& monitorProfile, RenderingIntent monitorIntent, bool softProof, bool gamutCheck)
 {
     // set up monitor transform
     if (monitorTransform) {
         cmsDeleteTransform (monitorTransform);
     }
 
-    if (output2monitorTransform) {
-        cmsDeleteTransform (output2monitorTransform);
-    }
-
-    if (lab2outputTransform) {
-        cmsDeleteTransform (lab2outputTransform);
-    }
-
     monitorTransform = nullptr;
-    output2monitorTransform = nullptr;
-    lab2outputTransform = nullptr;
 
 #if !defined(__APPLE__) // No support for monitor profiles on OS X, all data is sRGB
 
@@ -101,20 +83,57 @@ void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, con
 
     if (monitor) {
         MyMutex::MyLock lcmsLock (*lcmsMutex);
+
+        cmsUInt32Number flags;
         cmsHPROFILE iprof  = cmsCreateLab4Profile(nullptr);
-        monitorTransform = cmsCreateTransform (iprof, TYPE_Lab_FLT, monitor, TYPE_RGB_8, monitorIntent,
-                                               cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE );  // NOCACHE is for thread safety, NOOPTIMIZE for precision
 
-        Glib::ustring outputProfile;
+        bool softProofCreated = false;
 
-        if (!icm.output.empty() && icm.output != ColorManagementParams::NoICMString) {
-            outputProfile = icm.output;
-            cmsHPROFILE jprof = iccStore->getProfile(outputProfile);
-
-            if (jprof) {
-                lab2outputTransform = cmsCreateTransform (iprof, TYPE_Lab_FLT, jprof, TYPE_RGB_FLT, icm.outputIntent, cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE );
-                output2monitorTransform = cmsCreateTransform (jprof, TYPE_RGB_FLT, monitor, TYPE_RGB_8, monitorIntent, cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE );
+        if (softProof) {
+            cmsHPROFILE oprof = nullptr;
+            if(icm.gamma != "default" || icm.freegamma) { // if select gamma output between BT709, sRGB, linear, low, high, 2.2 , 1.8
+                GammaValues ga;
+                iccStore->getGammaArray(icm, ga);
+                oprof = iccStore->createGammaProfile (icm, ga);
             }
+            else if (!icm.output.empty() && icm.output != ColorManagementParams::NoICMString) {
+                if(icm.gamma != "default" || icm.freegamma) { // if select gamma output between BT709, sRGB, linear, low, high, 2.2 , 1.8
+                    GammaValues ga;
+                    iccStore->getGammaArray(icm, ga);
+                    oprof = iccStore->createCustomGammaOutputProfile (icm, ga);
+                } else {
+                    oprof = iccStore->getProfile(icm.output);
+                }
+            }
+
+            if (oprof) {
+                // NOCACHE is for thread safety, NOOPTIMIZE for precision
+                flags = cmsFLAGS_SOFTPROOFING | cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE;
+                if (icm.outputBPC) {
+                    flags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
+                }
+                if (gamutCheck) {
+                    flags |= cmsFLAGS_GAMUTCHECK;
+                }
+                monitorTransform = cmsCreateProofingTransform(
+                                        iprof, TYPE_Lab_FLT,
+                                        monitor, TYPE_RGB_8,
+                                        oprof,
+                                        monitorIntent, icm.outputIntent,
+                                        flags
+                                    );
+                if (monitorTransform) {
+                    softProofCreated = true;
+                }
+            }
+        }
+
+        if (!softProofCreated) {
+            flags = cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE;
+            if (settings->monitorBPC) {
+                flags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
+            }
+            monitorTransform = cmsCreateTransform (iprof, TYPE_Lab_FLT, monitor, TYPE_RGB_8, monitorIntent, flags);
         }
 
         cmsCloseProfile(iprof);
@@ -281,7 +300,7 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
         }
 
         //scene condition for surround
-        if(params->colorappearance.surrsource == true)  {
+        if(params->colorappearance.surrsource)  {
             f  = 0.85;    // if user => source image has surround very dark
             c  = 0.55;
             nc = 0.85;
@@ -508,7 +527,7 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
         int gamu = 0;
         bool highlight = params->toneCurve.hrenabled; //Get the value if "highlight reconstruction" is activated
 
-        if(params->colorappearance.gamut == true) {
+        if(params->colorappearance.gamut) {
             gamu = 1;    //enabled gamut control
         }
 
@@ -525,7 +544,7 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
             xw2 = xwd;
             yw2 = ywd;
             zw2 = zwd;
-        } else if(params->colorappearance.wbmodel == "RawTCAT02") {
+        } else /*if(params->colorappearance.wbmodel == "RawTCAT02")*/ {
             xw1 = xw;    // Settings RT WB are used for CAT02 => mix , CAT02 is use for output device (screen: D50 D65, projector: lamp, LED) see preferences
             yw1 = yw;
             zw1 = zw;
@@ -1035,7 +1054,6 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
 
 //          if(!params->epd.enabled || !params->colorappearance.tonecie  || !settings->autocielab){
                         //  if(!params->epd.enabled || !params->colorappearance.tonecie  || !params->colorappearance.sharpcie){
-                        int posl, posc;
                         double brli = 327.;
                         double chsacol = 327.;
                         int libr = 0;
@@ -1066,9 +1084,10 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
                             jp = true;
 
                             if(pW != 1) { //only with improccoordinator
+                                int posl;
                                 if(libr == 1) {
                                     posl = CLIP((int)(Q * brli));    //40.0 to 100.0 approximative factor for Q  - 327 for J
-                                } else if(libr == 0) {
+                                } else /*if(libr == 0)*/ {
                                     posl = CLIP((int)(J * brli));    //327 for J
                                 }
 
@@ -1078,11 +1097,12 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
                             chropC = true;
 
                             if(pW != 1) { //only with improccoordinator
+                                int posc;
                                 if(colch == 0) {
                                     posc = CLIP((int)(C * chsacol));    //450.0 approximative factor for s    320 for M
                                 } else if(colch == 1) {
                                     posc = CLIP((int)(s * chsacol));
-                                } else if(colch == 2) {
+                                } else /*if(colch == 2)*/ {
                                     posc = CLIP((int)(M * chsacol));
                                 }
 
@@ -1304,7 +1324,6 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
 
                         ncie->C_p[i][j] = (ncie->M_p[i][j]) / co_e;
                         //show histogram in CIECAM mode (Q,J, M,s,C)
-                        int posl, posc;
                         double brli = 327.;
                         double chsacol = 327.;
                         int libr = 0;
@@ -1336,9 +1355,10 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
                             jp = true;
 
                             if(pW != 1) { //only with improccoordinator
+                                int posl;
                                 if(libr == 1) {
                                     posl = CLIP((int)(ncie->Q_p[i][j] * brli));    //40.0 to 100.0 approximative factor for Q  - 327 for J
-                                } else if(libr == 0) {
+                                } else /*if(libr == 0)*/ {
                                     posl = CLIP((int)(ncie->J_p[i][j] * brli));    //327 for J
                                 }
 
@@ -1348,12 +1368,13 @@ void ImProcFunctions::ciecam_02 (CieImage* ncie, double adap, int begh, int endh
                             chropC = true;
 
                             if(pW != 1) { //only with improccoordinator
+                                int posc;
                                 if(colch == 0) {
                                     posc = CLIP((int)(ncie->C_p[i][j] * chsacol));    //450.0 approximative factor for s    320 for M
                                 } else if(colch == 1) {
                                     sa_t = 100.f * sqrt(ncie->C_p[i][j] / ncie->Q_p[i][j]);    //Q_p always > 0
                                     posc = CLIP((int)(sa_t * chsacol));
-                                } else if(colch == 2) {
+                                } else /*if(colch == 2)*/ {
                                     posc = CLIP((int)(ncie->M_p[i][j] * chsacol));
                                 }
 
@@ -1504,7 +1525,7 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
         }
 
         //scene condition for surround
-        if(params->colorappearance.surrsource == true)  {
+        if(params->colorappearance.surrsource)  {
             f  = 0.85f;    // if user => source image has surround very dark
             c  = 0.55f;
             nc = 0.85f;
@@ -1809,7 +1830,7 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
 
         const bool highlight = params->toneCurve.hrenabled; //Get the value if "highlight reconstruction" is activated
 
-        const int gamu = (params->colorappearance.gamut == true) ? 1 : 0;
+        const int gamu = (params->colorappearance.gamut) ? 1 : 0;
         xw = 100.0f * Xw;
         yw = 100.0f * Yw;
         zw = 100.0f * Zw;
@@ -1823,7 +1844,7 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
             xw2 = xwd;
             yw2 = ywd;
             zw2 = zwd;
-        } else if(params->colorappearance.wbmodel == "RawTCAT02") {
+        } else /*if(params->colorappearance.wbmodel == "RawTCAT02")*/ {
             xw1 = xw;    // Settings RT WB are used for CAT02 => mix , CAT02 is use for output device (screen: D50 D65, projector: lamp, LED) see preferences
             yw1 = yw;
             zw1 = zw;
@@ -2681,8 +2702,6 @@ void ImProcFunctions::ciecam_02float (CieImage* ncie, float adap, int begh, int 
 
                 for (int i = 0; i < height; i++) { // update CIECAM with new values after tone-mapping
                     for (int j = 0; j < width; j++) {
-                        float xx, yy, zz;
-                        float x, y, z;
 
                         //  if(epdEnabled) ncie->J_p[i][j]=(100.0f* ncie->Q_p[i][j]*ncie->Q_p[i][j])/(w_h*w_h);
                         if(epdEnabled) {
@@ -3818,7 +3837,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                         float reducac = 0.4f;
                         int preser = 0;
 
-                        if(params->colorToning.lumamode == true) {
+                        if(params->colorToning.lumamode) {
                             preser = 1;
                         }
 
@@ -3879,7 +3898,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                         int preser = 0;
 
                         //bool execbal = params->colorToning.method=="Splitbal";
-                        if(params->colorToning.lumamode == true) {
+                        if(params->colorToning.lumamode) {
                             preser = 1;
                         }
 
@@ -3936,14 +3955,14 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                         float iplow, iphigh;
 
-                        if(twocol == false) {
+                        if(!twocol) {
                             iplow = (float)ctColorCurve.low;
                             iphigh = (float)ctColorCurve.high;
                         }
 
                         int twoc = 0; //integer instead of bool to let more possible choice...other than 2 and 500.
 
-                        if (twocol == false) {
+                        if (!twocol) {
                             twoc = 0;    // 2 colours
                         } else {
                             twoc = 1;    // 500 colours
@@ -4522,7 +4541,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                 */
                 int preser = 0;
 
-                if(params->colorToning.lumamode == true) {
+                if(params->colorToning.lumamode) {
                     preser = 1;
                 }
 
@@ -4571,7 +4590,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                 float reducac =  0.4f;
                 int preser = 0;
 
-                if(params->colorToning.lumamode == true) {
+                if(params->colorToning.lumamode) {
                     preser = 1;
                 }
 
@@ -4637,7 +4656,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                 float iplow, iphigh;
 
-                if(twocol == false) {
+                if(!twocol) {
                     iplow = (float)ctColorCurve.low;
                     iphigh = (float)ctColorCurve.high;
 
@@ -4645,7 +4664,7 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                 int twoc = 0; //integer instead of bool to let more possible choice...other than 2 and 500.
 
-                if(twocol == false) {
+                if(!twocol) {
                     twoc = 0;    // 2 colours
                 } else {
                     twoc = 1;    // 500 colours
@@ -4664,7 +4683,6 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
 
                     for (int i = 0; i < tH; i++) {
                         for (int j = 0; j < tW; j++) {
-                            float h, s, l;
                             float r = tmpImage->r(i, j);
                             float g = tmpImage->g(i, j);
                             float b = tmpImage->b(i, j);
@@ -6161,8 +6179,8 @@ SSEFUNCTION void ImProcFunctions::chromiLuminanceCurve (PipetteBuffer *pipetteBu
     if (settings->verbose) {
         t2e.set();
         printf("Color::AllMunsellLch (correction performed in %d usec):\n", t2e.etime(t1e));
-        printf("   Munsell chrominance: MaxBP=%1.2frad MaxRY=%1.2frad MaxGY=%1.2frad MaxRP=%1.2frad  dep=%i\n", MunsDebugInfo->maxdhue[0],    MunsDebugInfo->maxdhue[1],    MunsDebugInfo->maxdhue[2],    MunsDebugInfo->maxdhue[3],    MunsDebugInfo->depass);
-        printf("   Munsell luminance  : MaxBP=%1.2frad MaxRY=%1.2frad MaxGY=%1.2frad MaxRP=%1.2frad  dep=%i\n", MunsDebugInfo->maxdhuelum[0], MunsDebugInfo->maxdhuelum[1], MunsDebugInfo->maxdhuelum[2], MunsDebugInfo->maxdhuelum[3], MunsDebugInfo->depassLum);
+        printf("   Munsell chrominance: MaxBP=%1.2frad MaxRY=%1.2frad MaxGY=%1.2frad MaxRP=%1.2frad  dep=%u\n", MunsDebugInfo->maxdhue[0],    MunsDebugInfo->maxdhue[1],    MunsDebugInfo->maxdhue[2],    MunsDebugInfo->maxdhue[3],    MunsDebugInfo->depass);
+        printf("   Munsell luminance  : MaxBP=%1.2frad MaxRY=%1.2frad MaxGY=%1.2frad MaxRP=%1.2frad  dep=%u\n", MunsDebugInfo->maxdhuelum[0], MunsDebugInfo->maxdhuelum[1], MunsDebugInfo->maxdhuelum[2], MunsDebugInfo->maxdhuelum[3], MunsDebugInfo->depassLum);
     }
 
     delete MunsDebugInfo;

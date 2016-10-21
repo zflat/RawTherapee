@@ -44,10 +44,10 @@ using namespace std;
 FileCatalog::FileCatalog (CoarsePanel* cp, ToolBar* tb, FilePanel* filepanel) :
     filepanel(filepanel),
     selectedDirectoryId(1),
-    listener(NULL),
-    fslistener(NULL),
+    listener(nullptr),
+    fslistener(nullptr),
     hasValidCurrentEFS(false),
-    filterPanel(NULL),
+    filterPanel(nullptr),
     previewsToLoad(0),
     previewsLoaded(0),
     coarsePanel(cp),
@@ -667,8 +667,8 @@ void FileCatalog::_refreshProgressBar ()
         GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
 
         Gtk::Notebook *nb = (Gtk::Notebook *)(filepanel->get_parent());
-        Gtk::Box* hbb = NULL;
-        Gtk::Label *label = NULL;
+        Gtk::Box* hbb = nullptr;
+        Gtk::Label *label = nullptr;
 
         if( options.mainNBVertical ) {
             hbb = Gtk::manage (new Gtk::VBox ());
@@ -880,7 +880,7 @@ void FileCatalog::refreshHeight ()
 void FileCatalog::_openImage (std::vector<Thumbnail*> tmb)
 {
 
-    if (enabled && listener != NULL) {
+    if (enabled && listener != nullptr) {
         bool continueToLoad = true;
 
         for (size_t i = 0; i < tmb.size() && continueToLoad; i++) {
@@ -1176,6 +1176,7 @@ void FileCatalog::developRequested (std::vector<FileBrowserEntry*> tbe, bool fas
                 params.icm.working             = options.fastexport_icm_working      ;
                 params.icm.output              = options.fastexport_icm_output       ;
                 params.icm.outputIntent        = options.fastexport_icm_outputIntent ;
+                params.icm.outputBPC           = options.fastexport_icm_outputBPC    ;
                 params.icm.gamma               = options.fastexport_icm_gamma        ;
                 params.resize.enabled          = options.fastexport_resize_enabled   ;
                 params.resize.scale            = options.fastexport_resize_scale     ;
@@ -2122,12 +2123,9 @@ void FileCatalog::tbRightPanel_1_toggled ()
 
 bool FileCatalog::CheckSidePanelsVisibility()
 {
-    if(tbLeftPanel_1->get_active() == false && tbRightPanel_1->get_active() == false) {
-        return false;
-    } else {
-        return true;
-    }
+    return tbLeftPanel_1->get_active() || tbRightPanel_1->get_active();
 }
+
 void FileCatalog::toggleSidePanels()
 {
     // toggle left AND right panels
@@ -2539,11 +2537,7 @@ bool FileCatalog::handleShortcutKey (GdkEventKey* event)
         }
     }
 
-    if (fileBrowser->keyPressed(event)) {
-        return true;
-    }
-
-    return false;
+    return fileBrowser->keyPressed(event);
 }
 
 void FileCatalog::showToolBar()

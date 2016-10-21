@@ -80,16 +80,24 @@ public:
 class ConnectionBlocker
 {
 public:
-    explicit ConnectionBlocker (sigc::connection& connection) : connection (connection)
+    explicit ConnectionBlocker (Gtk::Widget *associatedWidget, sigc::connection& connection) : connection (associatedWidget ? &connection : nullptr)
     {
-        wasBlocked = connection.block();
+        if (this->connection) {
+            wasBlocked = connection.block();
+        }
+    }
+    explicit ConnectionBlocker (sigc::connection& connection) : connection (&connection)
+    {
+            wasBlocked = connection.block();
     }
     ~ConnectionBlocker ()
     {
-        connection.block(wasBlocked);
+        if (connection) {
+            connection->block(wasBlocked);
+        }
     }
 private:
-    sigc::connection& connection;
+    sigc::connection *connection;
     bool wasBlocked;
 };
 
@@ -409,10 +417,10 @@ public:
     void getSrcOffset(int &x, int &y);
     void getSrcOffset(rtengine::Coord &offset);
 
-    void copySurface(Glib::RefPtr<Gdk::Window> &window, GdkRectangle *rectangle = NULL);
-    void copySurface(BackBuffer *destBackBuffer, GdkRectangle *rectangle = NULL);
-    void copySurface(Cairo::RefPtr<Cairo::ImageSurface> &destSurface, GdkRectangle *rectangle = NULL);
-    void copySurface(Cairo::RefPtr<Cairo::Context> &context, GdkRectangle *rectangle = NULL);
+    void copySurface(Glib::RefPtr<Gdk::Window> &window, GdkRectangle *rectangle = nullptr);
+    void copySurface(BackBuffer *destBackBuffer, GdkRectangle *rectangle = nullptr);
+    void copySurface(Cairo::RefPtr<Cairo::ImageSurface> &destSurface, GdkRectangle *rectangle = nullptr);
+    void copySurface(Cairo::RefPtr<Cairo::Context> &context, GdkRectangle *rectangle = nullptr);
 
     void setDirty(bool isDirty)
     {
