@@ -386,6 +386,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
     if ((needstransform || ((todo & (M_TRANSFORM))  && params.dirpyrequalizer.cbdlMethod == "bef" && params.dirpyrequalizer.enabled && !params.colorappearance.enabled)) ) {
         if(!oprevi || oprevi == orig_prev) {
             oprevi = new Imagefloat (pW, pH);
+        }
+
         if (needstransform)
             ipf.transform (orig_prev, oprevi, 0, 0, 0, 0, pW, pH, fw, fh, imgsrc->getMetaData()->getFocalLen(),
                            imgsrc->getMetaData()->getFocalLen35mm(), imgsrc->getMetaData()->getFocusDist(), imgsrc->getRotateDegree(), false);
@@ -402,6 +404,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         ipf.dirpyrequalizer (&labcbdl, scale);
         ipf.lab2rgb(labcbdl, *oprevi, params.icm.working);
     }
+
 
     readyphase++;
     progress ("Preparing shadow/highlight map...", 100 * readyphase / numofphases);
