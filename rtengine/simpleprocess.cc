@@ -779,7 +779,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     LUTf curve (65536, 0);
     LUTf satcurve (65536, 0);
     LUTf lhskcurve (65536, 0);
-    LUTf localcurve(65536, 0);
+//    LUTf localcurve(65536, 0);
     LUTf lumacurve(32770, 0); // lumacurve[32768] and lumacurve[32769] will be set to 32768 and 32769 later to allow linear interpolation
     LUTf clcurve (65536, 0);
     LUTf clToningcurve;
@@ -939,33 +939,13 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                                    params.labCurve.lccurve, curve1, curve2, satcurve, lhskcurve, 1);
 
     bool locutili = false;
-    CurveFactory::localLCurve (params.locallab.lightness, 0, /*params.locallab.contrast, params.labCurve.lcurve,*/ hist16,
-                               localcurve, 1, locutili);
 
-    /*
-        if(params.locallab.enabled) {
-            params.locallab.hueref = INFINITY;
-            params.locallab.chromaref = INFINITY;
-            params.locallab.lumaref = INFINITY;
-            LocretigainCurve locRETgainCurve;
-            params.locallab.getCurves(locRETgainCurve);
-                            int **dataspot;
-
-                dataspot = new int*[18];
-
-                for (int i = 0; i < 18; i++) {
-                    dataspot[i] = new int[6];
-                }
-
-            ipf.Lab_Local(dataspot, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-        }
-    */
     if(params.locallab.enabled) {
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
         params.locallab.getCurves(locRETgainCurve);
         int realspot = params.locallab.nbspot;
-
+        int maxspot = settings->nspot + 1;
         ifstream fich(datalab, ios::in);
 
         if (fich) {
@@ -973,7 +953,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             dataspots = new int*[27];
 
             for (int i = 0; i < 27; i++) {
-                dataspots[i] = new int[6];
+                dataspots[i] = new int[maxspot];
             }
 
             dataspots[3][0] =  params.locallab.locX;
@@ -1078,7 +1058,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 fich.close();
             }
 
-            for(int sp = 1; sp < 6; sp++) { //5 spots default
+            for(int sp = 1; sp < maxspot; sp++) { //5 spots default
                 if(sp != realspot) {
                     params.locallab.hueref = INFINITY;
                     params.locallab.chromaref = INFINITY;
@@ -1142,7 +1122,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         params.locallab.retinexMethod = "high";
                     }
 
-                    ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
                 }
             }
@@ -1229,7 +1209,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
 
 
-            ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, localcurve, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+            ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             for (int i = 0; i < 27; i++) {
                 delete [] dataspots[i];

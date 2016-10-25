@@ -14,6 +14,7 @@
 
 using namespace rtengine;
 using namespace rtengine::procparams;
+extern Options options;
 
 Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
 {
@@ -26,16 +27,30 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     editConn = edit->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::editToggled) );
     editHBox->pack_start(*edit, Gtk::PACK_SHRINK, 0);
     pack_start (*editHBox, Gtk::PACK_SHRINK, 0);
+    int realnbspot;
+//  ProcParams para;
 
-    nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, 5, 1, 1));
+    maxnbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_MAXNBSPOT"), 1, 100, 1, 1));
+
+
+    maxnbspot->setAdjusterListener (this);
+    maxnbspot->set_tooltip_text (M("TP_LOCALLAB_MAXNBSPOT_TOOLTIP"));
+//   pack_start (*maxnbspot);
+//  realnbspot = para.locallab.maxnbspot;
+    realnbspot = options.rtSettings.nspot;
+    printf("realnspot=%i\n", realnbspot);
+
+    nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, realnbspot, 1, 1));
 
     if (nbspot->delay < 200) {
         nbspot->delay = 200;
     }
 
 
+
     nbspot->setAdjusterListener (this);
     nbspot->set_tooltip_text (M("TP_LOCALLAB_NBSPOT_TOOLTIP"));
+
 
     anbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_ANBSPOT"), 0, 1, 1, 0));
     anbspot->setAdjusterListener (this);
@@ -489,6 +504,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
     disableListener ();
 
+
     if (pedited) {
         degree->setEditedState (pedited->locallab.degree ? Edited : UnEdited);
         locY->setEditedState (pedited->locallab.locY ? Edited : UnEdited);
@@ -504,6 +520,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
+        maxnbspot->setEditedState (pedited->locallab.maxnbspot ? Edited : UnEdited);
         nbspot->setEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
         anbspot->setEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -567,6 +584,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     str->setValue (pp->locallab.str);
     neigh->setValue (pp->locallab.neigh);
     nbspot->setValue (pp->locallab.nbspot);
+    maxnbspot->setValue (pp->locallab.maxnbspot);
     anbspot->setValue (pp->locallab.anbspot);
     vart->setValue (pp->locallab.vart);
     chrrt->setValue (pp->locallab.chrrt);
@@ -742,6 +760,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.str = str->getIntValue ();
     pp->locallab.neigh = neigh->getIntValue ();
     pp->locallab.nbspot = nbspot->getIntValue ();
+    pp->locallab.maxnbspot = maxnbspot->getIntValue ();
     pp->locallab.anbspot = anbspot->getIntValue ();
     pp->locallab.vart = vart->getIntValue ();
     pp->locallab.chrrt = chrrt->getIntValue ();
@@ -774,6 +793,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.str = str->getEditedState ();
         pedited->locallab.neigh = neigh->getEditedState ();
         pedited->locallab.nbspot = nbspot->getEditedState ();
+        pedited->locallab.maxnbspot = maxnbspot->getEditedState ();
         pedited->locallab.anbspot = anbspot->getEditedState ();
         pedited->locallab.vart = vart->getEditedState ();
         pedited->locallab.chrrt = chrrt->getEditedState ();
@@ -1042,6 +1062,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     str->setDefault (defParams->locallab.str);
     neigh->setDefault (defParams->locallab.neigh);
     nbspot->setDefault (defParams->locallab.nbspot);
+    maxnbspot->setDefault (defParams->locallab.maxnbspot);
     anbspot->setDefault (defParams->locallab.anbspot);
     vart->setDefault (defParams->locallab.vart);
     chrrt->setDefault (defParams->locallab.chrrt);
@@ -1066,6 +1087,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         str->setDefaultEditedState (pedited->locallab.str ? Edited : UnEdited);
         neigh->setDefaultEditedState (pedited->locallab.neigh ? Edited : UnEdited);
         nbspot->setDefaultEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
+        maxnbspot->setDefaultEditedState (pedited->locallab.maxnbspot ? Edited : UnEdited);
         anbspot->setDefaultEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         vart->setDefaultEditedState (pedited->locallab.vart ? Edited : UnEdited);
         chrrt->setDefaultEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
@@ -1088,6 +1110,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         str->setDefaultEditedState (Irrelevant);
         neigh->setDefaultEditedState (Irrelevant);
         nbspot->setDefaultEditedState (Irrelevant);
+        maxnbspot->setDefaultEditedState (Irrelevant);
         anbspot->setDefaultEditedState (Irrelevant);
         vart->setDefaultEditedState (Irrelevant);
         chrrt->setDefaultEditedState (Irrelevant);
@@ -1182,6 +1205,8 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabneigh, neigh->getTextValue());
         } else if (a == nbspot) {
             listener->panelChanged (Evlocallabnbspot, nbspot->getTextValue());
+        } else if (a == maxnbspot) {
+            listener->panelChanged (Evlocallabmaxnbspot, maxnbspot->getTextValue());
         } else if (a == anbspot) {
             listener->panelChanged (Evlocallabanbspot, anbspot->getTextValue());
         } else if (a == vart) {
@@ -1274,6 +1299,7 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     str->trimValue(pp->locallab.str);
     neigh->trimValue(pp->locallab.neigh);
     nbspot->trimValue(pp->locallab.nbspot);
+    maxnbspot->trimValue(pp->locallab.maxnbspot);
     anbspot->trimValue(pp->locallab.anbspot);
     vart->trimValue(pp->locallab.vart);
     chrrt->trimValue(pp->locallab.chrrt);
@@ -1302,6 +1328,7 @@ void Locallab::setBatchMode (bool batchMode)
     str->showEditedCB ();
     neigh->showEditedCB ();
     nbspot->showEditedCB ();
+    maxnbspot->showEditedCB ();
     anbspot->showEditedCB ();
     vart->showEditedCB ();
     CCWcurveEditorgainT->setBatchMode (batchMode);

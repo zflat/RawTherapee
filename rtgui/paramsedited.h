@@ -439,6 +439,7 @@ public:
     bool str;
     bool neigh;
     bool nbspot;
+    bool maxnbspot;
     bool anbspot;
     bool vart;
     bool activsp;

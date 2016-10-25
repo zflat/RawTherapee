@@ -389,6 +389,20 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
     const float amoins = (strn - 1.f) / delhu;
     const float bmoins = 1.f - amoins * huemoins;
 
+    const float apl = (-1.f) / delhu;
+    const float bpl = - apl * hueplus;
+    const float amo = 1.f / delhu;
+    const float bmo = - amo * huemoins;
+
+
+    const float pb = 4.f;
+    const float pa = (1.f - pb) / 40.f;
+
+    const float ahu = 1.f / (2.8f * lp.sensh - 280.f);
+    const float bhu = 1.f - ahu * 2.8f * lp.sensh;
+
+    const float alum = 1.f / (lp.sensh - 100.f);
+    const float blum = 1.f - alum * lp.sensh;
 
 
 #ifdef _OPENMP
@@ -433,10 +447,33 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 float rhue = xatan2f(original->b[y][x], original->a[y][x]);
                 float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
-                //    float rL = original->L[y][x] / 327.68f;
+                float rL = original->L[y][x] / 327.68f;
 
                 float realstr = 1.f;
                 float realstrch = 1.f;
+
+                float deltachro = fabs(rchro - chromaref);
+                float deltahue = fabs(rhue - hueref);
+                float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
+                float deltaL = fabs (lumaref - rL); //between 0 and 100
+
+                float kch = 1.f;
+                float khu = 0.f;
+                float fach = 1.f;
+                float falu = 1.f;
+
+                if(deltachro < 160.f * SQR(lp.sensh / 100.f)) {
+                    kch = 1.f;
+                } else {
+                    float ck = 160.f * SQR(lp.sensh / 100.f);
+                    float ak = 1.f / (ck - 160.f);
+                    float bk = -160.f * ak;
+                    kch = ak * deltachro + bk;
+                }
+
+                if(lp.sensh < 40.f ) {
+                    kch = pow(kch, pa * lp.sensh + pb);    //increase under 40
+                }
 
                 bool kzon = false;
                 //transition = difficult to avoid artifact with scope on flat area (sky...)
@@ -444,20 +481,32 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
                     if(rhue >= hueplus - delhu)  {
                         realstr = aplus * rhue + bplus;
+                        khu  = apl * rhue + bpl;
+
                     } else if(rhue < huemoins + delhu)  {
                         realstr = amoins * rhue + bmoins;
+                        khu = amo * rhue + bmo;
+
                     } else {
                         realstr = strn;
+                        khu = 1.f;
+
                     }
 
                     kzon = true;
                 } else if((hueref + dhue) >= M_PI && (rhue > huemoins  || rhue < hueplus )) {
                     if(rhue >= hueplus - delhu  && rhue < hueplus)  {
                         realstr = aplus * rhue + bplus;
+                        khu  = apl * rhue + bpl;
+
                     } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
                         realstr = amoins * rhue + bmoins;
+                        khu = amo * rhue + bmo;
+
                     } else {
                         realstr = strn;
+                        khu = 1.f;
+
                     }
 
                     kzon = true;
@@ -466,24 +515,59 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                 if((hueref - dhue) > -M_PI && rhue < hueplus && rhue > huemoins) {
                     if(rhue >= hueplus - delhu  && rhue < hueplus)  {
                         realstr = aplus * rhue + bplus;
+                        khu  = apl * rhue + bpl;
+
                     } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
                         realstr = amoins * rhue + bmoins;
+                        khu = amo * rhue + bmo;
+
                     } else {
                         realstr = strn;
+                        khu = 1.f;
+
                     }
 
                     kzon = true;
                 } else if((hueref - dhue) <= -M_PI && (rhue > huemoins  || rhue < hueplus )) {
                     if(rhue >= hueplus - delhu  && rhue < hueplus)  {
                         realstr = aplus * rhue + bplus;
+                        khu  = apl * rhue + bpl;
+
                     } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
                         realstr = amoins * rhue + bmoins;
+                        khu = amo * rhue + bmo;
+
                     } else {
                         realstr = strn;
+                        khu = 1.f;
+
                     }
 
                     kzon = true;
                 }
+
+                if(lp.sensh < 20.f) {//to try...
+
+                    if(deltaE <  2.8f * lp.sensh) {
+                        fach = khu;
+                    } else {
+                        fach = khu * (ahu * deltaE + bhu);
+                    }
+
+                    float kcr = 10.f;
+
+                    if (rchro < kcr) {
+                        fach *= (1.f / (kcr * kcr)) * rchro * rchro;
+                    }
+
+                    if(deltaL <  lp.sensh) {
+                        falu = 1.f;
+                    } else {
+                        falu = alum * deltaL + blum;
+                    }
+
+                }
+
 
                 //    float kLinf = rL / (100.f);
                 //    float kLsup = kLinf;
@@ -545,14 +629,15 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                         if(chro == 0) {
                             float difL = (tmp1->L[y][x]) - original->L[y][x];
                             difL *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            difL *= kch * fach;
                             transformed->L[y][x] = original->L[y][x] + difL;
                         }
 
                         if(chro == 1) {
                             float difa = tmp1->a[y][x] - original->a[y][x];
                             float difb = tmp1->b[y][x] - original->b[y][x];
-                            difa *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
-                            difb *= factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            difa *= falu * factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                            difb *= falu * factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
                             transformed->a[y][x] = original->a[y][x] + difa;
                             transformed->b[y][x] = original->b[y][x] + difb;
                         }
@@ -563,12 +648,21 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
 
                     case 2: { // inside selection => full effect, no transition
                         if(chro == 0) {
-                            transformed->L[y][x] = tmp1->L[y][x];
+                            float difL = tmp1->L[y][x] - original->L[y][x];
+                            difL *= (100.f + realstr) / 100.f;
+                            difL *= kch * fach;
+                            transformed->L[y][x] = original->L[y][x] + difL;
                         }
 
                         if(chro == 1) {
-                            transformed->a[y][x] = tmp1->a[y][x];
-                            transformed->b[y][x] = tmp1->b[y][x];
+                            float difa = tmp1->a[y][x] - original->a[y][x];
+                            float difb = tmp1->b[y][x] - original->b[y][x];
+                            difa *= falu * (100.f + realstr) / 100.f;
+                            difb *= falu * (100.f + realstr) / 100.f;
+                            transformed->a[y][x] = original->a[y][x] + difa;
+                            transformed->b[y][x] = original->b[y][x] + difb;
+
+
                         }
                     }
                 }
@@ -1027,7 +1121,7 @@ static void calclight (float lum, int  koef, float &lumnew)
 }
 
 
-void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy, const LUTf & localcurve)
+void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy)
 {
     BENCHFUN
 // chroma and lightness
@@ -1386,7 +1480,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
     }
 }
 
-void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy, const LUTf & localcurve)
+void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy)
 {
     BENCHFUN
     float ach = (float)lp.trans / 100.f;
@@ -1456,7 +1550,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 }
 
 
-void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
+void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
 {
     if(params->locallab.enabled) {
         BENCHFUN
@@ -1741,11 +1835,11 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy, localcurve);
+            ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
         }
         //inverse
         else if(lp.inv) {
-            InverseColorLight_Local(lp, original, transformed, cx, cy, localcurve);
+            InverseColorLight_Local(lp, original, transformed, cx, cy);
         }
 
 

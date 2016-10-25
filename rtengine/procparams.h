@@ -872,6 +872,7 @@ public:
     int     str;
     int     neigh;
     int     nbspot;
+    int     maxnbspot;
     int     anbspot;
     int     vart;
     int     chrrt;
@@ -1351,7 +1352,7 @@ public:
     bool                    inTrash;         ///< Marks deleted image
     Glib::ustring           appVersion;      ///< Version of the application that generated the parameters
     int                     ppVersion;       ///< Version of the PP file from which the parameters have been read
-
+    int                     prot;
     ExifPairs                exif;            ///< List of modifications appplied on the exif tags of the input image
     IPTCPairs                iptc;            ///< The IPTC tags and values to be saved to the output image
 

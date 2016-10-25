@@ -16,9 +16,10 @@
 #include <memory>
 #include "options.h"
 
+
+
 class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public rtengine::localListener, public CurveListener, public EditSubscriber
 {
-
 private:
     int lastObject;
     Gtk::HBox* enaBox;
@@ -48,6 +49,9 @@ protected:
     Adjuster* chrrt;
     Adjuster* nbspot;
     Adjuster* anbspot;
+    Adjuster* maxnbspot;
+    Adjuster* maxn;
+
 
     Gtk::CheckButton* avoid;
     MyComboBoxText*   Smethod;
@@ -82,7 +86,6 @@ public:
 
     Locallab ();
     ~Locallab ();
-
     void read           (const rtengine::procparams::ProcParams* pp, const ParamsEdited* pedited = NULL);
     void write          (rtengine::procparams::ProcParams* pp, ParamsEdited* pedited = NULL);
     void setDefaults    (const rtengine::procparams::ProcParams* defParams, const ParamsEdited* pedited = NULL);
@@ -104,7 +107,6 @@ public:
     void autoOpenCurve ();
     void localChanged           (int **datasp, int sp);
     bool localComputed_         ();
-
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
 

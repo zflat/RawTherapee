@@ -42,7 +42,7 @@ ImProcCoordinator::ImProcCoordinator ()
       allocated(false), bwAutoR(-9000.f), bwAutoG(-9000.f), bwAutoB(-9000.f), CAMMean(NAN), coordX(0), coordY(0), localX(0), localY(0),
       dataspot(nullptr),
       ctColorCurve(),
-      localcurve(65536, 0),
+//      localcurve(65536, 0),
       hltonecurve(65536),
       shtonecurve(65536),
       tonecurve(65536, 0), //,1);
@@ -617,7 +617,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
     //scale = 1;
     if (todo & (M_LUMINANCE + M_COLOR) ) {
         nprevl->CopyFrom(oprevl);
-
+        int maxspot = settings->nspot + 1;
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
 
         if(params.locallab.enabled) {
@@ -638,7 +638,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 if(fic)
 
                 {
-                    for(int sp = 1; sp < 6; sp++) { //5 spots default
+                    for(int sp = 1; sp < maxspot; sp++) { // spots default
                         int t_sp = sp;
                         string t_Smethod = "IND";//prov can be suppress after!
                         int t_locX = 250;
@@ -711,7 +711,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot = new int*[27];
 
             for (int i = 0; i < 27; i++) {
-                dataspot[i] = new int[6];
+                dataspot[i] = new int[maxspot];
             }
 
 
@@ -773,6 +773,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[26][0] =  2;
             }
 
+            int ns;
+
             if (fich) {
 
                 string line;
@@ -791,11 +793,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                     cont++;
                     string str3 = spotline.substr (pos + 1, (posend - pos));
-                    int ns;
+                    //   int ns;
 
                     if(cont == 1) {
                         ns =  std::stoi(str3.c_str());
-                        //  printf("ns=%d\n", ns);
+                        //   printf("ns=%d\n", ns);
                     }
 
                     if(cont > 2  && cont < 16) {
@@ -818,14 +820,127 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 fich.close();
             }
 
+            if(ns <  (maxspot - 1)) {
+                ofstream fic(datalab, ios::out | ios::app);  // ouverture en écriture avec effacement du fichier ouvert
 
+
+                for(int sp = ns + 1 ; sp < maxspot; sp++) { // spots default
+                    int t_sp = sp;
+                    string t_Smethod = "IND";//prov can be suppress after!
+                    int t_locX = 250;
+                    int t_locY = 250;
+                    int t_locYT = 250;
+                    int t_locXL = 250;
+                    int t_centerX = 0;
+                    int t_centerY = 0;
+                    int t_lightness = 0;
+                    int t_contrast = 0;
+                    int t_chroma = 0;
+                    int t_sensi = 20;
+                    int t_transit = 60;
+                    int t_invers = 0;
+                    int t_Smeth = 0;
+                    int t_currentspot = 1;
+                    int t_radius = 0;
+                    int t_strength = 0;
+                    int t_inversrad = 0;
+                    int t_str = 0;
+                    int t_chrrt = 0;
+                    int t_neigh = 50;
+                    int t_vart = 200;
+                    int t_sensih = 20;
+                    int t_inversret = 0;
+                    int t_retinexMethod = 2;
+                    //all variables except locRETgainCurve 'coomon for all)
+                    fic << "Spot=" << t_sp << '@' << endl;
+                    fic << "Smethod=" << t_Smethod << '@' << endl;
+                    fic << "LocX=" << t_locX << '@' << endl;
+                    fic << "LocY=" << t_locY << '@' << endl;
+                    fic << "LocYT=" << t_locYT << '@' << endl;
+                    fic << "LocXL=" << t_locXL << '@' << endl ;
+                    fic << "CenterX=" << t_centerX << '@' << endl;
+                    fic << "CenterY=" << t_centerY << '@' << endl;
+                    fic << "Lightness=" << t_lightness << '@' << endl;
+                    fic << "Contrast=" << t_contrast << '@' <<  endl;
+                    fic << "Chroma=" << t_chroma << '@' << endl;
+                    fic << "Sensi=" << t_sensi << '@' << endl;
+                    fic << "Transit=" << t_transit << '@' << endl;
+                    fic << "Invers=" << t_invers << '@' << endl;
+                    fic << "Smethod=" << t_Smeth << '@' << endl;
+                    fic << "Currentspot=" << t_currentspot << '@' << endl;
+                    fic << "Radius=" << t_radius << '@' << endl;
+                    fic << "Strength=" << t_strength << '@' << endl;
+                    fic << "Inversrad=" << t_inversrad << '@' << endl;
+                    fic << "Str=" << t_str << '@' << endl;
+                    fic << "Chroma=" << t_chrrt << '@' << endl;
+                    fic << "Neigh=" << t_neigh << '@' << endl;
+                    fic << "Vart=" << t_vart << '@' << endl;
+                    fic << "Sensih=" << t_sensih << '@' << endl;
+                    fic << "Inversret=" << t_inversret << '@' << endl;
+                    fic << "retinexMethod=" << t_retinexMethod << '@' << endl;
+                    fic << endl;
+                }
+
+                fic.close();
+
+
+                ifstream fich2(datalab, ios::in);
+
+                if (fich2) {
+
+                    string line2;
+                    string spotline2;
+                    int cont2 = 0;
+                    int ns2;
+
+                    while (getline(fich2, line2)) {
+                        spotline2 = line2;
+                        std::size_t pos2 = spotline2.find("=");
+                        std::size_t posend2 = spotline2.find("@");//in case of for futur use
+
+                        if(spotline2.substr(0, pos2) == "Spot") {
+                            // string str2 = spotline.substr (pos + 1, (posend - pos));
+                            cont2 = 0;
+                        }
+
+                        cont2++;
+                        string str32 = spotline2.substr (pos2 + 1, (posend2 - pos2));
+                        //  int ns;
+
+                        if(cont2 == 1) {
+                            ns2 =  std::stoi(str32.c_str());
+                            //    printf("ns2=%d\n", ns2);
+                        }
+
+                        if(cont2 > 2  && cont2 < 16) {
+                            dataspot[cont2][ns2] = std::stoi(str32.c_str());
+
+                            //     printf("data=%d cont=%d ns=%d\n", dataspot[cont][ns], cont, ns);
+                        }
+
+                        if(spotline2.substr(0, pos2) == "Currentspot") {
+                            dataspot[16][0] = std::stoi(str32.c_str());
+                        }
+
+                        if(cont2 > 16  && cont2 < 27) {
+                            dataspot[cont2][ns2] = std::stoi(str32.c_str());
+
+                        }
+
+                    }
+
+                    fich2.close();
+                }
+
+
+            }
 
 
             //  printf("realimp=%d \n", realspot);
 
-            for(int sp = 1; sp < 6; sp++) { //5 spots default
+            for(int sp = 1; sp < maxspot; sp++) { //spots default
                 if(sp != realspot) {
-                    //  printf("after real sp=%d\n", sp);
+                    //   printf("after real sp=%d\n", sp);
                     params.locallab.hueref = INFINITY;
                     params.locallab.chromaref = INFINITY;
                     bool locutili = locutili;
@@ -891,7 +1006,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         params.locallab.retinexMethod = "high";
                     }
 
-                    ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                     nextParams.locallab.hueref = params.locallab.hueref;
                     nextParams.locallab.chromaref = params.locallab.chromaref;
                     nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -989,7 +1104,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[26][sp] = 2;
             }
 
-            ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+            ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
             nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1004,7 +1119,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             {
 
-                for(int spe = 1; spe < 6; spe++) {
+                for(int spe = 1; spe < maxspot; spe++) {
                     int t_sp = spe;
                     // printf("t_sp imp=%d\n", t_sp);
                     string t_Smethod = "IND";
@@ -1076,67 +1191,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             locMutex->unlock ();
             delete locMutex;
 
-
-            /*            locutili = false;
-                        params.locallab.lightness = 100;
-                        CurveFactory::localLCurve (params.locallab.lightness, 0, lhist16,
-                                                   localcurve,  scale == 1 ? 1 : 16, locutili);
-                        //      hueref = INFINITY;
-                        //     chromaref = INFINITY;
-                        //     lumaref = INFINITY;
-                        params.locallab.hueref = INFINITY;
-                        params.locallab.chromaref = INFINITY;
-                        params.locallab.lumaref = INFINITY;
-                        // nprevloc->CopyFrom(nprevl);
-
-                        params.locallab.getCurves(locRETgainCurve);
-                        params.locallab.centerX = -270;
-                        params.locallab.centerY = +40;
-                        //  params.locallab.lightness=0;
-                        params.locallab.chroma = 150;
-                        params.locallab.locY = 600;
-                        params.locallab.locX = 400;
-                        params.locallab.locYT = 620;
-                        params.locallab.locXL = 250;
-
-
-                        ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                        // nprevl->CopyFrom(nprevloc);
-                        nextParams.locallab.hueref = params.locallab.hueref;
-                        nextParams.locallab.chromaref = params.locallab.chromaref;
-                        nextParams.locallab.lumaref = params.locallab.lumaref;
-            */
         }
 
-        /*       if(params.locallab.enabled) {
-                   locutili = false;
-                   //   nprevloc->CopyFrom(nprevl);
-                   params.locallab.lightness = -10;
 
-                   CurveFactory::localLCurve (params.locallab.lightness, 0,  lhist16,
-                                              localcurve,  scale == 1 ? 1 : 16, locutili);
-                   params.locallab.hueref = INFINITY;
-                   params.locallab.chromaref = INFINITY;
-                   params.locallab.lumaref = INFINITY;
-                   params.locallab.getCurves(locRETgainCurve);
-                   params.locallab.centerX = 600;
-                   params.locallab.centerY = -200;
-                   params.locallab.chroma = -100;
-                   params.locallab.locY = 360;
-                   params.locallab.locX = 140;
-                   params.locallab.locYT = 362;
-                   params.locallab.locXL = 325;
-
-                   ipf.Lab_Local(nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, localcurve, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                   //    nprevl->CopyFrom(nprevloc);
-                   nextParams2.locallab.hueref = params.locallab.hueref;
-                   nextParams2.locallab.chromaref = params.locallab.chromaref;
-                   nextParams2.locallab.lumaref = params.locallab.lumaref;
-
-               }
-        */
-
-        //   ipf.MSR(nprevl, nprevl->W, nprevl->H, 1);
 
         histCCurve.clear();
         histLCurve.clear();

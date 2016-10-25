@@ -94,7 +94,7 @@ protected:
     LUTf tonecurve;
 
     LUTf lumacurve;
-    LUTf localcurve;
+//    LUTf localcurve;
     LUTf chroma_acurve;
     LUTf chroma_bcurve;
     LUTf satcurve;

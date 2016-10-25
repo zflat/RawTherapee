@@ -910,6 +910,8 @@ void LocallabParams::setDefaults()
     vart = 200;
     nbspot = 1;
     anbspot = 0;
+    maxnbspot = 4;
+
     getDefaultCCWgainCurveT(ccwTgaincurve);
 
 }
@@ -1335,7 +1337,7 @@ void ProcParams::setDefaults ()
     rank = 0;
     colorlabel = 0;
     inTrash = false;
-
+    prot = 1;
     ppVersion = PPVERSION;
 }
 
@@ -2638,6 +2640,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->locallab.nbspot) {
             keyFile.set_integer ("Locallab", "Nbspot", locallab.nbspot);
+        }
+
+        if (!pedited || pedited->locallab.maxnbspot) {
+            keyFile.set_integer ("Locallab", "MaxNbspot", locallab.maxnbspot);
         }
 
         if (!pedited || pedited->locallab.anbspot) {
@@ -4059,6 +4065,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.nbspot = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "MaxNbspot"))  {
+                locallab.maxnbspot  = keyFile.get_integer ("Locallab", "MaxNbspot");
+
+                if (pedited) {
+                    pedited->locallab.maxnbspot = true;
                 }
             }
 
@@ -8257,6 +8271,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.str == other.locallab.str
         && locallab.neigh == other.locallab.neigh
         && locallab.nbspot == other.locallab.nbspot
+        && locallab.maxnbspot == other.locallab.maxnbspot
         && locallab.anbspot == other.locallab.anbspot
         && locallab.vart == other.locallab.vart
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve

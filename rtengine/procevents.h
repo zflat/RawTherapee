@@ -499,6 +499,7 @@ enum ProcEvent {
     Evlocallabnbspot = 469,
     Evlocallabactivsp = 470,
     Evlocallabanbspot = 471,
+    Evlocallabmaxnbspot = 472,
 
     NUMOFEVENTS
 

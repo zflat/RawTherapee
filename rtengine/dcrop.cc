@@ -799,10 +799,10 @@ void Crop::update (int todo)
         LocretigainCurve locRETgainCurve;
         params.locallab.getCurves(locRETgainCurve);
         bool tyty = false;
+        int maxspot = settings->nspot + 1;
 
         if(needslocal ) {
             //   if(tyty==true) {
-            //if(skip == 1) GThreadLock lock;
             MyMutex* locMutex = NULL;
             locMutex = new MyMutex;
             locMutex->lock ();
@@ -818,7 +818,7 @@ void Crop::update (int todo)
                 dataspotd = new int*[27];
 
                 for (int i = 0; i < 27; i++) {
-                    dataspotd[i] = new int[6];
+                    dataspotd[i] = new int[maxspot];
                 }
 
                 dataspotd[3][0] =  params.locallab.locX;
@@ -925,7 +925,7 @@ void Crop::update (int todo)
                 int realspot = params.locallab.nbspot;
                 //    printf("real=%d \n", realspot);
 
-                for(int sp = 1; sp < 6; sp++) { //5 spots default
+                for(int sp = 1; sp < maxspot; sp++) { //5 spots default
                     if(sp != realspot) {
                         bool locutili = parent->locutili;
 
@@ -986,7 +986,7 @@ void Crop::update (int todo)
                             params.locallab.retinexMethod = "high";
                         }
 
-                        parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, parent->localcurve, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                        parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
                     }
 
@@ -1076,78 +1076,7 @@ void Crop::update (int todo)
                 }
 
 
-                parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), parent->localcurve, locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                ofstream fou(datalab, ios::out | ios::trunc);
-
-                //     Glib::ArrayHandle<double> l_ccwTgaincurve = params.locallab.ccwTgaincurve;
-
-                //      if(realspot == dataspot[14][0]){
-                if(fou)
-
-                {
-
-                    for(int spe = 1; spe < 6; spe++) {
-                        int t_sp = spe;
-                        // printf("t_sp imp=%d\n", t_sp);
-                        string t_Smethod = "IND";
-                        int t_locX  = dataspotd[3][spe];
-                        int t_locY  = dataspotd[4][spe];
-                        int t_locYT  = dataspotd[5][spe];
-                        int t_locXL  = dataspotd[6][spe];
-                        int t_centerX  = dataspotd[7][spe];
-                        int t_centerY  = dataspotd[8][spe];
-                        int t_lightness  = dataspotd[9][spe];
-                        int t_contrast  = dataspotd[10][spe];
-                        int t_chroma  = dataspotd[11][spe];
-                        int t_sensi  = dataspotd[12][spe];
-                        int t_transit  = dataspotd[13][spe];
-                        int t_invers = dataspotd[14][spe];
-                        int t_Smeth = dataspotd[15][spe];
-                        int t_currentspot  = realspot;
-                        int t_radius = dataspotd[17][spe];
-                        int t_strength = dataspotd[18][spe];
-                        int t_inversrad = dataspotd[19][spe];
-                        int t_str = dataspotd[20][spe];
-                        int t_chrrt = dataspotd[21][spe];
-                        int t_neigh = dataspotd[22][spe];
-                        int t_vart = dataspotd[23][spe];
-                        int t_sensih = dataspotd[24][spe];
-                        int t_inversret = dataspotd[25][spe];
-                        int t_retinexMethod = dataspotd[26][spe];
-
-                        fou << "Spot=" << t_sp << '@' << endl;
-                        fou << "Smethod=" << t_Smethod << '@' << endl;
-                        fou << "LocX=" << t_locX << '@' << endl;
-                        fou << "LocY=" << t_locY << '@' << endl;
-                        fou << "LocYT=" << t_locYT << '@' << endl;
-                        fou << "LocXL=" << t_locXL << '@' << endl ;
-                        fou << "CenterX=" << t_centerX << '@' << endl;
-                        fou << "CenterY=" << t_centerY << '@' << endl;
-                        fou << "Lightness=" << t_lightness << '@' << endl;
-                        fou << "Contrast=" << t_contrast << '@' <<  endl;
-                        fou << "Chroma=" << t_chroma << '@' << endl;
-                        fou << "Sensi=" << t_sensi << '@' << endl;
-                        fou << "Transit=" << t_transit << '@' << endl;
-                        fou << "Invers=" << t_invers << '@' << endl;
-                        fou << "Smethod=" << t_Smeth << '@' << endl;
-                        fou << "Currentspot=" << t_currentspot << '@' << endl;
-                        fou << "Radius=" << t_radius << '@' << endl;
-                        fou << "Strength=" << t_strength << '@' << endl;
-                        fou << "Inversrad=" << t_inversrad << '@' << endl;
-                        fou << "Str=" << t_str << '@' << endl;
-                        fou << "Chroma=" << t_chrrt << '@' << endl;
-                        fou << "Neigh=" << t_neigh << '@' << endl;
-                        fou << "Vart=" << t_vart << '@' << endl;
-                        fou << "Sensih=" << t_sensih << '@' << endl;
-                        fou << "Inversret=" << t_inversret << '@' << endl;
-                        fou << "retinexMethod=" << t_retinexMethod << '@' << endl;
-
-                        fou << endl;
-                    }
-
-                    fou.close();
-                }
-
+                parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
                 for (int i = 0; i < 27; i++) {
                     delete [] dataspotd[i];
