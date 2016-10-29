@@ -950,9 +950,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         if (fich) {
             int **dataspots;
-            dataspots = new int*[27];
+            dataspots = new int*[30];
 
-            for (int i = 0; i < 27; i++) {
+            for (int i = 0; i < 30; i++) {
                 dataspots[i] = new int[maxspot];
             }
 
@@ -1013,7 +1013,11 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[26][0] =  2;
             }
 
+            dataspots[27][0] = 100.f * params.locallab.hueref;
+            dataspots[28][0] = params.locallab.chromaref;
+            dataspots[29][0] = params.locallab.lumaref;
 
+            printf("OK 1\n");
 
             if (fich) {
 
@@ -1048,7 +1052,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         dataspots[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 27) {
+                    if(cont > 16  && cont < 30) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -1058,160 +1062,81 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 fich.close();
             }
 
+            printf("OK 2\n");
+
             for(int sp = 1; sp < maxspot; sp++) { //5 spots default
-                if(sp != realspot) {
-                    params.locallab.hueref = INFINITY;
-                    params.locallab.chromaref = INFINITY;
-                    //bool locutili = parent->locutili;
-                    params.locallab.lumaref = INFINITY;
+                params.locallab.hueref = INFINITY;
+                params.locallab.chromaref = INFINITY;
+                params.locallab.lumaref = INFINITY;
 
-                    params.locallab.locX = dataspots[3][sp];
-                    params.locallab.locY = dataspots[4][sp];
-                    params.locallab.locYT = dataspots[5][sp];
-                    params.locallab.locXL = dataspots[6][sp];
-                    params.locallab.centerX = dataspots[7][sp];
-                    params.locallab.centerY = dataspots[8][sp];
-                    params.locallab.lightness = dataspots[9][sp];
-                    params.locallab.contrast = dataspots[10][sp];
-                    params.locallab.chroma = dataspots[11][sp];
-                    params.locallab.sensi = dataspots[12][sp];
-                    params.locallab.transit = dataspots[13][sp];
+                params.locallab.locX = dataspots[3][sp];
+                params.locallab.locY = dataspots[4][sp];
+                params.locallab.locYT = dataspots[5][sp];
+                params.locallab.locXL = dataspots[6][sp];
+                params.locallab.centerX = dataspots[7][sp];
+                params.locallab.centerY = dataspots[8][sp];
+                params.locallab.lightness = dataspots[9][sp];
+                params.locallab.contrast = dataspots[10][sp];
+                params.locallab.chroma = dataspots[11][sp];
+                params.locallab.sensi = dataspots[12][sp];
+                params.locallab.transit = dataspots[13][sp];
 
-                    if(dataspots[14][sp] ==  0) {
-                        params.locallab.invers = 0;
-                    } else {
-                        params.locallab.invers = 1;
-                    }
-
-                    if(dataspots[15][sp] ==  0) {
-                        params.locallab.Smethod = "IND" ;
-                    } else if (dataspots[15][sp] ==  1) {
-                        params.locallab.Smethod = "SYM" ;
-                    } else if (dataspots[15][sp] ==  2) {
-                        params.locallab.Smethod = "INDSL";
-                    } else if (dataspots[15][sp] ==  3) {
-                        params.locallab.Smethod = "SYMSL";
-                    }
-
-                    params.locallab.radius = (float) (dataspots[17][sp]) / 10.f;
-                    params.locallab.strength = (float) (dataspots[18][sp]) / 10.f;
-
-                    if(dataspots[19][sp] ==  0) {
-                        params.locallab.inversrad = 0;
-                    } else {
-                        params.locallab.inversrad = 1;
-                    }
-
-                    params.locallab.str = dataspots[20][sp];
-                    params.locallab.chrrt = dataspots[21][sp];
-                    params.locallab.neigh = dataspots[22][sp];
-                    params.locallab.vart = dataspots[23][sp];
-                    params.locallab.sensih = dataspots[24][sp];
-
-                    if(dataspots[25][sp] ==  0) {
-                        params.locallab.inversret = 0;
-                    } else {
-                        params.locallab.inversret = 1;
-                    }
-
-                    if(dataspots[26][sp] ==  0) {
-                        params.locallab.retinexMethod = "low" ;
-                    } else if (dataspots[26][sp] ==  1) {
-                        params.locallab.retinexMethod = "uni" ;
-                    } else if (dataspots[26][sp] ==  2) {
-                        params.locallab.retinexMethod = "high";
-                    }
-
-                    ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-
+                if(dataspots[14][sp] ==  0) {
+                    params.locallab.invers = 0;
+                } else {
+                    params.locallab.invers = 1;
                 }
+
+                if(dataspots[15][sp] ==  0) {
+                    params.locallab.Smethod = "IND" ;
+                } else if (dataspots[15][sp] ==  1) {
+                    params.locallab.Smethod = "SYM" ;
+                } else if (dataspots[15][sp] ==  2) {
+                    params.locallab.Smethod = "INDSL";
+                } else if (dataspots[15][sp] ==  3) {
+                    params.locallab.Smethod = "SYMSL";
+                }
+
+                params.locallab.radius = (float) (dataspots[17][sp]) / 10.f;
+                params.locallab.strength = (float) (dataspots[18][sp]) / 10.f;
+
+                if(dataspots[19][sp] ==  0) {
+                    params.locallab.inversrad = 0;
+                } else {
+                    params.locallab.inversrad = 1;
+                }
+
+                params.locallab.str = dataspots[20][sp];
+                params.locallab.chrrt = dataspots[21][sp];
+                params.locallab.neigh = dataspots[22][sp];
+                params.locallab.vart = dataspots[23][sp];
+                params.locallab.sensih = dataspots[24][sp];
+
+                if(dataspots[25][sp] ==  0) {
+                    params.locallab.inversret = 0;
+                } else {
+                    params.locallab.inversret = 1;
+                }
+
+                if(dataspots[26][sp] ==  0) {
+                    params.locallab.retinexMethod = "low" ;
+                } else if (dataspots[26][sp] ==  1) {
+                    params.locallab.retinexMethod = "uni" ;
+                } else if (dataspots[26][sp] ==  2) {
+                    params.locallab.retinexMethod = "high";
+                }
+
+                params.locallab.hueref = ((float) dataspots[27][sp]) / 100.f;
+                params.locallab.chromaref = dataspots[28][sp];
+                params.locallab.lumaref = dataspots[29][sp];
+
+                ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+
             }
 
-            int sp ;
-            sp = realspot;
+            printf("OK 3\n");
 
-            params.locallab.hueref = INFINITY;
-            params.locallab.chromaref = INFINITY;
-            params.locallab.lumaref = INFINITY;
-
-            params.locallab.getCurves(locRETgainCurve);
-            dataspots[3][sp] = params.locallab.locX = dataspots[3][0];
-            dataspots[4][sp] = params.locallab.locY = dataspots[4][0];
-            dataspots[5][sp] = params.locallab.locYT = dataspots[5][0];
-            dataspots[6][sp] = params.locallab.locXL = dataspots[6][0];
-            dataspots[7][sp] = params.locallab.centerX = dataspots[7][0];
-            dataspots[8][sp] = params.locallab.centerY = dataspots[8][0];
-            dataspots[9][sp] = params.locallab.lightness = dataspots[9][0];
-            dataspots[10][sp] = params.locallab.contrast = dataspots[10][0];
-            dataspots[11][sp] = params.locallab.chroma = dataspots[11][0];
-            dataspots[12][sp] = params.locallab.sensi = dataspots[12][0];
-            dataspots[13][sp] = params.locallab.transit = dataspots[13][0];
-
-            if(dataspots[14][0] == 0) {
-                params.locallab.invers = 0;
-                dataspots[14][sp] = 0;
-            } else {
-                params.locallab.invers = 1;
-                dataspots[14][sp] = 1;
-            }
-
-            if(dataspots[15][0] == 0) {
-                params.locallab.Smethod = "IND" ;
-                dataspots[15][sp] = 0;
-            } else if(dataspots[15][0] == 1) {
-                params.locallab.Smethod = "SYM" ;
-                dataspots[15][sp] = 1;
-            } else if(dataspots[15][0] == 2) {
-                params.locallab.Smethod = "INDSL" ;
-                dataspots[15][sp] = 2;
-            } else if(dataspots[15][0] == 3) {
-                params.locallab.Smethod = "SYMSL" ;
-                dataspots[15][sp] = 3;
-            }
-
-            params.locallab.radius = (float) (dataspots[17][0]) / 10.f;
-            params.locallab.strength = (float) (dataspots[18][0]) / 10.f;
-            dataspots[17][sp] = 10 * params.locallab.radius;
-            dataspots[18][sp] = 10 * params.locallab.strength;
-
-            if(dataspots[19][0] == 0) {
-                params.locallab.inversrad = 0;
-                dataspots[19][sp] = 0;
-            } else {
-                params.locallab.inversrad = 1;
-                dataspots[19][sp] = 1;
-            }
-
-            dataspots[20][sp] = params.locallab.str = dataspots[20][0];
-            dataspots[21][sp] = params.locallab.chrrt = dataspots[21][0];
-            dataspots[22][sp] = params.locallab.neigh = dataspots[22][0];
-            dataspots[23][sp] = params.locallab.vart = dataspots[23][0];
-            dataspots[24][sp] = params.locallab.sensih = dataspots[24][0];
-
-            if(dataspots[25][0] == 0) {
-                params.locallab.inversret = 0;
-                dataspots[25][sp] = 0;
-            } else {
-                params.locallab.inversret = 1;
-                dataspots[25][sp] = 1;
-            }
-
-            if(dataspots[26][0] == 0) {
-                params.locallab.retinexMethod = "low" ;
-                dataspots[26][sp] = 0;
-            } else if(dataspots[26][0] == 1) {
-                params.locallab.retinexMethod = "uni" ;
-                dataspots[26][sp] = 1;
-            } else if(dataspots[26][0] == 2) {
-                params.locallab.Smethod = "high" ;
-                dataspots[26][sp] = 2;
-            }
-
-
-
-            ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-
-            for (int i = 0; i < 27; i++) {
+            for (int i = 0; i < 30; i++) {
                 delete [] dataspots[i];
             }
 

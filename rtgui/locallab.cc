@@ -361,9 +361,9 @@ int localChangedUI (void* data)
 
 bool Locallab::localComputed_ ()
 {
-    MyMutex* locMutex = NULL;
-    locMutex = new MyMutex;
-    locMutex->lock ();
+//    MyMutex* locMutex = NULL;
+//    locMutex = new MyMutex;
+//    locMutex->lock ();
     disableListener ();
     //center and cursor
     locX->setValue(nextdatasp[3]);
@@ -483,15 +483,15 @@ bool Locallab::localComputed_ ()
         listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
     }
 
-    locMutex->unlock ();
-    delete locMutex;
+//    locMutex->unlock ();
+//    delete locMutex;
 
     return false;
 }
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 3; i < 27; i++) {
+    for(int i = 3; i < 30; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }

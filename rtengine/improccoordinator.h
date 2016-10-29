@@ -210,6 +210,36 @@ protected:
     bool opautili;
     bool wavcontlutili;
     int **dataspot;
+    LUTi centerx;
+    LUTi centery;
+    LUTi locx;
+    LUTi locy;
+    LUTi locxl;
+    LUTi locyt;
+    LUTi lights;
+    LUTi contrs;
+    LUTi chroms;
+    LUTi sensis;
+    LUTi transits;
+    LUTi inverss;
+    LUTi smeths;
+    LUTi curens;
+    LUTi radiuss;
+    LUTi strengths;
+    LUTi inversrads;
+    LUTi strs;
+    LUTi chrrts;
+    LUTi neighs;
+    LUTi varts;
+    LUTi sensihs;
+    LUTi inversrets;
+    LUTi retinexs;
+    LUTi sps;
+    LUTf huerefs;
+    LUTf chromarefs;
+    LUTf lumarefs;
+
+
     void startProcessing ();
     void process ();
     float colourToningSatLimit;

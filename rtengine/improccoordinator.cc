@@ -81,6 +81,35 @@ ImProcCoordinator::ImProcCoordinator ()
       histLRETI(256),
 
       CAMBrightCurveJ(), CAMBrightCurveQ(),
+      locx(500, -10000),
+      locy(500, -10000),
+      centerx(500, -10000),
+      centery(500, -10000),
+      locxl(500, -10000),
+      locyt(500, -10000),
+      lights(500, -100000),
+      contrs(500, -10000),
+      chroms(500, -10000),
+      sensis(500, -10000),
+      transits(500, -10000),
+      inverss(500, -10000),
+      smeths(500, -10000),
+      curens(500, -10000),
+      radiuss(500, -10000),
+      strengths(500, -10000),
+      inversrads(500, -10000),
+      strs(500, 10000),
+      chrrts(500, -10000),
+      neighs(500, -10000),
+      varts(500, -10000),
+      sensihs(500, -10000),
+      inversrets(500, -10000),
+      retinexs(500, -10000),
+      sps(500, -10000),
+      lumarefs(500, -100000.f),
+      chromarefs(500, -100000.f),
+      huerefs(500, -100000.f),
+
 
       rCurve(),
       gCurve(),
@@ -622,11 +651,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
 
         if(params.locallab.enabled) {
-            MyMutex* locMutex = NULL;
-            locMutex = new MyMutex;
+            //     MyMutex* locMutex = NULL;
+            //     locMutex = new MyMutex;
             // MyMutex::MyLock lock(mProcessing);
 
-            locMutex->lock ();
+            //     locMutex->lock ();
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
             ifstream fic(datalab, ios::in);
 
@@ -709,69 +738,69 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             int realspot = params.locallab.nbspot;
 
             ifstream fich(datalab, ios::in);
-            dataspot = new int*[27];
+            dataspot = new int*[30];
 
-            for (int i = 0; i < 27; i++) {
+            for (int i = 0; i < 30; i++) {
                 dataspot[i] = new int[maxspot];
             }
 
-
-            dataspot[3][0] =  params.locallab.locX;
-            dataspot[4][0] =  params.locallab.locY;
-            dataspot[5][0] =  params.locallab.locYT;
-            dataspot[6][0] =  params.locallab.locXL;
-            dataspot[7][0] =  params.locallab.centerX;
-            dataspot[8][0] =  params.locallab.centerY;
-            dataspot[9][0] =  params.locallab.lightness;
-            dataspot[10][0] =  params.locallab.contrast;
-            dataspot[11][0] =  params.locallab.chroma;
-            dataspot[12][0] =  params.locallab.sensi;
-            dataspot[13][0] =  params. locallab.transit;
+            sps[0] = 0;
+            dataspot[3][0] =  locx[0] = params.locallab.locX;
+            dataspot[4][0] =  locy[0] = params.locallab.locY;
+            dataspot[5][0] =  locyt[0] = params.locallab.locYT;
+            dataspot[6][0] =  locxl[0] = params.locallab.locXL;
+            dataspot[7][0] =  centerx[0] = params.locallab.centerX;
+            dataspot[8][0] =  centery[0] = params.locallab.centerY;
+            dataspot[9][0] =  lights[0] = params.locallab.lightness;
+            dataspot[10][0] =  contrs[0] = params.locallab.contrast;
+            dataspot[11][0] =  chroms[0] = params.locallab.chroma;
+            dataspot[12][0] =  sensis[0] = params.locallab.sensi;
+            dataspot[13][0] =  transits[0] = params. locallab.transit;
 
             if(!params.locallab.invers) {
-                dataspot[14][0] =  0;
+                dataspot[14][0] = inverss[0] = 0;
             } else {
-                dataspot[14][0] =  1;
+                dataspot[14][0] = inverss[0] = 1;
             }
 
             if(params.locallab.Smethod == "IND") {
-                dataspot[15][0] =  0;
+                dataspot[15][0] = smeths[0] =  0;
             } else if (params.locallab.Smethod == "SYM") {
-                dataspot[15][0] =  1;
+                dataspot[15][0] = smeths[0] =  1;
             } else if (params.locallab.Smethod == "INDSL") {
-                dataspot[15][0] =  2;
+                dataspot[15][0] = smeths[0] =  2;
             } else if (params.locallab.Smethod == "SYMSL") {
-                dataspot[15][0] =  3;
+                dataspot[15][0] =  smeths[0] = 3;
             }
 
-            dataspot[16][0] = params.locallab.nbspot;
-            dataspot[17][0] =  10 * params.locallab.radius;
-            dataspot[18][0] =  10 * params.locallab.strength;
+            dataspot[16][0] = curens[0] = params.locallab.nbspot;
+            dataspot[17][0] =  radiuss[0] = 10 * params.locallab.radius;
+            dataspot[18][0] =  strengths[0] = 10 * params.locallab.strength;
 
             if(!params.locallab.inversrad) {
-                dataspot[19][0] =  0;
+                dataspot[19][0] =  inversrads[0] = 0;
             } else {
-                dataspot[19][0] =  1;
+                dataspot[19][0] =  inversrads[0] = 1;
             }
 
-            dataspot[20][0] = params.locallab.str;
-            dataspot[21][0] = params.locallab.chrrt;
-            dataspot[22][0] = params.locallab.neigh;
-            dataspot[23][0] = params.locallab.vart;
-            dataspot[24][0] = params.locallab.sensih;
+            dataspot[20][0] = strs[0] = params.locallab.str;
+            dataspot[21][0] = chrrts[0] = params.locallab.chrrt;
+            dataspot[22][0] = neighs[0] = params.locallab.neigh;
+            dataspot[23][0] = varts[0] = params.locallab.vart;
+            dataspot[24][0] = sensihs[0] = params.locallab.sensih;
 
             if(!params.locallab.inversret) {
-                dataspot[25][0] =  0;
+                dataspot[25][0] =  inversrets[0] = 0;
             } else {
-                dataspot[25][0] =  1;
+                dataspot[25][0] =  inversrets[0] = 1;
             }
 
             if(params.locallab.retinexMethod == "low") {
-                dataspot[26][0] =  0;
+                dataspot[26][0] =  retinexs[0] = 0;
             } else if (params.locallab.retinexMethod == "uni") {
-                dataspot[26][0] =  1;
+                dataspot[26][0] =  retinexs[0] = 1;
             } else if (params.locallab.retinexMethod == "high") {
-                dataspot[26][0] =  2;
+                dataspot[26][0] =  retinexs[0] = 2;
             }
 
             int ns;
@@ -923,7 +952,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             dataspot[16][0] = std::stoi(str32.c_str());
                         }
 
-                        if(cont2 > 16  && cont2 < 27) {
+                        if(cont2 > 16  && cont2 < 30) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                         }
@@ -939,6 +968,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             //  printf("realimp=%d \n", realspot);
 
+
+
             for(int sp = 1; sp < maxspot; sp++) { //spots default
                 if(sp != realspot) {
                     //   printf("after real sp=%d\n", sp);
@@ -950,64 +981,84 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.getCurves(locRETgainCurve);
 
 
-                    params.locallab.locX = dataspot[3][sp];
-                    params.locallab.locY = dataspot[4][sp];
-                    params.locallab.locYT = dataspot[5][sp];
-                    params.locallab.locXL = dataspot[6][sp];
-                    params.locallab.centerX = dataspot[7][sp];
-                    params.locallab.centerY = dataspot[8][sp];
-                    params.locallab.lightness = dataspot[9][sp];
-                    params.locallab.contrast = dataspot[10][sp];
-                    params.locallab.chroma = dataspot[11][sp];
-                    params.locallab.sensi = dataspot[12][sp];
-                    params.locallab.transit = dataspot[13][sp];
+                    params.locallab.locX = locx[sp] = dataspot[3][sp];
+                    params.locallab.locY = locy[sp] = dataspot[4][sp];
+                    params.locallab.locYT = locyt[sp] = dataspot[5][sp];
+                    params.locallab.locXL = locxl[sp] = dataspot[6][sp];
+                    params.locallab.centerX = centerx[sp] = dataspot[7][sp];
+                    params.locallab.centerY = centery[sp] = dataspot[8][sp];
+                    params.locallab.lightness = lights[sp] = dataspot[9][sp];
+                    params.locallab.contrast = contrs[sp] = dataspot[10][sp];
+                    params.locallab.chroma = chroms[sp] = dataspot[11][sp];
+                    params.locallab.sensi = sensis[sp] = dataspot[12][sp];
+                    params.locallab.transit = transits[sp] = dataspot[13][sp];
+                    sps[sp] = sp;
 
                     if(dataspot[14][sp] ==  0) {
+                        inverss[sp] = 0;
                         params.locallab.invers = 0;
                     } else {
+                        inverss[sp] = 1;
                         params.locallab.invers = 1;
                     }
 
                     if(dataspot[15][sp] ==  0) {
+                        smeths[sp] = 0;
                         params.locallab.Smethod = "IND" ;
                     } else if (dataspot[15][sp] ==  1) {
+                        smeths[sp] = 1;
                         params.locallab.Smethod = "SYM" ;
                     } else if (dataspot[15][sp] ==  2) {
+                        smeths[sp] = 2;
                         params.locallab.Smethod = "INDSL";
                     } else if (dataspot[15][sp] ==  3) {
+                        smeths[sp] = 3;
                         params.locallab.Smethod = "SYMSL";
                     }
 
+                    radiuss[sp] = dataspot[17][sp];
+                    strengths[sp] = dataspot[18][sp];
                     params.locallab.radius = (float) (dataspot[17][sp]) / 10.f;
                     params.locallab.strength = (float) (dataspot[18][sp]) / 10.f;
 
                     if(dataspot[19][sp] ==  0) {
+                        inversrads[sp] = 0;
                         params.locallab.inversrad = 0;
                     } else {
+                        inversrads[sp] = 1;
                         params.locallab.inversrad = 1;
                     }
 
-                    params.locallab.str = dataspot[20][sp];
-                    params.locallab.chrrt = dataspot[21][sp];
-                    params.locallab.neigh = dataspot[22][sp];
-                    params.locallab.vart = dataspot[23][sp];
-                    params.locallab.sensih = dataspot[24][sp];
+
+                    params.locallab.str = strs[sp] = dataspot[20][sp];
+                    params.locallab.chrrt = chrrts[sp] = dataspot[21][sp];
+                    params.locallab.neigh = neighs[sp] = dataspot[22][sp];
+                    params.locallab.vart = varts[sp] = dataspot[23][sp];
+                    params.locallab.sensih = sensihs[sp] = dataspot[24][sp];
 
                     if(dataspot[25][sp] ==  0) {
+                        inversrets[sp] = 0;
                         params.locallab.inversret = 0;
                     } else {
+                        inversrets[sp] = 1;
                         params.locallab.inversret = 1;
                     }
 
                     if(dataspot[26][sp] ==  0) {
+                        retinexs[sp] = 0;
                         params.locallab.retinexMethod = "low" ;
                     } else if (dataspot[26][sp] ==  1) {
+                        retinexs[sp] = 1;
                         params.locallab.retinexMethod = "uni" ;
                     } else if (dataspot[26][sp] ==  2) {
+                        retinexs[sp] = 2;
                         params.locallab.retinexMethod = "high";
                     }
 
                     ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    dataspot[27][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+                    dataspot[28][sp] = chromarefs[sp] = params.locallab.chromaref;
+                    dataspot[29][sp] = lumarefs[sp] = params.locallab.lumaref;
                     nextParams.locallab.hueref = params.locallab.hueref;
                     nextParams.locallab.chromaref = params.locallab.chromaref;
                     nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1032,80 +1083,99 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             params.locallab.lumaref = INFINITY;
 
             params.locallab.getCurves(locRETgainCurve);
-
-            dataspot[3][sp] = params.locallab.locX = dataspot[3][0];
-            dataspot[4][sp] = params.locallab.locY = dataspot[4][0];
-            dataspot[5][sp] = params.locallab.locYT = dataspot[5][0];
-            dataspot[6][sp] = params.locallab.locXL = dataspot[6][0];
-            dataspot[7][sp] = params.locallab.centerX = dataspot[7][0];
-            dataspot[8][sp] = params.locallab.centerY = dataspot[8][0];
-            dataspot[9][sp] = params.locallab.lightness = dataspot[9][0];
-            dataspot[10][sp] = params.locallab.contrast = dataspot[10][0];
-            dataspot[11][sp] = params.locallab.chroma = dataspot[11][0];
-            dataspot[12][sp] = params.locallab.sensi = dataspot[12][0];
-            dataspot[13][sp] = params.locallab.transit = dataspot[13][0];
+            sps[sp] = sp;
+            dataspot[3][sp] = locx[sp] = params.locallab.locX = dataspot[3][0];
+            dataspot[4][sp] = locy[sp] = params.locallab.locY = dataspot[4][0];
+            dataspot[5][sp] = locyt[sp] = params.locallab.locYT = dataspot[5][0];
+            dataspot[6][sp] = locxl[sp] = params.locallab.locXL = dataspot[6][0];
+            dataspot[7][sp] = centerx[sp] = params.locallab.centerX = dataspot[7][0];
+            dataspot[8][sp] = centery[sp] = params.locallab.centerY = dataspot[8][0];
+            dataspot[9][sp] = lights[sp] = params.locallab.lightness = dataspot[9][0];
+            dataspot[10][sp] = contrs[sp] = params.locallab.contrast = dataspot[10][0];
+            dataspot[11][sp] = chroms[sp] = params.locallab.chroma = dataspot[11][0];
+            dataspot[12][sp] = sensis[sp] = params.locallab.sensi = dataspot[12][0];
+            dataspot[13][sp] = transits[sp] = params.locallab.transit = dataspot[13][0];
 
             if(dataspot[14][0] == 0) {
                 params.locallab.invers = 0;
                 dataspot[14][sp] = 0;
+                inverss[sp] = 0;
             } else {
                 params.locallab.invers = 1;
                 dataspot[14][sp] = 1;
+                inverss[sp] = 1;
             }
 
             if(dataspot[15][0] == 0) {
                 params.locallab.Smethod = "IND" ;
+                smeths[sp] = 0;
                 dataspot[15][sp] = 0;
             } else if(dataspot[15][0] == 1) {
                 params.locallab.Smethod = "SYM" ;
+                smeths[sp] = 1;
                 dataspot[15][sp] = 1;
+
             } else if(dataspot[15][0] == 2) {
                 params.locallab.Smethod = "INDSL" ;
+                smeths[sp] = 2;
                 dataspot[15][sp] = 2;
             } else if(dataspot[15][0] == 3) {
                 params.locallab.Smethod = "SYMSL" ;
+                smeths[sp] = 3;
                 dataspot[15][sp] = 3;
             }
 
             params.locallab.radius = (float) (dataspot[17][0]) / 10.f;
             params.locallab.strength = (float) (dataspot[18][0]) / 10.f;
-            dataspot[17][sp] = 10 * params.locallab.radius;
-            dataspot[18][sp] = 10 * params.locallab.strength;
+            dataspot[17][sp] = radiuss[sp] = 10 * params.locallab.radius;
+            dataspot[18][sp] = strengths[sp] = 10 * params.locallab.strength;
 
             if(dataspot[19][0] == 0) {
                 params.locallab.inversrad = 0;
                 dataspot[19][sp] = 0;
+                inversrads[sp] = 0;
             } else {
                 params.locallab.inversrad = 1;
                 dataspot[19][sp] = 1;
+                inversrads[sp] = 1;
             }
 
-            dataspot[20][sp] = params.locallab.str = dataspot[20][0];
-            dataspot[21][sp] = params.locallab.chrrt = dataspot[21][0];
-            dataspot[22][sp] = params.locallab.neigh = dataspot[22][0];
-            dataspot[23][sp] = params.locallab.vart = dataspot[23][0];
-            dataspot[24][sp] = params.locallab.sensih = dataspot[24][0];
+            dataspot[20][sp] = strs[sp] = params.locallab.str = dataspot[20][0];
+            dataspot[21][sp] = chrrts[sp] = params.locallab.chrrt = dataspot[21][0];
+            dataspot[22][sp] = neighs[sp] = params.locallab.neigh = dataspot[22][0];
+            dataspot[23][sp] = varts[sp] = params.locallab.vart = dataspot[23][0];
+            dataspot[24][sp] = sensis[sp] = params.locallab.sensih = dataspot[24][0];
 
             if(dataspot[25][0] == 0) {
                 params.locallab.inversret = 0;
+                inversrets[sp] = 0;
                 dataspot[25][sp] = 0;
             } else {
                 params.locallab.inversret = 1;
+                inversrets[sp] = 1;
                 dataspot[25][sp] = 1;
             }
 
             if(dataspot[26][0] == 0) {
                 params.locallab.retinexMethod = "low" ;
+                retinexs[sp] = 0;
                 dataspot[26][sp] = 0;
             } else if(dataspot[26][0] == 1) {
                 params.locallab.retinexMethod = "uni" ;
+                retinexs[sp] = 1;
                 dataspot[26][sp] = 1;
             } else if(dataspot[26][0] == 2) {
                 params.locallab.Smethod = "high" ;
+                retinexs[sp] = 2;
                 dataspot[26][sp] = 2;
             }
 
+
             ipf.Lab_Local(dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+            dataspot[27][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+            dataspot[28][sp] = chromarefs[sp] = params.locallab.chromaref;
+            dataspot[29][sp] = lumarefs[sp] = params.locallab.lumaref;
+
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
             nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1148,6 +1218,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_sensih = dataspot[24][spe];
                     int t_inversret = dataspot[25][spe];
                     int t_retinexMethod = dataspot[26][spe];
+                    int t_hueref = dataspot[27][spe];
+                    int t_chromaref = dataspot[28][spe];
+                    int t_lumaref = dataspot[29][spe];
 
                     fou << "Spot=" << t_sp << '@' << endl;
                     fou << "Smethod=" << t_Smethod << '@' << endl;
@@ -1175,6 +1248,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fou << "Sensih=" << t_sensih << '@' << endl;
                     fou << "Inversret=" << t_inversret << '@' << endl;
                     fou << "retinexMethod=" << t_retinexMethod << '@' << endl;
+                    fou << "hueref=" << t_hueref << '@' << endl;
+                    fou << "chromaref=" << t_chromaref << '@' << endl;
+                    fou << "lumarefref=" << t_lumaref << '@' << endl;
 
                     fou << endl;
                 }
@@ -1183,14 +1259,14 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
 //          }
-            for (int i = 0; i < 27; i++) {
+            for (int i = 0; i < 30; i++) {
                 delete [] dataspot[i];
             }
 
             delete [] dataspot;
 
-            locMutex->unlock ();
-            delete locMutex;
+            //    locMutex->unlock ();
+            //    delete locMutex;
 
         }
 
