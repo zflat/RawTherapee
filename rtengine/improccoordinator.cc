@@ -947,7 +947,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             dataspot[16][0] = std::stoi(str32.c_str());
                         }
 
-                        if(cont2 > 16  && cont2 < 30) {
+                        if(cont2 > 16  && cont2 < 27) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                         }
@@ -1066,7 +1066,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             if(aloListener && realspot != dataspot[16][0]) {
                 aloListener->localChanged(dataspot, sp);
-                todo |= M_LUMACURVE;//is it usefull ??
+               // todo |= M_LUMACURVE;//is it usefull ??
 
             }
 

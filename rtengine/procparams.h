@@ -872,7 +872,6 @@ public:
     int     str;
     int     neigh;
     int     nbspot;
-    int     maxnbspot;
     int     anbspot;
     int     vart;
     int     chrrt;

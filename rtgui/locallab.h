@@ -49,7 +49,6 @@ protected:
     Adjuster* chrrt;
     Adjuster* nbspot;
     Adjuster* anbspot;
-    Adjuster* maxnbspot;
     Adjuster* maxn;
 
 

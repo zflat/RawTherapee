@@ -1447,7 +1447,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         diflc *= kdiff ;
 
                         diflc *= factorx; //transition lightess
-
+                        //  if(original->L[y][x] + diflc > 40000.f) printf("neg");
                         transformed->L[y][x] = original->L[y][x] + diflc;
                         transformed->a[y][x] = original->a[y][x] * fac ;
                         transformed->b[y][x] = original->b[y][x] * fac;
@@ -1470,6 +1470,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         float diflc = lightcont - original->L[y][x];
                         kdiff *= fach * kch;
                         diflc *= kdiff ;
+
                         transformed->L[y][x] = original->L[y][x] + diflc;
                         transformed->a[y][x] = original->a[y][x] * fac ;
                         transformed->b[y][x] = original->b[y][x] * fac ;
@@ -1771,6 +1772,7 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
             lumaref = avL;
         }
 
+//printf("huer=%f chrom=%f\n", hueref, chromaref);
         struct local_contra lco;
 
         // we must here detect : general case, skin, sky,...foliages ???
@@ -1841,6 +1843,8 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
 
             //     if(lp.chro != 0.f || lp.ligh != 0.f) {
             ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
+//printf("After huer=%f chrom=%f\n", hueref, chromaref);
+
             //     }
         }
         //inverse

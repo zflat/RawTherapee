@@ -318,7 +318,6 @@ void ParamsEdited::set (bool v)
     locallab.str = v;
     locallab.neigh = v;
     locallab.nbspot = v;
-    locallab.maxnbspot = v;
     locallab.anbspot = v;
     locallab.vart = v;
     locallab.ccwTgaincurve = v;
@@ -846,7 +845,6 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.str = locallab.str && p.locallab.str == other.locallab.str;
         locallab.neigh = locallab.neigh && p.locallab.neigh == other.locallab.neigh;
         locallab.nbspot = locallab.nbspot && p.locallab.nbspot == other.locallab.nbspot;
-        locallab.maxnbspot = locallab.maxnbspot && p.locallab.maxnbspot == other.locallab.maxnbspot;
         locallab.anbspot = locallab.anbspot && p.locallab.anbspot == other.locallab.anbspot;
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
@@ -2164,9 +2162,6 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.nbspot   = mods.locallab.nbspot;
     }
 
-    if (locallab.maxnbspot) {
-        toEdit.locallab.maxnbspot   = mods.locallab.maxnbspot;
-    }
 
     if (locallab.anbspot) {
         toEdit.locallab.anbspot   = mods.locallab.anbspot;
