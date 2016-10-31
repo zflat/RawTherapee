@@ -638,8 +638,8 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                             if(chro == 1) {
                                 float difa = tmp1->a[y][x] - original->a[y][x];
                                 float difb = tmp1->b[y][x] - original->b[y][x];
-                                difa *= falu * factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
-                                difb *= falu * factorx * (100.f + realstr * (1.f - factorx)) / 100.f;
+                                difa *= factorx * (100.f + realstr * falu * (1.f - factorx)) / 100.f;
+                                difb *= factorx * (100.f + realstr * falu * (1.f - factorx)) / 100.f;
                                 transformed->a[y][x] = original->a[y][x] + difa;
                                 transformed->b[y][x] = original->b[y][x] + difb;
                             }
@@ -659,8 +659,8 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                             if(chro == 1) {
                                 float difa = tmp1->a[y][x] - original->a[y][x];
                                 float difb = tmp1->b[y][x] - original->b[y][x];
-                                difa *= falu * (100.f + realstr) / 100.f;
-                                difb *= falu * (100.f + realstr) / 100.f;
+                                difa *= (100.f + realstr * falu) / 100.f;
+                                difb *= (100.f + realstr * falu) / 100.f;
                                 transformed->a[y][x] = original->a[y][x] + difa;
                                 transformed->b[y][x] = original->b[y][x] + difb;
 
@@ -1267,7 +1267,6 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     kch = pow(kch, pa * lp.sens + pb);    //increase under 40
                 }
 
-
                 bool kzon = false;
                 //transition = difficult to avoid artifact with scope on flat area (sky...)
 
@@ -1356,7 +1355,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     if(deltaL <  lp.sens) {
                         falu = 1.f;
                     } else {
-                        falu = alum * deltaL + blum;
+                        falu = 1.f;// alum * deltaL + blum;
                     }
 
                 }
@@ -1392,6 +1391,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
 
                 }
 
+                //  if(realchro < -100.f || realchro > 200.f) printf("real=%f ", realchro);
                 float kLinf = rL / (100.f);
                 float kLsup = kLinf;
 
@@ -1441,16 +1441,16 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
                         float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
                         float factorx = localFactor;
-                        float fac = (100.f + factorx * realchro) / 100.f; //chroma factor transition
+                        float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        kdiff *= kch * fach;
+                        kdiff *= fach * kch;
                         diflc *= kdiff ;
 
                         diflc *= factorx; //transition lightess
 
                         transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac * falu;
-                        transformed->b[y][x] = original->b[y][x] * fac * falu;
+                        transformed->a[y][x] = original->a[y][x] * fac ;
+                        transformed->b[y][x] = original->b[y][x] * fac;
                         break;
                     }
 
@@ -1466,13 +1466,13 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
                         float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
 
-                        float fac = (100.f + realchro) / 100.f; //chroma factor transition
+                        float fac = (100.f + realchro * falu) / 100.f; //chroma factor transition
                         float diflc = lightcont - original->L[y][x];
-                        kdiff *= kch * fach;
+                        kdiff *= fach * kch;
                         diflc *= kdiff ;
                         transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac * falu;
-                        transformed->b[y][x] = original->b[y][x] * fac * falu;
+                        transformed->a[y][x] = original->a[y][x] * fac ;
+                        transformed->b[y][x] = original->b[y][x] * fac ;
 
                     }
                 }
@@ -1810,9 +1810,9 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            if(lp.cont != 0.f) {
-                Contrast_Local(hueplus, huemoins, hueref, dhue, chromaref, pm, lco, lumaref, av, lp, original, transformed, cx, cy);
-            }
+            //    if(lp.cont != 0.f) {
+            Contrast_Local(hueplus, huemoins, hueref, dhue, chromaref, pm, lco, lumaref, av, lp, original, transformed, cx, cy);
+            //    }
         } else if(lp.inv) {
 
             float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
@@ -1839,9 +1839,9 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            if(lp.chro != 0.f || lp.ligh != 0.f) {
-                ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
-            }
+            //     if(lp.chro != 0.f || lp.ligh != 0.f) {
+            ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
+            //     }
         }
         //inverse
         else if(lp.inv) {

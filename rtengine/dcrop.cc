@@ -816,9 +816,9 @@ void Crop::update (int todo)
                 bool tata = true;
                 bool locutili = parent->locutili;
 
-                if(tata) {//to test!
 
-                    for(int sp = 1; sp < maxspot; sp++) {
+                for(int sp = 1; sp < maxspot; sp++) {
+                    if(sp != realspot) {
 
                         params.locallab.locX = parent->locx[sp] ;
                         params.locallab.locY = parent->locy[sp];
@@ -883,11 +883,7 @@ void Crop::update (int todo)
                         //printf("locX1=%i locY1=%i\n", parent->locx[1], parent->locy[1]);
 
                         parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                        params.locallab.lightness = 0;
                     }
-                } else {
-
-                    parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 }
 
                 //          printf("realspotdcrop=%d data=%d\n", realspot, dataspotd[14][0]);
@@ -896,6 +892,100 @@ void Crop::update (int todo)
 
                 int sp ;
                 sp = realspot;
+                bool locutili2 = parent->locutili;
+                params.locallab.getCurves(locRETgainCurve);
+                parent->sps[sp] = sp;
+                parent->locx[sp] = params.locallab.locX = parent->locx[0];
+                parent->locy[sp] = params.locallab.locY = parent->locy[0];
+                parent->locyt[sp] = params.locallab.locYT = parent->locyt[0];
+                parent->locxl[sp] = params.locallab.locXL = parent->locxl[0];
+                parent->centerx[sp] = params.locallab.centerX = parent->centerx[0];
+                parent->centery[sp] = params.locallab.centerY = parent->centery[0];
+                parent->lights[sp] = params.locallab.lightness = parent->lights[0];
+                parent->contrs[sp] = params.locallab.contrast = parent->contrs[0];
+                parent->chroms[sp] = params.locallab.chroma = parent->chroms[0];
+                parent->sensis[sp] = params.locallab.sensi = parent->sensis[0];
+                parent->transits[sp] = params.locallab.transit = parent->transits[0];
+
+                if(parent->inverss[0] ==  0) {
+                    params.locallab.invers = 0;
+                    parent->inverss[sp] = 0;
+
+                } else {
+                    params.locallab.invers = 1;
+                    parent->inverss[sp] = 0;
+
+                }
+
+                if(parent->smeths[0] ==  0) {
+                    params.locallab.Smethod = "IND" ;
+                    parent->smeths[sp] = 0;
+
+                } else if (parent->smeths[0] ==  1) {
+                    params.locallab.Smethod = "SYM" ;
+                    parent->smeths[sp] = 1;
+
+                } else if (parent->smeths[0] ==  2) {
+                    params.locallab.Smethod = "INDSL";
+                    parent->smeths[2] = 0;
+
+
+                } else if (parent->smeths[0] ==  3) {
+                    params.locallab.Smethod = "SYMSL";
+                    parent->smeths[sp] = 3;
+
+                }
+
+                params.locallab.radius = ((float) (parent->radiuss[0]) / 10.f);
+                params.locallab.strength = ((float)  (parent->strengths[0]) / 10.f);
+
+                parent->radiuss[sp] = 10 * params.locallab.radius;
+                parent->strengths[sp] = 10 * params.locallab.strength;
+
+                if( parent->inversrads[0] ==  0) {
+                    params.locallab.inversrad = 0;
+                    parent->inversrads[sp] =  0;
+                } else {
+                    params.locallab.inversrad = 1;
+                    parent->inversrads[sp] =  1;
+                }
+
+                parent->strs[sp] = params.locallab.str = parent->strs[0];
+                parent->chrrts[sp] = params.locallab.chrrt = parent->chrrts[0];
+                parent->neighs[sp] = params.locallab.neigh = parent->neighs[0];
+                parent->varts[sp] = params.locallab.vart = parent->varts[0];
+                parent->sensihs[sp] = params.locallab.sensih = parent->sensihs[0];
+
+                if(parent->inversrets[0] ==  0) {
+                    params.locallab.inversret = 0;
+                    parent->inversrets[sp] =  0;
+                } else {
+                    params.locallab.inversret = 1;
+                    parent->inversrets[sp] =  1;
+
+                }
+
+                if(parent->retinexs[sp] ==  0) {
+                    params.locallab.retinexMethod = "low" ;
+                    parent->retinexs[sp] =  0;
+                } else if (parent->retinexs[sp] ==  1) {
+                    params.locallab.retinexMethod = "uni" ;
+                    parent->retinexs[sp] =  1;
+
+                } else if (parent->retinexs[sp] ==  2) {
+                    params.locallab.retinexMethod = "high";
+                    parent->retinexs[sp] =  2;
+
+                }
+
+
+                params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
+                params.locallab.chromaref = parent->chromarefs[sp];
+                params.locallab.lumaref = parent->lumarefs[sp];
+
+                parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+
+
 
             }
         }

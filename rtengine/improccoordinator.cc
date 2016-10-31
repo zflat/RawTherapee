@@ -651,11 +651,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         progress ("Applying Color Boost...", 100 * readyphase / numofphases);
 
         if(params.locallab.enabled) {
-            //     MyMutex* locMutex = NULL;
-            //     locMutex = new MyMutex;
-            // MyMutex::MyLock lock(mProcessing);
-
-            //     locMutex->lock ();
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
             ifstream fic(datalab, ios::in);
 
@@ -1070,8 +1065,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             //  printf("realspotimpro=%d data=%d   cx=%d cy=%d\n", realspot, dataspot[16][0], dataspot[7][sp], dataspot[8][sp]);
 
             if(aloListener && realspot != dataspot[16][0]) {
-                // or use of adjusterchanged in locallab.cc for anbspot or nbspot ??
-                // or other improvment ??
                 aloListener->localChanged(dataspot, sp);
                 todo |= M_LUMACURVE;//is it usefull ??
 
@@ -1144,7 +1137,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[21][sp] = chrrts[sp] = params.locallab.chrrt = dataspot[21][0];
             dataspot[22][sp] = neighs[sp] = params.locallab.neigh = dataspot[22][0];
             dataspot[23][sp] = varts[sp] = params.locallab.vart = dataspot[23][0];
-            dataspot[24][sp] = sensis[sp] = params.locallab.sensih = dataspot[24][0];
+            dataspot[24][sp] = sensihs[sp] = params.locallab.sensih = dataspot[24][0];
 
             if(dataspot[25][0] == 0) {
                 params.locallab.inversret = 0;
@@ -1265,8 +1258,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             delete [] dataspot;
 
-            //    locMutex->unlock ();
-            //    delete locMutex;
 
         }
 
