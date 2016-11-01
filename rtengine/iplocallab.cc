@@ -15,6 +15,9 @@
  *
  *  You should have received a copy of the GNU General Public License
  *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
+ *  2016 Jacques Desmis <jdesmis@gmail.com>
+ *  2016 Ingo Weyrich <heckflosse@i-weyrich.de>
+
  */
 #include <cmath>
 #include <glib.h>
@@ -453,7 +456,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
 
                     float realstr = 1.f;
                     float realstrch = 1.f;
-
+                    //prepare shape detection
                     float deltachro = fabs(rchro - chromaref);
                     float deltahue = fabs(rhue - hueref);
                     float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
@@ -478,8 +481,9 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                     }
 
                     bool kzon = false;
-                    //transition = difficult to avoid artifact with scope on flat area (sky...)
 
+                    //transition = difficult to avoid artifact with scope on flat area (sky...)
+                    //hue detection
                     if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
                         if(rhue >= hueplus - delhu)  {
                             realstr = aplus * rhue + bplus;
@@ -548,6 +552,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                         kzon = true;
                     }
 
+                    //shape detection for hue chroma and luma
                     if(lp.sensh <= 20.f) {//to try...
 
                         if(deltaE <  2.8f * lp.sensh) {
@@ -570,9 +575,6 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
 
                     }
 
-
-                    //    float kLinf = rL / (100.f);
-                    //    float kLsup = kLinf;
 
                     //    float kdiff = 0.f;
                     // I add these functions...perhaps not good
@@ -752,6 +754,7 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
     const float ach = (float)lp.trans / 100.f;
     float reducac;
 
+    //constant and variable to prepare shape detection
     if(lp.sens < 30.f) {
         reducac = 0.2f * (lp.sens / 100.f);
     } else {
@@ -838,15 +841,16 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
                 int zone;
                 float localFactor = 1.f;
                 calcTransition (lox, loy, ach, lp, zone, localFactor);
+                //prepare shape detection
                 float khu = 0.f;
                 float kch = 1.f;
                 bool kzon = false;
                 float fach = 1.f;
-
                 float deltachro = fabs(rchro - chromaref);
                 float deltahue = fabs(rhue - hueref);
-                float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
+                float deltaE = 20.f * deltahue + deltachro; //pseudo deltaE between 0 and 280
 
+                //kch to modulate action with chroma
                 if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
                     kch = 1.f;
                 } else {
@@ -863,7 +867,7 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
 
                 // algo with detection of hue ==> artifacts for noisy images  ==> denoise before
                 if(lp.sens < 20.f) {//to try...
-
+                    //hue detection
                     if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
                         if(rhue >= hueplus - delhu )  {
                             khu  = apl * rhue + bpl;
@@ -1098,6 +1102,7 @@ void ImProcFunctions::InverseContrast_Local(float ave, const local_contra& lco, 
 }
 
 static void calclight (float lum, int  koef, float &lumnew)
+//replace L-curve that does not work in local
 {
     if(koef > 0) {
         lumnew = lum * (1.f + (float)koef / 100.f);
@@ -1175,6 +1180,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
     constexpr float lumdelta = 11.f; //11
     float modlum = lumdelta * multlum;
 
+    // constant and varaibles to prepare shape detection
     if(lumaref + modlum >= 100.f) {
         modlum = (100.f - lumaref) / 2.f;
     }
@@ -1242,11 +1248,11 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
                 float rL = original->L[y][x] / 327.68f;
-
+                //prepare shape detection
                 float realchro = 1.f;
                 float deltachro = fabs(rchro - chromaref);
                 float deltahue = fabs(rhue - hueref);
-                float deltaE = 20.f * deltahue + deltachro; //between 0 and 280
+                float deltaE = 20.f * deltahue + deltachro; //pseudo deltaE between 0 and 280
                 float deltaL = fabs (lumaref - rL); //between 0 and 100
 
                 float kch = 1.f;
@@ -1254,6 +1260,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float fach = 1.f;
                 float falu = 1.f;
 
+                //kch acts on luma
                 if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
                     kch = 1.f;
                 } else {
@@ -1268,8 +1275,9 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 }
 
                 bool kzon = false;
-                //transition = difficult to avoid artifact with scope on flat area (sky...)
 
+                //transition = difficult to avoid artifact with scope on flat area (sky...)
+                //hue detection
                 if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
                     if(rhue >= hueplus - delhu)  {
                         realchro = aplus * rhue + bplus;
@@ -1338,8 +1346,9 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     kzon = true;
                 }
 
+                //detection of deltaE and deltaL
                 if(lp.sens <= 20.f) {//to try...
-
+                    //fach and kch acts on luma
                     if(deltaE <  2.8f * lp.sens) {
                         fach = khu;
                     } else {
@@ -1352,6 +1361,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         fach *= (1.f / (kcr * kcr)) * rchro * rchro;
                     }
 
+                    //falu acts on chroma
                     if(deltaL <  lp.sens) {
                         falu = 1.f;
                     } else {
@@ -1391,7 +1401,6 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
 
                 }
 
-                //  if(realchro < -100.f || realchro > 200.f) printf("real=%f ", realchro);
                 float kLinf = rL / (100.f);
                 float kLsup = kLinf;
 
@@ -1435,10 +1444,9 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         float lumnew = original->L[y][x];
 
                         if(lp.ligh != 0) {
-                            calclight (original->L[y][x], lp.ligh , lumnew);
+                            calclight (original->L[y][x], lp.ligh , lumnew);//replace L-curve
                         }
 
-                        //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
                         float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
                         float factorx = localFactor;
                         float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
@@ -1455,7 +1463,6 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     }
 
                     case 2: { // inside selection => full effect, no transition
-                        //  float lightcont = localcurve[original->L[y][x]]; //apply lightness
                         //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
                         float lumnew = original->L[y][x];
 
@@ -1555,6 +1562,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 
 void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
 {
+    //general call of others functions : important return hueref, chromaref, lumaref
     if(params->locallab.enabled) {
         BENCHFUN
 #ifdef _DEBUG
@@ -1772,7 +1780,6 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
             lumaref = avL;
         }
 
-//printf("huer=%f chrom=%f\n", hueref, chromaref);
         struct local_contra lco;
 
         // we must here detect : general case, skin, sky,...foliages ???
@@ -1812,9 +1819,7 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            //    if(lp.cont != 0.f) {
             Contrast_Local(hueplus, huemoins, hueref, dhue, chromaref, pm, lco, lumaref, av, lp, original, transformed, cx, cy);
-            //    }
         } else if(lp.inv) {
 
             float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
@@ -1841,11 +1846,8 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            //     if(lp.chro != 0.f || lp.ligh != 0.f) {
             ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
-//printf("After huer=%f chrom=%f\n", hueref, chromaref);
 
-            //     }
         }
         //inverse
         else if(lp.inv) {
@@ -1954,7 +1956,7 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
         }
 
 
-// Gamut and Munsell control
+// Gamut and Munsell control - very important do not desactivated to avoid crash
         if(params->locallab.avoid) {
             TMatrix wiprof = iccStore->workingSpaceInverseMatrix (params->icm.working);
             float wip[3][3] = {

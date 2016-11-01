@@ -31,7 +31,6 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
 
     realnbspot = options.rtSettings.nspot;
-    //printf("realnspot=%i\n", realnbspot);
 
     nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, realnbspot, 1, 1));
 
@@ -208,7 +207,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
     pack_start (*nbspot);
     pack_start (*anbspot);
-    anbspot->hide();
+    anbspot->hide();//keep anbspot  - i used it to test diffrent algo...
     ctboxS->pack_start (*Smethod);
     shapeVBox->pack_start (*ctboxS);
 
@@ -261,7 +260,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     pack_start (*retiFrame);
 
     pack_start (*transit);
-    // pack_start (*avoid);
+    // pack_start (*avoid);//keep avoid clor shift in case of
 
     // Instantiating the Editing geometry; positions will be initialized later
     Line  *hLine, *vLine, *locYLine[2], *locXLine[2];
