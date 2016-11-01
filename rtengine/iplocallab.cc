@@ -548,7 +548,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                         kzon = true;
                     }
 
-                    if(lp.sensh < 20.f) {//to try...
+                    if(lp.sensh <= 20.f) {//to try...
 
                         if(deltaE <  2.8f * lp.sensh) {
                             fach = khu;
@@ -1338,7 +1338,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                     kzon = true;
                 }
 
-                if(lp.sens < 20.f) {//to try...
+                if(lp.sens <= 20.f) {//to try...
 
                     if(deltaE <  2.8f * lp.sens) {
                         fach = khu;

@@ -193,7 +193,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     cTgainshape->setIdentityValue(0.);
     cTgainshape->setResetCurve(FlatCurveType(defaultCurve.at(0)), defaultCurve);
-    cTgainshape->setTooltip(M("TP_RETINEX_TRANSMISSIONGAIN_TOOLTIP"));
+    cTgainshape->setTooltip(M("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
 
     CCWcurveEditorgainT->curveListComplete();
     CCWcurveEditorgainT->show();

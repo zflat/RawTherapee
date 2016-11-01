@@ -917,12 +917,6 @@ void LocallabParams::setDefaults()
 
 void LocallabParams::getDefaultCCWgainCurveT(std::vector<double> &curve)
 {
-    /*   double v[16] = { 0.00, 0.1, 0.35, 0.00,
-                        0.25, 0.25, 0.35, 0.35,
-                        0.70, 0.25, 0.35, 0.35,
-                        1.00, 0.1, 0.00, 0.00
-                      };
-    */
     double v[16] = { 0.00, 0.1, 0.35, 0.,
                      0.35, 0.20, 0.35, 0.35,
                      0.73, 0.50, 0.35, 0.35,
@@ -2640,7 +2634,6 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
         if (!pedited || pedited->locallab.nbspot) {
             keyFile.set_integer ("Locallab", "Nbspot", locallab.nbspot);
         }
-
 
         if (!pedited || pedited->locallab.anbspot) {
             keyFile.set_integer ("Locallab", "ANbspot", locallab.anbspot);

@@ -1066,7 +1066,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             if(aloListener && realspot != dataspot[16][0]) {
                 aloListener->localChanged(dataspot, sp);
-               // todo |= M_LUMACURVE;//is it usefull ??
+                // todo |= M_LUMACURVE;//is it usefull ??
 
             }
 

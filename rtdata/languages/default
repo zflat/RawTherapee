@@ -701,6 +701,8 @@ HISTORY_MSG_466;Local - Retinex Gain curve
 HISTORY_MSG_467;Local - Retinex chroma
 HISTORY_MSG_468;Local - Retinex Inverse
 HISTORY_MSG_469;Local - Hue scope
+HISTORY_MSG_470;Local - Spot
+HISTORY_MSG_472;Local - --
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1650,9 +1652,9 @@ TP_LOCALLAB_STR;Strength
 TP_LOCALLAB_NEIGH;Radius
 TP_LOCALLAB_VART;Contrast
 TP_LOCALLAB_SENSI;Scope
-TP_LOCALLAB_SENSI_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.
+TP_LOCALLAB_SENSI_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.\nValues smaller than 21 lead to a better algorithm.
 TP_LOCALLAB_SENSIH;Hue Scope
-TP_LOCALLAB_SENSIH_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.
+TP_LOCALLAB_SENSIH_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.\nValues smaller than 21 lead to a better algorithm.
 TP_LOCALLAB_SHFR;Shape
 TP_LOCALLAB_STRENGTH;Noise
 TP_LOCALLAB_STYPE;Shape method

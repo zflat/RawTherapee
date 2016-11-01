@@ -2162,7 +2162,6 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.nbspot   = mods.locallab.nbspot;
     }
 
-
     if (locallab.anbspot) {
         toEdit.locallab.anbspot   = mods.locallab.anbspot;
     }
