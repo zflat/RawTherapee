@@ -2065,9 +2065,9 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
 #ifdef _DEBUG
                         bool neg = false;
                         bool more_rgb = false;
-                        Color::gamutLchonly(sincosval, Lprov1, Chprov1, wip, highlight, 0.15f, 0.96f, neg, more_rgb);
+                        Color::gamutLchonly(sincosval, Lprov1, Chprov1, wip, highlight, 0.15f, 0.92f, neg, more_rgb);
 #else
-                        Color::gamutLchonly(sincosval, Lprov1, Chprov1, wip, highlight, 0.15f, 0.96f);
+                        Color::gamutLchonly(sincosval, Lprov1, Chprov1, wip, highlight, 0.15f, 0.92f);
 #endif
 
                         transformed->L[y][x] = Lprov1 * 327.68f;

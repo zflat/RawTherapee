@@ -91,6 +91,7 @@ public:
     double          ed_lipampl;
 
     int             nspot;
+    bool            locdelay;
     /** Creates a new instance of Settings.
       * @return a pointer to the new Settings instance. */
     static Settings* create  ();

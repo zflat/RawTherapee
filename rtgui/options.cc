@@ -679,6 +679,7 @@ void Options::setDefaults ()
 
 //locallab
     rtSettings.nspot = 3;//between 1 and ??
+    rtSettings.locdelay = false;//true enabled delay 200 for selection spot
 
 
     rtSettings.ciecamfloat = true;
@@ -849,6 +850,10 @@ int Options::readFromFile (Glib::ustring fname)
 
                 if (keyFile.has_key ("General", "Nspot")) {
                     rtSettings.nspot          = keyFile.get_integer("General", "Nspot");
+                }
+
+                if (keyFile.has_key ("General", "Locdelay")) {
+                    rtSettings.locdelay          = keyFile.get_boolean("General", "Locdelay");
                 }
 
                 if (keyFile.has_key ("General", "EDdetec")) {
@@ -1885,6 +1890,7 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_double ("General", "EDLipampl", rtSettings.ed_lipampl);
 
         keyFile.set_integer ("General", "Nspot", rtSettings.nspot);
+        keyFile.set_boolean ("General", "Locdelay", rtSettings.locdelay);
 
 
         keyFile.set_integer ("External Editor", "EditorKind", editorToSendTo);

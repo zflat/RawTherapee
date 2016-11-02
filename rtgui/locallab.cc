@@ -34,10 +34,12 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, realnbspot, 1, 1));
 
-    if (nbspot->delay < 200) {
-        nbspot->delay = 200;
-    }
+    if(options.rtSettings.locdelay) {
 
+        if (nbspot->delay < 200) {
+            nbspot->delay = 200;
+        }
+    }
 
 
     nbspot->setAdjusterListener (this);
@@ -428,8 +430,10 @@ bool Locallab::localComputed_ ()
     if(anbspot->getValue() == 0) {
         anbspot->setValue(1);
 
-        if (anbspot->delay < 100) {
-            anbspot->delay = 100;
+        if(options.rtSettings.locdelay) {
+            if (anbspot->delay < 100) {
+                anbspot->delay = 100;
+            }
         }
 
         adjusterChanged(anbspot, 1);
@@ -437,8 +441,10 @@ bool Locallab::localComputed_ ()
     } else if(anbspot->getValue() == 1) {
         anbspot->setValue(0);
 
-        if (anbspot->delay < 100) {
-            anbspot->delay = 100;
+        if(options.rtSettings.locdelay) {
+            if (anbspot->delay < 100) {
+                anbspot->delay = 100;
+            }
         }
 
         adjusterChanged(anbspot, 0);
