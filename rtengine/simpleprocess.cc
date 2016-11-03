@@ -1017,7 +1017,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             dataspots[28][0] = params.locallab.chromaref;
             dataspots[29][0] = params.locallab.lumaref;
 
-      //      printf("OK 1\n");
 
             if (fich) {
 
@@ -1062,7 +1061,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 fich.close();
             }
 
-    //        printf("OK 2\n");
 
             for(int sp = 1; sp < maxspot; sp++) { //5 spots default
                 params.locallab.hueref = INFINITY;
@@ -1130,11 +1128,10 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.chromaref = dataspots[28][sp];
                 params.locallab.lumaref = dataspots[29][sp];
 
-                ipf.Lab_Local(dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                ipf.Lab_Local(sp, dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
-  //          printf("OK 3\n");
 
             for (int i = 0; i < 30; i++) {
                 delete [] dataspots[i];

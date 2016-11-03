@@ -818,72 +818,72 @@ void Crop::update (int todo)
 
 
                 for(int sp = 1; sp < maxspot; sp++) {
-                    if(sp != realspot) {
+                    //  if(sp != realspot) {
 
-                        params.locallab.locX = parent->locx[sp] ;
-                        params.locallab.locY = parent->locy[sp];
-                        params.locallab.locYT = parent->locyt[sp];
-                        params.locallab.locXL = parent->locxl[sp];
-                        params.locallab.centerX = parent->centerx[sp];
-                        params.locallab.centerY = parent->centery[sp];
-                        params.locallab.lightness = parent->lights[sp];
-                        params.locallab.contrast = parent->contrs[sp];
-                        params.locallab.chroma = parent->chroms[sp];
-                        params.locallab.sensi = parent->sensis[sp];
-                        params.locallab.transit = parent->transits[sp];
+                    params.locallab.locX = parent->locx[sp] ;
+                    params.locallab.locY = parent->locy[sp];
+                    params.locallab.locYT = parent->locyt[sp];
+                    params.locallab.locXL = parent->locxl[sp];
+                    params.locallab.centerX = parent->centerx[sp];
+                    params.locallab.centerY = parent->centery[sp];
+                    params.locallab.lightness = parent->lights[sp];
+                    params.locallab.contrast = parent->contrs[sp];
+                    params.locallab.chroma = parent->chroms[sp];
+                    params.locallab.sensi = parent->sensis[sp];
+                    params.locallab.transit = parent->transits[sp];
 
-                        if(parent->inverss[sp] ==  0) {
-                            params.locallab.invers = 0;
-                        } else {
-                            params.locallab.invers = 1;
-                        }
-
-                        if(parent->smeths[sp] ==  0) {
-                            params.locallab.Smethod = "IND" ;
-                        } else if (parent->smeths[sp] ==  1) {
-                            params.locallab.Smethod = "SYM" ;
-                        } else if (parent->smeths[sp] ==  2) {
-                            params.locallab.Smethod = "INDSL";
-                        } else if (parent->smeths[sp] ==  3) {
-                            params.locallab.Smethod = "SYMSL";
-                        }
-
-                        params.locallab.radius = ((float) (parent->radiuss[sp]) / 10.f);
-                        params.locallab.strength = ((float)  (parent->strengths[sp]) / 10.f);
-
-                        if( parent->inversrads[sp] ==  0) {
-                            params.locallab.inversrad = 0;
-                        } else {
-                            params.locallab.inversrad = 1;
-                        }
-
-                        params.locallab.str = parent->strs[sp];
-                        params.locallab.chrrt = parent->chrrts[sp];
-                        params.locallab.neigh = parent->neighs[sp];
-                        params.locallab.vart = parent->varts[sp];
-                        params.locallab.sensih = parent->sensihs[sp];
-
-                        if(parent->inversrets[sp] ==  0) {
-                            params.locallab.inversret = 0;
-                        } else {
-                            params.locallab.inversret = 1;
-                        }
-
-                        if(parent->retinexs[sp] ==  0) {
-                            params.locallab.retinexMethod = "low" ;
-                        } else if (parent->retinexs[sp] ==  1) {
-                            params.locallab.retinexMethod = "uni" ;
-                        } else if (parent->retinexs[sp] ==  2) {
-                            params.locallab.retinexMethod = "high";
-                        }
-
-                        params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
-                        params.locallab.chromaref = parent->chromarefs[sp];
-                        params.locallab.lumaref = parent->lumarefs[sp];
-                        //printf("locX1=%i locY1=%i\n", parent->locx[1], parent->locy[1]);
-
-                        parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    if(parent->inverss[sp] ==  0) {
+                        params.locallab.invers = 0;
+                    } else {
+                        params.locallab.invers = 1;
                     }
+
+                    if(parent->smeths[sp] ==  0) {
+                        params.locallab.Smethod = "IND" ;
+                    } else if (parent->smeths[sp] ==  1) {
+                        params.locallab.Smethod = "SYM" ;
+                    } else if (parent->smeths[sp] ==  2) {
+                        params.locallab.Smethod = "INDSL";
+                    } else if (parent->smeths[sp] ==  3) {
+                        params.locallab.Smethod = "SYMSL";
+                    }
+
+                    params.locallab.radius = ((float) (parent->radiuss[sp]) / 10.f);
+                    params.locallab.strength = ((float)  (parent->strengths[sp]) / 10.f);
+
+                    if( parent->inversrads[sp] ==  0) {
+                        params.locallab.inversrad = 0;
+                    } else {
+                        params.locallab.inversrad = 1;
+                    }
+
+                    params.locallab.str = parent->strs[sp];
+                    params.locallab.chrrt = parent->chrrts[sp];
+                    params.locallab.neigh = parent->neighs[sp];
+                    params.locallab.vart = parent->varts[sp];
+                    params.locallab.sensih = parent->sensihs[sp];
+
+                    if(parent->inversrets[sp] ==  0) {
+                        params.locallab.inversret = 0;
+                    } else {
+                        params.locallab.inversret = 1;
+                    }
+
+                    if(parent->retinexs[sp] ==  0) {
+                        params.locallab.retinexMethod = "low" ;
+                    } else if (parent->retinexs[sp] ==  1) {
+                        params.locallab.retinexMethod = "uni" ;
+                    } else if (parent->retinexs[sp] ==  2) {
+                        params.locallab.retinexMethod = "high";
+                    }
+
+                    params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
+                    params.locallab.chromaref = parent->chromarefs[sp];
+                    params.locallab.lumaref = parent->lumarefs[sp];
+                    //printf("locX1=%i locY1=%i\n", parent->locx[1], parent->locy[1]);
+
+                    parent->ipf.Lab_Local (sp, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    //    }
                 }
 
                 //          printf("realspotdcrop=%d data=%d\n", realspot, dataspotd[14][0]);
@@ -983,7 +983,7 @@ void Crop::update (int todo)
                 params.locallab.chromaref = parent->chromarefs[sp];
                 params.locallab.lumaref = parent->lumarefs[sp];
 
-                parent->ipf.Lab_Local (dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                parent->ipf.Lab_Local (sp, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
 
 

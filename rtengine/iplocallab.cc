@@ -34,6 +34,9 @@
 //#define BENCHMARK
 #include "StopWatch.h"
 
+
+#define CLIPC(a) ((a)>-43000?((a)<43000?(a):43000):-43000)  // limit a and b  to 130 probably enough ?
+#define CLIPL(x) LIM(x,0.f,40000.f) // limit L to about L=120 probably enough ?
 namespace rtengine
 {
 
@@ -453,6 +456,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                     float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
                     float rL = original->L[y][x] / 327.68f;
+                    float kab = original->a[y][x] / original->b[y][x];
 
                     float realstr = 1.f;
                     float realstrch = 1.f;
@@ -642,8 +646,8 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                                 float difb = tmp1->b[y][x] - original->b[y][x];
                                 difa *= factorx * (100.f + realstr * falu * (1.f - factorx)) / 100.f;
                                 difb *= factorx * (100.f + realstr * falu * (1.f - factorx)) / 100.f;
-                                transformed->a[y][x] = original->a[y][x] + difa;
-                                transformed->b[y][x] = original->b[y][x] + difb;
+                                transformed->a[y][x] = CLIPC(original->a[y][x] + difa);
+                                transformed->b[y][x] = CLIPC(original->b[y][x] + difb);
                             }
 
                             break;
@@ -663,8 +667,8 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
                                 float difb = tmp1->b[y][x] - original->b[y][x];
                                 difa *= (100.f + realstr * falu) / 100.f;
                                 difb *= (100.f + realstr * falu) / 100.f;
-                                transformed->a[y][x] = original->a[y][x] + difa;
-                                transformed->b[y][x] = original->b[y][x] + difb;
+                                transformed->a[y][x] = CLIPC(original->a[y][x] + difa);
+                                transformed->b[y][x] = CLIPC(original->b[y][x] + difb);
 
 
                             }
@@ -1128,7 +1132,7 @@ static void calclight (float lum, int  koef, float &lumnew)
 }
 
 
-void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy)
+void ImProcFunctions::ColorLight_Local(int sp, int **dataspot, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy)
 {
     BENCHFUN
 // chroma and lightness
@@ -1213,6 +1217,14 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
         float sqrtBuffer[transformed->W] ALIGNED16;
         vfloat c327d68v = F2V(327.68f);
 #endif
+        /*
+           float maxl = -100000.f;
+               float maxa = -100000.f;
+               float maxb = -100000.f;
+               float minl = 100000.f;
+               float mina = 100000.f;
+               float minb = 100000.f;
+        */
 
 #ifdef _OPENMP
         #pragma omp for schedule(dynamic,16)
@@ -1248,6 +1260,7 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                 float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
 #endif
                 float rL = original->L[y][x] / 327.68f;
+                float kab = (original->a[y][x] / original->b[y][x]);
                 //prepare shape detection
                 float realchro = 1.f;
                 float deltachro = fabs(rchro - chromaref);
@@ -1456,9 +1469,17 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
 
                         diflc *= factorx; //transition lightess
                         //  if(original->L[y][x] + diflc > 40000.f) printf("neg");
-                        transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac ;
-                        transformed->b[y][x] = original->b[y][x] * fac;
+                        transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
+
+                        if(fabs(kab) > 1.f) {
+                            transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
+                            transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
+                        } else {
+                            transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
+                            transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab ;
+
+                        }
+
                         break;
                     }
 
@@ -1477,16 +1498,51 @@ void ImProcFunctions::ColorLight_Local(const float hueplus, const float huemoins
                         float diflc = lightcont - original->L[y][x];
                         kdiff *= fach * kch;
                         diflc *= kdiff ;
+                        transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
 
-                        transformed->L[y][x] = original->L[y][x] + diflc;
-                        transformed->a[y][x] = original->a[y][x] * fac ;
-                        transformed->b[y][x] = original->b[y][x] * fac ;
+                        if(fabs(kab) > 1.f) {
+                            transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
+                            transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
+                        } else {
+                            transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
+                            transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab;
+
+                        }
+
 
                     }
+
+                        /*
+                                            if(transformed->L[y][x] > maxl) {
+                                                maxl = transformed->L[y][x];
+                                            }
+
+                                            if(transformed->L[y][x] < minl) {
+                                                minl = transformed->L[y][x];
+                                            }
+
+                                            if(transformed->a[y][x] > maxa) {
+                                                maxa = transformed->a[y][x];
+                                            }
+
+                                            if(transformed->a[y][x] < mina) {
+                                                mina = transformed->a[y][x];
+                                            }
+
+                                            if(transformed->b[y][x] > maxb) {
+                                                maxb = transformed->b[y][x];
+                                            }
+
+                                            if(transformed->b[y][x] < minb) {
+                                                minb = transformed->b[y][x];
+                                            }
+                        */
                 }
 
             }
         }
+
+        //    printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
     }
 }
 
@@ -1560,7 +1616,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params& lp, Lab
 }
 
 
-void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
+void ImProcFunctions::Lab_Local(int sp, int **dataspot, LabImage* original, LabImage* transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, double &hueref, double &chromaref, double &lumaref)
 {
     //general call of others functions : important return hueref, chromaref, lumaref
     if(params->locallab.enabled) {
@@ -1846,7 +1902,7 @@ void ImProcFunctions::Lab_Local(int **dataspot, LabImage* original, LabImage* tr
                 huemoins = hueref - dhue + 2.f * M_PI;
             }
 
-            ColorLight_Local(hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
+            ColorLight_Local(sp, dataspot, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, original, transformed, cx, cy);
 
         }
         //inverse

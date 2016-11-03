@@ -262,7 +262,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     pack_start (*retiFrame);
 
     pack_start (*transit);
-    // pack_start (*avoid);//keep avoid clor shift in case of
+//    pack_start (*avoid);//keep avoid clor shift in case of
 
     // Instantiating the Editing geometry; positions will be initialized later
     Line  *hLine, *vLine, *locYLine[2], *locXLine[2];
