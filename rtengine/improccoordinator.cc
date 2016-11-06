@@ -1045,10 +1045,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 if(dataspot[14][sp] ==  0) {
                     inverss[sp] = 0;
-                    params.locallab.invers = 0;
+                    params.locallab.invers = false;
                 } else {
                     inverss[sp] = 1;
-                    params.locallab.invers = 1;
+                    params.locallab.invers = true;
                 }
 
                 if(dataspot[15][sp] ==  0) {
@@ -1072,10 +1072,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 if(dataspot[19][sp] ==  0) {
                     inversrads[sp] = 0;
-                    params.locallab.inversrad = 0;
+                    params.locallab.inversrad = false;
                 } else {
                     inversrads[sp] = 1;
-                    params.locallab.inversrad = 1;
+                    params.locallab.inversrad = true;
                 }
 
 
@@ -1087,10 +1087,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 if(dataspot[25][sp] ==  0) {
                     inversrets[sp] = 0;
-                    params.locallab.inversret = 0;
+                    params.locallab.inversret = false;
                 } else {
                     inversrets[sp] = 1;
-                    params.locallab.inversret = 1;
+                    params.locallab.inversret = true;
                 }
 
                 if(dataspot[26][sp] ==  0) {
@@ -1114,13 +1114,15 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 if(dataspot[32][sp] ==  0) {
                     inversshas[sp] = 0;
-                    params.locallab.inverssha = 0;
+                    params.locallab.inverssha = false;
                 } else {
                     inversshas[sp] = 1;
-                    params.locallab.inverssha = 1;
+                    params.locallab.inverssha = true;
                 }
 
-                ipf.Lab_Local(2, sp, (float**)shbuffer, dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+//params.locallab.invers = true;
+
+                ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 dataspot[33][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
                 dataspot[34][sp] = chromarefs[sp] = params.locallab.chromaref;
                 dataspot[35][sp] = lumarefs[sp] = params.locallab.lumaref;
@@ -1158,11 +1160,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[13][sp] = transits[sp] = params.locallab.transit = dataspot[13][0];
 
             if(dataspot[14][0] == 0) {
-                params.locallab.invers = 0;
+                params.locallab.invers = false;
                 dataspot[14][sp] = 0;
                 inverss[sp] = 0;
             } else {
-                params.locallab.invers = 1;
+                params.locallab.invers = true;
                 dataspot[14][sp] = 1;
                 inverss[sp] = 1;
             }
@@ -1192,11 +1194,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[18][sp] = strengths[sp] = 10 * params.locallab.strength;
 
             if(dataspot[19][0] == 0) {
-                params.locallab.inversrad = 0;
+                params.locallab.inversrad = false;
                 dataspot[19][sp] = 0;
                 inversrads[sp] = 0;
             } else {
-                params.locallab.inversrad = 1;
+                params.locallab.inversrad = true;
                 dataspot[19][sp] = 1;
                 inversrads[sp] = 1;
             }
@@ -1208,11 +1210,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[24][sp] = sensihs[sp] = params.locallab.sensih = dataspot[24][0];
 
             if(dataspot[25][0] == 0) {
-                params.locallab.inversret = 0;
+                params.locallab.inversret = false;
                 inversrets[sp] = 0;
                 dataspot[25][sp] = 0;
             } else {
-                params.locallab.inversret = 1;
+                params.locallab.inversret = true;
                 inversrets[sp] = 1;
                 dataspot[25][sp] = 1;
             }
@@ -1249,7 +1251,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[32][sp] = 1;
             }
 
-            ipf.Lab_Local(2, sp, (float**)shbuffer, dataspot, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+            ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
             dataspot[33][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
             dataspot[34][sp] = chromarefs[sp] = params.locallab.chromaref;
             dataspot[35][sp] = lumarefs[sp] = params.locallab.lumaref;

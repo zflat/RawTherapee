@@ -836,9 +836,9 @@ void Crop::update (int todo)
                     params.locallab.transit = parent->transits[sp];
 
                     if(parent->inverss[sp] ==  0) {
-                        params.locallab.invers = 0;
+                        params.locallab.invers = false;
                     } else {
-                        params.locallab.invers = 1;
+                        params.locallab.invers = true;
                     }
 
                     if(parent->smeths[sp] ==  0) {
@@ -855,9 +855,9 @@ void Crop::update (int todo)
                     params.locallab.strength = ((float)  (parent->strengths[sp]) / 10.f);
 
                     if( parent->inversrads[sp] ==  0) {
-                        params.locallab.inversrad = 0;
+                        params.locallab.inversrad = false;
                     } else {
-                        params.locallab.inversrad = 1;
+                        params.locallab.inversrad = true;
                     }
 
                     params.locallab.str = parent->strs[sp];
@@ -867,9 +867,9 @@ void Crop::update (int todo)
                     params.locallab.sensih = parent->sensihs[sp];
 
                     if(parent->inversrets[sp] ==  0) {
-                        params.locallab.inversret = 0;
+                        params.locallab.inversret = false;
                     } else {
-                        params.locallab.inversret = 1;
+                        params.locallab.inversret = true;
                     }
 
                     if(parent->retinexs[sp] ==  0) {
@@ -887,15 +887,16 @@ void Crop::update (int todo)
                     params.locallab.sensisha = parent->sensishas[sp];
 
                     if(parent->inversshas[sp] ==  0) {
-                        params.locallab.inverssha = 0;
+                        params.locallab.inverssha = false;
                     } else {
-                        params.locallab.inverssha = 1;
+                        params.locallab.inverssha = true;
                     }
 
                     params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                     params.locallab.chromaref = parent->chromarefs[sp];
                     params.locallab.lumaref = parent->lumarefs[sp];
-                    parent->ipf.Lab_Local (1, sp, (float**)shbuffer, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+
+                    parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
                     //printf("sp=%i huere=%f chromaref=%f lumar=%f\n", sp, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                     if(skip <= 2) {
@@ -924,12 +925,12 @@ void Crop::update (int todo)
                 parent->transits[sp] = params.locallab.transit = parent->transits[0];
 
                 if(parent->inverss[0] ==  0) {
-                    params.locallab.invers = 0;
+                    params.locallab.invers = false;
                     parent->inverss[sp] = 0;
 
                 } else {
-                    params.locallab.invers = 1;
-                    parent->inverss[sp] = 0;
+                    params.locallab.invers = true;
+                    parent->inverss[sp] = 1;
 
                 }
 
@@ -959,10 +960,10 @@ void Crop::update (int todo)
                 parent->strengths[sp] = 10 * params.locallab.strength;
 
                 if( parent->inversrads[0] ==  0) {
-                    params.locallab.inversrad = 0;
+                    params.locallab.inversrad = false;
                     parent->inversrads[sp] =  0;
                 } else {
-                    params.locallab.inversrad = 1;
+                    params.locallab.inversrad = true;
                     parent->inversrads[sp] =  1;
                 }
 
@@ -973,10 +974,10 @@ void Crop::update (int todo)
                 parent->sensihs[sp] = params.locallab.sensih = parent->sensihs[0];
 
                 if(parent->inversrets[0] ==  0) {
-                    params.locallab.inversret = 0;
+                    params.locallab.inversret = false;
                     parent->inversrets[sp] =  0;
                 } else {
-                    params.locallab.inversret = 1;
+                    params.locallab.inversret = true;
                     parent->inversrets[sp] =  1;
 
                 }
@@ -1002,10 +1003,10 @@ void Crop::update (int todo)
                 parent->sensishas[sp] = params.locallab.sensisha = parent->sensishas[0];
 
                 if(parent->inversshas[0] ==  0) {
-                    params.locallab.inverssha = 0;
+                    params.locallab.inverssha = false;
                     parent->inversshas[sp] =  0;
                 } else {
-                    params.locallab.inverssha = 1;
+                    params.locallab.inverssha = true;
                     parent->inversshas[sp] =  1;
 
                 }
@@ -1014,9 +1015,9 @@ void Crop::update (int todo)
                 params.locallab.chromaref = parent->chromarefs[sp];
                 params.locallab.lumaref = parent->lumarefs[sp];
 
-                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
-                printf("spbis=%i huere=%f chromaref=%f lumar=%f\n", sp, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                //printf("spbis=%i huere=%f chromaref=%f lumar=%f\n", sp, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
         }

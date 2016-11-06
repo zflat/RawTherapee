@@ -1099,9 +1099,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.transit = dataspots[13][sp];
 
                 if(dataspots[14][sp] ==  0) {
-                    params.locallab.invers = 0;
+                    params.locallab.invers = false;
                 } else {
-                    params.locallab.invers = 1;
+                    params.locallab.invers = true;
                 }
 
                 if(dataspots[15][sp] ==  0) {
@@ -1118,9 +1118,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.strength = (float) (dataspots[18][sp]) / 10.f;
 
                 if(dataspots[19][sp] ==  0) {
-                    params.locallab.inversrad = 0;
+                    params.locallab.inversrad = false;
                 } else {
-                    params.locallab.inversrad = 1;
+                    params.locallab.inversrad = true;
                 }
 
                 params.locallab.str = dataspots[20][sp];
@@ -1130,9 +1130,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.sensih = dataspots[24][sp];
 
                 if(dataspots[25][sp] ==  0) {
-                    params.locallab.inversret = 0;
+                    params.locallab.inversret = false;
                 } else {
-                    params.locallab.inversret = 1;
+                    params.locallab.inversret = true;
                 }
 
                 if(dataspots[26][sp] ==  0) {
@@ -1150,16 +1150,16 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.sensisha = dataspots[31][sp];
 
                 if(dataspots[32][sp] ==  0) {
-                    params.locallab.inverssha = 0;
+                    params.locallab.inverssha = false;
                 } else {
-                    params.locallab.inverssha = 1;
+                    params.locallab.inverssha = true;
                 }
 
                 params.locallab.hueref = ((float) dataspots[33][sp]) / 100.f;
                 params.locallab.chromaref = dataspots[34][sp];
                 params.locallab.lumaref = dataspots[35][sp];
 
-                ipf.Lab_Local(1, sp, (float**)shbuffer, dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                ipf.Lab_Local(1, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
