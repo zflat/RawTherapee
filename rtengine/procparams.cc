@@ -889,8 +889,13 @@ void LocallabParams::setDefaults()
     lightness = 0;
     contrast = 0;
     chroma = 0;
+    sharradius = 4;
+    sharamount = 75;
+    shardamping = 75;
+    shariter = 30;
     sensi = 20;
     sensih = 20;
+    sensisha = 20;
     transit = 60;
     chrrt = 0;
     avoid = true;
@@ -901,6 +906,7 @@ void LocallabParams::setDefaults()
     radius = 0.;
     inversrad = false;
     inversret = false;
+    inverssha = false;
     strength = 0.;
     hueref = INFINITY;
     chromaref = INFINITY;
@@ -2555,6 +2561,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Locallab", "Inversrad", locallab.inversrad);
         }
 
+        if (!pedited || pedited->locallab.inverssha) {
+            keyFile.set_boolean ("Locallab", "Inverssha", locallab.inverssha);
+        }
+
         if (!pedited || pedited->locallab.inversret) {
             keyFile.set_boolean ("Locallab", "Inversret", locallab.inversret);
         }
@@ -2607,8 +2617,28 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Chroma", locallab.chroma);
         }
 
+        if (!pedited || pedited->locallab.sharradius) {
+            keyFile.set_integer ("Locallab", "Sharradius", locallab.sharradius);
+        }
+
+        if (!pedited || pedited->locallab.sharamount) {
+            keyFile.set_integer ("Locallab", "Sharamount", locallab.sharamount);
+        }
+
+        if (!pedited || pedited->locallab.shardamping) {
+            keyFile.set_integer ("Locallab", "Shardamping", locallab.shardamping);
+        }
+
+        if (!pedited || pedited->locallab.shariter) {
+            keyFile.set_integer ("Locallab", "Shariter", locallab.shariter);
+        }
+
         if (!pedited || pedited->locallab.sensi) {
             keyFile.set_integer ("Locallab", "Sensi", locallab.sensi);
+        }
+
+        if (!pedited || pedited->locallab.sensisha) {
+            keyFile.set_integer ("Locallab", "Sensisha", locallab.sensisha);
         }
 
         if (!pedited || pedited->locallab.sensih) {
@@ -3913,6 +3943,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "Inverssha"))  {
+                locallab.inverssha  = keyFile.get_boolean ("Locallab", "Inverssha");
+
+                if (pedited) {
+                    pedited->locallab.inverssha = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Inversret"))  {
                 locallab.inversret  = keyFile.get_boolean ("Locallab", "Inversret");
 
@@ -4001,11 +4039,51 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "Sharradius"))  {
+                locallab.sharradius  = keyFile.get_integer ("Locallab", "Sharradius");
+
+                if (pedited) {
+                    pedited->locallab.sharradius = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Sharamount"))  {
+                locallab.sharamount  = keyFile.get_integer ("Locallab", "Sharamount");
+
+                if (pedited) {
+                    pedited->locallab.sharamount = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Shardamping"))  {
+                locallab.shardamping  = keyFile.get_integer ("Locallab", "Shardamping");
+
+                if (pedited) {
+                    pedited->locallab.shardamping = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Shariter"))  {
+                locallab.shariter  = keyFile.get_integer ("Locallab", "Shariter");
+
+                if (pedited) {
+                    pedited->locallab.shariter = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Sensi"))  {
                 locallab.sensi  = keyFile.get_integer ("Locallab", "Sensi");
 
                 if (pedited) {
                     pedited->locallab.sensi = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Sensisha"))  {
+                locallab.sensisha  = keyFile.get_integer ("Locallab", "Sensisha");
+
+                if (pedited) {
+                    pedited->locallab.sensisha = true;
                 }
             }
 
@@ -8232,6 +8310,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.activsp == other.locallab.activsp
         && locallab.inversrad == other.locallab.inversrad
         && locallab.inversret == other.locallab.inversret
+        && locallab.inverssha == other.locallab.inverssha
         && locallab.degree == other.locallab.degree
         && locallab.Smethod == other.locallab.Smethod
         && locallab.retinexMethod == other.locallab.retinexMethod
@@ -8244,8 +8323,13 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.lightness == other.locallab.lightness
         && locallab.contrast == other.locallab.contrast
         && locallab.chroma == other.locallab.chroma
+        && locallab.sharradius == other.locallab.sharradius
+        && locallab.sharamount == other.locallab.sharamount
+        && locallab.shardamping == other.locallab.shardamping
+        && locallab.shariter == other.locallab.shariter
         && locallab.sensi == other.locallab.sensi
         && locallab.sensih == other.locallab.sensih
+        && locallab.sensisha == other.locallab.sensisha
         && locallab.radius == other.locallab.radius
         && locallab.strength == other.locallab.strength
         && locallab.transit == other.locallab.transit

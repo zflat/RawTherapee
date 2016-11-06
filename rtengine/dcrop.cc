@@ -25,7 +25,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-
+#include <unistd.h>
+//#include <chrono>
 // "ceil" rounding
 #define SKIPS(a,b) ((a) / (b) + ((a) % (b) > 0))
 
@@ -36,7 +37,7 @@ extern const Settings* settings;
 
 Crop::Crop (ImProcCoordinator* parent, EditDataProvider *editDataProvider, bool isDetailWindow)
     : PipetteBuffer(editDataProvider), origCrop(nullptr), laboCrop(nullptr), labnCrop(nullptr),
-      cropImg(nullptr), cbuf_real(nullptr), cshmap(nullptr), transCrop(nullptr), cieCrop(nullptr), cbuffer(nullptr),
+      cropImg(nullptr), cbuf_real(nullptr), shbuf_real(nullptr), cshmap(nullptr), transCrop(nullptr), cieCrop(nullptr), cbuffer(nullptr), shbuffer(nullptr),
       updating(false), newUpdatePending(false), skip(10), padding(0),
       cropx(0), cropy(0), cropw(-1), croph(-1),
       trafx(0), trafy(0), trafw(-1), trafh(-1),
@@ -804,9 +805,11 @@ void Crop::update (int todo)
         int maxspot = settings->nspot + 1;
 
         if(needslocal ) {
+            //  if(tyty ) {
             Glib::ustring datalab = parent->imgsrc->getFileName() + ".mip";
 
             ifstream fich(datalab, ios::in);
+            //float** shbuffer;
 
 
             if (fich) {//to avoid crash in some cases
@@ -877,16 +880,29 @@ void Crop::update (int todo)
                         params.locallab.retinexMethod = "high";
                     }
 
+                    params.locallab.sharradius = parent->sharradiuss[sp];
+                    params.locallab.sharamount = parent->sharamounts[sp];
+                    params.locallab.shardamping = parent->shardampings[sp];
+                    params.locallab.shariter = parent->shariters[sp];
+                    params.locallab.sensisha = parent->sensishas[sp];
+
+                    if(parent->inversshas[sp] ==  0) {
+                        params.locallab.inverssha = 0;
+                    } else {
+                        params.locallab.inverssha = 1;
+                    }
+
                     params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                     params.locallab.chromaref = parent->chromarefs[sp];
                     params.locallab.lumaref = parent->lumarefs[sp];
-                    //printf("locX1=%i locY1=%i\n", parent->locx[1], parent->locy[1]);
+                    parent->ipf.Lab_Local (1, sp, (float**)shbuffer, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
-                    parent->ipf.Lab_Local (sp, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                    //    }
+                    //printf("sp=%i huere=%f chromaref=%f lumar=%f\n", sp, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                    if(skip <= 2) {
+                        usleep(settings->cropsleep);    //wait to avoid crash when crop 100% and move window
+                    }
                 }
 
-                //          printf("realspotdcrop=%d data=%d\n", realspot, dataspotd[14][0]);
 
 
 
@@ -978,14 +994,29 @@ void Crop::update (int todo)
 
                 }
 
+                parent->sharradiuss[sp] = params.locallab.sharradius = parent->sharradiuss[0];
+
+                parent->sharamounts[sp] = params.locallab.sharamount = parent->sharamounts[0];
+                parent->shardampings[sp] = params.locallab.shardamping = parent->shardampings[0];
+                parent->shariters[sp] = params.locallab.shariter = parent->shariters[0];
+                parent->sensishas[sp] = params.locallab.sensisha = parent->sensishas[0];
+
+                if(parent->inversshas[0] ==  0) {
+                    params.locallab.inverssha = 0;
+                    parent->inversshas[sp] =  0;
+                } else {
+                    params.locallab.inverssha = 1;
+                    parent->inversshas[sp] =  1;
+
+                }
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];
                 params.locallab.lumaref = parent->lumarefs[sp];
 
-                parent->ipf.Lab_Local (sp, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, dataspotd, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
-
+                printf("spbis=%i huere=%f chromaref=%f lumar=%f\n", sp, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
         }
@@ -1256,6 +1287,11 @@ void Crop::freeAll ()
             cbuffer = nullptr;
         }
 
+        if (shbuffer  ) {
+            delete [] shbuffer;
+            shbuffer = nullptr;
+        }
+
         if (cshmap   ) {
             delete    cshmap;
             cshmap = nullptr;
@@ -1393,8 +1429,16 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
             delete [] cbuffer;
         }
 
+        if (shbuffer  ) {
+            delete [] shbuffer;
+        }
+
         if (cbuf_real) {
             delete [] cbuf_real;
+        }
+
+        if (shbuf_real) {
+            delete [] shbuf_real;
         }
 
         if (cshmap   ) {
@@ -1407,6 +1451,13 @@ bool Crop::setCropSizes (int rcx, int rcy, int rcw, int rch, int skip, bool inte
 
         for (int i = 0; i < croph; i++) {
             cbuffer[i] = cbuf_real + cropw * i + cropw;
+        }
+
+        shbuffer = new float*[croph];
+        shbuf_real = new float[(croph + 2)*cropw];
+
+        for (int i = 0; i < croph; i++) {
+            shbuffer[i] = shbuf_real + cropw * i + cropw;
         }
 
         if(params.sh.enabled) {

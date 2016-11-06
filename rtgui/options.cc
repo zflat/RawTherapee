@@ -678,9 +678,10 @@ void Options::setDefaults ()
     rtSettings.ed_lipampl = 1.1; //between 1 and 2
 
 //locallab
-    rtSettings.nspot = 3;//between 1 and ??
+    rtSettings.nspot = 8;//between 1 and ??
     rtSettings.locdelay = false;//true enabled delay 200 for selection spot
-
+    rtSettings.cropsleep = 50;//generate a pause of 50 ms for dcrop (100%)to avoid carsh when moving window, between 0 to ??
+// end locallab
 
     rtSettings.ciecamfloat = true;
     rtSettings.protectred = 60;
@@ -850,6 +851,10 @@ int Options::readFromFile (Glib::ustring fname)
 
                 if (keyFile.has_key ("General", "Nspot")) {
                     rtSettings.nspot          = keyFile.get_integer("General", "Nspot");
+                }
+
+                if (keyFile.has_key ("General", "Cropsleep")) {
+                    rtSettings.cropsleep          = keyFile.get_integer("General", "Cropsleep");
                 }
 
                 if (keyFile.has_key ("General", "Locdelay")) {
@@ -1891,6 +1896,7 @@ int Options::saveToFile (Glib::ustring fname)
 
         keyFile.set_integer ("General", "Nspot", rtSettings.nspot);
         keyFile.set_boolean ("General", "Locdelay", rtSettings.locdelay);
+        keyFile.set_integer ("General", "Cropsleep", rtSettings.cropsleep);
 
 
         keyFile.set_integer ("External Editor", "EditorKind", editorToSendTo);

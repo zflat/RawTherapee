@@ -50,6 +50,11 @@ protected:
     Adjuster* nbspot;
     Adjuster* anbspot;
     Adjuster* maxn;
+    Adjuster* sharradius;
+    Adjuster* sharamount;
+    Adjuster* shardamping;
+    Adjuster* shariter;
+    Adjuster* sensisha;
 
 
     Gtk::CheckButton* avoid;
@@ -60,13 +65,14 @@ protected:
     Gtk::CheckButton* inversrad;
     Gtk::CheckButton* inversret;
     Gtk::CheckButton* activsp;
+    Gtk::CheckButton* inverssha;
 
     MyComboBoxText*   retinexMethod;
     Gtk::Label* labmdh;
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[30];
+    int nextdatasp[36];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -75,9 +81,9 @@ protected:
     double draggedlocYTOffset;
     double draggedlocXLOffset;
     rtengine::Coord draggedCenter;
-    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivsp;
+    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivsp, lastinverssha;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, retinexMethodConn;
+    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn;
 
     void editToggled ();
 
@@ -102,6 +108,7 @@ public:
     void inversChanged ();
     void inversradChanged ();
     void inversretChanged ();
+    void inversshaChanged ();
     void curveChanged (CurveEditor* ce);
     void autoOpenCurve ();
     void localChanged           (int **datasp, int sp);

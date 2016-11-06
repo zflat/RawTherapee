@@ -947,12 +947,18 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         int realspot = params.locallab.nbspot;
         int maxspot = settings->nspot + 1;
         ifstream fich(datalab, ios::in);
+        // float** shbuffer;
+        float **shbuffer = new float*[fh];
+
+        for (int i = 0; i < fh; i++) {
+            shbuffer[i] = new float[fw];
+        }
 
         if (fich) {
             int **dataspots;
-            dataspots = new int*[30];
+            dataspots = new int*[36];
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 36; i++) {
                 dataspots[i] = new int[maxspot];
             }
 
@@ -1013,9 +1019,22 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[26][0] =  2;
             }
 
-            dataspots[27][0] = 100.f * params.locallab.hueref;
-            dataspots[28][0] = params.locallab.chromaref;
-            dataspots[29][0] = params.locallab.lumaref;
+
+            dataspots[27][0] = params.locallab.sharradius;
+            dataspots[28][0] = params.locallab.sharamount;
+            dataspots[29][0] = params.locallab.shardamping;
+            dataspots[30][0] = params.locallab.shariter;
+            dataspots[31][0] = params.locallab.sensisha;
+
+            if(!params.locallab.inverssha) {
+                dataspots[32][0] =  0;
+            } else {
+                dataspots[32][0] =  1;
+            }
+
+            dataspots[33][0] = 100.f * params.locallab.hueref;
+            dataspots[34][0] = params.locallab.chromaref;
+            dataspots[35][0] = params.locallab.lumaref;
 
 
             if (fich) {
@@ -1051,7 +1070,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         dataspots[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 30) {
+                    if(cont > 16  && cont < 36) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -1124,21 +1143,38 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.retinexMethod = "high";
                 }
 
-                params.locallab.hueref = ((float) dataspots[27][sp]) / 100.f;
-                params.locallab.chromaref = dataspots[28][sp];
-                params.locallab.lumaref = dataspots[29][sp];
+                params.locallab.sharradius = dataspots[27][sp];
+                params.locallab.sharamount = dataspots[28][sp];
+                params.locallab.shardamping = dataspots[29][sp];
+                params.locallab.shariter = dataspots[30][sp];
+                params.locallab.sensisha = dataspots[31][sp];
 
-                ipf.Lab_Local(sp, dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                if(dataspots[32][sp] ==  0) {
+                    params.locallab.inverssha = 0;
+                } else {
+                    params.locallab.inverssha = 1;
+                }
+
+                params.locallab.hueref = ((float) dataspots[33][sp]) / 100.f;
+                params.locallab.chromaref = dataspots[34][sp];
+                params.locallab.lumaref = dataspots[35][sp];
+
+                ipf.Lab_Local(1, sp, (float**)shbuffer, dataspots, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < 36; i++) {
                 delete [] dataspots[i];
             }
 
             delete [] dataspots;
 
+            for (int i = 0; i < fh; i++) {
+                delete [] shbuffer[i];
+            }
+
+            delete [] shbuffer;
 
 
 

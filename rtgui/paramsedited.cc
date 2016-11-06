@@ -302,8 +302,13 @@ void ParamsEdited::set (bool v)
     locallab.lightness = v;
     locallab.contrast = v;
     locallab.chroma = v;
+    locallab.sharradius = v;
+    locallab.sharamount = v;
+    locallab.shardamping = v;
+    locallab.shariter = v;
     locallab.sensi = v;
     locallab.sensih = v;
+    locallab.sensisha = v;
     locallab.radius = v;
     locallab.strength = v;
     locallab.transit = v;
@@ -315,6 +320,7 @@ void ParamsEdited::set (bool v)
     locallab.activsp = v;
     locallab.inversrad = v;
     locallab.inversret = v;
+    locallab.inverssha = v;
     locallab.str = v;
     locallab.neigh = v;
     locallab.nbspot = v;
@@ -824,6 +830,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.activsp = locallab.activsp && p.locallab.activsp == other.locallab.activsp;
         locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
         locallab.inversret = locallab.inversret && p.locallab.inversret == other.locallab.inversret;
+        locallab.inverssha = locallab.inverssha && p.locallab.inverssha == other.locallab.inverssha;
         locallab.degree = locallab.degree && p.locallab.degree == other.locallab.degree;
         locallab.locY = locallab.locY && p.locallab.locY == other.locallab.locY;
         locallab.locX = locallab.locX && p.locallab.locX == other.locallab.locX;
@@ -836,8 +843,12 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.lightness = locallab.lightness && p.locallab.lightness == other.locallab.lightness;
         locallab.contrast = locallab.contrast && p.locallab.contrast == other.locallab.contrast;
         locallab.chroma = locallab.chroma && p.locallab.chroma == other.locallab.chroma;
+        locallab.sharradius = locallab.sharradius && p.locallab.sharradius == other.locallab.sharradius;
+        locallab.sharamount = locallab.sharamount && p.locallab.sharamount == other.locallab.sharamount;
+        locallab.shariter = locallab.shariter && p.locallab.shariter == other.locallab.shariter;
         locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
         locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
+        locallab.sensisha = locallab.sensisha && p.locallab.sensisha == other.locallab.sensisha;
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
         locallab.transit = locallab.transit && p.locallab.transit == other.locallab.transit;
@@ -2074,6 +2085,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.inversrad     = mods.locallab.inversrad;
     }
 
+    if (locallab.inverssha) {
+        toEdit.locallab.inverssha     = mods.locallab.inverssha;
+    }
+
     if (locallab.inversret) {
         toEdit.locallab.inversret     = mods.locallab.inversret;
     }
@@ -2126,12 +2141,32 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.chroma    = mods.locallab.chroma;
     }
 
+    if (locallab.sharradius) {
+        toEdit.locallab.sharradius    = mods.locallab.sharradius;
+    }
+
+    if (locallab.sharamount) {
+        toEdit.locallab.sharamount    = mods.locallab.sharamount;
+    }
+
+    if (locallab.shardamping) {
+        toEdit.locallab.shardamping    = mods.locallab.shardamping;
+    }
+
+    if (locallab.shariter) {
+        toEdit.locallab.shariter    = mods.locallab.shariter;
+    }
+
     if (locallab.sensi) {
         toEdit.locallab.sensi     = mods.locallab.sensi;
     }
 
     if (locallab.sensih) {
         toEdit.locallab.sensih     = mods.locallab.sensih;
+    }
+
+    if (locallab.sensisha) {
+        toEdit.locallab.sensisha     = mods.locallab.sensisha;
     }
 
     if (locallab.radius) {

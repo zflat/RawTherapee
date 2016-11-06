@@ -235,6 +235,14 @@ protected:
     LUTi inversrets;
     LUTi retinexs;
     LUTi sps;
+    LUTi sharradiuss;
+    LUTi sharamounts;
+    LUTi shardampings;
+    LUTi inversshas;
+    LUTi shariters;
+    LUTi sensishas;
+
+
     LUTf huerefs;
     LUTf chromarefs;
     LUTf lumarefs;

@@ -854,8 +854,14 @@ public:
     int     lightness;
     int     contrast;
     int     chroma;
+    int     sharradius;
+    int     sharamount;
+    int     shardamping;
+    int     shariter;
+
     int     sensi;
     int     sensih;
+    int     sensisha;
     double  radius;
     double  strength;
     int     transit;
@@ -866,6 +872,7 @@ public:
     bool    activsp;
     bool    inversrad;
     bool    inversret;
+    bool    inverssha;
     double  hueref;
     double  chromaref;
     double  lumaref;

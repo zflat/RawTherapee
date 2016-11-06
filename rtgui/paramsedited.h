@@ -428,8 +428,13 @@ public:
     bool lightness;
     bool contrast;
     bool chroma;
+    bool sharradius;
+    bool sharamount;
+    bool shardamping;
+    bool shariter;
     bool sensi;
     bool sensih;
+    bool sensisha;
     bool radius;
     bool strength;
     bool transit;
@@ -445,6 +450,7 @@ public:
     bool invers;
     bool inversrad;
     bool inversret;
+    bool inverssha;
     bool ccwTgaincurve;
     bool chrrt;
 };

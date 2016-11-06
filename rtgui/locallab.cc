@@ -62,6 +62,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     colorFrame->set_border_width(0);
     colorFrame->set_label_align(0.025, 0.5);
 
+    Gtk::Frame* sharpFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_SHARP")) );
+    sharpFrame->set_border_width(0);
+    sharpFrame->set_label_align(0.025, 0.5);
+
     Gtk::Frame* blurrFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_BLUFR")) );
     blurrFrame->set_border_width(0);
     blurrFrame->set_label_align(0.025, 0.5);
@@ -123,7 +127,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     //contrast->set_tooltip_text (M("TP_LOCALLAB_CONTRAST_TOOLTIP"));
     contrast->setAdjusterListener (this);
 
-    chroma = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHROMA"), -100, 200, 1, 0));
+    chroma = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHROMA"), -100, 150, 1, 0));
     //chroma->set_tooltip_text (M("TP_LOCALLAB_CHROMA_TOOLTIP"));
     chroma->setAdjusterListener (this);
 
@@ -232,6 +236,39 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrVBox->set_spacing(2);
     blurrVBox->set_border_width(4);
 
+    Gtk::VBox *sharpVBox = Gtk::manage ( new Gtk::VBox());
+    sharpVBox->set_spacing(2);
+    sharpVBox->set_border_width(4);
+
+
+    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 4, 250, 1, 4));
+    sharradius->setAdjusterListener (this);
+
+    sharamount = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARAMOUNT"), 0, 100, 1, 75));
+    sharamount->setAdjusterListener (this);
+
+    shardamping = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARDAMPING"), 0, 100, 1, 75));
+    shardamping->setAdjusterListener (this);
+
+    shariter = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARITER"), 5, 100, 1, 30));
+    shariter->setAdjusterListener (this);
+
+
+    sensisha = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIS"), 0, 100, 1, 20));
+    sensisha->set_tooltip_text (M("TP_LOCALLAB_SENSIS_TOOLTIP"));
+    sensisha->setAdjusterListener (this);
+
+    inverssha = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    inverssha->set_active (false);
+    inversshaConn  = inverssha->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversshaChanged) );
+
+    sharpVBox->pack_start (*sharradius);
+    sharpVBox->pack_start (*sharamount);
+    sharpVBox->pack_start (*shardamping);
+    sharpVBox->pack_start (*shariter);
+    sharpVBox->pack_start (*sensisha);
+    sharpVBox->pack_start (*inverssha);
+
 
     colorVBox->pack_start (*lightness);
     colorVBox->pack_start (*contrast);
@@ -248,6 +285,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrVBox->pack_start (*inversrad);
     blurrFrame->add(*blurrVBox);
     pack_start (*blurrFrame);
+
+    sharpFrame->add(*sharpVBox);
+    pack_start (*sharpFrame);
 
     retiBox->pack_start (*retinexMethod);
     retiBox->pack_start (*str);
@@ -419,10 +459,21 @@ bool Locallab::localComputed_ ()
         retinexMethod->set_active (0);
     } else if (nextdatasp[26] == 1) {
         retinexMethod->set_active (1);
-    } else if (nextdatasp[27] == 2) {
+    } else if (nextdatasp[26] == 2) {
         retinexMethod->set_active (2);
     }
 
+    sharradius->setValue(nextdatasp[27]);
+    sharamount->setValue(nextdatasp[28]);
+    shardamping->setValue(nextdatasp[29]);
+    shariter->setValue(nextdatasp[30]);
+    sensisha->setValue(nextdatasp[31]);
+
+    if(nextdatasp[32] == 0) {
+        inverssha->set_active (false);
+    } else {
+        inverssha->set_active (true);
+    }
 
     enableListener ();
 
@@ -468,6 +519,10 @@ bool Locallab::localComputed_ ()
         listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
     }
 
+    if (listener) {//for inverse retinex
+        listener->panelChanged (Evlocallabinverssha, M("GENERAL_ENABLED"));
+    }
+
     if (listener) {//for Smethod : position of mouse cursor
         listener->panelChanged (EvlocallabSmet, Smethod->get_active_text ());
     }
@@ -482,7 +537,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 3; i < 30; i++) {
+    for(int i = 3; i < 36; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -507,6 +562,12 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         lightness->setEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setEditedState (pedited->locallab.chroma ? Edited : UnEdited);
+        sharradius->setEditedState (pedited->locallab.sharradius ? Edited : UnEdited);
+        sharamount->setEditedState (pedited->locallab.sharamount ? Edited : UnEdited);
+        shardamping->setEditedState (pedited->locallab.shardamping ? Edited : UnEdited);
+        shariter->setEditedState (pedited->locallab.shariter ? Edited : UnEdited);
+        sensisha->setEditedState (pedited->locallab.sensisha ? Edited : UnEdited);
+
         sensi->setEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
@@ -523,6 +584,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         activsp->set_inconsistent (multiImage && !pedited->locallab.activsp);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
+        inverssha->set_inconsistent (multiImage && !pedited->locallab.inverssha);
         cTgainshape->setUnChanged  (!pedited->locallab.ccwTgaincurve);
         inversret->set_inconsistent (multiImage && !pedited->locallab.inversret);
 
@@ -555,6 +617,9 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     inversretConn.block (true);
     inversret->set_active (pp->locallab.inversret);
     inversretConn.block (false);
+    inversshaConn.block (true);
+    inverssha->set_active (pp->locallab.inverssha);
+    inversshaConn.block (false);
 
     degree->setValue (pp->locallab.degree);
     locY->setValue (pp->locallab.locY);
@@ -566,6 +631,11 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     lightness->setValue (pp->locallab.lightness);
     contrast->setValue (pp->locallab.contrast);
     chroma->setValue (pp->locallab.chroma);
+    sharradius->setValue (pp->locallab.sharradius);
+    sharamount->setValue (pp->locallab.sharamount);
+    shardamping->setValue (pp->locallab.shardamping);
+    shariter->setValue (pp->locallab.shariter);
+    sensisha->setValue (pp->locallab.sensisha);
     sensi->setValue (pp->locallab.sensi);
     sensih->setValue (pp->locallab.sensih);
     transit->setValue (pp->locallab.transit);
@@ -585,10 +655,12 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     lastinvers = pp->locallab.invers;
     lastinversrad = pp->locallab.inversrad;
     lastinversret = pp->locallab.inversret;
+    lastinverssha = pp->locallab.inverssha;
     activspChanged();
     inversChanged();
     inversradChanged();
     inversretChanged();
+    inversshaChanged();
 
     updateGeometry (pp->locallab.centerX, pp->locallab.centerY, pp->locallab.locY, pp->locallab.degree,  pp->locallab.locX, pp->locallab.locYT, pp->locallab.locXL);
 
@@ -735,6 +807,11 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.lightness = lightness->getIntValue ();
     pp->locallab.contrast = contrast->getIntValue ();
     pp->locallab.chroma = chroma->getIntValue ();
+    pp->locallab.sharradius = sharradius->getIntValue ();
+    pp->locallab.sharamount = sharamount->getIntValue ();
+    pp->locallab.shardamping = shardamping->getIntValue ();
+    pp->locallab.shariter = shariter->getIntValue ();
+    pp->locallab.sensisha = sensisha->getIntValue ();
     pp->locallab.sensi = sensi->getIntValue ();
     pp->locallab.sensih = sensih->getIntValue ();
     pp->locallab.radius = radius->getValue ();
@@ -746,6 +823,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.invers = invers->get_active();
     pp->locallab.inversrad = inversrad->get_active();
     pp->locallab.inversret = inversret->get_active();
+    pp->locallab.inverssha = inverssha->get_active();
     pp->locallab.str = str->getIntValue ();
     pp->locallab.neigh = neigh->getIntValue ();
     pp->locallab.nbspot = nbspot->getIntValue ();
@@ -767,6 +845,11 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.lightness = lightness->getEditedState ();
         pedited->locallab.contrast = contrast->getEditedState ();
         pedited->locallab.chroma = chroma->getEditedState ();
+        pedited->locallab.sharradius = sharradius->getEditedState ();
+        pedited->locallab.sharamount = sharamount->getEditedState ();
+        pedited->locallab.shardamping = shardamping->getEditedState ();
+        pedited->locallab.shariter = shariter->getEditedState ();
+        pedited->locallab.sensisha = sensisha->getEditedState ();
         pedited->locallab.sensi = sensi->getEditedState ();
         pedited->locallab.sensih = sensih->getEditedState ();
         pedited->locallab.radius = radius->getEditedState ();
@@ -778,6 +861,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.activsp = !activsp->get_inconsistent();
         pedited->locallab.inversret = !inversret->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
+        pedited->locallab.inverssha = !inverssha->get_inconsistent();
         pedited->locallab.str = str->getEditedState ();
         pedited->locallab.neigh = neigh->getEditedState ();
         pedited->locallab.nbspot = nbspot->getEditedState ();
@@ -961,7 +1045,6 @@ void Locallab::activspChanged ()
 
 
     if (listener) {
-        printf("activ\n");
 
         if (getEnabled()) {
             listener->panelChanged (Evlocallabactivsp, M("GENERAL_ENABLED"));
@@ -992,6 +1075,38 @@ void Locallab::inversradChanged ()
             listener->panelChanged (Evlocallabinversrad, M("GENERAL_ENABLED"));
         } else {
             listener->panelChanged (Evlocallabinversrad, M("GENERAL_DISABLED"));
+        }
+    }
+}
+
+void Locallab::inversshaChanged ()
+{
+
+    if (batchMode) {
+        if (inverssha->get_inconsistent()) {
+            inverssha->set_inconsistent (false);
+            inversshaConn.block (true);
+            inverssha->set_active (false);
+            inversshaConn.block (false);
+        } else if (lastinverssha) {
+            inverssha->set_inconsistent (true);
+        }
+
+        lastinverssha = inverssha->get_active ();
+    }
+
+    /*
+        if(inverssha->get_active ()) {
+            sensisha->hide();
+        } else {
+            sensisha->show();
+        }
+    */
+    if (listener) {
+        if (getEnabled()) {
+            listener->panelChanged (Evlocallabinverssha, M("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (Evlocallabinverssha, M("GENERAL_DISABLED"));
         }
     }
 }
@@ -1041,6 +1156,11 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     lightness->setDefault (defParams->locallab.lightness);
     contrast->setDefault (defParams->locallab.contrast);
     chroma->setDefault (defParams->locallab.chroma);
+    sharradius->setDefault (defParams->locallab.sharradius);
+    sharamount->setDefault (defParams->locallab.sharamount);
+    shardamping->setDefault (defParams->locallab.shardamping);
+    shariter->setDefault (defParams->locallab.shariter);
+    sensisha->setDefault (defParams->locallab.sensisha);
     sensi->setDefault (defParams->locallab.sensi);
     sensih->setDefault (defParams->locallab.sensih);
     transit->setDefault (defParams->locallab.transit);
@@ -1065,6 +1185,11 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         lightness->setDefaultEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setDefaultEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setDefaultEditedState (pedited->locallab.chroma ? Edited : UnEdited);
+        sharradius->setDefaultEditedState (pedited->locallab.sharradius ? Edited : UnEdited);
+        sharamount->setDefaultEditedState (pedited->locallab.sharamount ? Edited : UnEdited);
+        shardamping->setDefaultEditedState (pedited->locallab.shardamping ? Edited : UnEdited);
+        shariter->setDefaultEditedState (pedited->locallab.shariter ? Edited : UnEdited);
+        sensisha->setDefaultEditedState (pedited->locallab.sensisha ? Edited : UnEdited);
         sensi->setDefaultEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setDefaultEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
@@ -1087,6 +1212,11 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         lightness->setDefaultEditedState (Irrelevant);
         contrast->setDefaultEditedState (Irrelevant);
         chroma->setDefaultEditedState (Irrelevant);
+        sharradius->setDefaultEditedState (Irrelevant);
+        sharamount->setDefaultEditedState (Irrelevant);
+        shardamping->setDefaultEditedState (Irrelevant);
+        shariter->setDefaultEditedState (Irrelevant);
+        sensisha->setDefaultEditedState (Irrelevant);
         sensi->setDefaultEditedState (Irrelevant);
         sensih->setDefaultEditedState (Irrelevant);
         radius->setDefaultEditedState (Irrelevant);
@@ -1173,6 +1303,16 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabcontrast, contrast->getTextValue());
         } else if (a == chroma) {
             listener->panelChanged (Evlocallabchroma, chroma->getTextValue());
+        } else if (a == sharradius) {
+            listener->panelChanged (Evlocallabsharradius, sharradius->getTextValue());
+        } else if (a == sharamount) {
+            listener->panelChanged (Evlocallabsharamount, sharamount->getTextValue());
+        } else if (a == shardamping) {
+            listener->panelChanged (Evlocallabshardamping, shardamping->getTextValue());
+        } else if (a == shariter) {
+            listener->panelChanged (Evlocallabshariter, shariter->getTextValue());
+        } else if (a == sensisha) {
+            listener->panelChanged (Evlocallabsensis, sensisha->getTextValue());
         } else if (a == sensi) {
             listener->panelChanged (Evlocallabsensi, sensi->getTextValue());
         } else if (a == sensih) {
@@ -1273,6 +1413,11 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     lightness->trimValue(pp->locallab.lightness);
     contrast->trimValue(pp->locallab.contrast);
     chroma->trimValue(pp->locallab.chroma);
+    sharradius->trimValue(pp->locallab.sharradius);
+    sharamount->trimValue(pp->locallab.sharamount);
+    shardamping->trimValue(pp->locallab.shardamping);
+    shariter->trimValue(pp->locallab.shariter);
+    sensisha->trimValue(pp->locallab.sensisha);
     sensi->trimValue(pp->locallab.sensi);
     sensih->trimValue(pp->locallab.sensih);
     radius->trimValue(pp->locallab.radius);
@@ -1300,6 +1445,11 @@ void Locallab::setBatchMode (bool batchMode)
     lightness->showEditedCB ();
     contrast->showEditedCB ();
     chroma->showEditedCB ();
+    sharradius->showEditedCB ();
+    sharamount->showEditedCB ();
+    shardamping->showEditedCB ();
+    shariter->showEditedCB ();
+    sensisha->showEditedCB ();
     sensi->showEditedCB ();
     sensih->showEditedCB ();
     radius->showEditedCB ();
