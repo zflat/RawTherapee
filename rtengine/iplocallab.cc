@@ -961,11 +961,10 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
                         */
                 }
 
-                float epsi = 0.5f;
 
                 switch(zone) {
                     case 0: { // outside selection and outside transition zone => no effect, keep original values
-                        transformed->L[y][x] = original->L[y][x] + epsi;
+                        transformed->L[y][x] = original->L[y][x];
                         transformed->a[y][x] = original->a[y][x];
                         transformed->b[y][x] = original->b[y][x];
                         break;
@@ -986,28 +985,28 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
                                         float core = (lco.alsup2 * prov + lco.blsup2) ;
                                         core *= factorx;
 
-                                        transformed->L[y][x] = epsi + 327.68f * (prov + pm * (prov - localtype) * (core) * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core) * kch * fach);
                                     } else {
                                         float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
 
                                         core *= factorx;
-                                        transformed->L[y][x] = epsi + 327.68f * (prov + pm * (prov - localtype) * (core) * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * (core) * kch * fach);
                                     }
                                 } else  { //inferior
                                     if(2.f * prov > localtype && prov < localtype)  {
                                         float core = (lco.alsup * prov + lco.blsup) ;
                                         core *= factorx;
-                                        transformed->L[y][x] = epsi + 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
                                     } else if(2.f * prov <= localtype) {
                                         float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
 
                                         core *= factorx;
-                                        transformed->L[y][x] = epsi + 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
                                     }
                                 }
                             }
                         } else {
-                            transformed->L[y][x] = original->L[y][x] + epsi;
+                            transformed->L[y][x] = original->L[y][x];
                         }
 
                         break;
@@ -1027,23 +1026,23 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
                                 if(prov > localtype  ) {
                                     if(prov >= localtype && prov < 50.f + localtype / 2.f) {
                                         float core = (lco.alsup2 * prov + lco.blsup2) ;
-                                        transformed->L[y][x] = epsi + 327.68f * (prov + pm * (prov - localtype) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core * kch * fach);
                                     } else {
                                         float core = lco.aDY * (lco.aaa * prov100 * prov100 + lco.bbb * prov100 + lco.ccc);
-                                        transformed->L[y][x] = epsi + 327.68f * (prov + pm * (prov - localtype) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov + pm * (prov - localtype) * core * kch * fach);
                                     }
                                 } else  { //inferior
                                     if(2.f * prov > localtype && prov < localtype)  {
                                         float core = (lco.alsup * prov + lco.blsup) ;
-                                        transformed->L[y][x] = epsi + 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
                                     } else if(2.f * prov <= localtype) {
                                         float core = prov * lco.alinf * (lco.aa * prov100 * prov100 + lco.bb * prov100);
-                                        transformed->L[y][x] = epsi + 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
+                                        transformed->L[y][x] = 327.68f * (prov - pm * (localtype - prov) * core * kch * fach);
                                     }
                                 }
                             }
                         } else {
-                            transformed->L[y][x] = original->L[y][x] + epsi;
+                            transformed->L[y][x] = original->L[y][x];
                         }
                     }
                 }
@@ -1358,56 +1357,6 @@ void ImProcFunctions::InverseSharp_Local(int sp, float **loctemp, const float hu
 }
 
 
-
-
-
-
-
-/*
-        void ImProcFunctions::InverseSharp_Local(int sp, float **loctemp, int **dataspot, const struct local_params & lp, LabImage * original, LabImage * transformed, int cx, int cy)
-
-        {
-            BENCHFUN
-//inverse local blur and noise
-            float ach = (float)lp.trans / 100.f;
-
-            #pragma omp parallel for schedule(dynamic,16) if (multiThread)
-
-            for (int y = 0; y < transformed->H; y++) {
-                int loy = cy + y;
-
-                for (int x = 0; x < transformed->W; x++) {
-                    int lox = cx + x;
-
-                    int zone;
-                    float localFactor;
-                    calcTransition (lox, loy, ach, lp, zone, localFactor);
-
-                    switch(zone) {
-                        case 0: { // outside selection and outside transition zone => full effect, no transition
-                            transformed->L[y][x] = loctemp[y][x];
-                            break;
-                        }
-
-                        case 1: { // inside transition zone
-                            float difL = loctemp[y][x] - original->L[y][x];
-
-                            float factorx = 1.f - localFactor;
-                            difL *= factorx;
-
-                            transformed->L[y][x] = original->L[y][x] + difL;
-                            break;
-                        }
-
-                        case 2: { // inside selection => no effect, keep original values
-                            transformed->L[y][x] = original->L[y][x];
-                        }
-                    }
-                }
-            }
-
-        }
-*/
 void ImProcFunctions::Sharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params & lp, LabImage * original, LabImage * transformed, int cx, int cy)
 {
 //local blur and noise
@@ -1923,106 +1872,106 @@ void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float 
                 int zone;
                 float localFactor;
                 calcTransition (lox, loy, ach, lp, zone, localFactor);
-                float epsi = 0.5f;
 
-                switch(zone) {
-                    case 0: { // outside selection and outside transition zone => no effect, keep original values
-                        transformed->L[y][x] = original->L[y][x] + epsi;
-                        transformed->a[y][x] = original->a[y][x];
-                        transformed->b[y][x] = original->b[y][x];
-                        break;
-                    }
-
-                    case 1: { // inside transition zone
-                        float lumnew = original->L[y][x];
-
-                        if(lp.ligh != 0) {
-                            calclight (original->L[y][x], lp.ligh , lumnew);//replace L-curve
+                if(rL > 1.f) {//to avoid crash with very low gamut in rare cases ex : L=0.01 a=0.5 b=-0.9
+                    switch(zone) {
+                        case 0: { // outside selection and outside transition zone => no effect, keep original values
+                            transformed->L[y][x] = original->L[y][x];
+                            transformed->a[y][x] = original->a[y][x];
+                            transformed->b[y][x] = original->b[y][x];
+                            break;
                         }
 
-                        float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
-                        float factorx = localFactor;
-                        float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
-                        float diflc = lightcont - original->L[y][x];
-                        kdiff *= fach * kch;
-                        diflc *= kdiff ;
+                        case 1: { // inside transition zone
+                            float lumnew = original->L[y][x];
 
-                        diflc *= factorx; //transition lightess
-                        //  if(original->L[y][x] + diflc > 40000.f) printf("neg");
-                        transformed->L[y][x] = CLIPL(original->L[y][x] + diflc) + epsi;
+                            if(lp.ligh != 0) {
+                                calclight (original->L[y][x], lp.ligh , lumnew);//replace L-curve
+                            }
 
-                        if(fabs(kab) > 1.f) {
-                            transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
-                            transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
-                        } else {
-                            transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
-                            transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab ;
+                            float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+                            float factorx = localFactor;
+                            float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
+                            float diflc = lightcont - original->L[y][x];
+                            kdiff *= fach * kch;
+                            diflc *= kdiff ;
+
+                            diflc *= factorx; //transition lightess
+                            //  if(original->L[y][x] + diflc > 40000.f) printf("neg");
+                            transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
+
+                            if(fabs(kab) > 1.f) {
+                                transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
+                                transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
+                            } else {
+                                transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
+                                transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab ;
+
+                            }
+
+                            break;
+                        }
+
+                        case 2: { // inside selection => full effect, no transition
+                            //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
+                            float lumnew = original->L[y][x];
+
+                            if(lp.ligh != 0) {
+                                calclight (original->L[y][x], lp.ligh , lumnew);
+                            }
+
+                            //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
+                            float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+
+                            float fac = (100.f + realchro * falu) / 100.f; //chroma factor transition
+                            float diflc = lightcont - original->L[y][x];
+                            kdiff *= fach * kch;
+                            diflc *= kdiff ;
+                            transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
+
+                            if(fabs(kab) > 1.f) {
+                                transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
+                                transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
+                            } else {
+                                transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
+                                transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab;
+
+                            }
+
 
                         }
 
-                        break;
+                            /*
+                                                if(transformed->L[y][x] > maxl) {
+                                                    maxl = transformed->L[y][x];
+                                                }
+
+                                                if(transformed->L[y][x] < minl) {
+                                                    minl = transformed->L[y][x];
+                                                }
+
+                                                if(transformed->a[y][x] > maxa) {
+                                                    maxa = transformed->a[y][x];
+                                                }
+
+                                                if(transformed->a[y][x] < mina) {
+                                                    mina = transformed->a[y][x];
+                                                }
+
+                                                if(transformed->b[y][x] > maxb) {
+                                                    maxb = transformed->b[y][x];
+                                                }
+
+                                                if(transformed->b[y][x] < minb) {
+                                                    minb = transformed->b[y][x];
+                                                }
+                            */
                     }
-
-                    case 2: { // inside selection => full effect, no transition
-                        //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
-                        float lumnew = original->L[y][x];
-
-                        if(lp.ligh != 0) {
-                            calclight (original->L[y][x], lp.ligh , lumnew);
-                        }
-
-                        //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                        float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
-
-                        float fac = (100.f + realchro * falu) / 100.f; //chroma factor transition
-                        float diflc = lightcont - original->L[y][x];
-                        kdiff *= fach * kch;
-                        diflc *= kdiff ;
-                        transformed->L[y][x] = CLIPL(original->L[y][x] + diflc) + epsi;
-
-                        if(fabs(kab) > 1.f) {
-                            transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
-                            transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
-                        } else {
-                            transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
-                            transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab;
-
-                        }
-
-
-                    }
-
-
-                    if(transformed->L[y][x] > maxl) {
-                        maxl = transformed->L[y][x];
-                    }
-
-                    if(transformed->L[y][x] < minl) {
-                        minl = transformed->L[y][x];
-                    }
-
-                    if(transformed->a[y][x] > maxa) {
-                        maxa = transformed->a[y][x];
-                    }
-
-                    if(transformed->a[y][x] < mina) {
-                        mina = transformed->a[y][x];
-                    }
-
-                    if(transformed->b[y][x] > maxb) {
-                        maxb = transformed->b[y][x];
-                    }
-
-                    if(transformed->b[y][x] < minb) {
-                        minb = transformed->b[y][x];
-                    }
-
                 }
-
             }
         }
 
-        printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
+        //     printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
     }
 }
 

@@ -1395,6 +1395,9 @@ public:
 
         }
 
+        //      if(lum < 4.f) {
+        //          chr = 0.1f;
+        //      }
     }
 
     static inline void SkinSatCbdl (float lum, float hue, float chrom, float skinprot, float &scale, bool neg, float b_l, float t_l, float t_r)
