@@ -241,7 +241,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpVBox->set_border_width(4);
 
 
-    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 4, 250, 1, 4));
+    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 40, 250, 1, 4));
     sharradius->setAdjusterListener (this);
 
     sharamount = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARAMOUNT"), 0, 100, 1, 75));

@@ -660,13 +660,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
         if(params.locallab.enabled) {
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
             ifstream fic(datalab, ios::in);
-            // float **shbuffer;
-            float **shbuffer = new float*[pH];
+            float **shbuffer;
+            /*       float **shbuffer = new float*[pH];//to activate if we want sharpening in improccoordinator.cc
 
-            for (int i = 0; i < pH; i++) {
-                shbuffer[i] = new float[pW];
-            }
-
+                   for (int i = 0; i < pH; i++) {
+                       shbuffer[i] = new float[pW];
+                   }
+            */
 
 
 
@@ -705,7 +705,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         int t_sensih = 20;
                         int t_inversret = 0;
                         int t_retinexMethod = 2;
-                        int t_sharradius = 4;
+                        int t_sharradius = 40;
                         int t_sharamount = 75;
                         int t_shardamping = 75;
                         int t_shariter = 30;
@@ -917,7 +917,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_sensih = 20;
                     int t_inversret = 0;
                     int t_retinexMethod = 2;
-                    int t_sharradius = 4;
+                    int t_sharradius = 40;
                     int t_sharamount = 75;
                     int t_shardamping = 75;
                     int t_shariter = 30;
@@ -1356,12 +1356,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             delete [] dataspot;
 
-            for (int i = 0; i < pH; i++) {
-                delete [] shbuffer[i];
-            }
+            /*            for (int i = 0; i < pH; i++) {
+                            delete [] shbuffer[i];
+                        }
 
-            delete [] shbuffer;
-
+                        delete [] shbuffer;
+            */
 
         }
 

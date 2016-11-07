@@ -889,7 +889,7 @@ void LocallabParams::setDefaults()
     lightness = 0;
     contrast = 0;
     chroma = 0;
-    sharradius = 4;
+    sharradius = 40;
     sharamount = 75;
     shardamping = 75;
     shariter = 30;

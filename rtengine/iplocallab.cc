@@ -1652,7 +1652,8 @@ void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float 
         float minl = 100000.f;
         float mina = 100000.f;
         float minb = 100000.f;
-
+        float maxrl = -100000.f;
+        float minrl = 100000.f;
 
 #ifdef _OPENMP
         #pragma omp for schedule(dynamic,16)
@@ -1941,6 +1942,10 @@ void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float 
 
                         }
 
+                            //      if(rL > maxrl) maxrl = rL;
+                            //      if(rL < minrl) minrl = rL;
+
+
                             /*
                                                 if(transformed->L[y][x] > maxl) {
                                                     maxl = transformed->L[y][x];
@@ -1971,6 +1976,7 @@ void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float 
             }
         }
 
+        //  printf("maxRL=%f minRL=%f\n", maxrl, minrl);
         //     printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
     }
 }
@@ -2342,7 +2348,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             InverseColorLight_Local(lp, original, transformed, cx, cy);
         }
 
-        if(!lp.invshar && lp.shrad > 0.45 && call == 1) { //interior ellipse for sharpening, only with Dcrop and simpleprocess
+        if(!lp.invshar && lp.shrad > 0.42 && call == 1) { //interior ellipse for sharpening, only with Dcrop and simpleprocess
 
             int GW = original->W;
             int GH = original->H;
@@ -2389,7 +2395,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                         delete [] hbuffer;
             */
 
-        } else if(lp.invshar && lp.shrad > 0.45 && call == 1) {
+        } else if(lp.invshar && lp.shrad > 0.42 && call == 1) {
             int GW = original->W;
             int GH = original->H;
 
