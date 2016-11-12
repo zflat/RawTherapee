@@ -886,6 +886,7 @@ void LocallabParams::setDefaults()
     locXL = 250;
     centerX = 0;
     centerY = 0;
+    circrad = 18;
     lightness = 0;
     contrast = 0;
     chroma = 0;
@@ -2605,6 +2606,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "CenterY", locallab.centerY);
         }
 
+        if (!pedited || pedited->locallab.circrad) {
+            keyFile.set_integer ("Locallab", "Circrad", locallab.circrad);
+        }
+
         if (!pedited || pedited->locallab.lightness) {
             keyFile.set_integer ("Locallab", "Lightness", locallab.lightness);
         }
@@ -4028,6 +4033,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.centerY = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Circrad"))  {
+                locallab.circrad  = keyFile.get_integer ("Locallab", "Circrad");
+
+                if (pedited) {
+                    pedited->locallab.circrad = true;
                 }
             }
 
@@ -8320,6 +8333,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.locXL == other.locallab.locXL
         && locallab.centerX == other.locallab.centerX
         && locallab.centerY == other.locallab.centerY
+        && locallab.circrad == other.locallab.circrad
         && locallab.lightness == other.locallab.lightness
         && locallab.contrast == other.locallab.contrast
         && locallab.chroma == other.locallab.chroma

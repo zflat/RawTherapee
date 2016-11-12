@@ -299,6 +299,7 @@ void ParamsEdited::set (bool v)
     locallab.locXL = v;
     locallab.centerX = v;
     locallab.centerY = v;
+    locallab.circrad = v;
     locallab.lightness = v;
     locallab.contrast = v;
     locallab.chroma = v;
@@ -840,6 +841,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.retinexMethod = locallab.retinexMethod && p.locallab.retinexMethod == other.locallab.retinexMethod;
         locallab.centerX = locallab.centerX && p.locallab.centerX == other.locallab.centerX;
         locallab.centerY = locallab.centerY && p.locallab.centerY == other.locallab.centerY;
+        locallab.circrad = locallab.circrad && p.locallab.circrad == other.locallab.circrad;
         locallab.lightness = locallab.lightness && p.locallab.lightness == other.locallab.lightness;
         locallab.contrast = locallab.contrast && p.locallab.contrast == other.locallab.contrast;
         locallab.chroma = locallab.chroma && p.locallab.chroma == other.locallab.chroma;
@@ -2127,6 +2129,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.centerY) {
         toEdit.locallab.centerY   = mods.locallab.centerY;
+    }
+
+    if (locallab.circrad) {
+        toEdit.locallab.circrad   = mods.locallab.circrad;
     }
 
     if (locallab.lightness) {

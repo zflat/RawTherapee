@@ -210,6 +210,7 @@ protected:
     bool opautili;
     bool wavcontlutili;
     int **dataspot;
+    LUTi circrads;
     LUTi centerx;
     LUTi centery;
     LUTi locx;

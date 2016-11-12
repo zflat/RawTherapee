@@ -81,6 +81,7 @@ ImProcCoordinator::ImProcCoordinator ()
       histLRETI(256),
 
       CAMBrightCurveJ(), CAMBrightCurveQ(),
+      circrads(500, -10000),
       locx(500, -10000),
       locy(500, -10000),
       centerx(500, -10000),
@@ -681,6 +682,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     for(int sp = 1; sp < maxspot; sp++) { // spots default
                         int t_sp = sp;
                         string t_Smethod = "IND";//prov can be suppress after!
+                        int t_circrad = 18;
                         int t_locX = 250;
                         int t_locY = 250;
                         int t_locYT = 250;
@@ -715,7 +717,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                         //all variables except locRETgainCurve 'coomon for all)
                         fic << "Spot=" << t_sp << '@' << endl;
-                        fic << "Smethod=" << t_Smethod << '@' << endl;
+                        fic << "Circrad=" << t_circrad << '@' << endl;
                         fic << "LocX=" << t_locX << '@' << endl;
                         fic << "LocY=" << t_locY << '@' << endl;
                         fic << "LocYT=" << t_locYT << '@' << endl;
@@ -769,6 +771,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
             sps[0] = 0;
+            dataspot[2][0] =  circrads[0] = params.locallab.circrad;
             dataspot[3][0] =  locx[0] = params.locallab.locX;
             dataspot[4][0] =  locy[0] = params.locallab.locY;
             dataspot[5][0] =  locyt[0] = params.locallab.locYT;
@@ -863,10 +866,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                     if(cont == 1) {
                         ns =  std::stoi(str3.c_str());
-                        //   printf("ns=%d\n", ns);
                     }
 
-                    if(cont > 2  && cont < 16) {
+                    if(cont >= 2  && cont < 16) {
                         dataspot[cont][ns] = std::stoi(str3.c_str());
 
                         //     printf("data=%d cont=%d ns=%d\n", dataspot[cont][ns], cont, ns);
@@ -893,6 +895,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 for(int sp = ns + 1 ; sp < maxspot; sp++) { // spots default
                     int t_sp = sp;
                     string t_Smethod = "IND";//prov can be suppress after!
+                    int t_circrad = 18;
                     int t_locX = 250;
                     int t_locY = 250;
                     int t_locYT = 250;
@@ -926,7 +929,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                     //all variables except locRETgainCurve 'coomon for all)
                     fic << "Spot=" << t_sp << '@' << endl;
-                    fic << "Smethod=" << t_Smethod << '@' << endl;
+                    fic << "Circrad=" << t_circrad << '@' << endl;
                     fic << "LocX=" << t_locX << '@' << endl;
                     fic << "LocY=" << t_locY << '@' << endl;
                     fic << "LocYT=" << t_locYT << '@' << endl;
@@ -988,10 +991,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                         if(cont2 == 1) {
                             ns2 =  std::stoi(str32.c_str());
-                            //    printf("ns2=%d\n", ns2);
                         }
 
-                        if(cont2 > 2  && cont2 < 16) {
+                        if(cont2 >= 2  && cont2 < 16) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                             //     printf("data=%d cont=%d ns=%d\n", dataspot[cont][ns], cont, ns);
@@ -1029,7 +1031,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 params.locallab.getCurves(locRETgainCurve);
 
-
+                params.locallab.circrad = circrads[sp] = dataspot[2][sp];
                 params.locallab.locX = locx[sp] = dataspot[3][sp];
                 params.locallab.locY = locy[sp] = dataspot[4][sp];
                 params.locallab.locYT = locyt[sp] = dataspot[5][sp];
@@ -1120,7 +1122,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.inverssha = true;
                 }
 
-//params.locallab.invers = true;
 
                 ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 dataspot[33][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
@@ -1147,6 +1148,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             params.locallab.getCurves(locRETgainCurve);
             sps[sp] = sp;
+            dataspot[2][sp] = circrads[sp] = params.locallab.circrad = dataspot[2][0];
             dataspot[3][sp] = locx[sp] = params.locallab.locX = dataspot[3][0];
             dataspot[4][sp] = locy[sp] = params.locallab.locY = dataspot[4][0];
             dataspot[5][sp] = locyt[sp] = params.locallab.locYT = dataspot[5][0];
@@ -1233,7 +1235,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[26][sp] = 2;
             }
 
-            // params.locallab.sharradius = dataspot[27][0];
             dataspot[27][sp] = sharradiuss[sp] = params.locallab.sharradius = dataspot[27][0];
 
             dataspot[28][sp] = sharamounts[sp] = params.locallab.sharamount = dataspot[28][0];
@@ -1265,7 +1266,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             Glib::ArrayHandle<double> l_ccwTgaincurve = params.locallab.ccwTgaincurve;
 
-            //      if(realspot == dataspot[14][0]){
             if(fou)
 
             {
@@ -1273,7 +1273,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 for(int spe = 1; spe < maxspot; spe++) {
                     int t_sp = spe;
                     // printf("t_sp imp=%d\n", t_sp);
-                    string t_Smethod = "IND";
+                    //string t_Smethod = "IND";
+                    int t_circrad  = dataspot[2][spe];
                     int t_locX  = dataspot[3][spe];
                     int t_locY  = dataspot[4][spe];
                     int t_locYT  = dataspot[5][spe];
@@ -1309,7 +1310,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_lumaref = dataspot[35][spe];
 
                     fou << "Spot=" << t_sp << '@' << endl;
-                    fou << "Smethod=" << t_Smethod << '@' << endl;
+                    fou << "Circrad=" << t_circrad << '@' << endl;
                     fou << "LocX=" << t_locX << '@' << endl;
                     fou << "LocY=" << t_locY << '@' << endl;
                     fou << "LocYT=" << t_locYT << '@' << endl;

@@ -425,6 +425,7 @@ public:
     bool locXL;
     bool centerX;
     bool centerY;
+    bool circrad;
     bool lightness;
     bool contrast;
     bool chroma;

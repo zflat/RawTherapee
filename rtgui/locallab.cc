@@ -9,8 +9,6 @@
 #include <cmath>
 #include "edit.h"
 #include "guiutils.h"
-//#include "../rtengine/refreshmap.h"
-//#include "../rtengine/improccoordinator.h"
 
 using namespace rtengine;
 using namespace rtengine::procparams;
@@ -119,6 +117,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     //centerY->set_tooltip_text (M("TP_LOCALLAB_CENTER_Y_TOOLTIP"));
     centerY->setAdjusterListener (this);
 
+    circrad = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CIRCRADIUS"), 4, 100, 1, 18));
+    circrad->setAdjusterListener (this);
+
     lightness = Gtk::manage (new Adjuster (M("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
     //lightness->set_tooltip_text (M("TP_LOCALLAB_LIGHTNESS_TOOLTIP"));
     lightness->setAdjusterListener (this);
@@ -224,6 +225,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*locYT);
     shapeVBox->pack_start (*centerX);
     shapeVBox->pack_start (*centerY);
+    shapeVBox->pack_start (*circrad);
 
     shapeFrame->add(*shapeVBox);
     pack_start (*shapeFrame);
@@ -324,7 +326,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     centerCircle = new Circle();
     centerCircle->datum = Geometry::IMAGE;
     centerCircle->radiusInImageSpace = true;
-    centerCircle->radius = 19;
+    centerCircle->radius = circrad->getValue(); //19;
     centerCircle->filled = false;
 
     EditSubscriber::visibleGeometry.push_back( locXLine[0] );
@@ -349,7 +351,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     centerCircle = new Circle();
     centerCircle->datum = Geometry::IMAGE;
     centerCircle->radiusInImageSpace = true;
-    centerCircle->radius = 19;
+    centerCircle->radius = circrad->getValue();//19;
     centerCircle->filled = true;
 
     EditSubscriber::mouseOverGeometry.push_back( locXLine[0] );
@@ -396,6 +398,9 @@ int localChangedUI (void* data)
 bool Locallab::localComputed_ ()
 {
     disableListener ();
+    //size spot
+
+    circrad->setValue(nextdatasp[2]);
     //center and cursor
     locX->setValue(nextdatasp[3]);
     locY->setValue(nextdatasp[4]);
@@ -463,6 +468,7 @@ bool Locallab::localComputed_ ()
         retinexMethod->set_active (2);
     }
 
+    //sharpening
     sharradius->setValue(nextdatasp[27]);
     sharamount->setValue(nextdatasp[28]);
     shardamping->setValue(nextdatasp[29]);
@@ -519,7 +525,7 @@ bool Locallab::localComputed_ ()
         listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
     }
 
-    if (listener) {//for inverse retinex
+    if (listener) {//for inverse sharpen
         listener->panelChanged (Evlocallabinverssha, M("GENERAL_ENABLED"));
     }
 
@@ -537,7 +543,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 3; i < 36; i++) {
+    for(int i = 2; i < 36; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -559,6 +565,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         locXL->setEditedState (pedited->locallab.locXL ? Edited : UnEdited);
         centerX->setEditedState (pedited->locallab.centerX ? Edited : UnEdited);
         centerY->setEditedState (pedited->locallab.centerY ? Edited : UnEdited);
+        circrad->setEditedState (pedited->locallab.circrad ? Edited : UnEdited);
         lightness->setEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setEditedState (pedited->locallab.chroma ? Edited : UnEdited);
@@ -628,6 +635,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     locXL->setValue (pp->locallab.locXL);
     centerX->setValue (pp->locallab.centerX);
     centerY->setValue (pp->locallab.centerY);
+    circrad->setValue (pp->locallab.circrad);
     lightness->setValue (pp->locallab.lightness);
     contrast->setValue (pp->locallab.contrast);
     chroma->setValue (pp->locallab.chroma);
@@ -662,7 +670,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     inversretChanged();
     inversshaChanged();
 
-    updateGeometry (pp->locallab.centerX, pp->locallab.centerY, pp->locallab.locY, pp->locallab.degree,  pp->locallab.locX, pp->locallab.locYT, pp->locallab.locXL);
+    updateGeometry (pp->locallab.centerX, pp->locallab.centerY, pp->locallab.circrad, pp->locallab.locY, pp->locallab.degree,  pp->locallab.locX, pp->locallab.locYT, pp->locallab.locXL);
 
     if (pp->locallab.Smethod == "IND") {
         Smethod->set_active (0);
@@ -683,8 +691,6 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         retinexMethod->set_active (1);
     } else if (pp->locallab.retinexMethod == "high") {
         retinexMethod->set_active (2);
-//    } else if (pp->wavelet.retinexMethod == "high") {
-//        retinexMethod->set_active (3);
     }
 
     retinexMethodChanged ();
@@ -709,7 +715,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     enableListener ();
 }
 
-void Locallab::updateGeometry(const int centerX_, const int centerY_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
+void Locallab::updateGeometry(const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
 {
     EditDataProvider* dataProvider = getEditProvider();
 
@@ -768,6 +774,8 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
     const auto updateCircle = [&](Geometry * geometry) {
         const auto circle = static_cast<Circle*>(geometry);
         circle->center = origin;
+        circle->radius = circrad_;
+
     };
 
     decay = decayX;
@@ -804,6 +812,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.locXL = locXL->getValue ();
     pp->locallab.centerX = centerX->getIntValue ();
     pp->locallab.centerY = centerY->getIntValue ();
+    pp->locallab.circrad = circrad->getIntValue ();
     pp->locallab.lightness = lightness->getIntValue ();
     pp->locallab.contrast = contrast->getIntValue ();
     pp->locallab.chroma = chroma->getIntValue ();
@@ -842,6 +851,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.locXL = locXL->getEditedState ();
         pedited->locallab.centerX = centerX->getEditedState ();
         pedited->locallab.centerY = centerY->getEditedState ();
+        pedited->locallab.circrad = circrad->getEditedState ();
         pedited->locallab.lightness = lightness->getEditedState ();
         pedited->locallab.contrast = contrast->getEditedState ();
         pedited->locallab.chroma = chroma->getEditedState ();
@@ -877,8 +887,6 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pp->locallab.retinexMethod = "uni";
     } else if (retinexMethod->get_active_row_number() == 2) {
         pp->locallab.retinexMethod = "high";
-//   } else if (retinexMethod->get_active_row_number() == 3) {
-//       pp->wavelet.retinexMethod = "high";
     }
 
 
@@ -1153,6 +1161,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     locXL->setDefault (defParams->locallab.locXL);
     centerX->setDefault (defParams->locallab.centerX);
     centerY->setDefault (defParams->locallab.centerY);
+    circrad->setDefault (defParams->locallab.circrad);
     lightness->setDefault (defParams->locallab.lightness);
     contrast->setDefault (defParams->locallab.contrast);
     chroma->setDefault (defParams->locallab.chroma);
@@ -1182,6 +1191,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         locXL->setDefaultEditedState (pedited->locallab.locXL ? Edited : UnEdited);
         centerX->setDefaultEditedState (pedited->locallab.centerX ? Edited : UnEdited);
         centerY->setDefaultEditedState (pedited->locallab.centerY ? Edited : UnEdited);
+        circrad->setDefaultEditedState (pedited->locallab.circrad ? Edited : UnEdited);
         lightness->setDefaultEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setDefaultEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setDefaultEditedState (pedited->locallab.chroma ? Edited : UnEdited);
@@ -1209,6 +1219,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         locXL->setDefaultEditedState (Irrelevant);
         centerX->setDefaultEditedState (Irrelevant);
         centerY->setDefaultEditedState (Irrelevant);
+        circrad->setDefaultEditedState (Irrelevant);
         lightness->setDefaultEditedState (Irrelevant);
         contrast->setDefaultEditedState (Irrelevant);
         chroma->setDefaultEditedState (Irrelevant);
@@ -1234,7 +1245,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
 void Locallab::adjusterChanged (Adjuster* a, double newval)
 {
 
-    updateGeometry (int(centerX->getValue()), int(centerY->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue() );
+    updateGeometry (int(centerX->getValue()), int(centerY->getValue()), int(circrad->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue());
     anbspot->hide();
 
     if (listener && getEnabled()) {
@@ -1335,6 +1346,8 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabvart, vart->getTextValue());
         } else if (a == chrrt) {
             listener->panelChanged (Evlocallabchrrt, chrrt->getTextValue());
+        } else if (a == circrad) {
+            listener->panelChanged (Evlocallabcircrad, circrad->getTextValue());
         }
 
         else if (a == centerX || a == centerY) {
@@ -1410,6 +1423,7 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     locXL->trimValue(pp->locallab.locXL);
     centerX->trimValue(pp->locallab.centerX);
     centerY->trimValue(pp->locallab.centerY);
+    circrad->trimValue(pp->locallab.circrad);
     lightness->trimValue(pp->locallab.lightness);
     contrast->trimValue(pp->locallab.contrast);
     chroma->trimValue(pp->locallab.chroma);
@@ -1442,6 +1456,7 @@ void Locallab::setBatchMode (bool batchMode)
     locXL->showEditedCB ();
     centerX->showEditedCB ();
     centerY->showEditedCB ();
+    circrad->showEditedCB ();
     lightness->showEditedCB ();
     contrast->showEditedCB ();
     chroma->showEditedCB ();
@@ -1856,7 +1871,7 @@ bool Locallab::drag1(int modifierKey)
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue() );
 
                 if (listener) {
                     listener->panelChanged (EvlocallablocY, locYT->getTextValue());
@@ -1899,7 +1914,7 @@ bool Locallab::drag1(int modifierKey)
                 centX = centerX->getValue();
                 centY = centerY->getValue();
 
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
                 if (listener) {
                     listener->panelChanged (EvlocallablocY, locY->getTextValue());
@@ -1945,7 +1960,7 @@ bool Locallab::drag1(int modifierKey)
                 centX = centerX->getValue();
                 centY = centerY->getValue();
 
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(),  locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(),  locYT->getValue(), locXL->getValue());
 
                 if (listener) {
                     if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
@@ -1997,7 +2012,7 @@ bool Locallab::drag1(int modifierKey)
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
                 if (listener) {
                     listener->panelChanged (EvlocallablocX, locX->getTextValue());
@@ -2037,7 +2052,7 @@ bool Locallab::drag1(int modifierKey)
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
                 if (listener) {
                     listener->panelChanged (EvlocallablocX, locX->getTextValue());
@@ -2081,7 +2096,7 @@ bool Locallab::drag1(int modifierKey)
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
-                updateGeometry (centX, centY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+                updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
                 if (listener) {
                     listener->panelChanged (EvlocallablocX, locX->getTextValue());
@@ -2180,7 +2195,7 @@ bool Locallab::drag1(int modifierKey)
         if (newCenterX != centerX->getIntValue() || newCenterY != centerY->getIntValue()) {
             centerX->setValue(newCenterX);
             centerY->setValue(newCenterY);
-            updateGeometry (newCenterX, newCenterY, locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
+            updateGeometry (newCenterX, newCenterY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
             if (listener) {
                 listener->panelChanged (EvlocallabCenter, Glib::ustring::compose ("X=%1\nY=%2", centerX->getTextValue(), centerY->getTextValue()));

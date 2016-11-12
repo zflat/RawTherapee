@@ -505,6 +505,7 @@ enum ProcEvent {
     Evlocallabshariter = 475,
     Evlocallabsensis = 476,
     Evlocallabinverssha = 477,
+    Evlocallabcircrad = 478,
 
     NUMOFEVENTS
 

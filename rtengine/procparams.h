@@ -851,6 +851,7 @@ public:
     int     locXL;
     int     centerX;
     int     centerY;
+    int     circrad;
     int     lightness;
     int     contrast;
     int     chroma;

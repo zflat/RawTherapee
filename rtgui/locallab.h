@@ -35,6 +35,7 @@ protected:
     Adjuster* locYT;
     Adjuster* centerX;
     Adjuster* centerY;
+    Adjuster* circrad;
     Adjuster* lightness;
     Adjuster* contrast;
     Adjuster* chroma;
@@ -96,7 +97,7 @@ public:
     void setDefaults    (const rtengine::procparams::ProcParams* defParams, const ParamsEdited* pedited = NULL);
     void setBatchMode   (bool batchMode);
 
-    void updateGeometry (const int centerX_, const int centerY_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth = -1, const int fullHeight = -1);
+    void updateGeometry (const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth = -1, const int fullHeight = -1);
     void SmethodChanged      ();
 
     void adjusterChanged (Adjuster* a, double newval);

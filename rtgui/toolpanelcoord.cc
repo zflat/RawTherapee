@@ -357,7 +357,7 @@ void ToolPanelCoordinator::panelChanged (rtengine::ProcEvent event, const Glib::
         int fw, fh;
         ipc->getInitialImage()->getImageSource()->getFullSize (fw, fh, tr);
         gradient->updateGeometry (params->gradient.centerX, params->gradient.centerY, params->gradient.feather, params->gradient.degree, fw, fh);
-        locallab->updateGeometry (params->locallab.centerX, params->locallab.centerY, params->locallab.locY, params->locallab.degree,  params->locallab.locX, params->locallab.locYT, params->locallab.locXL, fw, fh);
+        locallab->updateGeometry (params->locallab.centerX, params->locallab.centerY, params->locallab.circrad, params->locallab.locY, params->locallab.degree,  params->locallab.locX, params->locallab.locYT, params->locallab.locXL, fw, fh);
     }
 
     // some transformations make the crop change for convenience
@@ -452,7 +452,7 @@ void ToolPanelCoordinator::profileChange  (const PartialProfile *nparams, rtengi
     if (event == rtengine::EvPhotoLoaded || event == rtengine::EvProfileChanged || event == rtengine::EvHistoryBrowsed || event == rtengine::EvCTRotate) {
         // updating the "on preview" geometry
         gradient->updateGeometry (params->gradient.centerX, params->gradient.centerY, params->gradient.feather, params->gradient.degree, fw, fh);
-        locallab->updateGeometry (params->locallab.centerX, params->locallab.centerY, params->locallab.locY, params->locallab.degree,  params->locallab.locX, params->locallab.locYT, params->locallab.locXL, fw, fh);
+        locallab->updateGeometry (params->locallab.centerX, params->locallab.centerY, params->locallab.circrad, params->locallab.locY, params->locallab.degree,  params->locallab.locX, params->locallab.locYT, params->locallab.locXL, fw, fh);
 
     }
 

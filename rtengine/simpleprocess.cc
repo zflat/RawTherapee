@@ -962,6 +962,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[i] = new int[maxspot];
             }
 
+            dataspots[2][0] =  params.locallab.circrad;
             dataspots[3][0] =  params.locallab.locX;
             dataspots[4][0] =  params.locallab.locY;
             dataspots[5][0] =  params.locallab.locYT;
@@ -1060,7 +1061,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         ns =  std::stoi(str3.c_str());
                     }
 
-                    if(cont > 2  && cont < 16) {
+                    if(cont >= 2  && cont < 16) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                         //     printf("data=%d cont=%d ns=%d\n", dataspotd[cont][ns], cont, ns);
@@ -1086,6 +1087,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.chromaref = INFINITY;
                 params.locallab.lumaref = INFINITY;
 
+                params.locallab.circrad = dataspots[2][sp];
                 params.locallab.locX = dataspots[3][sp];
                 params.locallab.locY = dataspots[4][sp];
                 params.locallab.locYT = dataspots[5][sp];
