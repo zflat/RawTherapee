@@ -1545,6 +1545,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         //save retinex
 
+        if (!pedited || pedited->retinex.enabled) {
+            keyFile.set_boolean ("Retinex", "Enabled", retinex.enabled);
+        }
+
         if (!pedited || pedited->retinex.str) {
             keyFile.set_integer ("Retinex", "Str",               retinex.str);
         }
@@ -1571,10 +1575,6 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->retinex.slope) {
             keyFile.set_double ("Retinex", "Slope",               retinex.slope);
-        }
-
-        if (!pedited || pedited->retinex.enabled) {
-            keyFile.set_boolean ("Retinex", "Enabled", retinex.enabled);
         }
 
         if (!pedited || pedited->retinex.medianmap) {
