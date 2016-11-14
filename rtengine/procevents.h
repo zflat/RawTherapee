@@ -506,6 +506,9 @@ enum ProcEvent {
     Evlocallabsensis = 476,
     Evlocallabinverssha = 477,
     Evlocallabcircrad = 478,
+    Evlocallabthres = 479,
+    Evlocallabproxi = 480,
+    EvlocallabqualityMethod = 481,
 
     NUMOFEVENTS
 

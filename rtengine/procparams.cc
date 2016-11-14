@@ -887,6 +887,9 @@ void LocallabParams::setDefaults()
     centerX = 0;
     centerY = 0;
     circrad = 18;
+    qualityMethod = "std";
+    proxi = 2;
+    thres = 50;
     lightness = 0;
     contrast = 0;
     chroma = 0;
@@ -2582,6 +2585,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_string ("Locallab", "retinexMethod", locallab.retinexMethod);
         }
 
+        if (!pedited || pedited->locallab.qualityMethod) {
+            keyFile.set_string ("Locallab", "qualityMethod", locallab.qualityMethod);
+        }
+
         if (!pedited || pedited->locallab.locY) {
             keyFile.set_integer ("Locallab", "LocY", locallab.locY);
         }
@@ -2608,6 +2615,14 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->locallab.circrad) {
             keyFile.set_integer ("Locallab", "Circrad", locallab.circrad);
+        }
+
+        if (!pedited || pedited->locallab.thres) {
+            keyFile.set_integer ("Locallab", "Thres", locallab.thres);
+        }
+
+        if (!pedited || pedited->locallab.proxi) {
+            keyFile.set_integer ("Locallab", "Proxi", locallab.proxi);
         }
 
         if (!pedited || pedited->locallab.lightness) {
@@ -3988,6 +4003,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "qualityMethod"))  {
+                locallab.qualityMethod  = keyFile.get_string ("Locallab", "qualityMethod");
+
+                if (pedited) {
+                    pedited->locallab.qualityMethod = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "LocY"))  {
                 locallab.locY  = keyFile.get_integer ("Locallab", "LocY");
 
@@ -4041,6 +4064,22 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.circrad = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Thres"))  {
+                locallab.thres  = keyFile.get_integer ("Locallab", "Thres");
+
+                if (pedited) {
+                    pedited->locallab.thres = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Proxi"))  {
+                locallab.proxi  = keyFile.get_integer ("Locallab", "Proxi");
+
+                if (pedited) {
+                    pedited->locallab.proxi = true;
                 }
             }
 
@@ -8327,6 +8366,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.degree == other.locallab.degree
         && locallab.Smethod == other.locallab.Smethod
         && locallab.retinexMethod == other.locallab.retinexMethod
+        && locallab.qualityMethod == other.locallab.qualityMethod
         && locallab.locY == other.locallab.locY
         && locallab.locX == other.locallab.locX
         && locallab.locYT == other.locallab.locYT
@@ -8334,6 +8374,8 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.centerX == other.locallab.centerX
         && locallab.centerY == other.locallab.centerY
         && locallab.circrad == other.locallab.circrad
+        && locallab.thres == other.locallab.thres
+        && locallab.proxi == other.locallab.proxi
         && locallab.lightness == other.locallab.lightness
         && locallab.contrast == other.locallab.contrast
         && locallab.chroma == other.locallab.chroma

@@ -709,7 +709,10 @@ HISTORY_MSG_475;Local - Sh Damping
 HISTORY_MSG_476;Local - Sh Iterations
 HISTORY_MSG_477;Local - Sh Scope
 HISTORY_MSG_478;Local - Sh Inverse
-HISTORY_MSG_478;Local - Spot size
+HISTORY_MSG_479;Local - Spot size
+HISTORY_MSG_480;Local - Hue theshold
+HISTORY_MSG_481;Local - Hue proximity
+HISTORY_MSG_482;Local - Quality
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1634,6 +1637,7 @@ TP_LENSPROFILE_LABEL;Lens Correction Profile
 TP_LENSPROFILE_USECA;Chromatic aberration correction
 TP_LENSPROFILE_USEDIST;Distortion correction
 TP_LENSPROFILE_USEVIGN;Vignetting correction
+TP_LOCALLAB_ACTIV;Enhanced algorithm
 TP_LOCALLAB_AVOID;Avoid color shift
 TP_LOCALLAB_BLUFR;Blur & Noise
 TP_LOCALLAB_CENTER_X;Center X
@@ -1649,9 +1653,14 @@ TP_LOCALLAB_INVERS;Inverse
 TP_LOCALLAB_LABEL;Local L*a*b*
 TP_LOCALLAB_NBSPOT;Control points
 TP_LOCALLAB_NBSPOT_TOOLTIP;Add multiple control points and select
+TP_LOCALLAB_STD;Quality Standard
+TP_LOCALLAB_ENH;Quality Enhanced
+TP_LOCALLAB_THRES;Hue threshold
+TP_LOCALLAB_PROXI;Hue proximity radius
 TP_LOCALLAB_ANBSPOT;Help to Move Control point
 TP_LOCALLAB_ANBSPOT_TOOLTIP;Provisory control (I hope somebody can help to manage events!! and suppress this bad function)
 TP_LOCALLAB_LIGHTNESS;Lightness
+TP_LOCALLAB_METHOD_TOOLTIP;Default - standard.\nIf you select Enhanced, algorithm will detect the variations of hue in the select area and improve shape detection.\nHue threshold define since what value is exclude (* 100 radians).\nHue proximity radius define the radius around each point to calculate variations.\nEnhanced and Hue threshold significantly increases processing times. 
 TP_LOCALLAB_RADIUS;Radius
 TP_LOCALLAB_RETI;Retinex
 TP_LOCALLAB_TRANSMISSIONGAIN;Transmission gain

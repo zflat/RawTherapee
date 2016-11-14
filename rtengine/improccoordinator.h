@@ -242,6 +242,9 @@ protected:
     LUTi inversshas;
     LUTi shariters;
     LUTi sensishas;
+    LUTi qualitys;
+    LUTi thress;
+    LUTi proxis;
 
 
     LUTf huerefs;

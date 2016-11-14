@@ -893,6 +893,16 @@ void Crop::update (int todo)
                             params.locallab.inverssha = true;
                         }
 
+                        if(parent->qualitys[sp] ==  0) {
+                            params.locallab.qualityMethod = "std" ;
+                        } else if (parent->qualitys[sp] ==  1) {
+                            params.locallab.qualityMethod = "enh" ;
+                        }
+
+                        params.locallab.thres = parent->thress[sp];
+                        params.locallab.proxi = parent->proxis[sp];
+
+
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
                         params.locallab.lumaref = parent->lumarefs[sp];
@@ -1012,6 +1022,17 @@ void Crop::update (int todo)
                     parent->inversshas[sp] =  1;
 
                 }
+
+                if(parent->qualitys[sp] ==  0) {
+                    params.locallab.qualityMethod = "std" ;
+                    parent->qualitys[sp] =  0;
+                } else if (parent->qualitys[sp] ==  1) {
+                    params.locallab.qualityMethod = "enh" ;
+                    parent->qualitys[sp] =  1;
+                }
+
+                parent->thress[sp] = params.locallab.thres = parent->thress[0];
+                parent->proxis[sp] = params.locallab.proxi = parent->proxis[0];
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];

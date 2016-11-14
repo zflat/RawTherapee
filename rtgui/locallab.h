@@ -56,6 +56,8 @@ protected:
     Adjuster* shardamping;
     Adjuster* shariter;
     Adjuster* sensisha;
+    Adjuster* thres;
+    Adjuster* proxi;
 
 
     Gtk::CheckButton* avoid;
@@ -69,11 +71,12 @@ protected:
     Gtk::CheckButton* inverssha;
 
     MyComboBoxText*   retinexMethod;
+    MyComboBoxText*   qualityMethod;
     Gtk::Label* labmdh;
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[36];
+    int nextdatasp[39];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -84,7 +87,7 @@ protected:
     rtengine::Coord draggedCenter;
     bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivsp, lastinverssha;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn;
+    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn;
 
     void editToggled ();
 
@@ -116,6 +119,7 @@ public:
     bool localComputed_         ();
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
+    void qualityMethodChanged();
 
     // EditSubscriber interface
     CursorShape getCursor(int objectID);

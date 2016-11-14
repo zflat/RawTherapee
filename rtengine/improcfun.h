@@ -281,18 +281,18 @@ public:
     void addGaNoise (LabImage *lab, LabImage *dst, const float mean, const float variance, const int sk);
     void BlurNoise_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy);
     void InverseBlurNoise_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy);
-    void Reti_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro);
+    void Reti_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro);
     void InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro);
-    void Contrast_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, float pm, struct local_contra &lco, float lumaref, float av, const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
+    void Contrast_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, float pm, struct local_contra &lco, float lumaref, float av, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
 
     //  void InverseContrast_Local(float ah, float bh, float al, float bl, float ave,  float hueref, float dhue, const struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
     void InverseContrast_Local(float ave, const struct local_contra& lco, const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
 
-    void ColorLight_Local(int sp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
+    void ColorLight_Local(int sp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
     void InverseColorLight_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
 
-    void Sharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
-    void InverseSharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
+    void Sharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
+    void InverseSharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
 
 
     void Tile_calc (int tilesize, int overlap, int kall, int imwidth, int imheight, int &numtiles_W, int &numtiles_H, int &tilewidth, int &tileheight, int &tileWskip, int &tileHskip);

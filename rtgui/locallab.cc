@@ -120,6 +120,20 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     circrad = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CIRCRADIUS"), 4, 100, 1, 18));
     circrad->setAdjusterListener (this);
 
+
+    qualityMethod = Gtk::manage (new MyComboBoxText ());
+    qualityMethod->append_text (M("TP_LOCALLAB_STD"));
+    qualityMethod->append_text (M("TP_LOCALLAB_ENH"));
+    qualityMethod->set_active(0);
+    qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::qualityMethodChanged) );
+    qualityMethod->set_tooltip_markup (M("TP_LOCALLAB_METHOD_TOOLTIP"));
+
+    thres = Gtk::manage (new Adjuster (M("TP_LOCALLAB_THRES"), 1, 315, 1, 50));
+    thres->setAdjusterListener (this);
+
+    proxi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_PROXI"), 1, 8, 1, 2));
+    proxi->setAdjusterListener (this);
+
     lightness = Gtk::manage (new Adjuster (M("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
     //lightness->set_tooltip_text (M("TP_LOCALLAB_LIGHTNESS_TOOLTIP"));
     lightness->setAdjusterListener (this);
@@ -226,6 +240,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*centerX);
     shapeVBox->pack_start (*centerY);
     shapeVBox->pack_start (*circrad);
+//    shapeVBox->pack_start (*activsp);
+    shapeVBox->pack_start (*qualityMethod);
+    shapeVBox->pack_start (*thres);
+    shapeVBox->pack_start (*proxi);
 
     shapeFrame->add(*shapeVBox);
     pack_start (*shapeFrame);
@@ -277,7 +295,6 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start (*invers);
-    //colorVBox->pack_start (*activsp);
 
     colorFrame->add(*colorVBox);
     pack_start (*colorFrame);
@@ -481,6 +498,15 @@ bool Locallab::localComputed_ ()
         inverssha->set_active (true);
     }
 
+    if (nextdatasp[33] == 0) {
+        qualityMethod->set_active (0);
+    } else if (nextdatasp[33] == 1) {
+        qualityMethod->set_active (1);
+    }
+
+    thres->setValue(nextdatasp[34]);
+    proxi->setValue(nextdatasp[35]);
+
     enableListener ();
 
     //update all sliders by this strange process!
@@ -521,6 +547,11 @@ bool Locallab::localComputed_ ()
         listener->panelChanged (Evlocallabinversrad, M("GENERAL_ENABLED"));
     }
 
+    if (listener) {//for quality method
+        listener->panelChanged (EvlocallabqualityMethod, qualityMethod->get_active_text ());
+
+    }
+
     if (listener) {//for inverse retinex
         listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
     }
@@ -543,7 +574,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 2; i < 36; i++) {
+    for(int i = 2; i < 39; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -566,6 +597,8 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         centerX->setEditedState (pedited->locallab.centerX ? Edited : UnEdited);
         centerY->setEditedState (pedited->locallab.centerY ? Edited : UnEdited);
         circrad->setEditedState (pedited->locallab.circrad ? Edited : UnEdited);
+        thres->setEditedState (pedited->locallab.thres ? Edited : UnEdited);
+        proxi->setEditedState (pedited->locallab.proxi ? Edited : UnEdited);
         lightness->setEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setEditedState (pedited->locallab.chroma ? Edited : UnEdited);
@@ -603,10 +636,15 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
             retinexMethod->set_active_text(M("GENERAL_UNCHANGED"));
         }
 
+        if (!pedited->locallab.qualityMethod) {
+            qualityMethod->set_active_text(M("GENERAL_UNCHANGED"));
+        }
+
     }
 
     Smethodconn.block(true);
     retinexMethodConn.block(true);
+    qualityMethodConn.block(true);
 
     setEnabled(pp->locallab.enabled);
     avoidConn.block (true);
@@ -636,6 +674,8 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     centerX->setValue (pp->locallab.centerX);
     centerY->setValue (pp->locallab.centerY);
     circrad->setValue (pp->locallab.circrad);
+    thres->setValue (pp->locallab.thres);
+    proxi->setValue (pp->locallab.proxi);
     lightness->setValue (pp->locallab.lightness);
     contrast->setValue (pp->locallab.contrast);
     chroma->setValue (pp->locallab.chroma);
@@ -695,6 +735,17 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     retinexMethodChanged ();
     retinexMethodConn.block(false);
+
+    if (pp->locallab.qualityMethod == "std") {
+        qualityMethod->set_active (0);
+    } else if (pp->locallab.qualityMethod == "enh") {
+        qualityMethod->set_active (1);
+    }
+
+    qualityMethodChanged ();
+    qualityMethodConn.block(false);
+
+
     anbspot->hide();
 
     if (pp->locallab.Smethod == "SYM" || pp->locallab.Smethod == "SYMSL") {
@@ -813,6 +864,8 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.centerX = centerX->getIntValue ();
     pp->locallab.centerY = centerY->getIntValue ();
     pp->locallab.circrad = circrad->getIntValue ();
+    pp->locallab.proxi = proxi->getIntValue ();
+    pp->locallab.thres = thres->getIntValue ();
     pp->locallab.lightness = lightness->getIntValue ();
     pp->locallab.contrast = contrast->getIntValue ();
     pp->locallab.chroma = chroma->getIntValue ();
@@ -845,6 +898,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.degree = degree->getEditedState ();
         pedited->locallab.Smethod  = Smethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->locallab.retinexMethod    = retinexMethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->locallab.qualityMethod    = qualityMethod->get_active_text() != M("GENERAL_UNCHANGED");
         pedited->locallab.locY = locY->getEditedState ();
         pedited->locallab.locX = locX->getEditedState ();
         pedited->locallab.locYT = locYT->getEditedState ();
@@ -852,6 +906,8 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.centerX = centerX->getEditedState ();
         pedited->locallab.centerY = centerY->getEditedState ();
         pedited->locallab.circrad = circrad->getEditedState ();
+        pedited->locallab.proxi = proxi->getEditedState ();
+        pedited->locallab.thres = thres->getEditedState ();
         pedited->locallab.lightness = lightness->getEditedState ();
         pedited->locallab.contrast = contrast->getEditedState ();
         pedited->locallab.chroma = chroma->getEditedState ();
@@ -887,6 +943,12 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pp->locallab.retinexMethod = "uni";
     } else if (retinexMethod->get_active_row_number() == 2) {
         pp->locallab.retinexMethod = "high";
+    }
+
+    if (qualityMethod->get_active_row_number() == 0) {
+        pp->locallab.qualityMethod = "std";
+    } else if (qualityMethod->get_active_row_number() == 1) {
+        pp->locallab.qualityMethod = "enh";
     }
 
 
@@ -937,6 +999,23 @@ void Locallab::retinexMethodChanged()
 
     if (listener) {
         listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
+    }
+}
+
+void Locallab::qualityMethodChanged()
+{
+    if (!batchMode) {
+        if(qualityMethod->get_active_row_number() == 0) { //STD
+            proxi->hide();
+            thres->hide();
+        } else {//enh
+            proxi->show();
+            thres->show();
+        }
+    }
+
+    if (listener) {
+        listener->panelChanged (EvlocallabqualityMethod, qualityMethod->get_active_text ());
     }
 }
 
@@ -1152,7 +1231,7 @@ void Locallab::inversretChanged ()
 }
 
 
-void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* pedited)
+void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * pedited)
 {
     degree->setDefault (defParams->locallab.degree);
     locY->setDefault (defParams->locallab.locY);
@@ -1162,6 +1241,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     centerX->setDefault (defParams->locallab.centerX);
     centerY->setDefault (defParams->locallab.centerY);
     circrad->setDefault (defParams->locallab.circrad);
+    thres->setDefault (defParams->locallab.thres);
+    proxi->setDefault (defParams->locallab.proxi);
     lightness->setDefault (defParams->locallab.lightness);
     contrast->setDefault (defParams->locallab.contrast);
     chroma->setDefault (defParams->locallab.chroma);
@@ -1192,6 +1273,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         centerX->setDefaultEditedState (pedited->locallab.centerX ? Edited : UnEdited);
         centerY->setDefaultEditedState (pedited->locallab.centerY ? Edited : UnEdited);
         circrad->setDefaultEditedState (pedited->locallab.circrad ? Edited : UnEdited);
+        thres->setDefaultEditedState (pedited->locallab.thres ? Edited : UnEdited);
+        proxi->setDefaultEditedState (pedited->locallab.proxi ? Edited : UnEdited);
         lightness->setDefaultEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setDefaultEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setDefaultEditedState (pedited->locallab.chroma ? Edited : UnEdited);
@@ -1220,6 +1303,8 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
         centerX->setDefaultEditedState (Irrelevant);
         centerY->setDefaultEditedState (Irrelevant);
         circrad->setDefaultEditedState (Irrelevant);
+        thres->setDefaultEditedState (Irrelevant);
+        proxi->setDefaultEditedState (Irrelevant);
         lightness->setDefaultEditedState (Irrelevant);
         contrast->setDefaultEditedState (Irrelevant);
         chroma->setDefaultEditedState (Irrelevant);
@@ -1242,7 +1327,7 @@ void Locallab::setDefaults (const ProcParams* defParams, const ParamsEdited* ped
     }
 }
 
-void Locallab::adjusterChanged (Adjuster* a, double newval)
+void Locallab::adjusterChanged (Adjuster * a, double newval)
 {
 
     updateGeometry (int(centerX->getValue()), int(centerY->getValue()), int(circrad->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue());
@@ -1348,6 +1433,10 @@ void Locallab::adjusterChanged (Adjuster* a, double newval)
             listener->panelChanged (Evlocallabchrrt, chrrt->getTextValue());
         } else if (a == circrad) {
             listener->panelChanged (Evlocallabcircrad, circrad->getTextValue());
+        } else if (a == thres) {
+            listener->panelChanged (Evlocallabthres, thres->getTextValue());
+        } else if (a == proxi) {
+            listener->panelChanged (Evlocallabproxi, proxi->getTextValue());
         }
 
         else if (a == centerX || a == centerY) {
@@ -1414,7 +1503,7 @@ void Locallab::setAdjusterBehavior (bool degreeadd, bool locYadd, bool locXadd, 
 
 }
 
-void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
+void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
 {
     degree->trimValue(pp->locallab.degree);
     locY->trimValue(pp->locallab.locY);
@@ -1424,6 +1513,8 @@ void Locallab::trimValues (rtengine::procparams::ProcParams* pp)
     centerX->trimValue(pp->locallab.centerX);
     centerY->trimValue(pp->locallab.centerY);
     circrad->trimValue(pp->locallab.circrad);
+    thres->trimValue(pp->locallab.thres);
+    proxi->trimValue(pp->locallab.proxi);
     lightness->trimValue(pp->locallab.lightness);
     contrast->trimValue(pp->locallab.contrast);
     chroma->trimValue(pp->locallab.chroma);
@@ -1457,6 +1548,8 @@ void Locallab::setBatchMode (bool batchMode)
     centerX->showEditedCB ();
     centerY->showEditedCB ();
     circrad->showEditedCB ();
+    thres->showEditedCB ();
+    proxi->showEditedCB ();
     lightness->showEditedCB ();
     contrast->showEditedCB ();
     chroma->showEditedCB ();
@@ -1481,7 +1574,7 @@ void Locallab::setBatchMode (bool batchMode)
 
 }
 
-void Locallab::setEditProvider (EditDataProvider* provider)
+void Locallab::setEditProvider (EditDataProvider * provider)
 {
     EditSubscriber::setEditProvider(provider);
     cTgainshape->setEditProvider(provider);

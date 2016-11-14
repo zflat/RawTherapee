@@ -113,6 +113,9 @@ ImProcCoordinator::ImProcCoordinator ()
       shariters(500, -10000),
       inversshas(500, -10000),
       sensishas(500, -10000),
+      qualitys(500, -10000),
+      proxis(500, -10000),
+      thress(500, -10000),
 
       lumarefs(500, -100000.f),
       chromarefs(500, -100000.f),
@@ -713,6 +716,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         int t_shariter = 30;
                         int t_sensisha = 20;
                         int t_inverssha = 0;
+                        int t_qualityMethod = 0;
+                        int t_thres = 50;
+                        int t_proxi = 2;
 
 
                         //all variables except locRETgainCurve 'coomon for all)
@@ -748,6 +754,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         fic << "Shariter=" << t_shariter << '@' << endl;
                         fic << "Sensisha=" << t_sensisha << '@' << endl;
                         fic << "Inverssha=" << t_inverssha << '@' << endl;
+                        fic << "qualityMethod=" << t_qualityMethod << '@' << endl;
+                        fic << "Thres=" << t_thres << '@' << endl;
+                        fic << "Proxi=" << t_proxi << '@' << endl;
                         fic << endl;
                     }
 
@@ -764,9 +773,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             int realspot = params.locallab.nbspot;
 
             ifstream fich(datalab, ios::in);
-            dataspot = new int*[36];
+            dataspot = new int*[39];
 
-            for (int i = 0; i < 36; i++) {
+            for (int i = 0; i < 39; i++) {
                 dataspot[i] = new int[maxspot];
             }
 
@@ -842,6 +851,15 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[32][0] =  inversshas[0] = 1;
             }
 
+            if(params.locallab.qualityMethod == "std") {
+                dataspot[33][0] =  qualitys[0] = 0;
+            } else if (params.locallab.qualityMethod == "enh") {
+                dataspot[33][0] =  qualitys[0] = 1;
+            }
+
+            dataspot[34][0] = thress[0] = params.locallab.thres;
+            dataspot[35][0] = proxis[0] = params.locallab.proxi;
+
             int ns;
 
             if (fich) {
@@ -878,7 +896,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         dataspot[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 33) {
+                    if(cont > 16  && cont < 36) {
                         dataspot[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -926,6 +944,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_shariter = 30;
                     int t_sensisha = 20;
                     int t_inverssha = 0;
+                    int t_qualityMethod = 0;
+                    int t_thres = 50;
+                    int t_proxi = 2;
 
                     //all variables except locRETgainCurve 'coomon for all)
                     fic << "Spot=" << t_sp << '@' << endl;
@@ -960,6 +981,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fic << "Shariter=" << t_shariter << '@' << endl;
                     fic << "Sensisha=" << t_sensisha << '@' << endl;
                     fic << "Inverssha=" << t_inverssha << '@' << endl;
+                    fic << "qualityMethod=" << t_qualityMethod << '@' << endl;
+                    fic << "Thres=" << t_thres << '@' << endl;
+                    fic << "Proxi=" << t_proxi << '@' << endl;
                     fic << endl;
                 }
 
@@ -1003,7 +1027,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             dataspot[16][0] = std::stoi(str32.c_str());
                         }
 
-                        if(cont2 > 16  && cont2 < 33) {
+                        if(cont2 > 16  && cont2 < 36) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                         }
@@ -1122,11 +1146,21 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.inverssha = true;
                 }
 
+                if(dataspot[33][sp] ==  0) {
+                    qualitys[sp] = 0;
+                    params.locallab.qualityMethod = "std" ;
+                } else if (dataspot[33][sp] ==  1) {
+                    qualitys[sp] = 1;
+                    params.locallab.qualityMethod = "enh" ;
+                }
+
+                params.locallab.thres = thress[sp] = dataspot[34][sp];
+                params.locallab.proxi = proxis[sp] = dataspot[35][sp];
 
                 ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                dataspot[33][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-                dataspot[34][sp] = chromarefs[sp] = params.locallab.chromaref;
-                dataspot[35][sp] = lumarefs[sp] = params.locallab.lumaref;
+                dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+                dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
+                dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;
                 nextParams.locallab.hueref = params.locallab.hueref;
                 nextParams.locallab.chromaref = params.locallab.chromaref;
                 nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1252,10 +1286,24 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[32][sp] = 1;
             }
 
+            if(dataspot[33][0] == 0) {
+                params.locallab.qualityMethod = "std" ;
+                qualitys[sp] = 0;
+                dataspot[33][sp] = 0;
+            } else if(dataspot[33][0] == 1) {
+                params.locallab.qualityMethod = "enh" ;
+                qualitys[sp] = 1;
+                dataspot[33][sp] = 1;
+            }
+
+            dataspot[34][sp] = thress[sp] = params.locallab.thres = dataspot[34][0];
+            dataspot[35][sp] = proxis[sp] = params.locallab.proxi = dataspot[35][0];
+
+
             ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-            dataspot[33][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-            dataspot[34][sp] = chromarefs[sp] = params.locallab.chromaref;
-            dataspot[35][sp] = lumarefs[sp] = params.locallab.lumaref;
+            dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+            dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
+            dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;
 
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
@@ -1305,9 +1353,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_shariter = dataspot[30][spe];
                     int t_sensisha = dataspot[31][spe];
                     int t_inverssha = dataspot[32][spe];
-                    int t_hueref = dataspot[33][spe];
-                    int t_chromaref = dataspot[34][spe];
-                    int t_lumaref = dataspot[35][spe];
+                    int t_qualityMethod =  dataspot[33][spe];
+                    int t_thres =  dataspot[34][spe];
+                    int t_proxi =  dataspot[35][spe];
+                    int t_hueref = dataspot[36][spe];
+                    int t_chromaref = dataspot[37][spe];
+                    int t_lumaref = dataspot[38][spe];
 
                     fou << "Spot=" << t_sp << '@' << endl;
                     fou << "Circrad=" << t_circrad << '@' << endl;
@@ -1341,6 +1392,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fou << "Shariter=" << t_shariter << '@' << endl;
                     fou << "Sensisha=" << t_sensisha << '@' << endl;
                     fou << "Inverssha=" << t_inverssha << '@' << endl;
+                    fou << "qualityMethod=" << t_qualityMethod << '@' << endl;
+                    fou << "Thres=" << t_thres << '@' << endl;
+                    fou << "Proxi=" << t_proxi << '@' << endl;
                     fou << "hueref=" << t_hueref << '@' << endl;
                     fou << "chromaref=" << t_chromaref << '@' << endl;
                     fou << "lumaref=" << t_lumaref << '@' << endl;
@@ -1351,7 +1405,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
 //          }
-            for (int i = 0; i < 36; i++) {
+            for (int i = 0; i < 39; i++) {
                 delete [] dataspot[i];
             }
 

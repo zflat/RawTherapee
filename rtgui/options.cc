@@ -868,6 +868,7 @@ int Options::readFromFile (Glib::ustring fname)
                     rtSettings.reduclow          = keyFile.get_double("General", "Reduclow");
                 }
 
+
                 if (keyFile.has_key ("General", "Locdelay")) {
                     rtSettings.locdelay          = keyFile.get_boolean("General", "Locdelay");
                 }

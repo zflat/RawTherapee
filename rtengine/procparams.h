@@ -871,6 +871,10 @@ public:
     int     centerX;
     int     centerY;
     int     circrad;
+    int     thres;
+    int     proxi;
+    Glib::ustring qualityMethod;
+
     int     lightness;
     int     contrast;
     int     chroma;
