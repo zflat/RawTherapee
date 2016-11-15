@@ -888,8 +888,8 @@ void LocallabParams::setDefaults()
     centerY = 0;
     circrad = 18;
     qualityMethod = "std";
-    proxi = 2;
-    thres = 50;
+    proxi = 1;
+    thres = 60;
     lightness = 0;
     contrast = 0;
     chroma = 0;

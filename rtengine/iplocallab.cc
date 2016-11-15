@@ -31,7 +31,7 @@
 #include "iccmatrices.h"
 #include "color.h"
 #include "rt_math.h"
-//#define BENCHMARK
+#define BENCHMARK
 #include "StopWatch.h"
 
 #define cliploc( val, minv, maxv )    (( val = (val < minv ? minv : val ) ) > maxv ? maxv : val )
@@ -2345,7 +2345,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
 
         //evauate mean luminance for contrast : actually one area
         // evaluate also hue
-        if(lp.qualmet == 1) {
+        if(lp.qualmet == 1  && (lp.chro != 0 || lp.cont != 0 || lp.ligh != 0 || lp.shrad > 42 || lp.str > 0.f)) {
             float maxdh = -10.f;
 
 #ifdef _OPENMP

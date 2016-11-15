@@ -128,10 +128,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::qualityMethodChanged) );
     qualityMethod->set_tooltip_markup (M("TP_LOCALLAB_METHOD_TOOLTIP"));
 
-    thres = Gtk::manage (new Adjuster (M("TP_LOCALLAB_THRES"), 1, 315, 1, 50));
+    thres = Gtk::manage (new Adjuster (M("TP_LOCALLAB_THRES"), 1, 315, 1, 60));
     thres->setAdjusterListener (this);
 
-    proxi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_PROXI"), 1, 8, 1, 2));
+    proxi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_PROXI"), 1, 8, 1, 1));
     proxi->setAdjusterListener (this);
 
     lightness = Gtk::manage (new Adjuster (M("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
@@ -261,7 +261,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpVBox->set_border_width(4);
 
 
-    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 40, 250, 1, 4));
+    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 42, 250, 1, 4));
     sharradius->setAdjusterListener (this);
 
     sharamount = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARAMOUNT"), 0, 100, 1, 75));
