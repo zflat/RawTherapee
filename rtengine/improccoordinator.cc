@@ -1157,7 +1157,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 params.locallab.thres = thress[sp] = dataspot[34][sp];
                 params.locallab.proxi = proxis[sp] = dataspot[35][sp];
 
-                ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
                 dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
                 dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;
@@ -1300,7 +1300,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[35][sp] = proxis[sp] = params.locallab.proxi = dataspot[35][0];
 
 
-            ipf.Lab_Local(2, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+            ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
             dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
             dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
             dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;

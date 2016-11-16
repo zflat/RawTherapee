@@ -23,6 +23,10 @@
 #include "rt_math.h"
 #include "sleef.c"
 #include "opthelper.h"
+
+//#define BENCHMARK
+//#include "StopWatch.h"
+
 using namespace std;
 
 namespace rtengine
@@ -114,7 +118,7 @@ void ImProcFunctions::deconvsharpening (float** luminance, float** tmp, int W, i
     float damping = sharpenParam.deconvdamping / 5.0;
     bool needdamp = sharpenParam.deconvdamping > 0;
     double sigma = sharpenParam.deconvradius / scale;
-    printf("sigma=%f \n", sigma);
+    //  printf("sigma=%f \n", sigma);
 #ifdef _OPENMP
     #pragma omp parallel
 #endif
@@ -152,6 +156,8 @@ void ImProcFunctions::deconvsharpening (float** luminance, float** tmp, int W, i
 
 void ImProcFunctions::deconvsharpeningloc (float** luminance, float** tmp, int W, int H, float** loctemp, int damp, double radi, int ite, int amo)
 {
+    // BENCHFUN
+
     if (amo < 1) {
         return;
     }
