@@ -240,7 +240,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*centerX);
     shapeVBox->pack_start (*centerY);
     shapeVBox->pack_start (*circrad);
-    shapeVBox->pack_start (*activsp);
+    //shapeVBox->pack_start (*activsp);
     shapeVBox->pack_start (*qualityMethod);
     shapeVBox->pack_start (*thres);
     shapeVBox->pack_start (*proxi);

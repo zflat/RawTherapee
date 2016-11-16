@@ -31,8 +31,8 @@
 #include "iccmatrices.h"
 #include "color.h"
 #include "rt_math.h"
-#define BENCHMARK
-#include "StopWatch.h"
+//#define BENCHMARK
+//#include "StopWatch.h"
 
 #define cliploc( val, minv, maxv )    (( val = (val < minv ? minv : val ) ) > maxv ? maxv : val )
 
@@ -212,7 +212,7 @@ static void calcTransition (const float lox, const float loy, const float ach, c
 
 void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, const float mean, const float variance, const int sk)
 {
-    BENCHFUN
+    // BENCHFUN
 //Box-Muller method.
 // add luma noise to image
 
@@ -279,7 +279,7 @@ void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, const float mean
 void ImProcFunctions::BlurNoise_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy)
 {
 //local blur and noise
-    BENCHFUN
+    //  BENCHFUN
 
     const float ach = (float)lp.trans / 100.f;
 
@@ -329,7 +329,7 @@ void ImProcFunctions::BlurNoise_Local(const struct local_params& lp, LabImage* o
 
 void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
 {
-    BENCHFUN
+    // BENCHFUN
 //inverse local retinex
     float ach = (float)lp.trans / 100.f;
 
@@ -404,7 +404,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
 {
 
 //local retinex
-    BENCHFUN
+    // BENCHFUN
 
     {
         const float ach = (float)lp.trans / 100.f;
@@ -466,8 +466,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
             #pragma omp for schedule(dynamic,16)
 #endif
 
-            for (int y = 0; y < transformed->H; y++)
-            {
+            for (int y = 0; y < transformed->H; y++) {
 #ifdef __SSE2__
                 int i = 0;
 
@@ -738,7 +737,7 @@ void ImProcFunctions::Reti_Local(const float hueplus, const float huemoins, cons
 
 void ImProcFunctions::InverseBlurNoise_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy)
 {
-    BENCHFUN
+    //  BENCHFUN
 //inverse local blur and noise
     float ach = (float)lp.trans / 100.f;
 
@@ -806,7 +805,7 @@ struct local_contra {
 
 void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, float pm, struct local_contra &lco, float lumaref, float av, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy)
 {
-    BENCHFUN
+    // BENCHFUN
 // contrast - perhaps for 4 areas   if need
 // I tried shmap adaptaed to Lab, but no real gain and artifacts
     const float localtype = lumaref; // always spot area
@@ -1107,7 +1106,7 @@ void ImProcFunctions::Contrast_Local(const float hueplus, const float huemoins, 
 
 void ImProcFunctions::InverseContrast_Local(float ave, const local_contra& lco, const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy)
 {
-    BENCHFUN
+    // BENCHFUN
     float ach = (float)lp.trans / 100.f;
 
     #pragma omp parallel for schedule(dynamic,16) if (multiThread)
@@ -1206,7 +1205,7 @@ static void calclight (float lum, int  koef, float &lumnew)
 void ImProcFunctions::InverseSharp_Local(int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy)
 {
 //local blur and noise
-    BENCHFUN
+    // BENCHFUN
     const float localtype = lumaref; // always spot area
     const float ach = (float)lp.trans / 100.f;
     float reducac;
@@ -1427,7 +1426,7 @@ void ImProcFunctions::InverseSharp_Local(int sp, float **loctemp, const float hu
 void ImProcFunctions::Sharp_Local(int call, int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params & lp, float **deltE, LabImage * original, LabImage * transformed, int cx, int cy)
 {
 //local blur and noise
-    BENCHFUN
+    //BENCHFUN
     const float localtype = lumaref; // always spot area
     const float ach = (float)lp.trans / 100.f;
     float reducac;
@@ -1441,7 +1440,7 @@ void ImProcFunctions::Sharp_Local(int call, int sp, float **loctemp, const float
         reducac = areduc * (lp.senssha / 100.f) + breduc;
     }
 
-    printf("call=%i\n", call);
+    //printf("call=%i\n", call);
 
     constexpr float delhu = 0.1f; //between 0.05 and 0.2
 
@@ -1670,7 +1669,7 @@ void ImProcFunctions::Sharp_Local(int call, int sp, float **loctemp, const float
 
 void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params & lp, float ** deltE, LabImage * original, LabImage * transformed, int cx, int cy)
 {
-    BENCHFUN
+    //BENCHFUN
 // chroma and lightness
 
     const float ach = (float)lp.trans / 100.f;
@@ -2136,7 +2135,7 @@ void ImProcFunctions::ColorLight_Local(int sp, const float hueplus, const float 
 
 void ImProcFunctions::InverseColorLight_Local(const struct local_params & lp, LabImage * original, LabImage * transformed, int cx, int cy)
 {
-    BENCHFUN
+    // BENCHFUN
     float ach = (float)lp.trans / 100.f;
     const float facc = (100.f + lp.chro) / 100.f; //chroma factor transition
 
@@ -2208,7 +2207,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
 {
     //general call of others functions : important return hueref, chromaref, lumaref
     if(params->locallab.enabled) {
-        BENCHFUN
+        //  BENCHFUN
 #ifdef _DEBUG
         MyTime t1e, t2e;
         t1e.set();
