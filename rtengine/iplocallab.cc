@@ -31,6 +31,9 @@
 #include "iccmatrices.h"
 #include "color.h"
 #include "rt_math.h"
+#ifdef _DEBUG
+#include "mytime.h"
+#endif
 //#define BENCHMARK
 //#include "StopWatch.h"
 
