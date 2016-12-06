@@ -2949,15 +2949,15 @@ filmlike_clip(float *r, float *g, float *b)
 
 void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                                SHMap* shmap, int sat, LUTf & rCurve, LUTf & gCurve, LUTf & bCurve, float satLimit , float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, bool opautili,  LUTf & clToningcurve, LUTf & cl2Toningcurve,
-                               const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2, const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn )
+                               const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2, const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn, LUTu &histToneCurve )
 {
-    rgbProc (working, lab, pipetteBuffer, hltonecurve, shtonecurve, tonecurve, shmap, sat, rCurve, gCurve, bCurve, satLimit , satLimitOpacity, ctColorCurve, ctOpacityCurve, opautili, clToningcurve, cl2Toningcurve, customToneCurve1, customToneCurve2,  customToneCurvebw1, customToneCurvebw2, rrm, ggm, bbm, autor, autog, autob, params->toneCurve.expcomp, params->toneCurve.hlcompr, params->toneCurve.hlcomprthresh, dcpProf, asIn);
+    rgbProc (working, lab, pipetteBuffer, hltonecurve, shtonecurve, tonecurve, shmap, sat, rCurve, gCurve, bCurve, satLimit , satLimitOpacity, ctColorCurve, ctOpacityCurve, opautili, clToningcurve, cl2Toningcurve, customToneCurve1, customToneCurve2,  customToneCurvebw1, customToneCurvebw2, rrm, ggm, bbm, autor, autog, autob, params->toneCurve.expcomp, params->toneCurve.hlcompr, params->toneCurve.hlcomprthresh, dcpProf, asIn, histToneCurve);
 }
 
 // Process RGB image and convert to LAB space
 void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer *pipetteBuffer, LUTf & hltonecurve, LUTf & shtonecurve, LUTf & tonecurve,
                                SHMap* shmap, int sat, LUTf & rCurve, LUTf & gCurve, LUTf & bCurve, float satLimit , float satLimitOpacity, const ColorGradientCurve & ctColorCurve, const OpacityCurve & ctOpacityCurve, bool opautili, LUTf & clToningcurve, LUTf & cl2Toningcurve,
-                               const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,  const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn )
+                               const ToneCurve & customToneCurve1, const ToneCurve & customToneCurve2,  const ToneCurve & customToneCurvebw1, const ToneCurve & customToneCurvebw2, double &rrm, double &ggm, double &bbm, float &autor, float &autog, float &autob, double expcomp, int hlcompr, int hlcomprthresh, DCPProfile *dcpProf, const DCPProfile::ApplyState &asIn, LUTu &histToneCurve )
 {
     BENCHFUN
     Imagefloat *tmpImage = nullptr;
@@ -3030,6 +3030,9 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
         {wprof[1][0], wprof[1][1], wprof[1][2]},
         {wprof[2][0], wprof[2][1], wprof[2][2]}
     };
+
+    // For tonecurve histogram
+    float lumimulf[3] = {static_cast<float>(lumimul[0]), static_cast<float>(lumimul[1]), static_cast<float>(lumimul[2])};
 
 
     bool mixchannels = (params->chmixer.red[0] != 100 || params->chmixer.red[1] != 0     || params->chmixer.red[2] != 0   ||
@@ -3283,6 +3286,16 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
     int W = working->width;
     int H = working->height;
 
+    // For tonecurve histogram
+    int toneCurveHistSize = histToneCurve ? histToneCurve.getSize() : 0;
+    int histToneCurveCompression;
+
+    if(toneCurveHistSize > 0) {
+        histToneCurve.clear();
+        histToneCurveCompression = log2(65536 / toneCurveHistSize);
+    }
+
+
 #define TS 112
 
 #ifdef _OPENMP
@@ -3325,6 +3338,12 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
         }
 
         float out_rgbx[4 * TS] ALIGNED16; // Line buffer for CLUT
+
+        LUTu histToneCurveThr;
+        if(toneCurveHistSize > 0) {
+            histToneCurveThr(toneCurveHistSize);
+            histToneCurveThr.clear();
+        }
 
 #ifdef _OPENMP
         #pragma omp for schedule(dynamic) collapse(2)
@@ -3474,6 +3493,10 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
                         rtemp[ti * TS + tj] = tonecurve[ rtemp[ti * TS + tj] ];
                         gtemp[ti * TS + tj] = tonecurve[ gtemp[ti * TS + tj] ];
                         btemp[ti * TS + tj] = tonecurve[ btemp[ti * TS + tj] ];
+                        if(histToneCurveThr) {
+                            int y = CLIP<int>(lumimulf[0] * Color::gamma2curve[rtemp[ti * TS + tj]] + lumimulf[1] * Color::gamma2curve[gtemp[ti * TS + tj]] + lumimulf[2] * Color::gamma2curve[btemp[ti * TS + tj]]);
+                            histToneCurveThr[y>>histToneCurveCompression]++;
+                        }
                     }
                 }
 
@@ -4399,7 +4422,14 @@ void ImProcFunctions::rgbProc (Imagefloat* working, LabImage* lab, PipetteBuffer
         if (editWhateverBuffer) {
             free (editWhateverBuffer);
         }
-
+#ifdef _OPENMP
+#pragma omp critical
+{
+    if(toneCurveHistSize > 0) {
+        histToneCurve += histToneCurveThr;
+    }
+}
+#endif // _OPENMP
     }
 
     // starting a new tile processing with a 'reduction' clause for the auto mixer computing
