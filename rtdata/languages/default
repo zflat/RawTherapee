@@ -713,6 +713,10 @@ HISTORY_MSG_479;Local - Spot size
 HISTORY_MSG_480;Local - Hue theshold
 HISTORY_MSG_481;Local - Hue proximity
 HISTORY_MSG_482;Local - Quality
+HISTORY_MSG_483;Local - Noise lum f
+HISTORY_MSG_484;Local - Noise lum c
+HISTORY_MSG_485;Local - Noise chro f
+HISTORY_MSG_486;Local - Noise chro c
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1647,6 +1651,11 @@ TP_LOCALLAB_CHRRT;Chroma
 TP_LOCALLAB_CIRCRADIUS;Spot size
 TP_LOCALLAB_COFR;Color & Light
 TP_LOCALLAB_CONTRAST;Contrast
+TP_LOCALLAB_DENOIS;Denoise
+TP_LOCALLAB_NOISELUMFINE;Luminance fine
+TP_LOCALLAB_NOISELUMCOARSE;Luminance coarse
+TP_LOCALLAB_NOISECHROFINE;Chroma fine
+TP_LOCALLAB_NOISECHROCOARSE;Chroma coarse
 TP_LOCALLAB_INDSL;Independent (mouse + sliders)
 TP_LOCALLAB_IND;Independent (mouse)
 TP_LOCALLAB_INVERS;Inverse
@@ -1660,7 +1669,7 @@ TP_LOCALLAB_PROXI;Hue proximity radius
 TP_LOCALLAB_ANBSPOT;Help to Move Control point
 TP_LOCALLAB_ANBSPOT_TOOLTIP;Provisory control (I hope somebody can help to manage events!! and suppress this bad function)
 TP_LOCALLAB_LIGHTNESS;Lightness
-TP_LOCALLAB_METHOD_TOOLTIP;Default - standard.\nIf you select Enhanced, algorithm will detect the variations of hue in the select area and improve shape detection.\nHue threshold define since what value is exclude (* 100 radians).\nHue proximity radius define the radius around each point to calculate variations.\nEnhanced and Hue threshold significantly increases processing times. 
+TP_LOCALLAB_METHOD_TOOLTIP;Default - standard.\nIf you select Enhanced - only for Color Light-Sharpening-Retinex, algorithm will detect the variations of hue in the select area and improve shape detection.\nHue threshold define since what value is exclude (* 100 radians).\nHue proximity radius define the radius around each point to calculate variations.\nEnhanced and Hue threshold significantly increases processing times.
 TP_LOCALLAB_RADIUS;Radius
 TP_LOCALLAB_RETI;Retinex
 TP_LOCALLAB_TRANSMISSIONGAIN;Transmission gain

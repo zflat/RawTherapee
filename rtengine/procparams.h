@@ -882,6 +882,10 @@ public:
     int     sharamount;
     int     shardamping;
     int     shariter;
+    int     noiselumf;
+    int     noiselumc;
+    int     noisechrof;
+    int     noisechroc;
 
     int     sensi;
     int     sensih;

@@ -116,6 +116,10 @@ ImProcCoordinator::ImProcCoordinator ()
       qualitys(500, -10000),
       proxis(500, -10000),
       thress(500, -10000),
+      noiselumfs(500, -10000),
+      noiselumcs(500, -10000),
+      noisechrofs(500, -10000),
+      noisechrocs(500, -10000),
 
       lumarefs(500, -100000.f),
       chromarefs(500, -100000.f),
@@ -719,6 +723,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         int t_qualityMethod = 0;
                         int t_thres = 50;
                         int t_proxi = 2;
+                        int t_noiselumf = 0;
+                        int t_noiselumc = 0;
+                        int t_noisechrof = 0;
+                        int t_noisechroc = 0;
 
 
                         //all variables except locRETgainCurve 'coomon for all)
@@ -757,6 +765,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         fic << "qualityMethod=" << t_qualityMethod << '@' << endl;
                         fic << "Thres=" << t_thres << '@' << endl;
                         fic << "Proxi=" << t_proxi << '@' << endl;
+                        fic << "Noiselumf=" << t_noiselumf << '@' << endl;
+                        fic << "Noiselumc=" << t_noiselumc << '@' << endl;
+                        fic << "Noisechrof=" << t_noisechrof << '@' << endl;
+                        fic << "Noisechroc=" << t_noisechroc << '@' << endl;
                         fic << endl;
                     }
 
@@ -773,9 +785,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             int realspot = params.locallab.nbspot;
 
             ifstream fich(datalab, ios::in);
-            dataspot = new int*[39];
+            dataspot = new int*[43];
 
-            for (int i = 0; i < 39; i++) {
+            for (int i = 0; i < 43; i++) {
                 dataspot[i] = new int[maxspot];
             }
 
@@ -859,6 +871,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             dataspot[34][0] = thress[0] = params.locallab.thres;
             dataspot[35][0] = proxis[0] = params.locallab.proxi;
+            dataspot[36][0] = noiselumfs[0] = params.locallab.noiselumf;
+            dataspot[37][0] = noiselumcs[0] = params.locallab.noiselumc;
+            dataspot[38][0] = noisechrofs[0] = params.locallab.noisechrof;
+            dataspot[39][0] = noisechrocs[0] = params.locallab.noisechroc;
 
             int ns;
 
@@ -896,7 +912,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         dataspot[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 36) {
+                    if(cont > 16  && cont < 40) {
                         dataspot[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -947,6 +963,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_qualityMethod = 0;
                     int t_thres = 50;
                     int t_proxi = 2;
+                    int t_noiselumf = 0;
+                    int t_noiselumc = 0;
+                    int t_noisechrof = 0;
+                    int t_noisechroc = 0;
 
                     //all variables except locRETgainCurve 'coomon for all)
                     fic << "Spot=" << t_sp << '@' << endl;
@@ -984,6 +1004,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fic << "qualityMethod=" << t_qualityMethod << '@' << endl;
                     fic << "Thres=" << t_thres << '@' << endl;
                     fic << "Proxi=" << t_proxi << '@' << endl;
+                    fic << "Noiselumf=" << t_noiselumf << '@' << endl;
+                    fic << "Noiselumc=" << t_noiselumc << '@' << endl;
+                    fic << "Noisechrof=" << t_noisechrof << '@' << endl;
+                    fic << "Noisechroc=" << t_noisechroc << '@' << endl;
                     fic << endl;
                 }
 
@@ -1027,7 +1051,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             dataspot[16][0] = std::stoi(str32.c_str());
                         }
 
-                        if(cont2 > 16  && cont2 < 36) {
+                        if(cont2 > 16  && cont2 < 40) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                         }
@@ -1156,11 +1180,15 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 params.locallab.thres = thress[sp] = dataspot[34][sp];
                 params.locallab.proxi = proxis[sp] = dataspot[35][sp];
+                params.locallab.noiselumf = noiselumfs[sp] = dataspot[36][sp];
+                params.locallab.noiselumc = noiselumcs[sp] = dataspot[37][sp];
+                params.locallab.noisechrof = noisechrofs[sp] = dataspot[38][sp];
+                params.locallab.noisechroc = noisechrocs[sp] = dataspot[39][sp];
 
                 ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-                dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
-                dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;
+                dataspot[40][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+                dataspot[41][sp] = chromarefs[sp] = params.locallab.chromaref;
+                dataspot[42][sp] = lumarefs[sp] = params.locallab.lumaref;
                 nextParams.locallab.hueref = params.locallab.hueref;
                 nextParams.locallab.chromaref = params.locallab.chromaref;
                 nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1298,12 +1326,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             dataspot[34][sp] = thress[sp] = params.locallab.thres = dataspot[34][0];
             dataspot[35][sp] = proxis[sp] = params.locallab.proxi = dataspot[35][0];
+            dataspot[36][sp] = noiselumfs[sp] = params.locallab.noiselumf = dataspot[36][0];
+            dataspot[37][sp] = noiselumcs[sp] = params.locallab.noiselumc = dataspot[37][0];
+            dataspot[38][sp] = noisechrofs[sp] = params.locallab.noisechrof = dataspot[38][0];
+            dataspot[39][sp] = noisechrocs[sp] = params.locallab.noisechroc = dataspot[39][0];
 
 
             ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-            dataspot[36][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-            dataspot[37][sp] = chromarefs[sp] = params.locallab.chromaref;
-            dataspot[38][sp] = lumarefs[sp] = params.locallab.lumaref;
+            dataspot[40][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+            dataspot[41][sp] = chromarefs[sp] = params.locallab.chromaref;
+            dataspot[42][sp] = lumarefs[sp] = params.locallab.lumaref;
 
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
@@ -1356,9 +1388,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_qualityMethod =  dataspot[33][spe];
                     int t_thres =  dataspot[34][spe];
                     int t_proxi =  dataspot[35][spe];
-                    int t_hueref = dataspot[36][spe];
-                    int t_chromaref = dataspot[37][spe];
-                    int t_lumaref = dataspot[38][spe];
+                    int t_noiselumf = dataspot[36][spe];
+                    int t_noiselumc = dataspot[37][spe];
+                    int t_noisechrof = dataspot[38][spe];
+                    int t_noisechroc = dataspot[39][spe];
+                    int t_hueref = dataspot[40][spe];
+                    int t_chromaref = dataspot[41][spe];
+                    int t_lumaref = dataspot[42][spe];
 
                     fou << "Spot=" << t_sp << '@' << endl;
                     fou << "Circrad=" << t_circrad << '@' << endl;
@@ -1395,6 +1431,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fou << "qualityMethod=" << t_qualityMethod << '@' << endl;
                     fou << "Thres=" << t_thres << '@' << endl;
                     fou << "Proxi=" << t_proxi << '@' << endl;
+                    fou << "Noiselumf=" << t_noiselumf << '@' << endl;
+                    fou << "Noiselumc=" << t_noiselumc << '@' << endl;
+                    fou << "Noisechrof=" << t_noisechrof << '@' << endl;
+                    fou << "Noisechroc=" << t_noisechroc << '@' << endl;
                     fou << "hueref=" << t_hueref << '@' << endl;
                     fou << "chromaref=" << t_chromaref << '@' << endl;
                     fou << "lumaref=" << t_lumaref << '@' << endl;
@@ -1405,7 +1445,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
 //          }
-            for (int i = 0; i < 39; i++) {
+            for (int i = 0; i < 43; i++) {
                 delete [] dataspot[i];
             }
 

@@ -893,6 +893,10 @@ void LocallabParams::setDefaults()
     lightness = 0;
     contrast = 0;
     chroma = 0;
+    noiselumf = 0;
+    noiselumc = 0;
+    noisechrof = 0;
+    noisechroc = 0;
     sharradius = 40;
     sharamount = 75;
     shardamping = 75;
@@ -902,7 +906,7 @@ void LocallabParams::setDefaults()
     sensisha = 20;
     transit = 60;
     chrrt = 0;
-    avoid = true;
+    avoid = false;
     Smethod = "IND";
     retinexMethod = "high";
     invers = false;
@@ -2637,6 +2641,22 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Chroma", locallab.chroma);
         }
 
+        if (!pedited || pedited->locallab.noiselumf) {
+            keyFile.set_integer ("Locallab", "noiselumf", locallab.noiselumf);
+        }
+
+        if (!pedited || pedited->locallab.noiselumc) {
+            keyFile.set_integer ("Locallab", "noiselumc", locallab.noiselumc);
+        }
+
+        if (!pedited || pedited->locallab.noisechrof) {
+            keyFile.set_integer ("Locallab", "noisechrof", locallab.noisechrof);
+        }
+
+        if (!pedited || pedited->locallab.noisechroc) {
+            keyFile.set_integer ("Locallab", "noisechroc", locallab.noisechroc);
+        }
+
         if (!pedited || pedited->locallab.sharradius) {
             keyFile.set_integer ("Locallab", "Sharradius", locallab.sharradius);
         }
@@ -4088,6 +4108,38 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.chroma = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "noiselumf"))  {
+                locallab.noiselumf  = keyFile.get_integer ("Locallab", "noiselumf");
+
+                if (pedited) {
+                    pedited->locallab.noiselumf = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "noiselumc"))  {
+                locallab.noiselumc  = keyFile.get_integer ("Locallab", "noiselumc");
+
+                if (pedited) {
+                    pedited->locallab.noiselumc = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "noisechrof"))  {
+                locallab.noisechrof  = keyFile.get_integer ("Locallab", "noisechrof");
+
+                if (pedited) {
+                    pedited->locallab.noisechrof = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "noisechroc"))  {
+                locallab.noisechroc  = keyFile.get_integer ("Locallab", "noisechroc");
+
+                if (pedited) {
+                    pedited->locallab.noisechroc = true;
                 }
             }
 
@@ -8379,6 +8431,10 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.lightness == other.locallab.lightness
         && locallab.contrast == other.locallab.contrast
         && locallab.chroma == other.locallab.chroma
+        && locallab.noiselumf == other.locallab.noiselumf
+        && locallab.noiselumc == other.locallab.noiselumc
+        && locallab.noisechrof == other.locallab.noisechrof
+        && locallab.noisechroc == other.locallab.noisechroc
         && locallab.sharradius == other.locallab.sharradius
         && locallab.sharamount == other.locallab.sharamount
         && locallab.shardamping == other.locallab.shardamping

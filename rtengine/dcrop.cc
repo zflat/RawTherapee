@@ -902,6 +902,10 @@ void Crop::update (int todo)
                         params.locallab.thres = parent->thress[sp];
                         params.locallab.proxi = parent->proxis[sp];
 
+                        params.locallab.noiselumf = parent->noiselumfs[sp];
+                        params.locallab.noiselumc = parent->noiselumcs[sp];
+                        params.locallab.noisechrof = parent->noisechrofs[sp];
+                        params.locallab.noisechroc = parent->noisechrocs[sp];
 
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
@@ -1033,6 +1037,11 @@ void Crop::update (int todo)
 
                 parent->thress[sp] = params.locallab.thres = parent->thress[0];
                 parent->proxis[sp] = params.locallab.proxi = parent->proxis[0];
+
+                parent->noiselumfs[sp] = params.locallab.noiselumf = parent->noiselumfs[0];
+                parent->noiselumcs[sp] = params.locallab.noiselumc = parent->noiselumcs[0];
+                parent->noisechrofs[sp] = params.locallab.noisechrof = parent->noisechrofs[0];
+                parent->noisechrocs[sp] = params.locallab.noisechroc = parent->noisechrocs[0];
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];

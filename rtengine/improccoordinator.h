@@ -245,6 +245,10 @@ protected:
     LUTi qualitys;
     LUTi thress;
     LUTi proxis;
+    LUTi noiselumfs;
+    LUTi noiselumcs;
+    LUTi noisechrofs;
+    LUTi noisechrocs;
 
 
     LUTf huerefs;

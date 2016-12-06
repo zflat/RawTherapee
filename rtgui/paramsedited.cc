@@ -306,6 +306,10 @@ void ParamsEdited::set (bool v)
     locallab.lightness = v;
     locallab.contrast = v;
     locallab.chroma = v;
+    locallab.noiselumf = v;
+    locallab.noiselumc = v;
+    locallab.noisechrof = v;
+    locallab.noisechroc = v;
     locallab.sharradius = v;
     locallab.sharamount = v;
     locallab.shardamping = v;
@@ -851,6 +855,10 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.lightness = locallab.lightness && p.locallab.lightness == other.locallab.lightness;
         locallab.contrast = locallab.contrast && p.locallab.contrast == other.locallab.contrast;
         locallab.chroma = locallab.chroma && p.locallab.chroma == other.locallab.chroma;
+        locallab.noiselumf = locallab.noiselumf && p.locallab.noiselumf == other.locallab.noiselumf;
+        locallab.noiselumc = locallab.noiselumc && p.locallab.noiselumc == other.locallab.noiselumc;
+        locallab.noisechrof = locallab.noisechrof && p.locallab.noisechrof == other.locallab.noisechrof;
+        locallab.noisechroc = locallab.noisechroc && p.locallab.noisechroc == other.locallab.noisechroc;
         locallab.sharradius = locallab.sharradius && p.locallab.sharradius == other.locallab.sharradius;
         locallab.sharamount = locallab.sharamount && p.locallab.sharamount == other.locallab.sharamount;
         locallab.shariter = locallab.shariter && p.locallab.shariter == other.locallab.shariter;
@@ -2163,6 +2171,22 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.chroma) {
         toEdit.locallab.chroma    = mods.locallab.chroma;
+    }
+
+    if (locallab.noiselumf) {
+        toEdit.locallab.noiselumf    = mods.locallab.noiselumf;
+    }
+
+    if (locallab.noiselumc) {
+        toEdit.locallab.noiselumc    = mods.locallab.noiselumc;
+    }
+
+    if (locallab.noisechrof) {
+        toEdit.locallab.noisechrof    = mods.locallab.noisechrof;
+    }
+
+    if (locallab.noisechroc) {
+        toEdit.locallab.noisechroc    = mods.locallab.noisechroc;
     }
 
     if (locallab.sharradius) {

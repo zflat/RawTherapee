@@ -68,6 +68,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrFrame->set_border_width(0);
     blurrFrame->set_label_align(0.025, 0.5);
 
+    Gtk::Frame* denoisFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_DENOIS")) );
+    denoisFrame->set_border_width(0);
+    denoisFrame->set_label_align(0.025, 0.5);
+
     Gtk::Frame* retiFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_RETI")) );
     retiFrame->set_border_width(0);
     retiFrame->set_label_align(0.025, 0.5);
@@ -224,7 +228,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 // end reti
 
     avoid = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_AVOID")));
-    avoid->set_active (true);
+    avoid->set_active (false);
     avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
     pack_start (*nbspot);
     pack_start (*anbspot);
@@ -240,7 +244,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*centerX);
     shapeVBox->pack_start (*centerY);
     shapeVBox->pack_start (*circrad);
-    //shapeVBox->pack_start (*activsp);
+    // shapeVBox->pack_start (*activsp);
     shapeVBox->pack_start (*qualityMethod);
     shapeVBox->pack_start (*thres);
     shapeVBox->pack_start (*proxi);
@@ -289,6 +293,27 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpVBox->pack_start (*sensisha);
     sharpVBox->pack_start (*inverssha);
 
+    Gtk::VBox *denoisVBox = Gtk::manage ( new Gtk::VBox());
+    denoisVBox->set_spacing(2);
+    denoisVBox->set_border_width(4);
+
+    noiselumf = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISELUMFINE"), 0, 100, 1, 0));
+    noiselumf->setAdjusterListener (this);
+
+    noiselumc = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISELUMCOARSE"), 0, 100, 1, 0));
+    noiselumc->setAdjusterListener (this);
+
+    noisechrof = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISECHROFINE"), 0, 100, 1, 0));
+    noisechrof->setAdjusterListener (this);
+
+    noisechroc = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISECHROCOARSE"), 0, 100, 1, 0));
+    noisechroc->setAdjusterListener (this);
+
+    denoisVBox->pack_start (*noiselumf);
+    denoisVBox->pack_start (*noiselumc);
+    denoisVBox->pack_start (*noisechrof);
+    denoisVBox->pack_start (*noisechroc);
+
 
     colorVBox->pack_start (*lightness);
     colorVBox->pack_start (*contrast);
@@ -308,6 +333,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpFrame->add(*sharpVBox);
     pack_start (*sharpFrame);
 
+    denoisFrame->add(*denoisVBox);
+    pack_start (*denoisFrame);
+
     retiBox->pack_start (*retinexMethod);
     retiBox->pack_start (*str);
     retiBox->pack_start (*chrrt);
@@ -321,7 +349,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     pack_start (*retiFrame);
 
     pack_start (*transit);
-//    pack_start (*avoid);//keep avoid clor shift in case of
+    pack_start (*avoid);//keep avoid clor shift in case of
 
     // Instantiating the Editing geometry; positions will be initialized later
     Line  *hLine, *vLine, *locYLine[2], *locXLine[2];
@@ -507,6 +535,11 @@ bool Locallab::localComputed_ ()
     thres->setValue(nextdatasp[34]);
     proxi->setValue(nextdatasp[35]);
 
+    noiselumf->setValue(nextdatasp[36]);
+    noiselumc->setValue(nextdatasp[37]);
+    noisechrof->setValue(nextdatasp[38]);
+    noisechroc->setValue(nextdatasp[39]);
+
     enableListener ();
 
     //update all sliders by this strange process!
@@ -574,7 +607,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 2; i < 39; i++) {
+    for(int i = 2; i < 43; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -607,6 +640,10 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         shardamping->setEditedState (pedited->locallab.shardamping ? Edited : UnEdited);
         shariter->setEditedState (pedited->locallab.shariter ? Edited : UnEdited);
         sensisha->setEditedState (pedited->locallab.sensisha ? Edited : UnEdited);
+        noiselumf->setEditedState (pedited->locallab.noiselumf ? Edited : UnEdited);
+        noiselumc->setEditedState (pedited->locallab.noiselumc ? Edited : UnEdited);
+        noisechrof->setEditedState (pedited->locallab.noisechrof ? Edited : UnEdited);
+        noisechroc->setEditedState (pedited->locallab.noisechroc ? Edited : UnEdited);
 
         sensi->setEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
@@ -698,6 +735,10 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     cTgainshape->setCurve (pp->locallab.ccwTgaincurve);
     lastactivsp = pp->locallab.activsp;
     lastanbspot = pp->locallab.anbspot;
+    noiselumf->setValue (pp->locallab.noiselumf);
+    noiselumc->setValue (pp->locallab.noiselumc);
+    noisechrof->setValue (pp->locallab.noisechrof);
+    noisechroc->setValue (pp->locallab.noisechroc);
 
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
@@ -869,6 +910,10 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.lightness = lightness->getIntValue ();
     pp->locallab.contrast = contrast->getIntValue ();
     pp->locallab.chroma = chroma->getIntValue ();
+    pp->locallab.noiselumc = noiselumc->getIntValue ();
+    pp->locallab.noiselumf = noiselumf->getIntValue ();
+    pp->locallab.noisechrof = noisechrof->getIntValue ();
+    pp->locallab.noisechroc = noisechroc->getIntValue ();
     pp->locallab.sharradius = sharradius->getIntValue ();
     pp->locallab.sharamount = sharamount->getIntValue ();
     pp->locallab.shardamping = shardamping->getIntValue ();
@@ -911,6 +956,10 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.lightness = lightness->getEditedState ();
         pedited->locallab.contrast = contrast->getEditedState ();
         pedited->locallab.chroma = chroma->getEditedState ();
+        pedited->locallab.noiselumf = noiselumf->getEditedState ();
+        pedited->locallab.noiselumc = noiselumc->getEditedState ();
+        pedited->locallab.noisechrof = noisechrof->getEditedState ();
+        pedited->locallab.noisechroc = noisechroc->getEditedState ();
         pedited->locallab.sharradius = sharradius->getEditedState ();
         pedited->locallab.sharamount = sharamount->getEditedState ();
         pedited->locallab.shardamping = shardamping->getEditedState ();
@@ -1246,6 +1295,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     lightness->setDefault (defParams->locallab.lightness);
     contrast->setDefault (defParams->locallab.contrast);
     chroma->setDefault (defParams->locallab.chroma);
+    noiselumf->setDefault (defParams->locallab.noiselumf);
+    noiselumc->setDefault (defParams->locallab.noiselumc);
+    noisechrof->setDefault (defParams->locallab.noisechrof);
+    noisechroc->setDefault (defParams->locallab.noisechroc);
     sharradius->setDefault (defParams->locallab.sharradius);
     sharamount->setDefault (defParams->locallab.sharamount);
     shardamping->setDefault (defParams->locallab.shardamping);
@@ -1278,6 +1331,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         lightness->setDefaultEditedState (pedited->locallab.lightness ? Edited : UnEdited);
         contrast->setDefaultEditedState (pedited->locallab.contrast ? Edited : UnEdited);
         chroma->setDefaultEditedState (pedited->locallab.chroma ? Edited : UnEdited);
+        noiselumf->setDefaultEditedState (pedited->locallab.noiselumf ? Edited : UnEdited);
+        noiselumc->setDefaultEditedState (pedited->locallab.noiselumc ? Edited : UnEdited);
+        noisechrof->setDefaultEditedState (pedited->locallab.noisechrof ? Edited : UnEdited);
+        noisechroc->setDefaultEditedState (pedited->locallab.noisechroc ? Edited : UnEdited);
         sharradius->setDefaultEditedState (pedited->locallab.sharradius ? Edited : UnEdited);
         sharamount->setDefaultEditedState (pedited->locallab.sharamount ? Edited : UnEdited);
         shardamping->setDefaultEditedState (pedited->locallab.shardamping ? Edited : UnEdited);
@@ -1308,6 +1365,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         lightness->setDefaultEditedState (Irrelevant);
         contrast->setDefaultEditedState (Irrelevant);
         chroma->setDefaultEditedState (Irrelevant);
+        noiselumf->setDefaultEditedState (Irrelevant);
+        noiselumc->setDefaultEditedState (Irrelevant);
+        noisechrof->setDefaultEditedState (Irrelevant);
+        noisechroc->setDefaultEditedState (Irrelevant);
         sharradius->setDefaultEditedState (Irrelevant);
         sharamount->setDefaultEditedState (Irrelevant);
         shardamping->setDefaultEditedState (Irrelevant);
@@ -1399,6 +1460,14 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocallabcontrast, contrast->getTextValue());
         } else if (a == chroma) {
             listener->panelChanged (Evlocallabchroma, chroma->getTextValue());
+        } else if (a == noiselumf) {
+            listener->panelChanged (Evlocallabnoiselumf, noiselumf->getTextValue());
+        } else if (a == noiselumc) {
+            listener->panelChanged (Evlocallabnoiselumc, noiselumc->getTextValue());
+        } else if (a == noisechrof) {
+            listener->panelChanged (Evlocallabnoisechrof, noisechrof->getTextValue());
+        } else if (a == noisechroc) {
+            listener->panelChanged (Evlocallabnoisechroc, noisechroc->getTextValue());
         } else if (a == sharradius) {
             listener->panelChanged (Evlocallabsharradius, sharradius->getTextValue());
         } else if (a == sharamount) {
@@ -1518,6 +1587,10 @@ void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
     lightness->trimValue(pp->locallab.lightness);
     contrast->trimValue(pp->locallab.contrast);
     chroma->trimValue(pp->locallab.chroma);
+    noiselumf->trimValue(pp->locallab.noiselumf);
+    noiselumc->trimValue(pp->locallab.noiselumc);
+    noisechrof->trimValue(pp->locallab.noisechrof);
+    noisechroc->trimValue(pp->locallab.noisechroc);
     sharradius->trimValue(pp->locallab.sharradius);
     sharamount->trimValue(pp->locallab.sharamount);
     shardamping->trimValue(pp->locallab.shardamping);
@@ -1553,6 +1626,10 @@ void Locallab::setBatchMode (bool batchMode)
     lightness->showEditedCB ();
     contrast->showEditedCB ();
     chroma->showEditedCB ();
+    noiselumf->showEditedCB ();
+    noiselumc->showEditedCB ();
+    noisechroc->showEditedCB ();
+    noiselumf->showEditedCB ();
     sharradius->showEditedCB ();
     sharamount->showEditedCB ();
     shardamping->showEditedCB ();

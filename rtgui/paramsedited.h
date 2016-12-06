@@ -432,6 +432,10 @@ public:
     bool lightness;
     bool contrast;
     bool chroma;
+    bool noiselumf;
+    bool noiselumc;
+    bool noisechrof;
+    bool noisechroc;
     bool sharradius;
     bool sharamount;
     bool shardamping;

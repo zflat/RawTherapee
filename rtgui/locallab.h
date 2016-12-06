@@ -58,6 +58,10 @@ protected:
     Adjuster* sensisha;
     Adjuster* thres;
     Adjuster* proxi;
+    Adjuster* noiselumf;
+    Adjuster* noiselumc;
+    Adjuster* noisechrof;
+    Adjuster* noisechroc;
 
 
     Gtk::CheckButton* avoid;
@@ -76,7 +80,7 @@ protected:
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[39];
+    int nextdatasp[43];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
