@@ -943,6 +943,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     bool locutili = false;
 
     if(params.locallab.enabled) {
+    MyTime t1,t2;
+    t1.set();
+		
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
         params.locallab.getCurves(locRETgainCurve);
@@ -1211,6 +1214,10 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
 
         }
+    t2.set();
+    if( settings->verbose )
+           printf("Total local:- %d usec\n", t2.etime(t1));
+		
     }
 
     ipf.chromiLuminanceCurve (nullptr, 1, labView, labView, curve1, curve2, satcurve, lhskcurve, clcurve, lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy);
