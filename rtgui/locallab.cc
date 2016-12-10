@@ -128,6 +128,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     qualityMethod = Gtk::manage (new MyComboBoxText ());
     qualityMethod->append_text (M("TP_LOCALLAB_STD"));
     qualityMethod->append_text (M("TP_LOCALLAB_ENH"));
+    qualityMethod->append_text (M("TP_LOCALLAB_ENHDEN"));
     qualityMethod->set_active(0);
     qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::qualityMethodChanged) );
     qualityMethod->set_tooltip_markup (M("TP_LOCALLAB_METHOD_TOOLTIP"));
@@ -246,8 +247,8 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*circrad);
     // shapeVBox->pack_start (*activsp);
     shapeVBox->pack_start (*qualityMethod);
-    shapeVBox->pack_start (*thres);
-    shapeVBox->pack_start (*proxi);
+    // shapeVBox->pack_start (*thres);
+    // shapeVBox->pack_start (*proxi);
 
     shapeFrame->add(*shapeVBox);
     pack_start (*shapeFrame);
@@ -530,6 +531,8 @@ bool Locallab::localComputed_ ()
         qualityMethod->set_active (0);
     } else if (nextdatasp[33] == 1) {
         qualityMethod->set_active (1);
+    } else if (nextdatasp[33] == 2) {
+        qualityMethod->set_active (2);
     }
 
     thres->setValue(nextdatasp[34]);
@@ -781,6 +784,8 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         qualityMethod->set_active (0);
     } else if (pp->locallab.qualityMethod == "enh") {
         qualityMethod->set_active (1);
+    } else if (pp->locallab.qualityMethod == "enhden") {
+        qualityMethod->set_active (2);
     }
 
     qualityMethodChanged ();
@@ -998,6 +1003,8 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pp->locallab.qualityMethod = "std";
     } else if (qualityMethod->get_active_row_number() == 1) {
         pp->locallab.qualityMethod = "enh";
+    } else if (qualityMethod->get_active_row_number() == 2) {
+        pp->locallab.qualityMethod = "enhden";
     }
 
 

@@ -898,6 +898,8 @@ void Crop::update (int todo)
                             params.locallab.qualityMethod = "std" ;
                         } else if (parent->qualitys[sp] ==  1) {
                             params.locallab.qualityMethod = "enh" ;
+                        } else if (parent->qualitys[sp] ==  2) {
+                            params.locallab.qualityMethod = "enhden" ;
                         }
 
                         params.locallab.thres = parent->thress[sp];
@@ -1034,6 +1036,9 @@ void Crop::update (int todo)
                 } else if (parent->qualitys[sp] ==  1) {
                     params.locallab.qualityMethod = "enh" ;
                     parent->qualitys[sp] =  1;
+                } else if (parent->qualitys[sp] ==  2) {
+                    params.locallab.qualityMethod = "enhden" ;
+                    parent->qualitys[sp] =  2;
                 }
 
                 parent->thress[sp] = params.locallab.thres = parent->thress[0];

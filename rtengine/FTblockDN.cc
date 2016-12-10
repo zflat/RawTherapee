@@ -2482,8 +2482,8 @@ bool ImProcFunctions::WaveletDenoiseAllL(wavelet_decomposition &WaveletCoeffs_L,
 
     int maxlvl = min(WaveletCoeffs_L.maxlevel(), 5);
 
-    if (edge == 1) {
-        maxlvl = 4;    //for refine denoise edge wavelet
+    if (edge == 1 || edge == 3) {
+        maxlvl = 4;    //for refine denoise edge wavelet 
     }
 
     if (edge == 2) {
@@ -2548,6 +2548,10 @@ bool ImProcFunctions::WaveletDenoiseAllAB(wavelet_decomposition &WaveletCoeffs_L
 
     if (local == 2) {
         maxlvl = 7;    //for local denoise
+    }
+
+    if (local == 3) {
+        maxlvl = 4;    //for shape detection
     }
 
     int maxWL = 0, maxHL = 0;
@@ -2619,7 +2623,7 @@ SSEFUNCTION void ImProcFunctions::ShrinkAllL(wavelet_decomposition &WaveletCoeff
 //      printf("OK lev=%d\n",level);
     float mad_L = madL[dir - 1] ;
 
-    if ((edge == 1 || edge == 2) && vari) {
+    if ((edge == 1 || edge == 2 || edge == 3) && vari) {
         noisevarlum = blurBuffer;       // we need one buffer, but fortunately we don't have to allocate a new one because we can use blurBuffer
 
         for (int i = 0; i < W_L * H_L; ++i) {
@@ -2728,7 +2732,7 @@ SSEFUNCTION void ImProcFunctions::ShrinkAllAB(wavelet_decomposition &WaveletCoef
 
     float noisevarfc;
 
-    if (local == 2 && variC) {
+    if ((local == 2 || local == 3) && variC) {
         noisevarfc = variC[level];
     } else {
         noisevarfc = noisevar_ab;

@@ -943,9 +943,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     bool locutili = false;
 
     if(params.locallab.enabled) {
-    MyTime t1,t2;
-    t1.set();
-		
+        MyTime t1, t2;
+        t1.set();
+
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
         params.locallab.getCurves(locRETgainCurve);
@@ -1042,6 +1042,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[33][0] =  0;
             } else if (params.locallab.qualityMethod == "enh") {
                 dataspots[33][0] =  1;
+            } else if (params.locallab.qualityMethod == "enhden") {
+                dataspots[33][0] =  2;
             }
 
             dataspots[34][0] = params.locallab.thres;
@@ -1180,6 +1182,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.qualityMethod = "std" ;
                 } else if (dataspots[33][sp] ==  1) {
                     params.locallab.qualityMethod = "enh" ;
+                } else if (dataspots[33][sp] ==  2) {
+                    params.locallab.qualityMethod = "enhden" ;
                 }
 
                 params.locallab.thres = dataspots[34][sp];
@@ -1214,10 +1218,13 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
 
         }
-    t2.set();
-    if( settings->verbose )
-           printf("Total local:- %d usec\n", t2.etime(t1));
-		
+
+        t2.set();
+
+        if( settings->verbose ) {
+            printf("Total local:- %d usec\n", t2.etime(t1));
+        }
+
     }
 
     ipf.chromiLuminanceCurve (nullptr, 1, labView, labView, curve1, curve2, satcurve, lhskcurve, clcurve, lumacurve, utili, autili, butili, ccutili, cclutili, clcutili, dummy, dummy);

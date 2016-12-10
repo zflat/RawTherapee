@@ -1664,6 +1664,7 @@ TP_LOCALLAB_NBSPOT;Control points
 TP_LOCALLAB_NBSPOT_TOOLTIP;Add multiple control points and select
 TP_LOCALLAB_STD;Quality Standard
 TP_LOCALLAB_ENH;Quality Enhanced
+TP_LOCALLAB_ENHDEN;Quality Enhanced + chroma denoise
 TP_LOCALLAB_THRES;Hue threshold
 TP_LOCALLAB_PROXI;Hue proximity radius
 TP_LOCALLAB_ANBSPOT;Help to Move Control point

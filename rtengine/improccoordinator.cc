@@ -867,6 +867,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[33][0] =  qualitys[0] = 0;
             } else if (params.locallab.qualityMethod == "enh") {
                 dataspot[33][0] =  qualitys[0] = 1;
+            } else if (params.locallab.qualityMethod == "enhden") {
+                dataspot[33][0] =  qualitys[0] = 2;
             }
 
             dataspot[34][0] = thress[0] = params.locallab.thres;
@@ -1176,6 +1178,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 } else if (dataspot[33][sp] ==  1) {
                     qualitys[sp] = 1;
                     params.locallab.qualityMethod = "enh" ;
+                } else if (dataspot[33][sp] ==  2) {
+                    qualitys[sp] = 2;
+                    params.locallab.qualityMethod = "enhden" ;
                 }
 
                 params.locallab.thres = thress[sp] = dataspot[34][sp];
@@ -1322,6 +1327,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 params.locallab.qualityMethod = "enh" ;
                 qualitys[sp] = 1;
                 dataspot[33][sp] = 1;
+            } else if(dataspot[33][0] == 2) {
+                params.locallab.qualityMethod = "enhden" ;
+                qualitys[sp] = 2;
+                dataspot[33][sp] = 2;
             }
 
             dataspot[34][sp] = thress[sp] = params.locallab.thres = dataspot[34][0];
