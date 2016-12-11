@@ -155,10 +155,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sensi->set_tooltip_text (M("TP_LOCALLAB_SENSI_TOOLTIP"));
     sensi->setAdjusterListener (this);
 
-    radius = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_RADIUS"), 0., 100., 0.1, 0.) );
+    radius = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_RADIUS"), 0, 100, 1, 0) );
     //radius->set_tooltip_text (M("TP_LOCALLAB_RADIUS_TOOLTIP"));
     radius->setAdjusterListener (this);
-    strength = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_STRENGTH"), 0., 100., 0.1, 0.) );
+    strength = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_STRENGTH"), 0, 100, 1, 0) );
     //radius->set_tooltip_text (M("TP_LOCALLAB_RADIUS_TOOLTIP"));
     strength->setAdjusterListener (this);
 
@@ -926,8 +926,8 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.sensisha = sensisha->getIntValue ();
     pp->locallab.sensi = sensi->getIntValue ();
     pp->locallab.sensih = sensih->getIntValue ();
-    pp->locallab.radius = radius->getValue ();
-    pp->locallab.strength = strength->getValue ();
+    pp->locallab.radius = radius->getIntValue ();
+    pp->locallab.strength = strength->getIntValue ();
     pp->locallab.enabled = getEnabled();
     pp->locallab.transit = transit->getIntValue ();
     pp->locallab.avoid = avoid->get_active();

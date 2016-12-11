@@ -822,8 +822,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
             dataspot[16][0] = curens[0] = params.locallab.nbspot;
-            dataspot[17][0] =  radiuss[0] = 10 * params.locallab.radius;
-            dataspot[18][0] =  strengths[0] = 10 * params.locallab.strength;
+            dataspot[17][0] =  radiuss[0] = params.locallab.radius;
+            dataspot[18][0] =  strengths[0] = params.locallab.strength;
 
             if(!params.locallab.inversrad) {
                 dataspot[19][0] =  inversrads[0] = 0;
@@ -1119,8 +1119,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 radiuss[sp] = dataspot[17][sp];
                 strengths[sp] = dataspot[18][sp];
-                params.locallab.radius = (float) (dataspot[17][sp]) / 10.f;
-                params.locallab.strength = (float) (dataspot[18][sp]) / 10.f;
+                params.locallab.radius = dataspot[17][sp];
+                params.locallab.strength = dataspot[18][sp];
 
                 if(dataspot[19][sp] ==  0) {
                     inversrads[sp] = 0;
@@ -1257,10 +1257,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 dataspot[15][sp] = 3;
             }
 
-            params.locallab.radius = (float) (dataspot[17][0]) / 10.f;
-            params.locallab.strength = (float) (dataspot[18][0]) / 10.f;
-            dataspot[17][sp] = radiuss[sp] = 10 * params.locallab.radius;
-            dataspot[18][sp] = strengths[sp] = 10 * params.locallab.strength;
+            params.locallab.radius = dataspot[17][0];
+            params.locallab.strength = dataspot[18][0];
+            dataspot[17][sp] = radiuss[sp] = params.locallab.radius;
+            dataspot[18][sp] = strengths[sp] = params.locallab.strength;
 
             if(dataspot[19][0] == 0) {
                 params.locallab.inversrad = false;

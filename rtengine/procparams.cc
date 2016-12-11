@@ -911,11 +911,11 @@ void LocallabParams::setDefaults()
     retinexMethod = "high";
     invers = false;
     activsp = false;
-    radius = 0.;
+    radius = 0;
     inversrad = false;
     inversret = false;
     inverssha = false;
-    strength = 0.;
+    strength = 0;
     hueref = INFINITY;
     chromaref = INFINITY;
     lumaref = INFINITY;
@@ -2714,11 +2714,11 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
         }
 
         if (!pedited || pedited->locallab.radius) {
-            keyFile.set_double ("Locallab", "Radius", locallab.radius);
+            keyFile.set_integer ("Locallab", "Radius", locallab.radius);
         }
 
         if (!pedited || pedited->locallab.strength) {
-            keyFile.set_double ("Locallab", "Strength", locallab.strength);
+            keyFile.set_integer ("Locallab", "Strength", locallab.strength);
         }
 
 
@@ -4273,7 +4273,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("Locallab", "Radius"))  {
-                locallab.radius  = keyFile.get_double ("Locallab", "Radius");
+                locallab.radius  = keyFile.get_integer ("Locallab", "Radius");
 
                 if (pedited) {
                     pedited->locallab.radius = true;
@@ -4281,7 +4281,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("Locallab", "Strength"))  {
-                locallab.strength  = keyFile.get_double ("Locallab", "Strength");
+                locallab.strength  = keyFile.get_integer ("Locallab", "Strength");
 
                 if (pedited) {
                     pedited->locallab.strength = true;

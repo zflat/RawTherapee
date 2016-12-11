@@ -853,8 +853,8 @@ void Crop::update (int todo)
                             params.locallab.Smethod = "SYMSL";
                         }
 
-                        params.locallab.radius = ((float) (parent->radiuss[sp]) / 10.f);
-                        params.locallab.strength = ((float)  (parent->strengths[sp]) / 10.f);
+                        params.locallab.radius = parent->radiuss[sp];
+                        params.locallab.strength = parent->strengths[sp];
 
                         if( parent->inversrads[sp] ==  0) {
                             params.locallab.inversrad = false;
@@ -972,11 +972,11 @@ void Crop::update (int todo)
 
                 }
 
-                params.locallab.radius = ((float) (parent->radiuss[0]) / 10.f);
-                params.locallab.strength = ((float)  (parent->strengths[0]) / 10.f);
+                params.locallab.radius = parent->radiuss[0];
+                params.locallab.strength = parent->strengths[0];
 
-                parent->radiuss[sp] = 10 * params.locallab.radius;
-                parent->strengths[sp] = 10 * params.locallab.strength;
+                parent->radiuss[sp] = params.locallab.radius;
+                parent->strengths[sp] = params.locallab.strength;
 
                 if( parent->inversrads[0] ==  0) {
                     params.locallab.inversrad = false;

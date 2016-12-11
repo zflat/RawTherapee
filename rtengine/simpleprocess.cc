@@ -996,8 +996,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[15][0] =  3;
             }
 
-            dataspots[17][0] =  10 * params.locallab.radius;
-            dataspots[18][0] =  10 * params.locallab.strength;
+            dataspots[17][0] =  params.locallab.radius;
+            dataspots[18][0] =  params.locallab.strength;
 
             if(!params.locallab.inversrad) {
                 dataspots[19][0] =  0;
@@ -1137,8 +1137,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     params.locallab.Smethod = "SYMSL";
                 }
 
-                params.locallab.radius = (float) (dataspots[17][sp]) / 10.f;
-                params.locallab.strength = (float) (dataspots[18][sp]) / 10.f;
+                params.locallab.radius = dataspots[17][sp];
+                params.locallab.strength = dataspots[18][sp];
 
                 if(dataspots[19][sp] ==  0) {
                     params.locallab.inversrad = false;

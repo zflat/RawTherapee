@@ -113,7 +113,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     int local_contrast = locallab.contrast;
     int local_lightness = locallab.lightness;
     int local_transit = locallab.transit;
-    double radius = locallab.radius;
+    double radius = (double) locallab.radius;
     double sharradius = ((double) locallab.sharradius) / 100. ;
     int local_sensisha = locallab.sensisha;
     int local_sharamount = locallab.sharamount;
@@ -125,7 +125,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     bool inverserad = locallab.inversrad;
     bool inverseret = locallab.inversret;
     bool inversesha = locallab.inverssha;
-    double strength = locallab.strength;
+    double strength = (double) locallab.strength;
     float str = (float)locallab.str;
     lp.cir = circr;
     lp.actsp = acti;
