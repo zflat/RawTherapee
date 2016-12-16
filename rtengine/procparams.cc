@@ -901,9 +901,10 @@ void LocallabParams::setDefaults()
     sharamount = 75;
     shardamping = 75;
     shariter = 30;
-    sensi = 20;
-    sensih = 20;
-    sensisha = 20;
+    sensi = 19;
+    sensih = 19;
+    sensicb = 19;
+    sensisha = 19;
     transit = 60;
     chrrt = 0;
     avoid = false;
@@ -924,6 +925,12 @@ void LocallabParams::setDefaults()
     vart = 200;
     nbspot = 1;
     anbspot = 0;
+
+    for(int i = 0; i < 5; i ++) {
+        mult[i] = 100;
+    }
+
+    threshold = 20;
 
     getDefaultCCWgainCurveT(ccwTgaincurve);
 
@@ -2685,6 +2692,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Sensih", locallab.sensih);
         }
 
+        if (!pedited || pedited->locallab.sensicb) {
+            keyFile.set_integer ("Locallab", "Sensicb", locallab.sensicb);
+        }
+
         if (!pedited || pedited->locallab.transit) {
             keyFile.set_integer ("Locallab", "Transit", locallab.transit);
         }
@@ -2721,6 +2732,18 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Strength", locallab.strength);
         }
 
+        for(int i = 0; i < 5; i++) {
+            std::stringstream ss;
+            ss << "Mult" << i;
+
+            if (!pedited || pedited->locallab.mult[i]) {
+                keyFile.set_integer("Locallab", ss.str(), locallab.mult[i]);
+            }
+        }
+
+        if (!pedited || pedited->locallab.threshold) {
+            keyFile.set_integer ("Locallab", "Threshold", locallab.threshold);
+        }
 
 
         // save post-crop vignette
@@ -4199,6 +4222,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "Sensicb"))  {
+                locallab.sensicb  = keyFile.get_integer ("Locallab", "Sensicb");
+
+                if (pedited) {
+                    pedited->locallab.sensicb = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Transit"))  {
                 locallab.transit  = keyFile.get_integer ("Locallab", "Transit");
 
@@ -4287,6 +4318,28 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->locallab.strength = true;
                 }
             }
+
+            for(int i = 0; i < 5; i ++) {
+                std::stringstream ss;
+                ss << "Mult" << i;
+
+                if(keyFile.has_key ("Locallab", ss.str())) {
+                    locallab.mult[i]  = keyFile.get_integer ("Locallab", ss.str());
+
+                    if (pedited) {
+                        pedited->locallab.mult[i]   = true;
+                    }
+                }
+            }
+
+            if(keyFile.has_key ("Locallab", "Threshold"))   {
+                locallab.threshold = keyFile.get_integer ("Locallab", "Threshold");
+
+                if (pedited) {
+                    pedited->locallab.threshold = true;
+                }
+            }
+
         }
 
         if (keyFile.has_group ("HLRecovery")) {
@@ -8178,6 +8231,22 @@ bool operator==(const DirPyrEqualizerParams & a, const DirPyrEqualizerParams & b
     return a.threshold == b.threshold;
 }
 
+
+bool operator==(const LocallabParams & a, const LocallabParams & b)
+{
+    if(a.enabled != b.enabled) {
+        return false;
+    }
+
+    for(int i = 0; i < 5; i++) {
+        if(a.mult[i] != b.mult[i]) {
+            return false;
+        }
+    }
+
+    return a.threshold == b.threshold;
+}
+
 /*bool operator==(const ExifPairs& a, const ExifPairs& b) {
 
     return a.field == b.field && a.value == b.value;
@@ -8441,6 +8510,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.shariter == other.locallab.shariter
         && locallab.sensi == other.locallab.sensi
         && locallab.sensih == other.locallab.sensih
+        && locallab.sensicb == other.locallab.sensicb
         && locallab.sensisha == other.locallab.sensisha
         && locallab.radius == other.locallab.radius
         && locallab.strength == other.locallab.strength
@@ -8451,6 +8521,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.nbspot == other.locallab.nbspot
         && locallab.anbspot == other.locallab.anbspot
         && locallab.vart == other.locallab.vart
+        && locallab.threshold == other.locallab.threshold
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve
         && pcvignette.enabled == other.pcvignette.enabled
         && pcvignette.strength == other.pcvignette.strength

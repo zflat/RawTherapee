@@ -284,6 +284,7 @@ public:
     void Reti_Local(int call, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro);
     void InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro);
     void Contrast_Local(int call, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, float pm, struct local_contra &lco, float lumaref, float av, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
+    void cbdl_Local(int call, int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
 
     //  void InverseContrast_Local(float ah, float bh, float al, float bl, float ave,  float hueref, float dhue, const struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
     void InverseContrast_Local(float ave, const struct local_contra& lco, const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);
@@ -354,9 +355,11 @@ public:
 
     // pyramid wavelet
     void dirpyr_equalizer    (float ** src, float ** dst, int srcwidth, int srcheight, float ** l_a, float ** l_b, float ** dest_a, float ** dest_b, const double * mult, const double dirpyrThreshold, const double skinprot, const bool gamutlab, float b_l, float t_l, float t_r, float b_r,  int choice, int scale);//Emil's directional pyramid wavelet
+    void cbdl_local_temp    (float ** src, float ** dst, float ** loctemp, int srcwidth, int srcheight, const float * mult, const double dirpyrThreshold, const double skinprot, const bool gamutlab, float b_l, float t_l, float t_r, float b_r,  int choice, int scale);
     void dirpyr_equalizercam    (CieImage* ncie, float ** src, float ** dst, int srcwidth, int srcheight, float ** h_p, float ** C_p,  const double * mult, const double dirpyrThreshold, const double skinprot, bool execdir, const bool gamutlab, float b_l, float t_l, float t_r, float b_r,  int choice, int scale);//Emil's directional pyramid wavelet
     void dirpyr_channel      (float ** data_fine, float ** data_coarse, int width, int height, int level, int scale);
     void idirpyr_eq_channel  (float ** data_coarse, float ** data_fine, float ** buffer, int width, int height, int level, float multi[5], const double dirpyrThreshold, float ** l_a_h, float ** l_b_c, const double skinprot, const bool gamutlab, float b_l, float t_l, float t_r, float b_r,  int choice);
+    void idirpyr_eq_channel_loc  (float ** data_coarse, float ** data_fine, float ** loctemp, float ** buffer, int width, int height, int level, float multi[5], const double dirpyrThreshold, float ** l_a_h, float ** l_b_c, const double skinprot, const bool gamutlab, float b_l, float t_l, float t_r, float b_r,  int choice);
     void idirpyr_eq_channelcam  (float ** data_coarse, float ** data_fine, float ** buffer, int width, int height, int level, float multi[5], const double dirpyrThreshold, float ** l_a_h, float ** l_b_c, const double skinprot, float b_l, float t_l, float t_r);
     void defringe       (LabImage* lab);
     void defringecam    (CieImage* ncie);

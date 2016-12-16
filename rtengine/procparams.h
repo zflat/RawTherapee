@@ -889,6 +889,7 @@ public:
 
     int     sensi;
     int     sensih;
+    int     sensicb;
     int     sensisha;
     double  radius;
     double  strength;
@@ -911,6 +912,8 @@ public:
     int     vart;
     int     chrrt;
     std::vector<double>   ccwTgaincurve;
+    double mult[5];
+    double threshold;
 
     LocallabParams ()
     {

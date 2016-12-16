@@ -64,6 +64,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpFrame->set_border_width(0);
     sharpFrame->set_label_align(0.025, 0.5);
 
+    Gtk::Frame* cbdlFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_CBDL")) );
+    cbdlFrame->set_border_width(0);
+    cbdlFrame->set_label_align(0.025, 0.5);
+
     Gtk::Frame* blurrFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_BLUFR")) );
     blurrFrame->set_border_width(0);
     blurrFrame->set_label_align(0.025, 0.5);
@@ -102,7 +106,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     locXL->setAdjusterListener (this);
 
     degree = Gtk::manage (new Adjuster (M("TP_LOCAL_DEGREE"), -180, 180, 1, 0));
-    degree->set_tooltip_text (M("TP_LOCAL_DEGREE_TOOLTIP"));
+    //degree->set_tooltip_text (M("TP_LOCAL_DEGREE_TOOLTIP"));
     degree->setAdjusterListener (this);
 
     locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 1500, 1, 250));
@@ -151,7 +155,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     //chroma->set_tooltip_text (M("TP_LOCALLAB_CHROMA_TOOLTIP"));
     chroma->setAdjusterListener (this);
 
-    sensi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSI"), 0, 100, 1, 20));
+    sensi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSI"), 0, 100, 1, 19));
     sensi->set_tooltip_text (M("TP_LOCALLAB_SENSI_TOOLTIP"));
     sensi->setAdjusterListener (this);
 
@@ -204,7 +208,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     vart->setAdjusterListener (this);
     chrrt  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHRRT"), 0, 100, 1, 0));
     chrrt->setAdjusterListener (this);
-    sensih = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIH"), 0, 100, 1, 20));
+    sensih = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIH"), 0, 100, 1, 19));
     sensih->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
     sensih->setAdjusterListener (this);
 
@@ -265,6 +269,53 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     sharpVBox->set_spacing(2);
     sharpVBox->set_border_width(4);
 
+    Gtk::VBox *cbdlVBox = Gtk::manage ( new Gtk::VBox());
+    cbdlVBox->set_spacing(2);
+    cbdlVBox->set_border_width(4);
+
+
+    Gtk::HBox * buttonBox1 = Gtk::manage (new Gtk::HBox(true, 10));
+
+    Gtk::Button * lumacontrastMinusButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMACONTRAST_MINUS")));
+    buttonBox1->pack_start(*lumacontrastMinusButton);
+    lumacontrastMinusPressedConn = lumacontrastMinusButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumacontrastMinusPressed));
+
+    Gtk::Button * lumaneutralButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMANEUTRAL")));
+    buttonBox1->pack_start(*lumaneutralButton);
+    lumaneutralPressedConn = lumaneutralButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumaneutralPressed));
+
+    Gtk::Button * lumacontrastPlusButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMACONTRAST_PLUS")));
+    buttonBox1->pack_start(*lumacontrastPlusButton);
+    lumacontrastPlusPressedConn = lumacontrastPlusButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumacontrastPlusPressed));
+
+    cbdlVBox->pack_start(*buttonBox1);
+
+    for(int i = 0; i < 5; i++) {
+        Glib::ustring ss;
+        ss = Glib::ustring::format(i);
+
+        if     (i == 0) {
+            ss += Glib::ustring::compose(" (%1)", M("TP_DIRPYREQUALIZER_LUMAFINEST"));
+        } else if(i == 4) {
+            ss += Glib::ustring::compose(" (%1)", M("TP_DIRPYREQUALIZER_LUMACOARSEST"));
+        }
+
+        multiplier[i] = Gtk::manage ( new Adjuster (ss, 0, 400, 1, 100) );
+        multiplier[i]->setAdjusterListener(this);
+        cbdlVBox->pack_start(*multiplier[i]);
+    }
+
+    Gtk::HSeparator *separator3 = Gtk::manage (new  Gtk::HSeparator());
+    cbdlVBox->pack_start(*separator3, Gtk::PACK_SHRINK, 2);
+
+    threshold = Gtk::manage ( new Adjuster (M("TP_DIRPYREQUALIZER_THRESHOLD"), 0, 100, 1, 20) );
+    threshold->setAdjusterListener(this);
+    cbdlVBox->pack_start(*threshold);
+
+    sensicb = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSICB"), 0, 100, 1, 19));
+    sensicb->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensicb->setAdjusterListener (this);
+    cbdlVBox->pack_start(*sensicb);
 
     sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 42, 250, 1, 4));
     sharradius->setAdjusterListener (this);
@@ -279,7 +330,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shariter->setAdjusterListener (this);
 
 
-    sensisha = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIS"), 0, 100, 1, 20));
+    sensisha = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIS"), 0, 100, 1, 19));
     sensisha->set_tooltip_text (M("TP_LOCALLAB_SENSIS_TOOLTIP"));
     sensisha->setAdjusterListener (this);
 
@@ -331,12 +382,6 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrFrame->add(*blurrVBox);
     pack_start (*blurrFrame);
 
-    sharpFrame->add(*sharpVBox);
-    pack_start (*sharpFrame);
-
-    denoisFrame->add(*denoisVBox);
-    pack_start (*denoisFrame);
-
     retiBox->pack_start (*retinexMethod);
     retiBox->pack_start (*str);
     retiBox->pack_start (*chrrt);
@@ -348,6 +393,17 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     retiFrame->add(*retiBox);
     pack_start (*retiFrame);
+
+
+    sharpFrame->add(*sharpVBox);
+    pack_start (*sharpFrame);
+
+    cbdlFrame->add(*cbdlVBox);
+    pack_start (*cbdlFrame);
+
+    denoisFrame->add(*denoisVBox);
+    pack_start (*denoisFrame);
+
 
     pack_start (*transit);
     pack_start (*avoid);//keep avoid clor shift in case of
@@ -424,6 +480,40 @@ Locallab::~Locallab()
     delete CCWcurveEditorgainT;
 
 }
+
+
+void Locallab::lumaneutralPressed ()
+{
+
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->setValue(100);
+        adjusterChanged(multiplier[i], 100);
+    }
+}
+
+
+void Locallab::lumacontrastPlusPressed ()
+{
+
+    for (int i = 0; i < 5; i++) {
+        float inc = (5 - i);
+        multiplier[i]->setValue(multiplier[i]->getValue() + inc);
+        adjusterChanged(multiplier[i], multiplier[i]->getValue());
+    }
+}
+
+
+void Locallab::lumacontrastMinusPressed ()
+{
+
+    for (int i = 0; i < 5; i++) {
+        float inc = - (5 - i);
+        multiplier[i]->setValue(multiplier[i]->getValue() + inc);
+        adjusterChanged(multiplier[i], multiplier[i]->getValue());
+    }
+}
+
+
 
 void Locallab::autoOpenCurve ()
 {
@@ -538,10 +628,20 @@ bool Locallab::localComputed_ ()
     thres->setValue(nextdatasp[34]);
     proxi->setValue(nextdatasp[35]);
 
+    //denoise
     noiselumf->setValue(nextdatasp[36]);
     noiselumc->setValue(nextdatasp[37]);
     noisechrof->setValue(nextdatasp[38]);
     noisechroc->setValue(nextdatasp[39]);
+
+    //cbdl
+    multiplier[0]->setValue(nextdatasp[40]);
+    multiplier[1]->setValue(nextdatasp[41]);
+    multiplier[2]->setValue(nextdatasp[42]);
+    multiplier[3]->setValue(nextdatasp[43]);
+    multiplier[4]->setValue(nextdatasp[44]);
+    threshold->setValue(nextdatasp[45]);
+    sensicb->setValue(nextdatasp[46]);
 
     enableListener ();
 
@@ -610,7 +710,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 2; i < 43; i++) {
+    for(int i = 2; i < 50; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -648,8 +748,15 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         noisechrof->setEditedState (pedited->locallab.noisechrof ? Edited : UnEdited);
         noisechroc->setEditedState (pedited->locallab.noisechroc ? Edited : UnEdited);
 
+        for(int i = 0; i < 5; i++) {
+            multiplier[i]->setEditedState (pedited->locallab.mult[i] ? Edited : UnEdited);
+        }
+
+        threshold->setEditedState (pedited->locallab.threshold ? Edited : UnEdited);
+
         sensi->setEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
+        sensicb->setEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
         nbspot->setEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
@@ -726,6 +833,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     sensisha->setValue (pp->locallab.sensisha);
     sensi->setValue (pp->locallab.sensi);
     sensih->setValue (pp->locallab.sensih);
+    sensicb->setValue (pp->locallab.sensicb);
     transit->setValue (pp->locallab.transit);
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
@@ -742,6 +850,12 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     noiselumc->setValue (pp->locallab.noiselumc);
     noisechrof->setValue (pp->locallab.noisechrof);
     noisechroc->setValue (pp->locallab.noisechroc);
+
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->setValue(pp->locallab.mult[i]);
+    }
+
+    threshold->setValue(pp->locallab.threshold);
 
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
@@ -926,6 +1040,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.sensisha = sensisha->getIntValue ();
     pp->locallab.sensi = sensi->getIntValue ();
     pp->locallab.sensih = sensih->getIntValue ();
+    pp->locallab.sensicb = sensicb->getIntValue ();
     pp->locallab.radius = radius->getIntValue ();
     pp->locallab.strength = strength->getIntValue ();
     pp->locallab.enabled = getEnabled();
@@ -943,6 +1058,12 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.vart = vart->getIntValue ();
     pp->locallab.chrrt = chrrt->getIntValue ();
     pp->locallab.ccwTgaincurve       = cTgainshape->getCurve ();
+
+    for (int i = 0; i < 5; i++) {
+        pp->locallab.mult[i] = multiplier[i]->getIntValue();
+    }
+
+    pp->locallab.threshold = threshold->getIntValue();
 
     if (pedited) {
         pedited->locallab.degree = degree->getEditedState ();
@@ -972,6 +1093,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.sensisha = sensisha->getEditedState ();
         pedited->locallab.sensi = sensi->getEditedState ();
         pedited->locallab.sensih = sensih->getEditedState ();
+        pedited->locallab.sensicb = sensicb->getEditedState ();
         pedited->locallab.radius = radius->getEditedState ();
         pedited->locallab.strength = strength->getEditedState ();
         pedited->locallab.transit = transit->getEditedState ();
@@ -989,6 +1111,13 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.vart = vart->getEditedState ();
         pedited->locallab.chrrt = chrrt->getEditedState ();
         pedited->locallab.ccwTgaincurve        = !cTgainshape->isUnChanged ();
+
+        for(int i = 0; i < 5; i++) {
+            pedited->locallab.mult[i] = multiplier[i]->getEditedState();
+        }
+
+        pedited->locallab.threshold = threshold->getEditedState();
+
     }
 
     if (retinexMethod->get_active_row_number() == 0) {
@@ -1313,6 +1442,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     sensisha->setDefault (defParams->locallab.sensisha);
     sensi->setDefault (defParams->locallab.sensi);
     sensih->setDefault (defParams->locallab.sensih);
+    sensicb->setDefault (defParams->locallab.sensicb);
     transit->setDefault (defParams->locallab.transit);
     radius->setDefault (defParams->locallab.radius);
     strength->setDefault (defParams->locallab.strength);
@@ -1322,6 +1452,12 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     anbspot->setDefault (defParams->locallab.anbspot);
     vart->setDefault (defParams->locallab.vart);
     chrrt->setDefault (defParams->locallab.chrrt);
+
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->setDefault(defParams->locallab.mult[i]);
+    }
+
+    threshold->setDefault(defParams->locallab.threshold);
 
 
     if (pedited) {
@@ -1349,6 +1485,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensisha->setDefaultEditedState (pedited->locallab.sensisha ? Edited : UnEdited);
         sensi->setDefaultEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setDefaultEditedState (pedited->locallab.sensih ? Edited : UnEdited);
+        sensicb->setDefaultEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setDefaultEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -1358,6 +1495,13 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         anbspot->setDefaultEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         vart->setDefaultEditedState (pedited->locallab.vart ? Edited : UnEdited);
         chrrt->setDefaultEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
+
+        for (int i = 0; i < 5; i++) {
+            multiplier[i]->setDefaultEditedState(pedited->locallab.mult[i] ? Edited : UnEdited);
+        }
+
+        threshold->setDefaultEditedState(pedited->locallab.threshold ? Edited : UnEdited);
+
     } else {
         degree->setDefaultEditedState (Irrelevant);
         locY->setDefaultEditedState (Irrelevant);
@@ -1383,6 +1527,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensisha->setDefaultEditedState (Irrelevant);
         sensi->setDefaultEditedState (Irrelevant);
         sensih->setDefaultEditedState (Irrelevant);
+        sensicb->setDefaultEditedState (Irrelevant);
         radius->setDefaultEditedState (Irrelevant);
         strength->setDefaultEditedState (Irrelevant);
         transit->setDefaultEditedState (Irrelevant);
@@ -1392,6 +1537,14 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         anbspot->setDefaultEditedState (Irrelevant);
         vart->setDefaultEditedState (Irrelevant);
         chrrt->setDefaultEditedState (Irrelevant);
+
+        for (int i = 0; i < 5; i++) {
+            multiplier[i]->setDefaultEditedState(Irrelevant);
+        }
+
+        threshold->setDefaultEditedState(Irrelevant);
+
+
     }
 }
 
@@ -1511,12 +1664,24 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocallabcircrad, circrad->getTextValue());
         } else if (a == thres) {
             listener->panelChanged (Evlocallabthres, thres->getTextValue());
+        } else if (a == threshold) {
+            listener->panelChanged (EvlocallabThresho, threshold->getTextValue());
+        } else if (a == sensicb) {
+            listener->panelChanged (Evlocallabsensicb, sensicb->getTextValue());
         } else if (a == proxi) {
             listener->panelChanged (Evlocallabproxi, proxi->getTextValue());
-        }
-
-        else if (a == centerX || a == centerY) {
+        } else if (a == centerX || a == centerY) {
             listener->panelChanged (EvlocallabCenter, Glib::ustring::compose ("X=%1\nY=%2", centerX->getTextValue(), centerY->getTextValue()));
+        } else {
+            listener->panelChanged (EvlocallabEqualizer,
+                                    Glib::ustring::compose("%1, %2, %3, %4, %5",
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[0]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[1]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[2]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[3]->getValue()),
+                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[4]->getValue()))
+                                   );
+
         }
     }
 }
@@ -1605,6 +1770,7 @@ void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
     sensisha->trimValue(pp->locallab.sensisha);
     sensi->trimValue(pp->locallab.sensi);
     sensih->trimValue(pp->locallab.sensih);
+    sensicb->trimValue(pp->locallab.sensicb);
     radius->trimValue(pp->locallab.radius);
     strength->trimValue(pp->locallab.strength);
     transit->trimValue(pp->locallab.transit);
@@ -1614,6 +1780,13 @@ void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
     anbspot->trimValue(pp->locallab.anbspot);
     vart->trimValue(pp->locallab.vart);
     chrrt->trimValue(pp->locallab.chrrt);
+
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->trimValue(pp->locallab.mult[i]);
+    }
+
+    threshold->trimValue(pp->locallab.threshold);
+
 }
 
 void Locallab::setBatchMode (bool batchMode)
@@ -1644,6 +1817,7 @@ void Locallab::setBatchMode (bool batchMode)
     sensisha->showEditedCB ();
     sensi->showEditedCB ();
     sensih->showEditedCB ();
+    sensicb->showEditedCB ();
     radius->showEditedCB ();
     strength->showEditedCB ();
     transit->showEditedCB ();
@@ -1655,6 +1829,12 @@ void Locallab::setBatchMode (bool batchMode)
     vart->showEditedCB ();
     CCWcurveEditorgainT->setBatchMode (batchMode);
     chrrt->showEditedCB ();
+
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->showEditedCB();
+    }
+
+    threshold->showEditedCB();
 
 }
 

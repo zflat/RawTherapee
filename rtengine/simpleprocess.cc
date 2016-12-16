@@ -961,9 +961,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         if (fich) {
             int **dataspots;
-            dataspots = new int*[43];
+            dataspots = new int*[50];
 
-            for (int i = 0; i < 43; i++) {
+            for (int i = 0; i < 50; i++) {
                 dataspots[i] = new int[maxspot];
             }
 
@@ -1054,9 +1054,17 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             dataspots[38][0] = params.locallab.noisechrof;
             dataspots[39][0] = params.locallab.noisechroc;
 
-            dataspots[40][0] = 100.f * params.locallab.hueref;
-            dataspots[41][0] = params.locallab.chromaref;
-            dataspots[42][0] = params.locallab.lumaref;
+            dataspots[40][0] = params.locallab.mult[0];
+            dataspots[41][0] = params.locallab.mult[1];
+            dataspots[42][0] = params.locallab.mult[2];
+            dataspots[43][0] = params.locallab.mult[3];
+            dataspots[44][0] = params.locallab.mult[4];
+            dataspots[45][0] = params.locallab.threshold;
+            dataspots[46][0] = params.locallab.sensicb;
+
+            dataspots[47][0] = 100.f * params.locallab.hueref;
+            dataspots[48][0] = params.locallab.chromaref;
+            dataspots[49][0] = params.locallab.lumaref;
 
 
             if (fich) {
@@ -1092,7 +1100,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         dataspots[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 43) {
+                    if(cont > 16  && cont < 50) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -1194,16 +1202,24 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.noisechrof = dataspots[38][sp];
                 params.locallab.noisechroc = dataspots[39][sp];
 
-                params.locallab.hueref = ((float) dataspots[40][sp]) / 100.f;
-                params.locallab.chromaref = dataspots[41][sp];
-                params.locallab.lumaref = dataspots[42][sp];
+                params.locallab.mult[0] = dataspots[40][sp];
+                params.locallab.mult[1] = dataspots[41][sp];
+                params.locallab.mult[2] = dataspots[42][sp];
+                params.locallab.mult[3] = dataspots[43][sp];
+                params.locallab.mult[4] = dataspots[44][sp];
+                params.locallab.threshold = dataspots[45][sp];
+                params.locallab.sensicb = dataspots[46][sp];
+
+                params.locallab.hueref = ((float) dataspots[47][sp]) / 100.f;
+                params.locallab.chromaref = dataspots[48][sp];
+                params.locallab.lumaref = dataspots[49][sp];
 
                 ipf.Lab_Local(2, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
 
-            for (int i = 0; i < 43; i++) {
+            for (int i = 0; i < 50; i++) {
                 delete [] dataspots[i];
             }
 

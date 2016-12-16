@@ -909,6 +909,13 @@ void Crop::update (int todo)
                         params.locallab.noiselumc = parent->noiselumcs[sp];
                         params.locallab.noisechrof = parent->noisechrofs[sp];
                         params.locallab.noisechroc = parent->noisechrocs[sp];
+                        params.locallab.mult[0] = parent->mult0s[sp];
+                        params.locallab.mult[1] = parent->mult1s[sp];
+                        params.locallab.mult[2] = parent->mult2s[sp];
+                        params.locallab.mult[3] = parent->mult3s[sp];
+                        params.locallab.mult[4] = parent->mult4s[sp];
+                        params.locallab.threshold = parent->thresholds[sp];
+                        params.locallab.sensicb = parent->sensicbs[sp];
 
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
@@ -1048,6 +1055,13 @@ void Crop::update (int todo)
                 parent->noiselumcs[sp] = params.locallab.noiselumc = parent->noiselumcs[0];
                 parent->noisechrofs[sp] = params.locallab.noisechrof = parent->noisechrofs[0];
                 parent->noisechrocs[sp] = params.locallab.noisechroc = parent->noisechrocs[0];
+                parent->mult0s[sp] = params.locallab.mult[0] = parent->mult0s[0];
+                parent->mult1s[sp] = params.locallab.mult[1] = parent->mult1s[0];
+                parent->mult2s[sp] = params.locallab.mult[2] = parent->mult2s[0];
+                parent->mult3s[sp] = params.locallab.mult[3] = parent->mult3s[0];
+                parent->mult4s[sp] = params.locallab.mult[4] = parent->mult4s[0];
+                parent->thresholds[sp] = params.locallab.threshold = parent->thresholds[0];
+                parent->sensicbs[sp] = params.locallab.sensicb = parent->sensicbs[0];
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];

@@ -442,6 +442,7 @@ public:
     bool shariter;
     bool sensi;
     bool sensih;
+    bool sensicb;
     bool sensisha;
     bool radius;
     bool strength;
@@ -461,6 +462,9 @@ public:
     bool inverssha;
     bool ccwTgaincurve;
     bool chrrt;
+    bool mult[5];
+    bool threshold;
+
 };
 
 class LensProfParamsEdited

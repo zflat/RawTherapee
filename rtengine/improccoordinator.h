@@ -249,6 +249,13 @@ protected:
     LUTi noiselumcs;
     LUTi noisechrofs;
     LUTi noisechrocs;
+    LUTi mult0s;
+    LUTi mult1s;
+    LUTi mult2s;
+    LUTi mult3s;
+    LUTi mult4s;
+    LUTi thresholds;
+    LUTi sensicbs;
 
 
     LUTf huerefs;

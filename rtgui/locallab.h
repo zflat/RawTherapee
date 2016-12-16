@@ -62,7 +62,13 @@ protected:
     Adjuster* noiselumc;
     Adjuster* noisechrof;
     Adjuster* noisechroc;
+    Adjuster* multiplier[5];
+    Adjuster* threshold;
+    Adjuster* sensicb;
 
+    sigc::connection lumaneutralPressedConn;
+    sigc::connection lumacontrastPlusPressedConn;
+    sigc::connection lumacontrastMinusPressedConn;
 
     Gtk::CheckButton* avoid;
     MyComboBoxText*   Smethod;
@@ -80,7 +86,7 @@ protected:
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[43];
+    int nextdatasp[50];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -124,6 +130,9 @@ public:
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
     void qualityMethodChanged();
+    void lumaneutralPressed ();
+    void lumacontrastPlusPressed ();
+    void lumacontrastMinusPressed ();
 
     // EditSubscriber interface
     CursorShape getCursor(int objectID);

@@ -316,6 +316,7 @@ void ParamsEdited::set (bool v)
     locallab.shariter = v;
     locallab.sensi = v;
     locallab.sensih = v;
+    locallab.sensicb = v;
     locallab.sensisha = v;
     locallab.radius = v;
     locallab.strength = v;
@@ -335,6 +336,13 @@ void ParamsEdited::set (bool v)
     locallab.anbspot = v;
     locallab.vart = v;
     locallab.ccwTgaincurve = v;
+
+    for(int i = 0; i < 5; i++) {
+        locallab.mult[i] = v;
+    }
+
+    locallab.threshold = v;
+
     pcvignette.enabled = v;
     pcvignette.strength = v;
     pcvignette.feather = v;
@@ -864,6 +872,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.shariter = locallab.shariter && p.locallab.shariter == other.locallab.shariter;
         locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
         locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
+        locallab.sensicb = locallab.sensicb && p.locallab.sensicb == other.locallab.sensicb;
         locallab.sensisha = locallab.sensisha && p.locallab.sensisha == other.locallab.sensisha;
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
@@ -875,6 +884,13 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.anbspot = locallab.anbspot && p.locallab.anbspot == other.locallab.anbspot;
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
+
+        for(int i = 0; i < 5; i++) {
+            locallab.mult[i] = locallab.mult[i] && p.locallab.mult[i] == other.locallab.mult[i];
+        }
+
+        locallab.threshold = locallab.threshold && p.locallab.threshold == other.locallab.threshold;
+
         pcvignette.enabled = pcvignette.enabled && p.pcvignette.enabled == other.pcvignette.enabled;
         pcvignette.strength = pcvignette.strength && p.pcvignette.strength == other.pcvignette.strength;
         pcvignette.feather = pcvignette.feather && p.pcvignette.feather == other.pcvignette.feather;
@@ -2213,6 +2229,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.sensih     = mods.locallab.sensih;
     }
 
+    if (locallab.sensicb) {
+        toEdit.locallab.sensicb     = mods.locallab.sensicb;
+    }
+
     if (locallab.sensisha) {
         toEdit.locallab.sensisha     = mods.locallab.sensisha;
     }
@@ -2255,6 +2275,16 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.ccwTgaincurve) {
         toEdit.locallab.ccwTgaincurve   = mods.locallab.ccwTgaincurve;
+    }
+
+    for(int i = 0; i < 5; i++) {
+        if(locallab.mult[i]) {
+            toEdit.locallab.mult[i]    = mods.locallab.mult[i];
+        }
+    }
+
+    if (locallab.threshold) {
+        toEdit.locallab.threshold = mods.locallab.threshold;
     }
 
     if (pcvignette.enabled) {
