@@ -443,6 +443,7 @@ public:
     bool sensi;
     bool sensih;
     bool sensicb;
+    bool sensibn;
     bool sensisha;
     bool radius;
     bool strength;
@@ -455,7 +456,7 @@ public:
     bool nbspot;
     bool anbspot;
     bool vart;
-    bool activsp;
+    bool activlum;
     bool invers;
     bool inversrad;
     bool inversret;

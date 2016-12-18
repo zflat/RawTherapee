@@ -227,6 +227,7 @@ protected:
     LUTi curens;
     LUTi radiuss;
     LUTi strengths;
+    LUTi sensibns;
     LUTi inversrads;
     LUTi strs;
     LUTi chrrts;
@@ -256,6 +257,7 @@ protected:
     LUTi mult4s;
     LUTi thresholds;
     LUTi sensicbs;
+    LUTi activlums;
 
 
     LUTf huerefs;

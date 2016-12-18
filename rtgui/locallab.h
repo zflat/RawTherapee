@@ -65,6 +65,7 @@ protected:
     Adjuster* multiplier[5];
     Adjuster* threshold;
     Adjuster* sensicb;
+    Adjuster* sensibn;
 
     sigc::connection lumaneutralPressedConn;
     sigc::connection lumacontrastPlusPressedConn;
@@ -77,7 +78,7 @@ protected:
     Gtk::CheckButton* invers;
     Gtk::CheckButton* inversrad;
     Gtk::CheckButton* inversret;
-    Gtk::CheckButton* activsp;
+    Gtk::CheckButton* activlum;
     Gtk::CheckButton* inverssha;
 
     MyComboBoxText*   retinexMethod;
@@ -86,7 +87,7 @@ protected:
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[50];
+    int nextdatasp[52];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -95,9 +96,9 @@ protected:
     double draggedlocYTOffset;
     double draggedlocXLOffset;
     rtengine::Coord draggedCenter;
-    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivsp, lastinverssha;
+    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivlum, lastinverssha;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activspConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn;
+    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn;
 
     void editToggled ();
 
@@ -118,7 +119,7 @@ public:
     void setAdjusterBehavior (bool degreeadd, bool locYadd, bool locXadd, bool locYTadd, bool locXLadd, bool centeradd, bool lightnessadd, bool contrastadd, bool chromaadd, bool sensiadd, bool transitadd, bool radiusadd, bool strengthadd);
     void trimValues          (rtengine::procparams::ProcParams* pp);
     void avoidChanged ();
-    void activspChanged ();
+    void activlumChanged ();
     void inversChanged ();
     void inversradChanged ();
     void inversretChanged ();

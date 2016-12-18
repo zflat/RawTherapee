@@ -497,7 +497,7 @@ enum ProcEvent {
     Evlocallabinversret = 467,
     Evlocallabsensih = 468,
     Evlocallabnbspot = 469,
-    Evlocallabactivsp = 470,
+    Evlocallabactivlum = 470,
     Evlocallabanbspot = 471,
     Evlocallabsharradius = 472,
     Evlocallabsharamount = 473,
@@ -516,6 +516,7 @@ enum ProcEvent {
     EvlocallabThresho = 486,
     EvlocallabEqualizer = 487,
     Evlocallabsensicb = 488,
+    Evlocallabsensibn = 489,
 
     NUMOFEVENTS
 

@@ -48,9 +48,6 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     anbspot->setAdjusterListener (this);
     anbspot->set_tooltip_text (M("TP_LOCALLAB_ANBSPOT_TOOLTIP"));
 
-    activsp = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_ACTIV")));
-    activsp->set_active (false);
-    activspConn  = activsp->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::activspChanged) );
 
     Gtk::Frame* shapeFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_SHFR")) );
     shapeFrame->set_border_width(0);
@@ -166,6 +163,15 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     //radius->set_tooltip_text (M("TP_LOCALLAB_RADIUS_TOOLTIP"));
     strength->setAdjusterListener (this);
 
+
+    sensibn = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIBN"), 0, 100, 1, 60));
+    sensibn->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensibn->setAdjusterListener (this);
+
+    activlum = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_ACTIV")));
+    activlum->set_active (false);
+    activlumConn  = activlum->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::activlumChanged) );
+
     transit = Gtk::manage (new Adjuster (M("TP_LOCALLAB_TRANSIT"), 5, 95, 1, 60));
     transit->set_tooltip_text (M("TP_LOCALLAB_TRANSIT_TOOLTIP"));
     transit->setAdjusterListener (this);
@@ -249,7 +255,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     shapeVBox->pack_start (*centerX);
     shapeVBox->pack_start (*centerY);
     shapeVBox->pack_start (*circrad);
-    // shapeVBox->pack_start (*activsp);
+    //shapeVBox->pack_start (*activlum);
     shapeVBox->pack_start (*qualityMethod);
     // shapeVBox->pack_start (*thres);
     // shapeVBox->pack_start (*proxi);
@@ -378,6 +384,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
 
     blurrVBox->pack_start (*radius);
     blurrVBox->pack_start (*strength);
+    blurrVBox->pack_start (*sensibn);
+    blurrVBox->pack_start (*activlum);
+
     blurrVBox->pack_start (*inversrad);
     blurrFrame->add(*blurrVBox);
     pack_start (*blurrFrame);
@@ -573,75 +582,83 @@ bool Locallab::localComputed_ ()
     //sliders blurr
     radius->setValue(nextdatasp[17]);
     strength->setValue(nextdatasp[18]);
+    sensibn->setValue(nextdatasp[19]);
 
     //inverse
-    if(nextdatasp[19] == 0) {
+    if(nextdatasp[20] == 0) {
         inversrad->set_active (false);
     } else {
         inversrad->set_active (true);
     }
 
     //sliders retinex
-    str->setValue(nextdatasp[20]);
-    chrrt->setValue(nextdatasp[21]);
-    neigh->setValue(nextdatasp[22]);
-    vart->setValue(nextdatasp[23]);
-    sensih->setValue(nextdatasp[24]);
+    str->setValue(nextdatasp[21]);
+    chrrt->setValue(nextdatasp[22]);
+    neigh->setValue(nextdatasp[23]);
+    vart->setValue(nextdatasp[24]);
+    sensih->setValue(nextdatasp[25]);
 
     //inverse
-    if(nextdatasp[25] == 0) {
+    if(nextdatasp[26] == 0) {
         inversret->set_active (false);
     } else {
         inversret->set_active (true);
     }
 
     //method retinex
-    if (nextdatasp[26] == 0) {
+    if (nextdatasp[27] == 0) {
         retinexMethod->set_active (0);
-    } else if (nextdatasp[26] == 1) {
+    } else if (nextdatasp[27] == 1) {
         retinexMethod->set_active (1);
-    } else if (nextdatasp[26] == 2) {
+    } else if (nextdatasp[27] == 2) {
         retinexMethod->set_active (2);
     }
 
     //sharpening
-    sharradius->setValue(nextdatasp[27]);
-    sharamount->setValue(nextdatasp[28]);
-    shardamping->setValue(nextdatasp[29]);
-    shariter->setValue(nextdatasp[30]);
-    sensisha->setValue(nextdatasp[31]);
+    sharradius->setValue(nextdatasp[28]);
+    sharamount->setValue(nextdatasp[29]);
+    shardamping->setValue(nextdatasp[30]);
+    shariter->setValue(nextdatasp[31]);
+    sensisha->setValue(nextdatasp[32]);
 
-    if(nextdatasp[32] == 0) {
+    if(nextdatasp[33] == 0) {
         inverssha->set_active (false);
     } else {
         inverssha->set_active (true);
     }
 
-    if (nextdatasp[33] == 0) {
+    if (nextdatasp[34] == 0) {
         qualityMethod->set_active (0);
-    } else if (nextdatasp[33] == 1) {
+    } else if (nextdatasp[34] == 1) {
         qualityMethod->set_active (1);
-    } else if (nextdatasp[33] == 2) {
+    } else if (nextdatasp[34] == 2) {
         qualityMethod->set_active (2);
     }
 
-    thres->setValue(nextdatasp[34]);
-    proxi->setValue(nextdatasp[35]);
+    thres->setValue(nextdatasp[35]);
+    proxi->setValue(nextdatasp[36]);
 
     //denoise
-    noiselumf->setValue(nextdatasp[36]);
-    noiselumc->setValue(nextdatasp[37]);
-    noisechrof->setValue(nextdatasp[38]);
-    noisechroc->setValue(nextdatasp[39]);
+    noiselumf->setValue(nextdatasp[37]);
+    noiselumc->setValue(nextdatasp[38]);
+    noisechrof->setValue(nextdatasp[39]);
+    noisechroc->setValue(nextdatasp[40]);
 
     //cbdl
-    multiplier[0]->setValue(nextdatasp[40]);
-    multiplier[1]->setValue(nextdatasp[41]);
-    multiplier[2]->setValue(nextdatasp[42]);
-    multiplier[3]->setValue(nextdatasp[43]);
-    multiplier[4]->setValue(nextdatasp[44]);
-    threshold->setValue(nextdatasp[45]);
-    sensicb->setValue(nextdatasp[46]);
+    multiplier[0]->setValue(nextdatasp[41]);
+    multiplier[1]->setValue(nextdatasp[42]);
+    multiplier[2]->setValue(nextdatasp[43]);
+    multiplier[3]->setValue(nextdatasp[44]);
+    multiplier[4]->setValue(nextdatasp[45]);
+    threshold->setValue(nextdatasp[46]);
+    sensicb->setValue(nextdatasp[47]);
+
+    //blur luma
+    if(nextdatasp[48] == 0) {
+        activlum->set_active (false);
+    } else {
+        activlum->set_active (true);
+    }
 
     enableListener ();
 
@@ -710,7 +727,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 2; i < 50; i++) {
+    for(int i = 2; i < 52; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -757,6 +774,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         sensi->setEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         sensicb->setEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
+        sensibn->setEditedState (pedited->locallab.sensibn ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
         nbspot->setEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
@@ -768,7 +786,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         chrrt->setEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
         set_inconsistent (multiImage && !pedited->locallab.enabled);
         avoid->set_inconsistent (multiImage && !pedited->locallab.avoid);
-        activsp->set_inconsistent (multiImage && !pedited->locallab.activsp);
+        activlum->set_inconsistent (multiImage && !pedited->locallab.activlum);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
         inverssha->set_inconsistent (multiImage && !pedited->locallab.inverssha);
@@ -797,9 +815,9 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     avoidConn.block (true);
     avoid->set_active (pp->locallab.avoid);
     avoidConn.block (false);
-    activspConn.block (true);
-    activsp->set_active (pp->locallab.activsp);
-    activspConn.block (false);
+    activlumConn.block (true);
+    activlum->set_active (pp->locallab.activlum);
+    activlumConn.block (false);
     inversConn.block (true);
     invers->set_active (pp->locallab.invers);
     inversConn.block (false);
@@ -834,6 +852,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     sensi->setValue (pp->locallab.sensi);
     sensih->setValue (pp->locallab.sensih);
     sensicb->setValue (pp->locallab.sensicb);
+    sensibn->setValue (pp->locallab.sensibn);
     transit->setValue (pp->locallab.transit);
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
@@ -844,7 +863,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     vart->setValue (pp->locallab.vart);
     chrrt->setValue (pp->locallab.chrrt);
     cTgainshape->setCurve (pp->locallab.ccwTgaincurve);
-    lastactivsp = pp->locallab.activsp;
+    lastactivlum = pp->locallab.activlum;
     lastanbspot = pp->locallab.anbspot;
     noiselumf->setValue (pp->locallab.noiselumf);
     noiselumc->setValue (pp->locallab.noiselumc);
@@ -862,7 +881,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     lastinversrad = pp->locallab.inversrad;
     lastinversret = pp->locallab.inversret;
     lastinverssha = pp->locallab.inverssha;
-    activspChanged();
+    activlumChanged();
     inversChanged();
     inversradChanged();
     inversretChanged();
@@ -1041,12 +1060,13 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.sensi = sensi->getIntValue ();
     pp->locallab.sensih = sensih->getIntValue ();
     pp->locallab.sensicb = sensicb->getIntValue ();
+    pp->locallab.sensibn = sensibn->getIntValue ();
     pp->locallab.radius = radius->getIntValue ();
     pp->locallab.strength = strength->getIntValue ();
     pp->locallab.enabled = getEnabled();
     pp->locallab.transit = transit->getIntValue ();
     pp->locallab.avoid = avoid->get_active();
-    pp->locallab.activsp = activsp->get_active();
+    pp->locallab.activlum = activlum->get_active();
     pp->locallab.invers = invers->get_active();
     pp->locallab.inversrad = inversrad->get_active();
     pp->locallab.inversret = inversret->get_active();
@@ -1094,13 +1114,14 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.sensi = sensi->getEditedState ();
         pedited->locallab.sensih = sensih->getEditedState ();
         pedited->locallab.sensicb = sensicb->getEditedState ();
+        pedited->locallab.sensibn = sensibn->getEditedState ();
         pedited->locallab.radius = radius->getEditedState ();
         pedited->locallab.strength = strength->getEditedState ();
         pedited->locallab.transit = transit->getEditedState ();
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
         pedited->locallab.invers = !invers->get_inconsistent();
-        pedited->locallab.activsp = !activsp->get_inconsistent();
+        pedited->locallab.activlum = !activlum->get_inconsistent();
         pedited->locallab.inversret = !inversret->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
         pedited->locallab.inverssha = !inverssha->get_inconsistent();
@@ -1299,29 +1320,29 @@ void Locallab::inversChanged ()
     }
 }
 
-void Locallab::activspChanged ()
+void Locallab::activlumChanged ()
 {
 
     if (batchMode) {
-        if (activsp->get_inconsistent()) {
-            activsp->set_inconsistent (false);
-            activspConn.block (true);
-            activsp->set_active (false);
-            activspConn.block (false);
-        } else if (lastactivsp) {
-            activsp->set_inconsistent (true);
+        if (activlum->get_inconsistent()) {
+            activlum->set_inconsistent (false);
+            activlumConn.block (true);
+            activlum->set_active (false);
+            activlumConn.block (false);
+        } else if (lastactivlum) {
+            activlum->set_inconsistent (true);
         }
 
-        lastactivsp = activsp->get_active ();
+        lastactivlum = activlum->get_active ();
     }
 
 
     if (listener) {
 
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabactivsp, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabactivlum, M("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabactivsp, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabactivlum, M("GENERAL_DISABLED"));
         }
     }
 }
@@ -1341,6 +1362,13 @@ void Locallab::inversradChanged ()
 
         lastinversrad = inversrad->get_active ();
     }
+
+    if(inversrad->get_active ()) {
+        sensibn->hide();
+    } else {
+        sensibn->show();
+    }
+
 
     if (listener) {
         if (getEnabled()) {
@@ -1443,6 +1471,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     sensi->setDefault (defParams->locallab.sensi);
     sensih->setDefault (defParams->locallab.sensih);
     sensicb->setDefault (defParams->locallab.sensicb);
+    sensibn->setDefault (defParams->locallab.sensibn);
     transit->setDefault (defParams->locallab.transit);
     radius->setDefault (defParams->locallab.radius);
     strength->setDefault (defParams->locallab.strength);
@@ -1486,6 +1515,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensi->setDefaultEditedState (pedited->locallab.sensi ? Edited : UnEdited);
         sensih->setDefaultEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         sensicb->setDefaultEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
+        sensibn->setDefaultEditedState (pedited->locallab.sensibn ? Edited : UnEdited);
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setDefaultEditedState (pedited->locallab.strength ? Edited : UnEdited);
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -1528,6 +1558,7 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensi->setDefaultEditedState (Irrelevant);
         sensih->setDefaultEditedState (Irrelevant);
         sensicb->setDefaultEditedState (Irrelevant);
+        sensibn->setDefaultEditedState (Irrelevant);
         radius->setDefaultEditedState (Irrelevant);
         strength->setDefaultEditedState (Irrelevant);
         transit->setDefaultEditedState (Irrelevant);
@@ -1668,6 +1699,8 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (EvlocallabThresho, threshold->getTextValue());
         } else if (a == sensicb) {
             listener->panelChanged (Evlocallabsensicb, sensicb->getTextValue());
+        } else if (a == sensibn) {
+            listener->panelChanged (Evlocallabsensibn, sensibn->getTextValue());
         } else if (a == proxi) {
             listener->panelChanged (Evlocallabproxi, proxi->getTextValue());
         } else if (a == centerX || a == centerY) {
@@ -1771,6 +1804,7 @@ void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
     sensi->trimValue(pp->locallab.sensi);
     sensih->trimValue(pp->locallab.sensih);
     sensicb->trimValue(pp->locallab.sensicb);
+    sensibn->trimValue(pp->locallab.sensibn);
     radius->trimValue(pp->locallab.radius);
     strength->trimValue(pp->locallab.strength);
     transit->trimValue(pp->locallab.transit);
@@ -1818,6 +1852,7 @@ void Locallab::setBatchMode (bool batchMode)
     sensi->showEditedCB ();
     sensih->showEditedCB ();
     sensicb->showEditedCB ();
+    sensibn->showEditedCB ();
     radius->showEditedCB ();
     strength->showEditedCB ();
     transit->showEditedCB ();

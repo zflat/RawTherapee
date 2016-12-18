@@ -952,18 +952,20 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         int realspot = params.locallab.nbspot;
         int maxspot = settings->nspot + 1;
         ifstream fich(datalab, ios::in);
-        // float** shbuffer;
-        float **shbuffer = new float*[fh];
+        float** shbuffer;
 
-        for (int i = 0; i < fh; i++) {
-            shbuffer[i] = new float[fw];
-        }
+        /*        float **shbuffer = new float*[fh];
 
+
+                        for (int i = 0; i < fh; i++) {
+                            shbuffer[i] = new float[fw];
+                        }
+                */
         if (fich) {
             int **dataspots;
-            dataspots = new int*[50];
+            dataspots = new int*[52];
 
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 52; i++) {
                 dataspots[i] = new int[maxspot];
             }
 
@@ -998,73 +1000,80 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
             dataspots[17][0] =  params.locallab.radius;
             dataspots[18][0] =  params.locallab.strength;
+            dataspots[19][0] =  params.locallab.sensibn;
 
             if(!params.locallab.inversrad) {
-                dataspots[19][0] =  0;
+                dataspots[20][0] =  0;
             } else {
-                dataspots[19][0] =  1;
+                dataspots[20][0] =  1;
             }
 
-            dataspots[20][0] = params.locallab.str;
-            dataspots[21][0] = params.locallab.chrrt;
-            dataspots[22][0] = params.locallab.neigh;
-            dataspots[23][0] = params.locallab.vart;
-            dataspots[24][0] = params.locallab.sensih;
+            dataspots[21][0] = params.locallab.str;
+            dataspots[22][0] = params.locallab.chrrt;
+            dataspots[23][0] = params.locallab.neigh;
+            dataspots[24][0] = params.locallab.vart;
+            dataspots[25][0] = params.locallab.sensih;
 
             if(!params.locallab.inversret) {
-                dataspots[25][0] =  0;
+                dataspots[26][0] =  0;
             } else {
-                dataspots[25][0] =  1;
+                dataspots[26][0] =  1;
             }
 
             if(params.locallab.retinexMethod == "low") {
-                dataspots[26][0] =  0;
+                dataspots[27][0] =  0;
             } else if (params.locallab.retinexMethod == "uni") {
-                dataspots[26][0] =  1;
+                dataspots[27][0] =  1;
             } else if (params.locallab.retinexMethod == "high") {
-                dataspots[26][0] =  2;
+                dataspots[27][0] =  2;
             }
 
 
-            dataspots[27][0] = params.locallab.sharradius;
-            dataspots[28][0] = params.locallab.sharamount;
-            dataspots[29][0] = params.locallab.shardamping;
-            dataspots[30][0] = params.locallab.shariter;
-            dataspots[31][0] = params.locallab.sensisha;
+            dataspots[28][0] = params.locallab.sharradius;
+            dataspots[29][0] = params.locallab.sharamount;
+            dataspots[30][0] = params.locallab.shardamping;
+            dataspots[31][0] = params.locallab.shariter;
+            dataspots[32][0] = params.locallab.sensisha;
 
             if(!params.locallab.inverssha) {
-                dataspots[32][0] =  0;
+                dataspots[33][0] =  0;
             } else {
-                dataspots[32][0] =  1;
+                dataspots[33][0] =  1;
             }
 
             if(params.locallab.qualityMethod == "std") {
-                dataspots[33][0] =  0;
+                dataspots[34][0] =  0;
             } else if (params.locallab.qualityMethod == "enh") {
-                dataspots[33][0] =  1;
+                dataspots[34][0] =  1;
             } else if (params.locallab.qualityMethod == "enhden") {
-                dataspots[33][0] =  2;
+                dataspots[34][0] =  2;
             }
 
-            dataspots[34][0] = params.locallab.thres;
-            dataspots[35][0] = params.locallab.proxi;
+            dataspots[35][0] = params.locallab.thres;
+            dataspots[36][0] = params.locallab.proxi;
 
-            dataspots[36][0] = params.locallab.noiselumf;
-            dataspots[37][0] = params.locallab.noiselumc;
-            dataspots[38][0] = params.locallab.noisechrof;
-            dataspots[39][0] = params.locallab.noisechroc;
+            dataspots[37][0] = params.locallab.noiselumf;
+            dataspots[38][0] = params.locallab.noiselumc;
+            dataspots[39][0] = params.locallab.noisechrof;
+            dataspots[40][0] = params.locallab.noisechroc;
 
-            dataspots[40][0] = params.locallab.mult[0];
-            dataspots[41][0] = params.locallab.mult[1];
-            dataspots[42][0] = params.locallab.mult[2];
-            dataspots[43][0] = params.locallab.mult[3];
-            dataspots[44][0] = params.locallab.mult[4];
-            dataspots[45][0] = params.locallab.threshold;
-            dataspots[46][0] = params.locallab.sensicb;
+            dataspots[41][0] = params.locallab.mult[0];
+            dataspots[42][0] = params.locallab.mult[1];
+            dataspots[43][0] = params.locallab.mult[2];
+            dataspots[44][0] = params.locallab.mult[3];
+            dataspots[45][0] = params.locallab.mult[4];
+            dataspots[46][0] = params.locallab.threshold;
+            dataspots[47][0] = params.locallab.sensicb;
 
-            dataspots[47][0] = 100.f * params.locallab.hueref;
-            dataspots[48][0] = params.locallab.chromaref;
-            dataspots[49][0] = params.locallab.lumaref;
+            if(!params.locallab.activlum) {
+                dataspots[48][0] =  0;
+            } else {
+                dataspots[48][0] =  1;
+            }
+
+            dataspots[49][0] = 100.f * params.locallab.hueref;
+            dataspots[50][0] = params.locallab.chromaref;
+            dataspots[51][0] = params.locallab.lumaref;
 
 
             if (fich) {
@@ -1100,7 +1109,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         dataspots[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 50) {
+                    if(cont > 16  && cont < 52) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -1147,90 +1156,97 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 params.locallab.radius = dataspots[17][sp];
                 params.locallab.strength = dataspots[18][sp];
+                params.locallab.sensibn = dataspots[19][sp];
 
-                if(dataspots[19][sp] ==  0) {
+                if(dataspots[20][sp] ==  0) {
                     params.locallab.inversrad = false;
                 } else {
                     params.locallab.inversrad = true;
                 }
 
-                params.locallab.str = dataspots[20][sp];
-                params.locallab.chrrt = dataspots[21][sp];
-                params.locallab.neigh = dataspots[22][sp];
-                params.locallab.vart = dataspots[23][sp];
-                params.locallab.sensih = dataspots[24][sp];
+                params.locallab.str = dataspots[21][sp];
+                params.locallab.chrrt = dataspots[22][sp];
+                params.locallab.neigh = dataspots[23][sp];
+                params.locallab.vart = dataspots[24][sp];
+                params.locallab.sensih = dataspots[25][sp];
 
-                if(dataspots[25][sp] ==  0) {
+                if(dataspots[26][sp] ==  0) {
                     params.locallab.inversret = false;
                 } else {
                     params.locallab.inversret = true;
                 }
 
-                if(dataspots[26][sp] ==  0) {
+                if(dataspots[27][sp] ==  0) {
                     params.locallab.retinexMethod = "low" ;
-                } else if (dataspots[26][sp] ==  1) {
+                } else if (dataspots[27][sp] ==  1) {
                     params.locallab.retinexMethod = "uni" ;
-                } else if (dataspots[26][sp] ==  2) {
+                } else if (dataspots[27][sp] ==  2) {
                     params.locallab.retinexMethod = "high";
                 }
 
-                params.locallab.sharradius = dataspots[27][sp];
-                params.locallab.sharamount = dataspots[28][sp];
-                params.locallab.shardamping = dataspots[29][sp];
-                params.locallab.shariter = dataspots[30][sp];
-                params.locallab.sensisha = dataspots[31][sp];
+                params.locallab.sharradius = dataspots[28][sp];
+                params.locallab.sharamount = dataspots[29][sp];
+                params.locallab.shardamping = dataspots[30][sp];
+                params.locallab.shariter = dataspots[31][sp];
+                params.locallab.sensisha = dataspots[32][sp];
 
-                if(dataspots[32][sp] ==  0) {
+                if(dataspots[33][sp] ==  0) {
                     params.locallab.inverssha = false;
                 } else {
                     params.locallab.inverssha = true;
                 }
 
-                if(dataspots[33][sp] ==  0) {
+                if(dataspots[34][sp] ==  0) {
                     params.locallab.qualityMethod = "std" ;
-                } else if (dataspots[33][sp] ==  1) {
+                } else if (dataspots[34][sp] ==  1) {
                     params.locallab.qualityMethod = "enh" ;
-                } else if (dataspots[33][sp] ==  2) {
+                } else if (dataspots[34][sp] ==  2) {
                     params.locallab.qualityMethod = "enhden" ;
                 }
 
-                params.locallab.thres = dataspots[34][sp];
-                params.locallab.proxi = dataspots[35][sp];
+                params.locallab.thres = dataspots[35][sp];
+                params.locallab.proxi = dataspots[36][sp];
 
-                params.locallab.noiselumf = dataspots[36][sp];
-                params.locallab.noiselumc = dataspots[37][sp];
-                params.locallab.noisechrof = dataspots[38][sp];
-                params.locallab.noisechroc = dataspots[39][sp];
+                params.locallab.noiselumf = dataspots[37][sp];
+                params.locallab.noiselumc = dataspots[38][sp];
+                params.locallab.noisechrof = dataspots[39][sp];
+                params.locallab.noisechroc = dataspots[40][sp];
 
-                params.locallab.mult[0] = dataspots[40][sp];
-                params.locallab.mult[1] = dataspots[41][sp];
-                params.locallab.mult[2] = dataspots[42][sp];
-                params.locallab.mult[3] = dataspots[43][sp];
-                params.locallab.mult[4] = dataspots[44][sp];
-                params.locallab.threshold = dataspots[45][sp];
-                params.locallab.sensicb = dataspots[46][sp];
+                params.locallab.mult[0] = dataspots[41][sp];
+                params.locallab.mult[1] = dataspots[42][sp];
+                params.locallab.mult[2] = dataspots[43][sp];
+                params.locallab.mult[3] = dataspots[44][sp];
+                params.locallab.mult[4] = dataspots[45][sp];
+                params.locallab.threshold = dataspots[46][sp];
+                params.locallab.sensicb = dataspots[47][sp];
 
-                params.locallab.hueref = ((float) dataspots[47][sp]) / 100.f;
-                params.locallab.chromaref = dataspots[48][sp];
-                params.locallab.lumaref = dataspots[49][sp];
+                if(dataspots[48][sp] ==  0) {
+                    params.locallab.activlum = false;
+                } else {
+                    params.locallab.activlum = true;
+                }
+
+                params.locallab.hueref = ((float) dataspots[49][sp]) / 100.f;
+                params.locallab.chromaref = dataspots[50][sp];
+                params.locallab.lumaref = dataspots[51][sp];
 
                 ipf.Lab_Local(2, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
 
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 52; i++) {
                 delete [] dataspots[i];
             }
 
             delete [] dataspots;
+            /*
+                        for (int i = 0; i < fh; i++) {
+                            delete [] shbuffer[i];
+                        }
 
-            for (int i = 0; i < fh; i++) {
-                delete [] shbuffer[i];
-            }
-
-            delete [] shbuffer;
-
+                        delete [] shbuffer;
+            */
 
 
         }

@@ -702,6 +702,7 @@ HISTORY_MSG_467;Local - Retinex chroma
 HISTORY_MSG_468;Local - Retinex Inverse
 HISTORY_MSG_469;Local - Hue scope
 HISTORY_MSG_470;Local - Spot
+HISTORY_MSG_471;Local - Blur Luminance only
 HISTORY_MSG_472;Local - --
 HISTORY_MSG_473;Local - Sh Radius
 HISTORY_MSG_474;Local - Sh Amount
@@ -720,6 +721,7 @@ HISTORY_MSG_486;Local - Noise chro c
 HISTORY_MSG_487;Local - cbdl threshold
 HISTORY_MSG_488;Local - cbdl mult
 HISTORY_MSG_489;Local - cbdl scope
+HISTORY_MSG_490;Local - Blur scope
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1644,7 +1646,7 @@ TP_LENSPROFILE_LABEL;Lens Correction Profile
 TP_LENSPROFILE_USECA;Chromatic aberration correction
 TP_LENSPROFILE_USEDIST;Distortion correction
 TP_LENSPROFILE_USEVIGN;Vignetting correction
-TP_LOCALLAB_ACTIV;Enhanced algorithm
+TP_LOCALLAB_ACTIV;Blur luminance only
 TP_LOCALLAB_AVOID;Avoid color shift
 TP_LOCALLAB_BLUFR;Blur & Noise
 TP_LOCALLAB_CENTER_X;Center X
@@ -1693,6 +1695,7 @@ TP_LOCALLAB_SHARDAMPING;Damping
 TP_LOCALLAB_SHARITER;Iterations
 TP_LOCALLAB_SENSIS;Scope
 TP_LOCALLAB_SENSICB;Scope
+TP_LOCALLAB_SENSIBN;Scope
 TP_LOCALLAB_SENSIS_TOOLTIP;Adjust scope of action:\nSmall values limit action to colors very similar to those under the center spot.\nHigh values let the tool act upon a wider range of colors.\nValues smaller than 20 lead to a better algorithm.
 TP_LOCALLAB_SHFR;Shape
 TP_LOCALLAB_STRENGTH;Noise

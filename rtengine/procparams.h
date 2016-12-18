@@ -890,6 +890,7 @@ public:
     int     sensi;
     int     sensih;
     int     sensicb;
+    int     sensibn;
     int     sensisha;
     double  radius;
     double  strength;
@@ -898,7 +899,7 @@ public:
     Glib::ustring Smethod;
     Glib::ustring retinexMethod;
     bool    invers;
-    bool    activsp;
+    bool    activlum;
     bool    inversrad;
     bool    inversret;
     bool    inverssha;

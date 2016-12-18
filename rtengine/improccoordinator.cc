@@ -98,6 +98,7 @@ ImProcCoordinator::ImProcCoordinator ()
       curens(500, -10000),
       radiuss(500, -10000),
       strengths(500, -10000),
+      sensibns(500, -10000),
       inversrads(500, -10000),
       strs(500, 10000),
       chrrts(500, -10000),
@@ -127,6 +128,7 @@ ImProcCoordinator::ImProcCoordinator ()
       mult4s(500, -10000),
       thresholds(500, -10000),
       sensicbs(500, -10000),
+      activlums(500, -10000),
 
       lumarefs(500, -100000.f),
       chromarefs(500, -100000.f),
@@ -709,26 +711,27 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         int t_lightness = 0;
                         int t_contrast = 0;
                         int t_chroma = 0;
-                        int t_sensi = 20;
+                        int t_sensi = 19;
                         int t_transit = 60;
                         int t_invers = 0;
                         int t_Smeth = 0;
                         int t_currentspot = 1;
                         int t_radius = 0;
                         int t_strength = 0;
+                        int t_sensibn = 60;
                         int t_inversrad = 0;
                         int t_str = 0;
                         int t_chrrt = 0;
                         int t_neigh = 50;
                         int t_vart = 200;
-                        int t_sensih = 20;
+                        int t_sensih = 19;
                         int t_inversret = 0;
                         int t_retinexMethod = 2;
                         int t_sharradius = 40;
                         int t_sharamount = 75;
                         int t_shardamping = 75;
                         int t_shariter = 30;
-                        int t_sensisha = 20;
+                        int t_sensisha = 19;
                         int t_inverssha = 0;
                         int t_qualityMethod = 0;
                         int t_thres = 50;
@@ -743,7 +746,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         int t_mult3 = 100;
                         int t_mult4 = 100;
                         int t_threshold = 20;
-                        int t_sensicb = 20;
+                        int t_sensicb = 19;
+                        int t_activlum = 0;
 
 
                         //all variables except locRETgainCurve 'coomon for all)
@@ -765,6 +769,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         fic << "Currentspot=" << t_currentspot << '@' << endl;
                         fic << "Radius=" << t_radius << '@' << endl;
                         fic << "Strength=" << t_strength << '@' << endl;
+                        fic << "Sensibn=" << t_sensibn << '@' << endl;
                         fic << "Inversrad=" << t_inversrad << '@' << endl;
                         fic << "Str=" << t_str << '@' << endl;
                         fic << "Chroma=" << t_chrrt << '@' << endl;
@@ -793,6 +798,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         fic << "Mult4=" << t_mult4 << '@' << endl;
                         fic << "Threshold=" << t_threshold << '@' << endl;
                         fic << "Sensicb=" << t_sensicb << '@' << endl;
+                        fic << "Activblurlum=" << t_activlum << '@' << endl;
 
                         fic << endl;
                     }
@@ -810,9 +816,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             int realspot = params.locallab.nbspot;
 
             ifstream fich(datalab, ios::in);
-            dataspot = new int*[50];
+            dataspot = new int*[52];
 
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 52; i++) {
                 dataspot[i] = new int[maxspot];
             }
 
@@ -849,67 +855,75 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             dataspot[16][0] = curens[0] = params.locallab.nbspot;
             dataspot[17][0] =  radiuss[0] = params.locallab.radius;
             dataspot[18][0] =  strengths[0] = params.locallab.strength;
+            dataspot[19][0] =  sensibns[0] = params.locallab.sensibn;
+
 
             if(!params.locallab.inversrad) {
-                dataspot[19][0] =  inversrads[0] = 0;
+                dataspot[20][0] =  inversrads[0] = 0;
             } else {
-                dataspot[19][0] =  inversrads[0] = 1;
+                dataspot[20][0] =  inversrads[0] = 1;
             }
 
-            dataspot[20][0] = strs[0] = params.locallab.str;
-            dataspot[21][0] = chrrts[0] = params.locallab.chrrt;
-            dataspot[22][0] = neighs[0] = params.locallab.neigh;
-            dataspot[23][0] = varts[0] = params.locallab.vart;
-            dataspot[24][0] = sensihs[0] = params.locallab.sensih;
+            dataspot[21][0] = strs[0] = params.locallab.str;
+            dataspot[22][0] = chrrts[0] = params.locallab.chrrt;
+            dataspot[23][0] = neighs[0] = params.locallab.neigh;
+            dataspot[24][0] = varts[0] = params.locallab.vart;
+            dataspot[25][0] = sensihs[0] = params.locallab.sensih;
 
             if(!params.locallab.inversret) {
-                dataspot[25][0] =  inversrets[0] = 0;
+                dataspot[26][0] =  inversrets[0] = 0;
             } else {
-                dataspot[25][0] =  inversrets[0] = 1;
+                dataspot[26][0] =  inversrets[0] = 1;
             }
 
             if(params.locallab.retinexMethod == "low") {
-                dataspot[26][0] =  retinexs[0] = 0;
+                dataspot[27][0] =  retinexs[0] = 0;
             } else if (params.locallab.retinexMethod == "uni") {
-                dataspot[26][0] =  retinexs[0] = 1;
+                dataspot[27][0] =  retinexs[0] = 1;
             } else if (params.locallab.retinexMethod == "high") {
-                dataspot[26][0] =  retinexs[0] = 2;
+                dataspot[27][0] =  retinexs[0] = 2;
             }
 
-            dataspot[27][0] = sharradiuss[0] = params.locallab.sharradius;
-            dataspot[28][0] = sharamounts[0] = params.locallab.sharamount;
-            dataspot[29][0] = shardampings[0] = params.locallab.shardamping;
-            dataspot[30][0] = shariters[0] = params.locallab.shariter;
-            dataspot[31][0] = sensishas[0] = params.locallab.sensisha;
+            dataspot[28][0] = sharradiuss[0] = params.locallab.sharradius;
+            dataspot[29][0] = sharamounts[0] = params.locallab.sharamount;
+            dataspot[30][0] = shardampings[0] = params.locallab.shardamping;
+            dataspot[31][0] = shariters[0] = params.locallab.shariter;
+            dataspot[32][0] = sensishas[0] = params.locallab.sensisha;
 
             if(!params.locallab.inverssha) {
-                dataspot[32][0] =  inversshas[0] = 0;
+                dataspot[33][0] =  inversshas[0] = 0;
             } else {
-                dataspot[32][0] =  inversshas[0] = 1;
+                dataspot[33][0] =  inversshas[0] = 1;
             }
 
             if(params.locallab.qualityMethod == "std") {
-                dataspot[33][0] =  qualitys[0] = 0;
+                dataspot[34][0] =  qualitys[0] = 0;
             } else if (params.locallab.qualityMethod == "enh") {
-                dataspot[33][0] =  qualitys[0] = 1;
+                dataspot[34][0] =  qualitys[0] = 1;
             } else if (params.locallab.qualityMethod == "enhden") {
-                dataspot[33][0] =  qualitys[0] = 2;
+                dataspot[34][0] =  qualitys[0] = 2;
             }
 
-            dataspot[34][0] = thress[0] = params.locallab.thres;
-            dataspot[35][0] = proxis[0] = params.locallab.proxi;
-            dataspot[36][0] = noiselumfs[0] = params.locallab.noiselumf;
-            dataspot[37][0] = noiselumcs[0] = params.locallab.noiselumc;
-            dataspot[38][0] = noisechrofs[0] = params.locallab.noisechrof;
-            dataspot[39][0] = noisechrocs[0] = params.locallab.noisechroc;
+            dataspot[35][0] = thress[0] = params.locallab.thres;
+            dataspot[36][0] = proxis[0] = params.locallab.proxi;
+            dataspot[37][0] = noiselumfs[0] = params.locallab.noiselumf;
+            dataspot[38][0] = noiselumcs[0] = params.locallab.noiselumc;
+            dataspot[39][0] = noisechrofs[0] = params.locallab.noisechrof;
+            dataspot[40][0] = noisechrocs[0] = params.locallab.noisechroc;
 
-            dataspot[40][0] = mult0s[0] = params.locallab.mult[0];
-            dataspot[41][0] = mult1s[0] = params.locallab.mult[1];
-            dataspot[42][0] = mult2s[0] = params.locallab.mult[2];
-            dataspot[43][0] = mult3s[0] = params.locallab.mult[3];
-            dataspot[44][0] = mult4s[0] = params.locallab.mult[4];
-            dataspot[45][0] = thresholds[0] = params.locallab.threshold;
-            dataspot[46][0] = sensicbs[0] = params.locallab.sensicb;
+            dataspot[41][0] = mult0s[0] = params.locallab.mult[0];
+            dataspot[42][0] = mult1s[0] = params.locallab.mult[1];
+            dataspot[43][0] = mult2s[0] = params.locallab.mult[2];
+            dataspot[44][0] = mult3s[0] = params.locallab.mult[3];
+            dataspot[45][0] = mult4s[0] = params.locallab.mult[4];
+            dataspot[46][0] = thresholds[0] = params.locallab.threshold;
+            dataspot[47][0] = sensicbs[0] = params.locallab.sensicb;
+
+            if(!params.locallab.activlum) {
+                dataspot[48][0] =  activlums[0] = 0;
+            } else {
+                dataspot[48][0] =  activlums[0] = 1;
+            }
 
             int ns;
 
@@ -947,7 +961,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         dataspot[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 47) {
+                    if(cont > 16  && cont < 49) {
                         dataspot[cont][ns] = std::stoi(str3.c_str());
 
                     }
@@ -974,26 +988,27 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_lightness = 0;
                     int t_contrast = 0;
                     int t_chroma = 0;
-                    int t_sensi = 20;
+                    int t_sensi = 19;
                     int t_transit = 60;
                     int t_invers = 0;
                     int t_Smeth = 0;
                     int t_currentspot = 1;
                     int t_radius = 0;
                     int t_strength = 0;
+                    int t_sensibn = 60;
                     int t_inversrad = 0;
                     int t_str = 0;
                     int t_chrrt = 0;
                     int t_neigh = 50;
                     int t_vart = 200;
-                    int t_sensih = 20;
+                    int t_sensih = 19;
                     int t_inversret = 0;
                     int t_retinexMethod = 2;
                     int t_sharradius = 40;
                     int t_sharamount = 75;
                     int t_shardamping = 75;
                     int t_shariter = 30;
-                    int t_sensisha = 20;
+                    int t_sensisha = 19;
                     int t_inverssha = 0;
                     int t_qualityMethod = 0;
                     int t_thres = 50;
@@ -1008,7 +1023,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_mult3 = 100;
                     int t_mult4 = 100;
                     int t_threshold = 20;
-                    int t_sensicb = 20;
+                    int t_sensicb = 19;
+                    int t_activlum = 0;
 
                     //all variables except locRETgainCurve 'coomon for all)
                     fic << "Spot=" << t_sp << '@' << endl;
@@ -1029,6 +1045,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fic << "Currentspot=" << t_currentspot << '@' << endl;
                     fic << "Radius=" << t_radius << '@' << endl;
                     fic << "Strength=" << t_strength << '@' << endl;
+                    fic << "Sensibn=" << t_sensibn << '@' << endl;
                     fic << "Inversrad=" << t_inversrad << '@' << endl;
                     fic << "Str=" << t_str << '@' << endl;
                     fic << "Chroma=" << t_chrrt << '@' << endl;
@@ -1057,6 +1074,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fic << "Mult4=" << t_mult4 << '@' << endl;
                     fic << "Threshold=" << t_threshold << '@' << endl;
                     fic << "Sensicb=" << t_sensicb << '@' << endl;
+                    fic << "Activblurlum=" << t_activlum << '@' << endl;
 
                     fic << endl;
                 }
@@ -1101,7 +1119,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                             dataspot[16][0] = std::stoi(str32.c_str());
                         }
 
-                        if(cont2 > 16  && cont2 < 47) {
+                        if(cont2 > 16  && cont2 < 49) {
                             dataspot[cont2][ns2] = std::stoi(str32.c_str());
 
                         }
@@ -1169,8 +1187,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 strengths[sp] = dataspot[18][sp];
                 params.locallab.radius = dataspot[17][sp];
                 params.locallab.strength = dataspot[18][sp];
+                params.locallab.sensibn = dataspot[19][sp];
 
-                if(dataspot[19][sp] ==  0) {
+                if(dataspot[20][sp] ==  0) {
                     inversrads[sp] = 0;
                     params.locallab.inversrad = false;
                 } else {
@@ -1179,13 +1198,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 }
 
 
-                params.locallab.str = strs[sp] = dataspot[20][sp];
-                params.locallab.chrrt = chrrts[sp] = dataspot[21][sp];
-                params.locallab.neigh = neighs[sp] = dataspot[22][sp];
-                params.locallab.vart = varts[sp] = dataspot[23][sp];
-                params.locallab.sensih = sensihs[sp] = dataspot[24][sp];
+                params.locallab.str = strs[sp] = dataspot[21][sp];
+                params.locallab.chrrt = chrrts[sp] = dataspot[22][sp];
+                params.locallab.neigh = neighs[sp] = dataspot[23][sp];
+                params.locallab.vart = varts[sp] = dataspot[24][sp];
+                params.locallab.sensih = sensihs[sp] = dataspot[25][sp];
 
-                if(dataspot[25][sp] ==  0) {
+                if(dataspot[26][sp] ==  0) {
                     inversrets[sp] = 0;
                     params.locallab.inversret = false;
                 } else {
@@ -1193,26 +1212,26 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.inversret = true;
                 }
 
-                if(dataspot[26][sp] ==  0) {
+                if(dataspot[27][sp] ==  0) {
                     retinexs[sp] = 0;
                     params.locallab.retinexMethod = "low" ;
-                } else if (dataspot[26][sp] ==  1) {
+                } else if (dataspot[27][sp] ==  1) {
                     retinexs[sp] = 1;
                     params.locallab.retinexMethod = "uni" ;
-                } else if (dataspot[26][sp] ==  2) {
+                } else if (dataspot[27][sp] ==  2) {
                     retinexs[sp] = 2;
                     params.locallab.retinexMethod = "high";
                 }
 
-                sharradiuss[sp] = dataspot[27][sp];
-                params.locallab.sharradius = dataspot[27][sp];
+                sharradiuss[sp] = dataspot[28][sp];
+                params.locallab.sharradius = dataspot[28][sp];
 
-                params.locallab.sharamount = sharamounts[sp] = dataspot[28][sp];
-                params.locallab.shardamping = shardampings[sp] = dataspot[29][sp];
-                params.locallab.shariter = shariters[sp] = dataspot[30][sp];
-                params.locallab.sensisha = sensishas[sp] = dataspot[31][sp];
+                params.locallab.sharamount = sharamounts[sp] = dataspot[29][sp];
+                params.locallab.shardamping = shardampings[sp] = dataspot[30][sp];
+                params.locallab.shariter = shariters[sp] = dataspot[31][sp];
+                params.locallab.sensisha = sensishas[sp] = dataspot[32][sp];
 
-                if(dataspot[32][sp] ==  0) {
+                if(dataspot[33][sp] ==  0) {
                     inversshas[sp] = 0;
                     params.locallab.inverssha = false;
                 } else {
@@ -1220,35 +1239,43 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     params.locallab.inverssha = true;
                 }
 
-                if(dataspot[33][sp] ==  0) {
+                if(dataspot[34][sp] ==  0) {
                     qualitys[sp] = 0;
                     params.locallab.qualityMethod = "std" ;
-                } else if (dataspot[33][sp] ==  1) {
+                } else if (dataspot[34][sp] ==  1) {
                     qualitys[sp] = 1;
                     params.locallab.qualityMethod = "enh" ;
-                } else if (dataspot[33][sp] ==  2) {
+                } else if (dataspot[34][sp] ==  2) {
                     qualitys[sp] = 2;
                     params.locallab.qualityMethod = "enhden" ;
                 }
 
-                params.locallab.thres = thress[sp] = dataspot[34][sp];
-                params.locallab.proxi = proxis[sp] = dataspot[35][sp];
-                params.locallab.noiselumf = noiselumfs[sp] = dataspot[36][sp];
-                params.locallab.noiselumc = noiselumcs[sp] = dataspot[37][sp];
-                params.locallab.noisechrof = noisechrofs[sp] = dataspot[38][sp];
-                params.locallab.noisechroc = noisechrocs[sp] = dataspot[39][sp];
-                params.locallab.mult[0] = mult0s[sp] = dataspot[40][sp];
-                params.locallab.mult[1] = mult1s[sp] = dataspot[41][sp];
-                params.locallab.mult[2] = mult2s[sp] = dataspot[42][sp];
-                params.locallab.mult[3] = mult3s[sp] = dataspot[43][sp];
-                params.locallab.mult[4] = mult4s[sp] = dataspot[44][sp];
-                params.locallab.threshold = thresholds[sp] = dataspot[45][sp];
-                params.locallab.sensicb = sensicbs[sp] = dataspot[46][sp];
+                params.locallab.thres = thress[sp] = dataspot[35][sp];
+                params.locallab.proxi = proxis[sp] = dataspot[36][sp];
+                params.locallab.noiselumf = noiselumfs[sp] = dataspot[37][sp];
+                params.locallab.noiselumc = noiselumcs[sp] = dataspot[38][sp];
+                params.locallab.noisechrof = noisechrofs[sp] = dataspot[39][sp];
+                params.locallab.noisechroc = noisechrocs[sp] = dataspot[40][sp];
+                params.locallab.mult[0] = mult0s[sp] = dataspot[41][sp];
+                params.locallab.mult[1] = mult1s[sp] = dataspot[42][sp];
+                params.locallab.mult[2] = mult2s[sp] = dataspot[43][sp];
+                params.locallab.mult[3] = mult3s[sp] = dataspot[44][sp];
+                params.locallab.mult[4] = mult4s[sp] = dataspot[45][sp];
+                params.locallab.threshold = thresholds[sp] = dataspot[46][sp];
+                params.locallab.sensicb = sensicbs[sp] = dataspot[47][sp];
+
+                if(dataspot[48][sp] ==  0) {
+                    activlums[sp] = 0;
+                    params.locallab.activlum = false;
+                } else {
+                    activlums[sp] = 1;
+                    params.locallab.activlum = true;
+                }
 
                 ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-                dataspot[47][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-                dataspot[48][sp] = chromarefs[sp] = params.locallab.chromaref;
-                dataspot[49][sp] = lumarefs[sp] = params.locallab.lumaref;
+                dataspot[49][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+                dataspot[50][sp] = chromarefs[sp] = params.locallab.chromaref;
+                dataspot[51][sp] = lumarefs[sp] = params.locallab.lumaref;
                 nextParams.locallab.hueref = params.locallab.hueref;
                 nextParams.locallab.chromaref = params.locallab.chromaref;
                 nextParams.locallab.lumaref = params.locallab.lumaref;
@@ -1314,99 +1341,112 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             params.locallab.radius = dataspot[17][0];
             params.locallab.strength = dataspot[18][0];
+            params.locallab.sensibn = dataspot[19][0];
+
             dataspot[17][sp] = radiuss[sp] = params.locallab.radius;
             dataspot[18][sp] = strengths[sp] = params.locallab.strength;
+            dataspot[19][sp] = sensibns[sp] = params.locallab.strength;
 
-            if(dataspot[19][0] == 0) {
+            if(dataspot[20][0] == 0) {
                 params.locallab.inversrad = false;
-                dataspot[19][sp] = 0;
+                dataspot[20][sp] = 0;
                 inversrads[sp] = 0;
             } else {
                 params.locallab.inversrad = true;
-                dataspot[19][sp] = 1;
+                dataspot[20][sp] = 1;
                 inversrads[sp] = 1;
             }
 
-            dataspot[20][sp] = strs[sp] = params.locallab.str = dataspot[20][0];
-            dataspot[21][sp] = chrrts[sp] = params.locallab.chrrt = dataspot[21][0];
-            dataspot[22][sp] = neighs[sp] = params.locallab.neigh = dataspot[22][0];
-            dataspot[23][sp] = varts[sp] = params.locallab.vart = dataspot[23][0];
-            dataspot[24][sp] = sensihs[sp] = params.locallab.sensih = dataspot[24][0];
+            dataspot[21][sp] = strs[sp] = params.locallab.str = dataspot[21][0];
+            dataspot[22][sp] = chrrts[sp] = params.locallab.chrrt = dataspot[22][0];
+            dataspot[23][sp] = neighs[sp] = params.locallab.neigh = dataspot[23][0];
+            dataspot[24][sp] = varts[sp] = params.locallab.vart = dataspot[24][0];
+            dataspot[25][sp] = sensihs[sp] = params.locallab.sensih = dataspot[25][0];
 
-            if(dataspot[25][0] == 0) {
+            if(dataspot[26][0] == 0) {
                 params.locallab.inversret = false;
                 inversrets[sp] = 0;
-                dataspot[25][sp] = 0;
+                dataspot[26][sp] = 0;
             } else {
                 params.locallab.inversret = true;
                 inversrets[sp] = 1;
-                dataspot[25][sp] = 1;
+                dataspot[26][sp] = 1;
             }
 
-            if(dataspot[26][0] == 0) {
+            if(dataspot[27][0] == 0) {
                 params.locallab.retinexMethod = "low" ;
                 retinexs[sp] = 0;
-                dataspot[26][sp] = 0;
-            } else if(dataspot[26][0] == 1) {
+                dataspot[27][sp] = 0;
+            } else if(dataspot[27][0] == 1) {
                 params.locallab.retinexMethod = "uni" ;
                 retinexs[sp] = 1;
-                dataspot[26][sp] = 1;
-            } else if(dataspot[26][0] == 2) {
+                dataspot[27][sp] = 1;
+            } else if(dataspot[27][0] == 2) {
                 params.locallab.Smethod = "high" ;
                 retinexs[sp] = 2;
-                dataspot[26][sp] = 2;
+                dataspot[27][sp] = 2;
             }
 
-            dataspot[27][sp] = sharradiuss[sp] = params.locallab.sharradius = dataspot[27][0];
+            dataspot[28][sp] = sharradiuss[sp] = params.locallab.sharradius = dataspot[28][0];
 
-            dataspot[28][sp] = sharamounts[sp] = params.locallab.sharamount = dataspot[28][0];
-            dataspot[29][sp] = shardampings[sp] = params.locallab.shardamping = dataspot[29][0];
-            dataspot[30][sp] = shariters[sp] = params.locallab.shariter = dataspot[30][0];
-            dataspot[31][sp] = sensishas[sp] = params.locallab.sensisha = dataspot[31][0];
+            dataspot[29][sp] = sharamounts[sp] = params.locallab.sharamount = dataspot[29][0];
+            dataspot[30][sp] = shardampings[sp] = params.locallab.shardamping = dataspot[30][0];
+            dataspot[31][sp] = shariters[sp] = params.locallab.shariter = dataspot[31][0];
+            dataspot[32][sp] = sensishas[sp] = params.locallab.sensisha = dataspot[32][0];
 
-            if(dataspot[32][0] == 0) {
+            if(dataspot[33][0] == 0) {
                 params.locallab.inverssha = 0;
                 inversshas[sp] = 0;
-                dataspot[32][sp] = 0;
+                dataspot[33][sp] = 0;
             } else {
                 params.locallab.inverssha = 1;
                 inversshas[sp] = 1;
-                dataspot[32][sp] = 1;
+                dataspot[33][sp] = 1;
             }
 
-            if(dataspot[33][0] == 0) {
+            if(dataspot[34][0] == 0) {
                 params.locallab.qualityMethod = "std" ;
                 qualitys[sp] = 0;
-                dataspot[33][sp] = 0;
-            } else if(dataspot[33][0] == 1) {
+                dataspot[34][sp] = 0;
+            } else if(dataspot[34][0] == 1) {
                 params.locallab.qualityMethod = "enh" ;
                 qualitys[sp] = 1;
-                dataspot[33][sp] = 1;
-            } else if(dataspot[33][0] == 2) {
+                dataspot[34][sp] = 1;
+            } else if(dataspot[34][0] == 2) {
                 params.locallab.qualityMethod = "enhden" ;
                 qualitys[sp] = 2;
-                dataspot[33][sp] = 2;
+                dataspot[34][sp] = 2;
             }
 
-            dataspot[34][sp] = thress[sp] = params.locallab.thres = dataspot[34][0];
-            dataspot[35][sp] = proxis[sp] = params.locallab.proxi = dataspot[35][0];
-            dataspot[36][sp] = noiselumfs[sp] = params.locallab.noiselumf = dataspot[36][0];
-            dataspot[37][sp] = noiselumcs[sp] = params.locallab.noiselumc = dataspot[37][0];
-            dataspot[38][sp] = noisechrofs[sp] = params.locallab.noisechrof = dataspot[38][0];
-            dataspot[39][sp] = noisechrocs[sp] = params.locallab.noisechroc = dataspot[39][0];
-            dataspot[40][sp] = mult0s[sp] = params.locallab.mult[0] = dataspot[40][0];
-            dataspot[41][sp] = mult1s[sp] = params.locallab.mult[1] = dataspot[41][0];
-            dataspot[42][sp] = mult2s[sp] = params.locallab.mult[2] = dataspot[42][0];
-            dataspot[43][sp] = mult3s[sp] = params.locallab.mult[3] = dataspot[43][0];
-            dataspot[44][sp] = mult4s[sp] = params.locallab.mult[4] = dataspot[44][0];
-            dataspot[45][sp] = thresholds[sp] = params.locallab.threshold = dataspot[45][0];
-            dataspot[46][sp] = sensicbs[sp] = params.locallab.sensicb = dataspot[46][0];
+            dataspot[35][sp] = thress[sp] = params.locallab.thres = dataspot[35][0];
+            dataspot[36][sp] = proxis[sp] = params.locallab.proxi = dataspot[36][0];
+            dataspot[37][sp] = noiselumfs[sp] = params.locallab.noiselumf = dataspot[37][0];
+            dataspot[38][sp] = noiselumcs[sp] = params.locallab.noiselumc = dataspot[38][0];
+            dataspot[39][sp] = noisechrofs[sp] = params.locallab.noisechrof = dataspot[39][0];
+            dataspot[40][sp] = noisechrocs[sp] = params.locallab.noisechroc = dataspot[40][0];
+            dataspot[41][sp] = mult0s[sp] = params.locallab.mult[0] = dataspot[41][0];
+            dataspot[42][sp] = mult1s[sp] = params.locallab.mult[1] = dataspot[42][0];
+            dataspot[43][sp] = mult2s[sp] = params.locallab.mult[2] = dataspot[43][0];
+            dataspot[44][sp] = mult3s[sp] = params.locallab.mult[3] = dataspot[44][0];
+            dataspot[45][sp] = mult4s[sp] = params.locallab.mult[4] = dataspot[45][0];
+            dataspot[46][sp] = thresholds[sp] = params.locallab.threshold = dataspot[46][0];
+            dataspot[47][sp] = sensicbs[sp] = params.locallab.sensicb = dataspot[47][0];
+
+            if(dataspot[48][0] == 0) {
+                params.locallab.activlum = 0;
+                activlums[sp] = 0;
+                dataspot[48][sp] = 0;
+            } else {
+                params.locallab.activlum = 1;
+                activlums[sp] = 1;
+                dataspot[48][sp] = 1;
+            }
 
 
             ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-            dataspot[47][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
-            dataspot[48][sp] = chromarefs[sp] = params.locallab.chromaref;
-            dataspot[49][sp] = lumarefs[sp] = params.locallab.lumaref;
+            dataspot[49][sp] = huerefs[sp] = 100.f * params.locallab.hueref;
+            dataspot[50][sp] = chromarefs[sp] = params.locallab.chromaref;
+            dataspot[51][sp] = lumarefs[sp] = params.locallab.lumaref;
 
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
@@ -1442,38 +1482,40 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_currentspot  = realspot;
                     int t_radius = dataspot[17][spe];
                     int t_strength = dataspot[18][spe];
-                    int t_inversrad = dataspot[19][spe];
-                    int t_str = dataspot[20][spe];
-                    int t_chrrt = dataspot[21][spe];
-                    int t_neigh = dataspot[22][spe];
-                    int t_vart = dataspot[23][spe];
-                    int t_sensih = dataspot[24][spe];
-                    int t_inversret = dataspot[25][spe];
-                    int t_retinexMethod = dataspot[26][spe];
-                    int t_sharradius = dataspot[27][spe];
-                    int t_sharamount = dataspot[28][spe];
-                    int t_shardamping = dataspot[29][spe];
-                    int t_shariter = dataspot[30][spe];
-                    int t_sensisha = dataspot[31][spe];
-                    int t_inverssha = dataspot[32][spe];
-                    int t_qualityMethod =  dataspot[33][spe];
-                    int t_thres =  dataspot[34][spe];
-                    int t_proxi =  dataspot[35][spe];
-                    int t_noiselumf = dataspot[36][spe];
-                    int t_noiselumc = dataspot[37][spe];
-                    int t_noisechrof = dataspot[38][spe];
-                    int t_noisechroc = dataspot[39][spe];
-                    int t_mult0 = dataspot[40][spe];
-                    int t_mult1 = dataspot[41][spe];
-                    int t_mult2 = dataspot[42][spe];
-                    int t_mult3 = dataspot[43][spe];
-                    int t_mult4 = dataspot[44][spe];
-                    int t_threshold = dataspot[45][spe];
-                    int t_sensicb = dataspot[46][spe];
+                    int t_sensibn = dataspot[19][spe];
+                    int t_inversrad = dataspot[20][spe];
+                    int t_str = dataspot[21][spe];
+                    int t_chrrt = dataspot[22][spe];
+                    int t_neigh = dataspot[23][spe];
+                    int t_vart = dataspot[24][spe];
+                    int t_sensih = dataspot[25][spe];
+                    int t_inversret = dataspot[26][spe];
+                    int t_retinexMethod = dataspot[27][spe];
+                    int t_sharradius = dataspot[28][spe];
+                    int t_sharamount = dataspot[29][spe];
+                    int t_shardamping = dataspot[30][spe];
+                    int t_shariter = dataspot[31][spe];
+                    int t_sensisha = dataspot[32][spe];
+                    int t_inverssha = dataspot[33][spe];
+                    int t_qualityMethod =  dataspot[34][spe];
+                    int t_thres =  dataspot[35][spe];
+                    int t_proxi =  dataspot[36][spe];
+                    int t_noiselumf = dataspot[37][spe];
+                    int t_noiselumc = dataspot[38][spe];
+                    int t_noisechrof = dataspot[39][spe];
+                    int t_noisechroc = dataspot[40][spe];
+                    int t_mult0 = dataspot[41][spe];
+                    int t_mult1 = dataspot[42][spe];
+                    int t_mult2 = dataspot[43][spe];
+                    int t_mult3 = dataspot[44][spe];
+                    int t_mult4 = dataspot[45][spe];
+                    int t_threshold = dataspot[46][spe];
+                    int t_sensicb = dataspot[47][spe];
+                    int t_activlum = dataspot[48][spe];
 
-                    int t_hueref = dataspot[47][spe];
-                    int t_chromaref = dataspot[48][spe];
-                    int t_lumaref = dataspot[49][spe];
+                    int t_hueref = dataspot[49][spe];
+                    int t_chromaref = dataspot[50][spe];
+                    int t_lumaref = dataspot[51][spe];
 
                     fou << "Spot=" << t_sp << '@' << endl;
                     fou << "Circrad=" << t_circrad << '@' << endl;
@@ -1493,6 +1535,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fou << "Currentspot=" << t_currentspot << '@' << endl;
                     fou << "Radius=" << t_radius << '@' << endl;
                     fou << "Strength=" << t_strength << '@' << endl;
+                    fou << "Sesibn=" << t_sensibn << '@' << endl;
                     fou << "Inversrad=" << t_inversrad << '@' << endl;
                     fou << "Str=" << t_str << '@' << endl;
                     fou << "Chroma=" << t_chrrt << '@' << endl;
@@ -1521,10 +1564,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     fou << "Mult4=" << t_mult4 << '@' << endl;
                     fou << "Threshold=" << t_threshold << '@' << endl;
                     fou << "Sensicb=" << t_sensicb << '@' << endl;
+                    fou << "Activblurlum=" << t_activlum << '@' << endl;
 
                     fou << "hueref=" << t_hueref << '@' << endl;
                     fou << "chromaref=" << t_chromaref << '@' << endl;
                     fou << "lumaref=" << t_lumaref << '@' << endl;
+
                     fou << endl;
                 }
 
@@ -1532,7 +1577,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
 //          }
-            for (int i = 0; i < 50; i++) {
+            for (int i = 0; i < 52; i++) {
                 delete [] dataspot[i];
             }
 

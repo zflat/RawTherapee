@@ -317,6 +317,7 @@ void ParamsEdited::set (bool v)
     locallab.sensi = v;
     locallab.sensih = v;
     locallab.sensicb = v;
+    locallab.sensibn = v;
     locallab.sensisha = v;
     locallab.radius = v;
     locallab.strength = v;
@@ -326,7 +327,7 @@ void ParamsEdited::set (bool v)
     locallab.Smethod = v;
     locallab.retinexMethod = v;
     locallab.invers = v;
-    locallab.activsp = v;
+    locallab.activlum = v;
     locallab.inversrad = v;
     locallab.inversret = v;
     locallab.inverssha = v;
@@ -843,7 +844,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.enabled = locallab.enabled && p.locallab.enabled == other.locallab.enabled;
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
         locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
-        locallab.activsp = locallab.activsp && p.locallab.activsp == other.locallab.activsp;
+        locallab.activlum = locallab.activlum && p.locallab.activlum == other.locallab.activlum;
         locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
         locallab.inversret = locallab.inversret && p.locallab.inversret == other.locallab.inversret;
         locallab.inverssha = locallab.inverssha && p.locallab.inverssha == other.locallab.inverssha;
@@ -873,6 +874,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
         locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
         locallab.sensicb = locallab.sensicb && p.locallab.sensicb == other.locallab.sensicb;
+        locallab.sensibn = locallab.sensibn && p.locallab.sensibn == other.locallab.sensibn;
         locallab.sensisha = locallab.sensisha && p.locallab.sensisha == other.locallab.sensisha;
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
@@ -2109,8 +2111,8 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.invers    = mods.locallab.invers;
     }
 
-    if (locallab.activsp) {
-        toEdit.locallab.activsp    = mods.locallab.activsp;
+    if (locallab.activlum) {
+        toEdit.locallab.activlum    = mods.locallab.activlum;
     }
 
     if (locallab.inversrad) {
@@ -2231,6 +2233,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.sensicb) {
         toEdit.locallab.sensicb     = mods.locallab.sensicb;
+    }
+
+    if (locallab.sensibn) {
+        toEdit.locallab.sensibn     = mods.locallab.sensibn;
     }
 
     if (locallab.sensisha) {

@@ -855,6 +855,7 @@ void Crop::update (int todo)
 
                         params.locallab.radius = parent->radiuss[sp];
                         params.locallab.strength = parent->strengths[sp];
+                        params.locallab.sensibn = parent->sensibns[sp];
 
                         if( parent->inversrads[sp] ==  0) {
                             params.locallab.inversrad = false;
@@ -916,6 +917,12 @@ void Crop::update (int todo)
                         params.locallab.mult[4] = parent->mult4s[sp];
                         params.locallab.threshold = parent->thresholds[sp];
                         params.locallab.sensicb = parent->sensicbs[sp];
+
+                        if(parent->activlums[sp] ==  0) {
+                            params.locallab.activlum = false;
+                        } else {
+                            params.locallab.activlum = true;
+                        }
 
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
@@ -981,9 +988,11 @@ void Crop::update (int todo)
 
                 params.locallab.radius = parent->radiuss[0];
                 params.locallab.strength = parent->strengths[0];
+                params.locallab.sensibn = parent->sensibns[0];
 
                 parent->radiuss[sp] = params.locallab.radius;
                 parent->strengths[sp] = params.locallab.strength;
+                parent->sensibns[sp] = params.locallab.sensibn;
 
                 if( parent->inversrads[0] ==  0) {
                     params.locallab.inversrad = false;
@@ -1062,6 +1071,15 @@ void Crop::update (int todo)
                 parent->mult4s[sp] = params.locallab.mult[4] = parent->mult4s[0];
                 parent->thresholds[sp] = params.locallab.threshold = parent->thresholds[0];
                 parent->sensicbs[sp] = params.locallab.sensicb = parent->sensicbs[0];
+
+                if(parent->activlums[0] ==  0) {
+                    params.locallab.activlum = false;
+                    parent->activlums[sp] =  0;
+                } else {
+                    params.locallab.activlum = true;
+                    parent->activlums[sp] =  1;
+
+                }
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];

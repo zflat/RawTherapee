@@ -904,6 +904,7 @@ void LocallabParams::setDefaults()
     sensi = 19;
     sensih = 19;
     sensicb = 19;
+    sensibn = 60;
     sensisha = 19;
     transit = 60;
     chrrt = 0;
@@ -911,7 +912,7 @@ void LocallabParams::setDefaults()
     Smethod = "IND";
     retinexMethod = "high";
     invers = false;
-    activsp = false;
+    activlum = false;
     radius = 0;
     inversrad = false;
     inversret = false;
@@ -2568,8 +2569,8 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Locallab", "Invers", locallab.invers);
         }
 
-        if (!pedited || pedited->locallab.activsp) {
-            keyFile.set_boolean ("Locallab", "Activsp", locallab.activsp);
+        if (!pedited || pedited->locallab.activlum) {
+            keyFile.set_boolean ("Locallab", "activlum", locallab.activlum);
         }
 
         if (!pedited || pedited->locallab.inversrad) {
@@ -2694,6 +2695,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->locallab.sensicb) {
             keyFile.set_integer ("Locallab", "Sensicb", locallab.sensicb);
+        }
+
+        if (!pedited || pedited->locallab.sensibn) {
+            keyFile.set_integer ("Locallab", "Sensibn", locallab.sensibn);
         }
 
         if (!pedited || pedited->locallab.transit) {
@@ -3990,11 +3995,11 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
-            if (keyFile.has_key ("Locallab", "Activsp"))  {
-                locallab.activsp  = keyFile.get_boolean ("Locallab", "Activsp");
+            if (keyFile.has_key ("Locallab", "activlum"))  {
+                locallab.activlum  = keyFile.get_boolean ("Locallab", "activlum");
 
                 if (pedited) {
-                    pedited->locallab.activsp = true;
+                    pedited->locallab.activlum = true;
                 }
             }
 
@@ -4227,6 +4232,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.sensicb = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Sensibn"))  {
+                locallab.sensibn  = keyFile.get_integer ("Locallab", "Sensib");
+
+                if (pedited) {
+                    pedited->locallab.sensibn = true;
                 }
             }
 
@@ -8480,7 +8493,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.enabled == other.locallab.enabled
         && locallab.avoid == other.locallab.avoid
         && locallab.invers == other.locallab.invers
-        && locallab.activsp == other.locallab.activsp
+        && locallab.activlum == other.locallab.activlum
         && locallab.inversrad == other.locallab.inversrad
         && locallab.inversret == other.locallab.inversret
         && locallab.inverssha == other.locallab.inverssha
@@ -8511,6 +8524,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.sensi == other.locallab.sensi
         && locallab.sensih == other.locallab.sensih
         && locallab.sensicb == other.locallab.sensicb
+        && locallab.sensibn == other.locallab.sensibn
         && locallab.sensisha == other.locallab.sensisha
         && locallab.radius == other.locallab.radius
         && locallab.strength == other.locallab.strength
