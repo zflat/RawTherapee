@@ -813,7 +813,7 @@ void Crop::update (int todo)
             //float** shbuffer;
 
 
-            if (fich) {//to avoid crash in some cases
+            if (fich  && parent->versionmip != 0) {//to avoid crash in some cases
                 int **dataspotd;
 
                 int realspot = params.locallab.nbspot;

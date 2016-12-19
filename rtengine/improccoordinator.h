@@ -258,6 +258,7 @@ protected:
     LUTi thresholds;
     LUTi sensicbs;
     LUTi activlums;
+    int versionmip;
 
 
     LUTf huerefs;

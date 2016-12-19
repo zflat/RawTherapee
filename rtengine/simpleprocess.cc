@@ -951,17 +951,40 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         params.locallab.getCurves(locRETgainCurve);
         int realspot = params.locallab.nbspot;
         int maxspot = settings->nspot + 1;
+        ifstream fic0(datalab, ios::in);
         ifstream fich(datalab, ios::in);
         float** shbuffer;
+        int versionmip = 0;
 
-        /*        float **shbuffer = new float*[fh];
+        if (fic0) {//normally we don't use here but ??
+            //find the version mip
+            string line;
+            string spotline;
+            int cont = 0;
+
+            while (getline(fic0, line)) {
+                spotline = line;
+                std::size_t pos = spotline.find("=");
+                std::size_t posend = spotline.find("@");//in case of for futur use
+
+                if(spotline.substr(0, pos) == "Mipversion") {
+                    string strversion = spotline.substr (pos + 1, (posend - pos));
+                    versionmip = std::stoi(strversion.c_str());
+                }
+
+                if(spotline.substr(0, pos) == "Spot") {
+                    // string str2 = spotline.substr (pos + 1, (posend - pos));
+                    cont = 0;
+                }
 
 
-                        for (int i = 0; i < fh; i++) {
-                            shbuffer[i] = new float[fw];
-                        }
-                */
-        if (fich) {
+            }
+
+            fic0.close();
+        }
+
+
+        if (fich && versionmip != 0) {
             int **dataspots;
             dataspots = new int*[52];
 
@@ -1086,6 +1109,11 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     spotline = line;
                     std::size_t pos = spotline.find("=");
                     std::size_t posend = spotline.find("@");//in case of for futur use
+
+                    if(spotline.substr(0, pos) == "Mipversion") {
+                        string strversion = spotline.substr (pos + 1, (posend - pos));
+                        versionmip = std::stoi(strversion.c_str());
+                    }
 
                     if(spotline.substr(0, pos) == "Spot") {
                         cont = 0;

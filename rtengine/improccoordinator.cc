@@ -129,7 +129,7 @@ ImProcCoordinator::ImProcCoordinator ()
       thresholds(500, -10000),
       sensicbs(500, -10000),
       activlums(500, -10000),
-
+      versionmip(0),
       lumarefs(500, -100000.f),
       chromarefs(500, -100000.f),
       huerefs(500, -100000.f),
@@ -678,19 +678,44 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 Glib::ArrayHandle<double> mapcurve = params.retinex.mapcurve;
                 keyFile.set_double_list("Retinex", "MAPCurve2", mapcurve);
             */
+
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
-            ifstream fic(datalab, ios::in);
+            ifstream fic0(datalab, ios::in);
             float **shbuffer;
-            /*       float **shbuffer = new float*[pH];//to activate if we want sharpening in improccoordinator.cc
+            versionmip = 0;
 
-                   for (int i = 0; i < pH; i++) {
-                       shbuffer[i] = new float[pW];
-                   }
-            */
+            if (fic0) {
+                //find the version mip
+                string line;
+                string spotline;
+                int cont = 0;
+
+                while (getline(fic0, line)) {
+                    spotline = line;
+                    std::size_t pos = spotline.find("=");
+                    std::size_t posend = spotline.find("@");//in case of for futur use
+
+                    if(spotline.substr(0, pos) == "Mipversion") {
+                        string strversion = spotline.substr (pos + 1, (posend - pos));
+                        versionmip = std::stoi(strversion.c_str());
+                    }
+
+                    if(spotline.substr(0, pos) == "Spot") {
+                        // string str2 = spotline.substr (pos + 1, (posend - pos));
+                        cont = 0;
+                    }
 
 
+                }
 
-            if(fic.fail()) { //initialize mip with default values
+                fic0.close();
+            }
+
+            ifstream fic(datalab, ios::in);
+
+            printf("versionmip=%i\n", versionmip);
+
+            if(fic.fail() || versionmip == 0) { //initialize mip with default values if no file or old file to prevent crash
 
                 ofstream fic(datalab, ios::out | ios::trunc);  // ouverture en écriture avec effacement du fichier ouvert
 
@@ -700,7 +725,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 {
                     for(int sp = 1; sp < maxspot; sp++) { // spots default
                         int t_sp = sp;
-                        string t_Smethod = "IND";//prov can be suppress after!
+                        int t_mipversion = 10000;
                         int t_circrad = 18;
                         int t_locX = 250;
                         int t_locY = 250;
@@ -751,6 +776,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
                         //all variables except locRETgainCurve 'coomon for all)
+                        fic << "Mipversion=" << t_mipversion << '@' << endl;
                         fic << "Spot=" << t_sp << '@' << endl;
                         fic << "Circrad=" << t_circrad << '@' << endl;
                         fic << "LocX=" << t_locX << '@' << endl;
@@ -814,7 +840,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
             int realspot = params.locallab.nbspot;
-
             ifstream fich(datalab, ios::in);
             dataspot = new int*[52];
 
@@ -938,6 +963,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     std::size_t pos = spotline.find("=");
                     std::size_t posend = spotline.find("@");//in case of for futur use
 
+                    if(spotline.substr(0, pos) == "Mipversion") {
+                        string strversion = spotline.substr (pos + 1, (posend - pos));
+                        versionmip = std::stoi(strversion.c_str());
+                    }
+
                     if(spotline.substr(0, pos) == "Spot") {
                         // string str2 = spotline.substr (pos + 1, (posend - pos));
                         cont = 0;
@@ -954,7 +984,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     if(cont >= 2  && cont < 16) {
                         dataspot[cont][ns] = std::stoi(str3.c_str());
 
-                        //     printf("data=%d cont=%d ns=%d\n", dataspot[cont][ns], cont, ns);
+                        //                          printf("data=%d cont=%d ns=%d\n", dataspot[cont][ns], cont, ns);
                     }
 
                     if(spotline.substr(0, pos) == "Currentspot") {
@@ -977,7 +1007,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 for(int sp = ns + 1 ; sp < maxspot; sp++) { // spots default
                     int t_sp = sp;
-                    string t_Smethod = "IND";//prov can be suppress after!
+                    // string t_Smethod = "IND";//prov can be suppress after!
+                    int t_mipversion = 10000;
                     int t_circrad = 18;
                     int t_locX = 250;
                     int t_locY = 250;
@@ -1027,6 +1058,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_activlum = 0;
 
                     //all variables except locRETgainCurve 'coomon for all)
+                    fic << "Mipversion=" << t_mipversion << '@' << endl;
                     fic << "Spot=" << t_sp << '@' << endl;
                     fic << "Circrad=" << t_circrad << '@' << endl;
                     fic << "LocX=" << t_locX << '@' << endl;
@@ -1096,6 +1128,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         std::size_t pos2 = spotline2.find("=");
                         std::size_t posend2 = spotline2.find("@");//in case of for futur use
 
+                        if(spotline2.substr(0, pos2) == "Mipversion") {
+                            string strversion = spotline2.substr (pos2 + 1, (posend2 - pos2));
+                            versionmip = std::stoi(strversion.c_str());
+                        }
+
                         if(spotline2.substr(0, pos2) == "Spot") {
                             // string str2 = spotline.substr (pos + 1, (posend - pos));
                             cont2 = 0;
@@ -1133,7 +1170,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
 
-            //  printf("realimp=%d \n", realspot);
 
 
 
@@ -1451,7 +1487,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             nextParams.locallab.hueref = params.locallab.hueref;
             nextParams.locallab.chromaref = params.locallab.chromaref;
             nextParams.locallab.lumaref = params.locallab.lumaref;
-            // printf("realspot=%d current=%d\n", realspot, dataspot[16][0]);
 
             ofstream fou(datalab, ios::out | ios::trunc);
 
@@ -1463,8 +1498,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 for(int spe = 1; spe < maxspot; spe++) {
                     int t_sp = spe;
-                    // printf("t_sp imp=%d\n", t_sp);
-                    //string t_Smethod = "IND";
+                    int t_mipversion = 10000;
                     int t_circrad  = dataspot[2][spe];
                     int t_locX  = dataspot[3][spe];
                     int t_locY  = dataspot[4][spe];
@@ -1516,7 +1550,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     int t_hueref = dataspot[49][spe];
                     int t_chromaref = dataspot[50][spe];
                     int t_lumaref = dataspot[51][spe];
-
+                    fou << "Mipversion=" << t_mipversion << '@' << endl;
                     fou << "Spot=" << t_sp << '@' << endl;
                     fou << "Circrad=" << t_circrad << '@' << endl;
                     fou << "LocX=" << t_locX << '@' << endl;
@@ -1583,12 +1617,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             delete [] dataspot;
 
-            /*            for (int i = 0; i < pH; i++) {
-                            delete [] shbuffer[i];
-                        }
-
-                        delete [] shbuffer;
-            */
 
         }
 
