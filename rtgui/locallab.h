@@ -87,6 +87,10 @@ protected:
     Gtk::CheckButton* activlum;
     Gtk::CheckButton* inverssha;
 
+    Gtk::Button* neutral;
+    Gtk::HBox* neutrHBox;
+
+
     MyComboBoxText*   retinexMethod;
     MyComboBoxText*   qualityMethod;
     Gtk::Label* labmdh;
@@ -104,7 +108,7 @@ protected:
     rtengine::Coord draggedCenter;
     bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivlum, lastinverssha;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn;
+    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn, neutralconn;
 
     void editToggled ();
 
@@ -142,6 +146,7 @@ public:
     void lumaneutralPressed ();
     void lumacontrastPlusPressed ();
     void lumacontrastMinusPressed ();
+    void neutral_pressed       ();
 
     // EditSubscriber interface
     CursorShape getCursor(int objectID);

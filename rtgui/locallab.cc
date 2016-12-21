@@ -459,6 +459,19 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     pack_start (*transit);
     pack_start (*avoid);//keep avoid clor shift in case of
 
+    neutrHBox = Gtk::manage (new Gtk::HBox ());
+    neutrHBox->set_border_width (2);
+
+    neutral = Gtk::manage (new Gtk::Button (M("TP_LOCALLAB_NEUTRAL")));
+    RTImage *resetImg = Gtk::manage (new RTImage ("gtk-undo-ltr-small.png", "gtk-undo-rtl-small.png"));
+    neutral->set_image(*resetImg);
+    neutral->set_tooltip_text (M("TP_LOCALLAB_NEUTRAL_TIP"));
+    neutralconn = neutral->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::neutral_pressed) );
+    neutral->show();
+    neutrHBox->pack_start (*neutral);
+    pack_start (*neutrHBox);
+
+
     // Instantiating the Editing geometry; positions will be initialized later
     Line  *hLine, *vLine, *locYLine[2], *locXLine[2];
     Circle *centerCircle;
@@ -529,6 +542,64 @@ Locallab::~Locallab()
     }
 
     delete CCWcurveEditorgainT;
+
+}
+
+void Locallab::neutral_pressed ()
+{
+    Smethod->set_active(0);
+    locX->resetValue(false);
+    locXL->resetValue(false);
+    locY->resetValue(false);
+    locYT->resetValue(false);
+    centerX->resetValue(false);
+    centerY->resetValue(false);
+    circrad->resetValue(false);
+    qualityMethod->set_active(0);
+    thres->resetValue(false);
+    proxi->resetValue(false);
+    lightness->resetValue(false);
+    chroma->resetValue(false);
+    contrast->resetValue(false);
+    sensi->resetValue(false);
+    radius->resetValue(false);
+    strength->resetValue(false);
+    transit->resetValue(false);
+    sensibn->resetValue(false);
+    invers->set_active (false);
+    inversrad->set_active (false);
+    inversret->set_active (false);
+    stren->resetValue(false);
+    gamma->resetValue(false);
+    estop->resetValue(false);
+    scaltm->resetValue(false);
+    rewei->resetValue(false);
+    sensitm->resetValue(false);
+    retinexMethod->set_active(2);
+    str->resetValue(false);
+    neigh->resetValue(false);
+    vart->resetValue(false);
+    chrrt->resetValue(false);
+    sensih->resetValue(false);
+    cTgainshape->reset();
+    avoid->set_active (false);
+
+    for(int i = 0; i < 5; i++) {
+        multiplier[i]->resetValue(false);
+    }
+
+    threshold->resetValue(false);
+    sensicb->resetValue(false);
+    sharradius->resetValue(false);
+    sharamount->resetValue(false);
+    shardamping->resetValue(false);
+    shariter->resetValue(false);
+    sensisha->resetValue(false);
+    inverssha->set_active (false);
+    noiselumf->resetValue(false);
+    noiselumc->resetValue(false);
+    noisechrof->resetValue(false);
+    noisechroc->resetValue(false);
 
 }
 

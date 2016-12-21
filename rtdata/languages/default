@@ -1676,6 +1676,8 @@ TP_LOCALLAB_INDSL;Independent (mouse + sliders)
 TP_LOCALLAB_IND;Independent (mouse)
 TP_LOCALLAB_INVERS;Inverse
 TP_LOCALLAB_LABEL;Local L*a*b*
+TP_LOCALLAB_NEUTRAL;Reset
+TP_LOCALLAB_NEUTRAL_TIP;Reset Current Control point
 TP_LOCALLAB_NBSPOT;Control points
 TP_LOCALLAB_NBSPOT_TOOLTIP;Add multiple control points and select
 TP_LOCALLAB_STD;Quality Standard
