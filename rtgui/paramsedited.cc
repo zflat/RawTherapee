@@ -318,9 +318,15 @@ void ParamsEdited::set (bool v)
     locallab.sensih = v;
     locallab.sensicb = v;
     locallab.sensibn = v;
+    locallab.sensitm = v;
     locallab.sensisha = v;
     locallab.radius = v;
     locallab.strength = v;
+    locallab.stren = v;
+    locallab.gamma = v;
+    locallab.estop = v;
+    locallab.scaltm = v;
+    locallab.rewei = v;
     locallab.transit = v;
     locallab.chrrt = v;
     locallab.avoid = v;
@@ -875,9 +881,15 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
         locallab.sensicb = locallab.sensicb && p.locallab.sensicb == other.locallab.sensicb;
         locallab.sensibn = locallab.sensibn && p.locallab.sensibn == other.locallab.sensibn;
+        locallab.sensitm = locallab.sensitm && p.locallab.sensitm == other.locallab.sensitm;
         locallab.sensisha = locallab.sensisha && p.locallab.sensisha == other.locallab.sensisha;
         locallab.radius = locallab.radius && p.locallab.radius == other.locallab.radius;
         locallab.strength = locallab.strength && p.locallab.strength == other.locallab.strength;
+        locallab.stren = locallab.stren && p.locallab.stren == other.locallab.stren;
+        locallab.gamma = locallab.gamma && p.locallab.gamma == other.locallab.gamma;
+        locallab.estop = locallab.estop && p.locallab.estop == other.locallab.estop;
+        locallab.scaltm = locallab.scaltm && p.locallab.scaltm == other.locallab.scaltm;
+        locallab.rewei = locallab.rewei && p.locallab.rewei == other.locallab.rewei;
         locallab.transit = locallab.transit && p.locallab.transit == other.locallab.transit;
         locallab.chrrt = locallab.chrrt && p.locallab.chrrt == other.locallab.chrrt;
         locallab.str = locallab.str && p.locallab.str == other.locallab.str;
@@ -2227,6 +2239,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.sensi     = mods.locallab.sensi;
     }
 
+    if (locallab.sensitm) {
+        toEdit.locallab.sensitm     = mods.locallab.sensitm;
+    }
+
     if (locallab.sensih) {
         toEdit.locallab.sensih     = mods.locallab.sensih;
     }
@@ -2249,6 +2265,26 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.strength) {
         toEdit.locallab.strength  = mods.locallab.strength;
+    }
+
+    if (locallab.stren) {
+        toEdit.locallab.stren  = mods.locallab.stren;
+    }
+
+    if (locallab.gamma) {
+        toEdit.locallab.gamma  = mods.locallab.gamma;
+    }
+
+    if (locallab.estop) {
+        toEdit.locallab.estop  = mods.locallab.estop;
+    }
+
+    if (locallab.scaltm) {
+        toEdit.locallab.scaltm  = mods.locallab.scaltm;
+    }
+
+    if (locallab.rewei) {
+        toEdit.locallab.rewei  = mods.locallab.rewei;
     }
 
     if (locallab.transit) {

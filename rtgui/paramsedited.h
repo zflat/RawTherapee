@@ -444,9 +444,15 @@ public:
     bool sensih;
     bool sensicb;
     bool sensibn;
+    bool sensitm;
     bool sensisha;
     bool radius;
     bool strength;
+    bool stren;
+    bool gamma;
+    bool estop;
+    bool scaltm;
+    bool rewei;
     bool transit;
     bool avoid;
     bool Smethod;

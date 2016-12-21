@@ -22,7 +22,6 @@ class Locallab : public ToolParamBlock, public AdjusterListener, public Foldable
 {
 private:
     int lastObject;
-    Gtk::HBox* enaBox;
 
 protected:
 //   Gtk::CheckButton* enabled;
@@ -66,6 +65,13 @@ protected:
     Adjuster* threshold;
     Adjuster* sensicb;
     Adjuster* sensibn;
+    Adjuster* stren;
+    Adjuster* gamma;
+    Adjuster* estop;
+    Adjuster* scaltm;
+    Adjuster* rewei;
+    Adjuster* sensitm;
+
 
     sigc::connection lumaneutralPressedConn;
     sigc::connection lumacontrastPlusPressedConn;
@@ -87,7 +93,7 @@ protected:
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[52];
+    int nextdatasp[58];
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -106,9 +112,11 @@ public:
 
     Locallab ();
     ~Locallab ();
-    void read           (const rtengine::procparams::ProcParams* pp, const ParamsEdited* pedited = NULL);
-    void write          (rtengine::procparams::ProcParams* pp, ParamsEdited* pedited = NULL);
-    void setDefaults    (const rtengine::procparams::ProcParams* defParams, const ParamsEdited* pedited = NULL);
+
+    void read           (const rtengine::procparams::ProcParams* pp, const ParamsEdited* pedited = nullptr);
+    void write          (rtengine::procparams::ProcParams* pp, ParamsEdited* pedited = nullptr);
+    void setDefaults    (const rtengine::procparams::ProcParams* defParams, const ParamsEdited* pedited = nullptr);
+
     void setBatchMode   (bool batchMode);
 
     void updateGeometry (const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth = -1, const int fullHeight = -1);

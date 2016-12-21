@@ -892,8 +892,14 @@ public:
     int     sensicb;
     int     sensibn;
     int     sensisha;
-    double  radius;
-    double  strength;
+    int     sensitm;
+    int     radius;
+    int     strength;
+    int     stren;
+    int     gamma;
+    int     estop;
+    int     scaltm;
+    int     rewei;
     int     transit;
     bool    avoid;
     Glib::ustring Smethod;

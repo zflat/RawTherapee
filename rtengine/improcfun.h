@@ -267,6 +267,7 @@ public:
 
     void EPDToneMap(LabImage *lab, unsigned int Iterates = 0, int skip = 1);
     void EPDToneMapCIE(CieImage *ncie, float a_w, float c_, float w_h, int Wid, int Hei, int begh, int endh, float minQ, float maxQ, unsigned int Iterates = 0, int skip = 1);
+    void EPDToneMaplocal(LabImage *lab, LabImage *tmp1, unsigned int Iterates, int skip);
 
     // pyramid denoise
     procparams::DirPyrDenoiseParams dnparams;
@@ -286,6 +287,7 @@ public:
     void Contrast_Local(int call, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, float pm, struct local_contra &lco, float lumaref, float av, const struct local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
     void cbdl_Local(int call, int sp, float **loctemp, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
     void BlurNoise_Local(int call, int sp, LabImage* tmp1, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
+    void TM_Local(int call, int sp, LabImage* tmp1, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params& lp, float **deltE, LabImage* original, LabImage* transformed, int cx, int cy);
 
     //  void InverseContrast_Local(float ah, float bh, float al, float bl, float ave,  float hueref, float dhue, const struct local_params& lp, LabImage* original, LabImage* transformed, LabImage* tmp1, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh,  LUTf & localcurve, bool locutili, int sk);
     void InverseContrast_Local(float ave, const struct local_contra& lco, const struct local_params& lp, LabImage* original, LabImage* transformed, int cx, int cy);

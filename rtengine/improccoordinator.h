@@ -258,6 +258,13 @@ protected:
     LUTi thresholds;
     LUTi sensicbs;
     LUTi activlums;
+    LUTi strens;
+    LUTi gammas;
+    LUTi estops;
+    LUTi scaltms;
+    LUTi reweis;
+    LUTi sensitms;
+
     int versionmip;
 
 

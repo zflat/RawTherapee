@@ -905,6 +905,7 @@ void LocallabParams::setDefaults()
     sensih = 19;
     sensicb = 19;
     sensibn = 60;
+    sensitm = 40;
     sensisha = 19;
     transit = 60;
     chrrt = 0;
@@ -918,6 +919,11 @@ void LocallabParams::setDefaults()
     inversret = false;
     inverssha = false;
     strength = 0;
+    stren = 0;
+    gamma = 100;
+    estop = 140;
+    scaltm = 3;
+    rewei = 0;
     hueref = INFINITY;
     chromaref = INFINITY;
     lumaref = INFINITY;
@@ -2685,6 +2691,10 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_integer ("Locallab", "Sensi", locallab.sensi);
         }
 
+        if (!pedited || pedited->locallab.sensitm) {
+            keyFile.set_integer ("Locallab", "Sensitm", locallab.sensitm);
+        }
+
         if (!pedited || pedited->locallab.sensisha) {
             keyFile.set_integer ("Locallab", "Sensisha", locallab.sensisha);
         }
@@ -2748,6 +2758,26 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
 
         if (!pedited || pedited->locallab.threshold) {
             keyFile.set_integer ("Locallab", "Threshold", locallab.threshold);
+        }
+
+        if (!pedited || pedited->locallab.stren) {
+            keyFile.set_integer ("Locallab", "Stren", locallab.stren);
+        }
+
+        if (!pedited || pedited->locallab.gamma) {
+            keyFile.set_integer ("Locallab", "Gamma", locallab.gamma);
+        }
+
+        if (!pedited || pedited->locallab.estop) {
+            keyFile.set_integer ("Locallab", "Estop", locallab.estop);
+        }
+
+        if (!pedited || pedited->locallab.scaltm) {
+            keyFile.set_integer ("Locallab", "Scaltm", locallab.scaltm);
+        }
+
+        if (!pedited || pedited->locallab.rewei) {
+            keyFile.set_integer ("Locallab", "Rewei", locallab.rewei);
         }
 
 
@@ -3961,6 +3991,28 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
         }
 
 
+
+
+
+        if (keyFile.has_group ("HLRecovery")) {
+            if (keyFile.has_key ("HLRecovery", "Enabled"))  {
+                toneCurve.hrenabled  = keyFile.get_boolean ("HLRecovery", "Enabled");
+
+                if (pedited) {
+                    pedited->toneCurve.hrenabled = true;
+                }
+            }
+
+            if (keyFile.has_key ("HLRecovery", "Method"))   {
+                toneCurve.method   = keyFile.get_string  ("HLRecovery", "Method");
+
+                if (pedited) {
+                    pedited->toneCurve.method = true;
+                }
+            }
+        }
+
+
         // load Local Lab
         if (keyFile.has_group ("Locallab")) {
             if (keyFile.has_key ("Locallab", "Enabled"))  {
@@ -4026,6 +4078,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->locallab.inversret = true;
                 }
             }
+
 
             if (keyFile.has_key ("Locallab", "Degree"))   {
                 locallab.degree   = keyFile.get_double ("Locallab", "Degree");
@@ -4123,6 +4176,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+
             if (keyFile.has_key ("Locallab", "Proxi"))  {
                 locallab.proxi  = keyFile.get_integer ("Locallab", "Proxi");
 
@@ -4211,6 +4265,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "Sensitm"))  {
+                locallab.sensitm  = keyFile.get_integer ("Locallab", "Sensitm");
+
+                if (pedited) {
+                    pedited->locallab.sensitm = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Sensisha"))  {
                 locallab.sensisha  = keyFile.get_integer ("Locallab", "Sensisha");
 
@@ -4227,6 +4289,9 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            //RAS
+
+
             if (keyFile.has_key ("Locallab", "Sensicb"))  {
                 locallab.sensicb  = keyFile.get_integer ("Locallab", "Sensicb");
 
@@ -4236,12 +4301,13 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
             if (keyFile.has_key ("Locallab", "Sensibn"))  {
-                locallab.sensibn  = keyFile.get_integer ("Locallab", "Sensib");
+                locallab.sensibn  = keyFile.get_integer ("Locallab", "Sensibn");
 
                 if (pedited) {
                     pedited->locallab.sensibn = true;
                 }
             }
+
 
             if (keyFile.has_key ("Locallab", "Transit"))  {
                 locallab.transit  = keyFile.get_integer ("Locallab", "Transit");
@@ -4250,6 +4316,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->locallab.transit = true;
                 }
             }
+
 
             if (keyFile.has_key ("Locallab", "Chrrt"))  {
                 locallab.chrrt  = keyFile.get_integer ("Locallab", "Chrrt");
@@ -4267,6 +4334,8 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+
+//AFT
             if (keyFile.has_key ("Locallab", "Neigh"))  {
                 locallab.neigh  = keyFile.get_integer ("Locallab", "Neigh");
 
@@ -4284,6 +4353,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
             }
 
 
+//AFT
             if (keyFile.has_key ("Locallab", "ANbspot"))  {
                 locallab.anbspot  = keyFile.get_integer ("Locallab", "ANbspot");
 
@@ -4316,6 +4386,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+//IND
             if (keyFile.has_key ("Locallab", "Radius"))  {
                 locallab.radius  = keyFile.get_integer ("Locallab", "Radius");
 
@@ -4329,6 +4400,46 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.strength = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Stren"))  {
+                locallab.stren  = keyFile.get_integer ("Locallab", "Stren");
+
+                if (pedited) {
+                    pedited->locallab.stren = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Gamma"))  {
+                locallab.gamma  = keyFile.get_integer ("Locallab", "Gamma");
+
+                if (pedited) {
+                    pedited->locallab.gamma = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Estop"))  {
+                locallab.estop  = keyFile.get_integer ("Locallab", "Estop");
+
+                if (pedited) {
+                    pedited->locallab.estop = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Scaltm"))  {
+                locallab.scaltm  = keyFile.get_integer ("Locallab", "Scaltm");
+
+                if (pedited) {
+                    pedited->locallab.scaltm = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Rewei"))  {
+                locallab.rewei  = keyFile.get_integer ("Locallab", "Rewei");
+
+                if (pedited) {
+                    pedited->locallab.rewei = true;
                 }
             }
 
@@ -4353,24 +4464,6 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
-        }
-
-        if (keyFile.has_group ("HLRecovery")) {
-            if (keyFile.has_key ("HLRecovery", "Enabled"))  {
-                toneCurve.hrenabled  = keyFile.get_boolean ("HLRecovery", "Enabled");
-
-                if (pedited) {
-                    pedited->toneCurve.hrenabled = true;
-                }
-            }
-
-            if (keyFile.has_key ("HLRecovery", "Method"))   {
-                toneCurve.method   = keyFile.get_string  ("HLRecovery", "Method");
-
-                if (pedited) {
-                    pedited->toneCurve.method = true;
-                }
-            }
         }
 
         // load channel mixer curve
@@ -6515,6 +6608,7 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
         // load color management settings
         if (keyFile.has_group ("Color Management")) {
+
             if (keyFile.has_key ("Color Management", "InputProfile"))   {
                 icm.input          = expandRelativePath(fname, "file:", keyFile.get_string ("Color Management", "InputProfile"));
 
@@ -8260,6 +8354,7 @@ bool operator==(const LocallabParams & a, const LocallabParams & b)
     return a.threshold == b.threshold;
 }
 
+
 /*bool operator==(const ExifPairs& a, const ExifPairs& b) {
 
     return a.field == b.field && a.value == b.value;
@@ -8522,12 +8617,18 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.shardamping == other.locallab.shardamping
         && locallab.shariter == other.locallab.shariter
         && locallab.sensi == other.locallab.sensi
+        && locallab.sensitm == other.locallab.sensitm
         && locallab.sensih == other.locallab.sensih
         && locallab.sensicb == other.locallab.sensicb
         && locallab.sensibn == other.locallab.sensibn
         && locallab.sensisha == other.locallab.sensisha
         && locallab.radius == other.locallab.radius
         && locallab.strength == other.locallab.strength
+        && locallab.stren == other.locallab.stren
+        && locallab.gamma == other.locallab.gamma
+        && locallab.estop == other.locallab.estop
+        && locallab.scaltm == other.locallab.scaltm
+        && locallab.rewei == other.locallab.rewei
         && locallab.transit == other.locallab.transit
         && locallab.chrrt == other.locallab.chrrt
         && locallab.str == other.locallab.str

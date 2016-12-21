@@ -14,7 +14,7 @@ using namespace rtengine;
 using namespace rtengine::procparams;
 extern Options options;
 
-Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
+Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
 {
     CurveListener::setMulti(true);
 
@@ -72,6 +72,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     Gtk::Frame* denoisFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_DENOIS")) );
     denoisFrame->set_border_width(0);
     denoisFrame->set_label_align(0.025, 0.5);
+
+    Gtk::Frame* tmFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_TM")) );
+    tmFrame->set_border_width(0);
+    tmFrame->set_label_align(0.025, 0.5);
 
     Gtk::Frame* retiFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_RETI")) );
     retiFrame->set_border_width(0);
@@ -187,6 +191,33 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     inversret = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
     inversret->set_active (false);
     inversretConn  = inversret->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversretChanged) );
+
+//tone mapping local
+    Gtk::VBox * tmBox = Gtk::manage (new Gtk::VBox());
+    tmBox->set_border_width(4);
+    tmBox->set_spacing(2);
+
+    stren  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_STREN"), -100, 200, 1, 0));
+    stren->setAdjusterListener (this);
+
+    gamma  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_GAM"), 80, 150, 1, 100));
+    gamma->setAdjusterListener (this);
+
+    estop  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_ESTOP"), 10, 400, 1, 140));
+    estop->setAdjusterListener (this);
+
+    scaltm  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SCALTM"), 1, 100, 1, 3));
+    scaltm->setAdjusterListener (this);
+
+    rewei  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_REWEI"), 0, 9, 1, 0));
+    rewei->setAdjusterListener (this);
+
+    sensitm = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSI"), 0, 100, 1, 40));
+    sensitm->set_tooltip_text (M("TP_LOCALLAB_SENSI_TOOLTIP"));
+    sensitm->setAdjusterListener (this);
+
+//end TM
+
 
 //retinex local
     Gtk::VBox * retiBox = Gtk::manage (new Gtk::VBox());
@@ -390,6 +421,17 @@ Locallab::Locallab (): FoldableToolPanel(this, "gradient", M("TP_LOCALLAB_LABEL"
     blurrVBox->pack_start (*inversrad);
     blurrFrame->add(*blurrVBox);
     pack_start (*blurrFrame);
+
+    tmBox->pack_start (*stren);
+    tmBox->pack_start (*gamma);
+    tmBox->pack_start (*estop);
+    tmBox->pack_start (*scaltm);
+    tmBox->pack_start (*rewei);
+    tmBox->pack_start (*sensitm);
+
+    tmFrame->add(*tmBox);
+    pack_start (*tmFrame);
+
 
     retiBox->pack_start (*retinexMethod);
     retiBox->pack_start (*str);
@@ -660,6 +702,15 @@ bool Locallab::localComputed_ ()
         activlum->set_active (true);
     }
 
+//TM
+    stren->setValue(nextdatasp[49]);
+    gamma->setValue(nextdatasp[50]);
+    estop->setValue(nextdatasp[51]);
+    scaltm->setValue(nextdatasp[52]);
+    rewei->setValue(nextdatasp[53]);
+    sensitm->setValue(nextdatasp[54]);
+
+
     enableListener ();
 
     //update all sliders by this strange process!
@@ -727,7 +778,7 @@ bool Locallab::localComputed_ ()
 
 void Locallab::localChanged  (int **datasp, int sp)
 {
-    for(int i = 2; i < 52; i++) {
+    for(int i = 2; i < 58; i++) {
         nextdatasp[i] = datasp[i][sp];
 
     }
@@ -775,8 +826,15 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         sensih->setEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         sensicb->setEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
         sensibn->setEditedState (pedited->locallab.sensibn ? Edited : UnEdited);
+        sensitm->setEditedState (pedited->locallab.sensitm ? Edited : UnEdited);
         radius->setEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setEditedState (pedited->locallab.strength ? Edited : UnEdited);
+        stren->setEditedState (pedited->locallab.stren ? Edited : UnEdited);
+        gamma->setEditedState (pedited->locallab.gamma ? Edited : UnEdited);
+        estop->setEditedState (pedited->locallab.estop ? Edited : UnEdited);
+        scaltm->setEditedState (pedited->locallab.scaltm ? Edited : UnEdited);
+        rewei->setEditedState (pedited->locallab.rewei ? Edited : UnEdited);
+
         nbspot->setEditedState (pedited->locallab.nbspot ? Edited : UnEdited);
         anbspot->setEditedState (pedited->locallab.anbspot ? Edited : UnEdited);
         transit->setEditedState (pedited->locallab.transit ? Edited : UnEdited);
@@ -807,11 +865,12 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     }
 
+    setEnabled(pp->locallab.enabled);
+
     Smethodconn.block(true);
     retinexMethodConn.block(true);
     qualityMethodConn.block(true);
 
-    setEnabled(pp->locallab.enabled);
     avoidConn.block (true);
     avoid->set_active (pp->locallab.avoid);
     avoidConn.block (false);
@@ -853,9 +912,15 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     sensih->setValue (pp->locallab.sensih);
     sensicb->setValue (pp->locallab.sensicb);
     sensibn->setValue (pp->locallab.sensibn);
+    sensitm->setValue (pp->locallab.sensitm);
     transit->setValue (pp->locallab.transit);
     radius->setValue (pp->locallab.radius);
     strength->setValue (pp->locallab.strength);
+    stren->setValue (pp->locallab.stren);
+    gamma->setValue (pp->locallab.gamma);
+    estop->setValue (pp->locallab.estop);
+    scaltm->setValue (pp->locallab.scaltm);
+    rewei->setValue (pp->locallab.rewei);
     str->setValue (pp->locallab.str);
     neigh->setValue (pp->locallab.neigh);
     nbspot->setValue (pp->locallab.nbspot);
@@ -1061,8 +1126,14 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.sensih = sensih->getIntValue ();
     pp->locallab.sensicb = sensicb->getIntValue ();
     pp->locallab.sensibn = sensibn->getIntValue ();
+    pp->locallab.sensitm = sensitm->getIntValue ();
     pp->locallab.radius = radius->getIntValue ();
     pp->locallab.strength = strength->getIntValue ();
+    pp->locallab.stren = stren->getIntValue ();
+    pp->locallab.gamma = gamma->getIntValue ();
+    pp->locallab.estop = estop->getIntValue ();
+    pp->locallab.scaltm = scaltm->getIntValue ();
+    pp->locallab.rewei = rewei->getIntValue ();
     pp->locallab.enabled = getEnabled();
     pp->locallab.transit = transit->getIntValue ();
     pp->locallab.avoid = avoid->get_active();
@@ -1115,8 +1186,14 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.sensih = sensih->getEditedState ();
         pedited->locallab.sensicb = sensicb->getEditedState ();
         pedited->locallab.sensibn = sensibn->getEditedState ();
+        pedited->locallab.sensitm = sensitm->getEditedState ();
         pedited->locallab.radius = radius->getEditedState ();
         pedited->locallab.strength = strength->getEditedState ();
+        pedited->locallab.stren = stren->getEditedState ();
+        pedited->locallab.gamma = gamma->getEditedState ();
+        pedited->locallab.estop = estop->getEditedState ();
+        pedited->locallab.scaltm = scaltm->getEditedState ();
+        pedited->locallab.rewei = rewei->getEditedState ();
         pedited->locallab.transit = transit->getEditedState ();
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
@@ -1472,10 +1549,16 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     sensih->setDefault (defParams->locallab.sensih);
     sensicb->setDefault (defParams->locallab.sensicb);
     sensibn->setDefault (defParams->locallab.sensibn);
+    sensitm->setDefault (defParams->locallab.sensitm);
     transit->setDefault (defParams->locallab.transit);
     radius->setDefault (defParams->locallab.radius);
     strength->setDefault (defParams->locallab.strength);
-    str->setDefault (defParams->locallab.str);
+    stren->setDefault (defParams->locallab.stren);
+    gamma->setDefault (defParams->locallab.gamma);
+    estop->setDefault (defParams->locallab.estop);
+    gamma->setDefault (defParams->locallab.gamma);
+    scaltm->setDefault (defParams->locallab.scaltm);
+    rewei->setDefault (defParams->locallab.rewei);
     neigh->setDefault (defParams->locallab.neigh);
     nbspot->setDefault (defParams->locallab.nbspot);
     anbspot->setDefault (defParams->locallab.anbspot);
@@ -1516,8 +1599,14 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensih->setDefaultEditedState (pedited->locallab.sensih ? Edited : UnEdited);
         sensicb->setDefaultEditedState (pedited->locallab.sensicb ? Edited : UnEdited);
         sensibn->setDefaultEditedState (pedited->locallab.sensibn ? Edited : UnEdited);
+        sensitm->setDefaultEditedState (pedited->locallab.sensitm ? Edited : UnEdited);
         radius->setDefaultEditedState (pedited->locallab.radius ? Edited : UnEdited);
         strength->setDefaultEditedState (pedited->locallab.strength ? Edited : UnEdited);
+        stren->setDefaultEditedState (pedited->locallab.stren ? Edited : UnEdited);
+        gamma->setDefaultEditedState (pedited->locallab.gamma ? Edited : UnEdited);
+        estop->setDefaultEditedState (pedited->locallab.estop ? Edited : UnEdited);
+        scaltm->setDefaultEditedState (pedited->locallab.scaltm ? Edited : UnEdited);
+        rewei->setDefaultEditedState (pedited->locallab.rewei ? Edited : UnEdited);
         transit->setDefaultEditedState (pedited->locallab.transit ? Edited : UnEdited);
         str->setDefaultEditedState (pedited->locallab.str ? Edited : UnEdited);
         neigh->setDefaultEditedState (pedited->locallab.neigh ? Edited : UnEdited);
@@ -1559,8 +1648,14 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         sensih->setDefaultEditedState (Irrelevant);
         sensicb->setDefaultEditedState (Irrelevant);
         sensibn->setDefaultEditedState (Irrelevant);
+        sensitm->setDefaultEditedState (Irrelevant);
         radius->setDefaultEditedState (Irrelevant);
         strength->setDefaultEditedState (Irrelevant);
+        stren->setDefaultEditedState (Irrelevant);
+        gamma->setDefaultEditedState (Irrelevant);
+        estop->setDefaultEditedState (Irrelevant);
+        scaltm->setDefaultEditedState (Irrelevant);
+        rewei->setDefaultEditedState (Irrelevant);
         transit->setDefaultEditedState (Irrelevant);
         str->setDefaultEditedState (Irrelevant);
         neigh->setDefaultEditedState (Irrelevant);
@@ -1634,6 +1729,7 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
         } else if (a == locXL) {
             if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
+                listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
                     listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
@@ -1677,6 +1773,18 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (Evlocallabradius, radius->getTextValue());
         } else if (a == strength) {
             listener->panelChanged (Evlocallabstrength, strength->getTextValue());
+        } else if (a == stren) {
+            listener->panelChanged (Evlocallabstren, stren->getTextValue());
+        } else if (a == gamma) {
+            listener->panelChanged (Evlocallabgamma, gamma->getTextValue());
+        } else if (a == estop) {
+            listener->panelChanged (Evlocallabestop, estop->getTextValue());
+        } else if (a == scaltm) {
+            listener->panelChanged (Evlocallabscaltm, scaltm->getTextValue());
+        } else if (a == rewei) {
+            listener->panelChanged (Evlocallabrewei, rewei->getTextValue());
+        } else if (a == sensitm) {
+            listener->panelChanged (Evlocallabsensitm, sensitm->getTextValue());
         } else if (a == transit) {
             listener->panelChanged (Evlocallabtransit, transit->getTextValue());
         } else if (a == str) {
@@ -1805,8 +1913,14 @@ void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
     sensih->trimValue(pp->locallab.sensih);
     sensicb->trimValue(pp->locallab.sensicb);
     sensibn->trimValue(pp->locallab.sensibn);
+    sensitm->trimValue(pp->locallab.sensitm);
     radius->trimValue(pp->locallab.radius);
     strength->trimValue(pp->locallab.strength);
+    stren->trimValue(pp->locallab.stren);
+    gamma->trimValue(pp->locallab.gamma);
+    estop->trimValue(pp->locallab.estop);
+    scaltm->trimValue(pp->locallab.scaltm);
+    rewei->trimValue(pp->locallab.rewei);
     transit->trimValue(pp->locallab.transit);
     str->trimValue(pp->locallab.str);
     neigh->trimValue(pp->locallab.neigh);
@@ -1853,8 +1967,14 @@ void Locallab::setBatchMode (bool batchMode)
     sensih->showEditedCB ();
     sensicb->showEditedCB ();
     sensibn->showEditedCB ();
+    sensitm->showEditedCB ();
     radius->showEditedCB ();
     strength->showEditedCB ();
+    stren->showEditedCB ();
+    gamma->showEditedCB ();
+    estop->showEditedCB ();
+    scaltm->showEditedCB ();
+    rewei->showEditedCB ();
     transit->showEditedCB ();
     Smethod->append_text (M("GENERAL_UNCHANGED"));
     str->showEditedCB ();

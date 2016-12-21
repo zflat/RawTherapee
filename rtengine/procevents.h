@@ -517,7 +517,12 @@ enum ProcEvent {
     EvlocallabEqualizer = 487,
     Evlocallabsensicb = 488,
     Evlocallabsensibn = 489,
-
+    Evlocallabstren = 490,
+    Evlocallabgamma = 491,
+    Evlocallabestop = 492,
+    Evlocallabscaltm = 493,
+    Evlocallabrewei = 494,
+    Evlocallabsensitm = 495,
     NUMOFEVENTS
 
 

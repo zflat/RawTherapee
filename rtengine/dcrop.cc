@@ -924,6 +924,13 @@ void Crop::update (int todo)
                             params.locallab.activlum = true;
                         }
 
+                        params.locallab.stren = parent->strens[sp];
+                        params.locallab.gamma = parent->gammas[sp];
+                        params.locallab.estop = parent->estops[sp];
+                        params.locallab.scaltm = parent->scaltms[sp];
+                        params.locallab.rewei = parent->reweis[sp];
+                        params.locallab.sensitm = parent->sensitms[sp];
+
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
                         params.locallab.lumaref = parent->lumarefs[sp];
@@ -1080,6 +1087,13 @@ void Crop::update (int todo)
                     parent->activlums[sp] =  1;
 
                 }
+
+                parent->strens[sp] = params.locallab.stren = parent->strens[0];
+                parent->gammas[sp] = params.locallab.gamma = parent->gammas[0];
+                parent->estops[sp] = params.locallab.estop = parent->estops[0];
+                parent->scaltms[sp] = params.locallab.scaltm = parent->scaltms[0];
+                parent->reweis[sp] = params.locallab.rewei = parent->reweis[0];
+                parent->sensitms[sp] = params.locallab.sensitm = parent->sensitms[0];
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];
