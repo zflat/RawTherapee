@@ -90,6 +90,8 @@ protected:
     Gtk::Button* neutral;
     Gtk::HBox* neutrHBox;
 
+    Gtk::Button* neutral1;
+    Gtk::HBox* neutrHBox1;
 
     MyComboBoxText*   retinexMethod;
     MyComboBoxText*   qualityMethod;
@@ -108,7 +110,7 @@ protected:
     rtengine::Coord draggedCenter;
     bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivlum, lastinverssha;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn, neutralconn;
+    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn, neutralconn, neutralconn1;
 
     void editToggled ();
 

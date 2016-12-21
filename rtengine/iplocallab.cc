@@ -665,7 +665,7 @@ void ImProcFunctions::cbdl_Local(int call, int sp, float **loctemp, const float 
 
 void ImProcFunctions::TM_Local(int call, int sp, LabImage * tmp1, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, const local_params & lp, float **deltE, LabImage * original, LabImage * transformed, int cx, int cy)
 {
-//local BLUR
+//local TM
     // BENCHFUN
     const float localtype = lumaref; // always spot area
     const float ach = (float)lp.trans / 100.f;
@@ -4113,10 +4113,10 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
         if(radius >= GAUSS_SKIP || lp.stren > 0.1) { // radius < GAUSS_SKIP means no gauss, just copy of original image
             LabImage *tmp1;
             LabImage *bufgb;
+            int GW = transformed->W;
+            int GH = transformed->H;
 
-            if(call == 2) { //simpleprocess
-                int GW = transformed->W;
-                int GH = transformed->H;
+            if(call == 2  && !lp.invrad) { //simpleprocess
                 int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
                 int bfw = int(lp.lx + lp.lxL) + 1;
                 bufgb = new LabImage(bfw, bfh);
@@ -4201,10 +4201,12 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 BlurNoise_Local(call, sp, tmp1, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
 
             } else {
+
                 InverseBlurNoise_Local(lp, original, transformed, tmp1, cx, cy);
+
             }
 
-            if(call == 2) {
+            if(call == 2  && !lp.invrad) {
                 delete bufgb;
             }
 

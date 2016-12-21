@@ -403,6 +403,19 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     denoisVBox->pack_start (*noisechrof);
     denoisVBox->pack_start (*noisechroc);
 
+    neutrHBox1 = Gtk::manage (new Gtk::HBox ());
+    neutrHBox1->set_border_width (2);
+
+    neutral1 = Gtk::manage (new Gtk::Button (M("TP_LOCALLAB_NEUTRAL")));
+    RTImage *resetImg1 = Gtk::manage (new RTImage ("gtk-undo-ltr-small.png", "gtk-undo-rtl-small.png"));
+    neutral1->set_image(*resetImg1);
+    neutral1->set_tooltip_text (M("TP_LOCALLAB_NEUTRAL_TIP"));
+    neutralconn1 = neutral1->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::neutral_pressed) );
+    neutral1->show();
+    neutrHBox1->pack_start (*neutral1);
+    pack_start (*neutrHBox1);
+
+
 
     colorVBox->pack_start (*lightness);
     colorVBox->pack_start (*contrast);
