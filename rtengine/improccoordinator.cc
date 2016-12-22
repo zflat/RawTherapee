@@ -687,6 +687,13 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             float **shbuffer;
             versionmip = 0;
 
+            /*
+                        if(params.locallab.inverssha) {
+                            for (int i = 0; i < fh; i++) {
+                                shbuffer[i] = new float[fw];
+                            }
+                        }
+            */
             if (fic0) {
                 //find current version mip
                 string line;
@@ -716,18 +723,18 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             ifstream fic(datalab, ios::in);
             bool reinit = false;
-/*
-            if(params.locallab.nbspot == 0) {
-                reinit = true;
+            /*
+                        if(params.locallab.nbspot == 0) {
+                            reinit = true;
 
-                if( remove( datalab.c_str() ) != 0 ) {
-                    perror( "Error deleting file" );
-                } else {
-                    puts( "File successfully deleted" );
-                }
+                            if( remove( datalab.c_str() ) != 0 ) {
+                                perror( "Error deleting file" );
+                            } else {
+                                puts( "File successfully deleted" );
+                            }
 
-            }
-*/
+                        }
+            */
             printf("versionmip=%i  nbspot=%i\n", versionmip, params.locallab.nbspot) ;
 
             if(fic.fail() || versionmip == 0  || params.locallab.nbspot == 0) { //initialize mip with default values if no file or old file to prevent crash
@@ -745,7 +752,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 {
                     for(int sp = 1; sp < maxspot; sp++) { // spots default
                         //versionmip = 10000
-                       // printf("spnew=%i\n", sp);
+                        // printf("spnew=%i\n", sp);
                         int t_sp = sp;
                         int t_mipversion = 10001;//new value for tone mapping
                         int t_circrad = 18;
@@ -1731,7 +1738,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             }
 
             delete [] dataspot;
+            /*
+                        if(params.locallab.inverssha) {
 
+                            for (int i = 0; i < fh; i++) {
+                                delete [] shbuffer[i];
+                            }
+
+                            delete [] shbuffer;
+                        }
+            */
 
         }
 

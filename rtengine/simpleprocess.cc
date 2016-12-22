@@ -956,6 +956,14 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         float** shbuffer;
         int versionmip = 0;
 
+        if(params.locallab.inverssha) {
+            shbuffer   = new float*[fh];
+
+            for (int i = 0; i < fh; i++) {
+                shbuffer[i] = new float[fw];
+            }
+        }
+
         if (fic0) {//normally we don't use here but ??
             //find the version mip
             string line;
@@ -1282,13 +1290,15 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             }
 
             delete [] dataspots;
-            /*
-                        for (int i = 0; i < fh; i++) {
-                            delete [] shbuffer[i];
-                        }
 
-                        delete [] shbuffer;
-            */
+            if(params.locallab.inverssha) {
+
+                for (int i = 0; i < fh; i++) {
+                    delete [] shbuffer[i];
+                }
+
+                delete [] shbuffer;
+            }
 
 
         }

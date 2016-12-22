@@ -4892,10 +4892,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             int bfw = int(lp.lx + lp.lxL) + 1;
 
             if(call == 2) { //call from simpleprocess
-                //printf("GW=%i GH=%i\n", GW, GH);
-                //    int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                //    int bfw = int(lp.lx + lp.lxL) + 1;
-                //printf("bw=%i bh=%i\n", bfw, bfh);
                 bufsh   = new float*[bfh];
 
                 for (int i = 0; i < bfh; i++) {
@@ -4954,7 +4950,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 for (int i = 0; i < GH; i++) {
                     loctemp[i] = new float[GW];
                 }
-
                 ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
 
             }
@@ -4973,8 +4968,8 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             //sharpen ellipse and transition
             Sharp_Local(call, sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
 
-            //claen all
-            if(call == 2) {
+            //cleann all
+            if(call == 2  && !lp.invshar) {
                 for (int i = 0; i < bfh; i++) {
                     delete [] loctemp[i];
                 }
