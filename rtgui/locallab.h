@@ -15,7 +15,8 @@
 #include "../rtengine/imagedata.h"
 #include <memory>
 #include "options.h"
-
+#include <string>
+#include "../rtengine/improcfun.h"
 
 
 class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public rtengine::localListener, public CurveListener, public EditSubscriber
@@ -71,6 +72,8 @@ protected:
     Adjuster* scaltm;
     Adjuster* rewei;
     Adjuster* sensitm;
+    Adjuster* retrab;
+
 
 
     sigc::connection lumaneutralPressedConn;
@@ -99,7 +102,13 @@ protected:
     Gtk::HBox* dhbox;
     CurveEditorGroup* CCWcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    int nextdatasp[58];
+    CurveEditorGroup* CCWcurveEditorgainTrab;
+    FlatCurveEditor* cTgainshaperab;
+
+    int nextdatasp[59];
+    int nextlength;
+    std::string nextstr;
+    std::string nextstr2;
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
     double draggedFeatherOffset;
@@ -140,8 +149,10 @@ public:
     void inversshaChanged ();
     void curveChanged (CurveEditor* ce);
     void autoOpenCurve ();
-    void localChanged           (int **datasp, int sp);
+    void localChanged           (int **datasp, std::string datastr, int sp, int maxdat);
+    void localretChanged           (int **datasp, std::string datastr, int sp, int maxdat);
     bool localComputed_         ();
+    bool localretComputed_         ();
     void setEditProvider (EditDataProvider* provider);
     void retinexMethodChanged();
     void qualityMethodChanged();

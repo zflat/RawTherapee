@@ -33,6 +33,7 @@
 #include "../rtgui/threadutils.h"
 #include "settings.h"
 #include "LUT.h"
+
 /**
  * @file
  * This file contains the main functionality of the RawTherapee engine.
@@ -314,7 +315,8 @@ class localListener
 {
 public :
     virtual ~localListener() {}
-    virtual void localChanged (int **datasp, int sp) {}
+    virtual void localChanged (int **datasp, std::string datastr, int sp, int maxdat) {}
+    virtual void localretChanged (int **datasp, std::string datastr, int sp, int maxdat) {}
 
 };
 

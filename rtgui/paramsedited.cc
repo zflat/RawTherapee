@@ -316,6 +316,7 @@ void ParamsEdited::set (bool v)
     locallab.shariter = v;
     locallab.sensi = v;
     locallab.sensih = v;
+    locallab.retrab = v;
     locallab.sensicb = v;
     locallab.sensibn = v;
     locallab.sensitm = v;
@@ -343,6 +344,7 @@ void ParamsEdited::set (bool v)
     locallab.anbspot = v;
     locallab.vart = v;
     locallab.ccwTgaincurve = v;
+    locallab.ccwTgaincurverab = v;
 
     for(int i = 0; i < 5; i++) {
         locallab.mult[i] = v;
@@ -879,6 +881,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.shariter = locallab.shariter && p.locallab.shariter == other.locallab.shariter;
         locallab.sensi = locallab.sensi && p.locallab.sensi == other.locallab.sensi;
         locallab.sensih = locallab.sensih && p.locallab.sensih == other.locallab.sensih;
+        locallab.retrab = locallab.retrab && p.locallab.retrab == other.locallab.retrab;
         locallab.sensicb = locallab.sensicb && p.locallab.sensicb == other.locallab.sensicb;
         locallab.sensibn = locallab.sensibn && p.locallab.sensibn == other.locallab.sensibn;
         locallab.sensitm = locallab.sensitm && p.locallab.sensitm == other.locallab.sensitm;
@@ -898,6 +901,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.anbspot = locallab.anbspot && p.locallab.anbspot == other.locallab.anbspot;
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
+        locallab.ccwTgaincurverab = locallab.ccwTgaincurverab && p.locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab;
 
         for(int i = 0; i < 5; i++) {
             locallab.mult[i] = locallab.mult[i] && p.locallab.mult[i] == other.locallab.mult[i];
@@ -2247,6 +2251,11 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.sensih     = mods.locallab.sensih;
     }
 
+    if (locallab.retrab) {
+        toEdit.locallab.retrab     = mods.locallab.retrab;
+    }
+
+
     if (locallab.sensicb) {
         toEdit.locallab.sensicb     = mods.locallab.sensicb;
     }
@@ -2317,6 +2326,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.ccwTgaincurve) {
         toEdit.locallab.ccwTgaincurve   = mods.locallab.ccwTgaincurve;
+    }
+
+    if (locallab.ccwTgaincurverab) {
+        toEdit.locallab.ccwTgaincurverab   = mods.locallab.ccwTgaincurverab;
     }
 
     for(int i = 0; i < 5; i++) {

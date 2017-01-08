@@ -270,6 +270,62 @@ static void calcTransition (const float lox, const float loy, const float ach, c
     }
 }
 
+void ImProcFunctions::strcuv_data (std::string retistr, int *s_datc, int &siz)
+{
+    std::string delim[65] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+                             "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+                             "&", "#", "{", "[", "]", "}", "$", "*", "?", ">", "!", ";", "<"
+                            };
+
+    int s_size;
+    std::size_t posend = retistr.find("@");
+
+    std::string strend = retistr.substr (posend - 1, 1);
+    //    printf("stren=%s posz=%i\n", strend.c_str(), posz);
+    int longe;
+
+    for(int sl = 0; sl < 65; sl++) {
+        if(delim[sl] == strend) {
+            longe = sl + 1;
+        }
+    }
+
+    s_size = longe;
+
+    // printf("sp=%i stren=%s reti=%s long=%i\n", sp, strend.c_str(), retistr[sp].c_str(), longe);
+
+    int s_cur[s_size + 1];
+    int s_datcu[s_size + 1];
+
+    std::size_t pose[s_size + 1];
+    std::size_t valstr[s_size + 1];
+    pose[0] = -1;
+
+    for(int z = 1; z < s_size + 1; z++) {
+        pose[z] = retistr.find(delim[z - 1]);
+    }
+
+
+    for(int z = 1; z < s_size + 1; z++) {
+        std::string sval = retistr.substr (pose[z - 1] + 1, (pose[z] - pose[z - 1]));
+        s_datc[z - 1] = s_datcu[z - 1] = std::stoi(sval.c_str());
+
+    }
+
+    /*
+    //here to verify process is good
+        std::string cur_str = "";
+
+        for(int j = 0; j < s_size; j++) {
+            cur_str = cur_str + std::to_string(s_datcu[j]) + delim[j];
+        }
+        printf("calc str=%s\n", cur_str.c_str());
+    */
+    siz = longe;
+
+}
+
+
 
 void ImProcFunctions::addGaNoise (LabImage *lab, LabImage *dst, const float mean, const float variance, const int sk)
 {
@@ -1350,7 +1406,6 @@ void ImProcFunctions::Reti_Local(int call, const float hueplus, const float huem
 
 //local retinex
     //BENCHFUN
-
     {
         const float ach = (float)lp.trans / 100.f;
 
@@ -4950,6 +5005,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 for (int i = 0; i < GH; i++) {
                     loctemp[i] = new float[GW];
                 }
+
                 ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
 
             }
@@ -5066,6 +5122,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             Wd = GW;
 
             if(!lp.invret && call == 2) {
+
                 Hd = bfh;
                 Wd = bfw;
                 bufreti = new LabImage(bfw, bfh);
@@ -5133,6 +5190,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             //    LabImage *tmpl = new LabImage(Wd, Hd);
             if(!lp.invret && call == 2) {
 
+
 #ifdef _OPENMP
                 #pragma omp parallel for schedule(dynamic,16)
 #endif
@@ -5173,6 +5231,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 }
 
             if(!lp.invret) {
+
                 Reti_Local(call, hueplus, huemoins, hueref, dhueret, chromaref, lumaref, lp, deltE, original, transformed, tmpl, cx, cy, 0);
             } else {
                 InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 0);
@@ -5181,6 +5240,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             if(params->locallab.chrrt > 0) {
 
                 if(!lp.invret && call == 2) {
+
 #ifdef _OPENMP
                     #pragma omp parallel for schedule(dynamic,16)
 #endif
@@ -5208,6 +5268,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 ImProcFunctions::MSRLocal(orig, tmpl->L, orig1, Wd, Hd, params->locallab, sk, locRETgainCcurve, 1, 4, 0.8f, minCD, maxCD, mini, maxi, Tmean, Tsigma, Tmin, Tmax);
 
                 if(!lp.invret && call == 2) {
+
 #ifdef _OPENMP
                     #pragma omp parallel for schedule(dynamic,16)
 #endif
@@ -5242,6 +5303,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 }
 
                 if(!lp.invret) {
+
                     Reti_Local(call, hueplus, huemoins, hueref, dhueret, chromaref, lumaref, lp, deltE, original, transformed, tmpl, cx, cy, 1);
                 } else {
                     InverseReti_Local(lp, original, transformed, tmpl, cx, cy, 1);

@@ -779,7 +779,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
     LUTf curve (65536, 0);
     LUTf satcurve (65536, 0);
     LUTf lhskcurve (65536, 0);
-//    LUTf localcurve(65536, 0);
     LUTf lumacurve(32770, 0); // lumacurve[32768] and lumacurve[32769] will be set to 32768 and 32769 later to allow linear interpolation
     LUTf clcurve (65536, 0);
     LUTf clToningcurve;
@@ -948,13 +947,18 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
-        params.locallab.getCurves(locRETgainCurve);
+        LocretigainCurverab locRETgainCurverab;
+
+        //   params.locallab.getCurves(locRETgainCurve);
         int realspot = params.locallab.nbspot;
         int maxspot = settings->nspot + 1;
         ifstream fic0(datalab, ios::in);
-        ifstream fich(datalab, ios::in);
         float** shbuffer;
         int versionmip = 0;
+        std::string delim[65] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+                                 "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+                                 "&", "#", "{", "[", "]", "}", "$", "*", "?", ">", "!", ";", "<"
+                                };
 
         if(params.locallab.inverssha) {
             shbuffer   = new float*[fh];
@@ -991,134 +995,167 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             fic0.close();
         }
 
+        // printf("ok sim 1\n");
+        ifstream fich(datalab, ios::in);
 
         if (fich && versionmip != 0) {
-            int **dataspots;
-            dataspots = new int*[58];
+            std::string inser;
 
-            for (int i = 0; i < 58; i++) {
+            int **dataspots;
+            dataspots = new int*[59];
+
+            for (int i = 0; i < 59; i++) {
                 dataspots[i] = new int[maxspot];
             }
 
-            dataspots[2][0] =  params.locallab.circrad;
-            dataspots[3][0] =  params.locallab.locX;
-            dataspots[4][0] =  params.locallab.locY;
-            dataspots[5][0] =  params.locallab.locYT;
-            dataspots[6][0] =  params.locallab.locXL;
-            dataspots[7][0] =  params.locallab.centerX;
-            dataspots[8][0] =  params.locallab.centerY;
-            dataspots[9][0] =  params.locallab.lightness;
-            dataspots[10][0] =  params.locallab.contrast;
-            dataspots[11][0] =  params.locallab.chroma;
-            dataspots[12][0] =  params.locallab.sensi;
-            dataspots[13][0] =  params.locallab.transit;
 
-            if(!params.locallab.invers) {
-                dataspots[14][0] =  0;
-            } else {
-                dataspots[14][0] =  1;
+            std::string *retistrs;
+            retistrs = new std::string[maxspot];
+            {
+                dataspots[2][0] =  params.locallab.circrad;
+                dataspots[3][0] =  params.locallab.locX;
+                dataspots[4][0] =  params.locallab.locY;
+                dataspots[5][0] =  params.locallab.locYT;
+                dataspots[6][0] =  params.locallab.locXL;
+                dataspots[7][0] =  params.locallab.centerX;
+                dataspots[8][0] =  params.locallab.centerY;
+                dataspots[9][0] =  params.locallab.lightness;
+                dataspots[10][0] =  params.locallab.contrast;
+                dataspots[11][0] =  params.locallab.chroma;
+                dataspots[12][0] =  params.locallab.sensi;
+                dataspots[13][0] =  params.locallab.transit;
+
+                if(!params.locallab.invers) {
+                    dataspots[14][0] =  0;
+                } else {
+                    dataspots[14][0] =  1;
+                }
+
+                if(params.locallab.Smethod == "IND") {
+                    dataspots[15][0] =  0;
+                } else if (params.locallab.Smethod == "SYM") {
+                    dataspots[15][0] =  1;
+                } else if (params.locallab.Smethod == "INDSL") {
+                    dataspots[15][0] =  2;
+                } else if (params.locallab.Smethod == "SYMSL") {
+                    dataspots[15][0] =  3;
+                }
+
+                dataspots[17][0] =  params.locallab.radius;
+                dataspots[18][0] =  params.locallab.strength;
+                dataspots[19][0] =  params.locallab.sensibn;
+
+                if(!params.locallab.inversrad) {
+                    dataspots[20][0] =  0;
+                } else {
+                    dataspots[20][0] =  1;
+                }
+
+                dataspots[21][0] = params.locallab.str;
+                dataspots[22][0] = params.locallab.chrrt;
+                dataspots[23][0] = params.locallab.neigh;
+                dataspots[24][0] = params.locallab.vart;
+                dataspots[25][0] = params.locallab.sensih;
+
+                if(!params.locallab.inversret) {
+                    dataspots[26][0] =  0;
+                } else {
+                    dataspots[26][0] =  1;
+                }
+
+                if(params.locallab.retinexMethod == "low") {
+                    dataspots[27][0] =  0;
+                } else if (params.locallab.retinexMethod == "uni") {
+                    dataspots[27][0] =  1;
+                } else if (params.locallab.retinexMethod == "high") {
+                    dataspots[27][0] =  2;
+                }
+
+
+                dataspots[28][0] = params.locallab.sharradius;
+                dataspots[29][0] = params.locallab.sharamount;
+                dataspots[30][0] = params.locallab.shardamping;
+                dataspots[31][0] = params.locallab.shariter;
+                dataspots[32][0] = params.locallab.sensisha;
+
+                if(!params.locallab.inverssha) {
+                    dataspots[33][0] =  0;
+                } else {
+                    dataspots[33][0] =  1;
+                }
+
+                if(params.locallab.qualityMethod == "std") {
+                    dataspots[34][0] =  0;
+                } else if (params.locallab.qualityMethod == "enh") {
+                    dataspots[34][0] =  1;
+                } else if (params.locallab.qualityMethod == "enhden") {
+                    dataspots[34][0] =  2;
+                }
+
+                dataspots[35][0] = params.locallab.thres;
+                dataspots[36][0] = params.locallab.proxi;
+
+                dataspots[37][0] = params.locallab.noiselumf;
+                dataspots[38][0] = params.locallab.noiselumc;
+                dataspots[39][0] = params.locallab.noisechrof;
+                dataspots[40][0] = params.locallab.noisechroc;
+
+                dataspots[41][0] = params.locallab.mult[0];
+                dataspots[42][0] = params.locallab.mult[1];
+                dataspots[43][0] = params.locallab.mult[2];
+                dataspots[44][0] = params.locallab.mult[3];
+                dataspots[45][0] = params.locallab.mult[4];
+                dataspots[46][0] = params.locallab.threshold;
+                dataspots[47][0] = params.locallab.sensicb;
+
+                if(!params.locallab.activlum) {
+                    dataspots[48][0] =  0;
+                } else {
+                    dataspots[48][0] =  1;
+                }
+
+                dataspots[49][0] = params.locallab.stren;
+                dataspots[50][0] = params.locallab.gamma;
+                dataspots[51][0] = params.locallab.estop;
+                dataspots[52][0] = params.locallab.scaltm;
+                dataspots[53][0] = params.locallab.rewei;
+                dataspots[54][0] = params.locallab.sensitm;
+                dataspots[55][0] = params.locallab.retrab;
+
+                dataspots[56][0] = 100.f * params.locallab.hueref;
+                dataspots[57][0] = params.locallab.chromaref;
+                dataspots[58][0] = params.locallab.lumaref;
+
+                //curve Reti local
+                int siz = params.locallab.ccwTgaincurve.size();
+                int s_cur[siz + 1];
+                int s_datcur[siz + 1];
+
+                for(int j = 0; j < siz; j++) {
+                    s_datcur[j] = (int)  (1000. * params.locallab.ccwTgaincurve[j]);
+                }
+
+                std::string cur_str = "";
+
+                for(int j = 0; j < siz; j++) {
+                    cur_str = cur_str + std::to_string(s_datcur[j]) + delim[j];
+                }
+
+                inser = retistrs[0] = cur_str + "@";
             }
 
-            if(params.locallab.Smethod == "IND") {
-                dataspots[15][0] =  0;
-            } else if (params.locallab.Smethod == "SYM") {
-                dataspots[15][0] =  1;
-            } else if (params.locallab.Smethod == "INDSL") {
-                dataspots[15][0] =  2;
-            } else if (params.locallab.Smethod == "SYMSL") {
-                dataspots[15][0] =  3;
-            }
+            //  printf("ok sim 2\n");
+            params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
 
-            dataspots[17][0] =  params.locallab.radius;
-            dataspots[18][0] =  params.locallab.strength;
-            dataspots[19][0] =  params.locallab.sensibn;
-
-            if(!params.locallab.inversrad) {
-                dataspots[20][0] =  0;
-            } else {
-                dataspots[20][0] =  1;
-            }
-
-            dataspots[21][0] = params.locallab.str;
-            dataspots[22][0] = params.locallab.chrrt;
-            dataspots[23][0] = params.locallab.neigh;
-            dataspots[24][0] = params.locallab.vart;
-            dataspots[25][0] = params.locallab.sensih;
-
-            if(!params.locallab.inversret) {
-                dataspots[26][0] =  0;
-            } else {
-                dataspots[26][0] =  1;
-            }
-
-            if(params.locallab.retinexMethod == "low") {
-                dataspots[27][0] =  0;
-            } else if (params.locallab.retinexMethod == "uni") {
-                dataspots[27][0] =  1;
-            } else if (params.locallab.retinexMethod == "high") {
-                dataspots[27][0] =  2;
-            }
-
-
-            dataspots[28][0] = params.locallab.sharradius;
-            dataspots[29][0] = params.locallab.sharamount;
-            dataspots[30][0] = params.locallab.shardamping;
-            dataspots[31][0] = params.locallab.shariter;
-            dataspots[32][0] = params.locallab.sensisha;
-
-            if(!params.locallab.inverssha) {
-                dataspots[33][0] =  0;
-            } else {
-                dataspots[33][0] =  1;
-            }
-
-            if(params.locallab.qualityMethod == "std") {
-                dataspots[34][0] =  0;
-            } else if (params.locallab.qualityMethod == "enh") {
-                dataspots[34][0] =  1;
-            } else if (params.locallab.qualityMethod == "enhden") {
-                dataspots[34][0] =  2;
-            }
-
-            dataspots[35][0] = params.locallab.thres;
-            dataspots[36][0] = params.locallab.proxi;
-
-            dataspots[37][0] = params.locallab.noiselumf;
-            dataspots[38][0] = params.locallab.noiselumc;
-            dataspots[39][0] = params.locallab.noisechrof;
-            dataspots[40][0] = params.locallab.noisechroc;
-
-            dataspots[41][0] = params.locallab.mult[0];
-            dataspots[42][0] = params.locallab.mult[1];
-            dataspots[43][0] = params.locallab.mult[2];
-            dataspots[44][0] = params.locallab.mult[3];
-            dataspots[45][0] = params.locallab.mult[4];
-            dataspots[46][0] = params.locallab.threshold;
-            dataspots[47][0] = params.locallab.sensicb;
-
-            if(!params.locallab.activlum) {
-                dataspots[48][0] =  0;
-            } else {
-                dataspots[48][0] =  1;
-            }
-
-            dataspots[49][0] = params.locallab.stren;
-            dataspots[50][0] = params.locallab.gamma;
-            dataspots[51][0] = params.locallab.estop;
-            dataspots[52][0] = params.locallab.scaltm;
-            dataspots[53][0] = params.locallab.rewei;
-            dataspots[54][0] = params.locallab.sensitm;
-
-            dataspots[55][0] = 100.f * params.locallab.hueref;
-            dataspots[56][0] = params.locallab.chromaref;
-            dataspots[57][0] = params.locallab.lumaref;
-
+            int ns;
+            int realsp = params.locallab.nbspot;
 
             if (fich) {
 
-                string line;
-                string spotline;
+                std::string line;
+                std::string spotline;
                 int cont = 0;
+                int sizecu;
 
                 while (getline(fich, line)) {
                     spotline = line;
@@ -1126,7 +1163,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     std::size_t posend = spotline.find("@");//in case of for futur use
 
                     if(spotline.substr(0, pos) == "Mipversion") {
-                        string strversion = spotline.substr (pos + 1, (posend - pos));
+                        std::string strversion = spotline.substr (pos + 1, (posend - pos));
                         versionmip = std::stoi(strversion.c_str());
                     }
 
@@ -1135,8 +1172,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     }
 
                     cont++;
-                    string str3 = spotline.substr (pos + 1, (posend - pos));
-                    int ns;
+                    std::string str3 = spotline.substr (pos + 1, (posend - pos));
 
                     if(cont == 1) {
                         ns =  std::stoi(str3.c_str());
@@ -1152,16 +1188,37 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         dataspots[16][0] = std::stoi(str3.c_str());
                     }
 
-                    if(cont > 16  && cont < 58) {
+                    if(cont > 16  && cont < 59) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
                     }
+
+                    if(spotline.substr(0, pos) == "curveReti") {
+                        //  printf("cont=%i", cont);
+                        std::string curstr;
+                        int longecur;
+                        std::string strend = spotline.substr (posend - 1, 1);
+                        std::size_t posz = spotline.find(strend);
+                        int longe;
+
+                        for(int sl = 0; sl < 65; sl++) {
+                            if(delim[sl] == strend) {
+                                longe = sl + 1;
+                            }
+                        }
+
+                        retistrs[ns] = str3;
+                        sizecu = longe;
+                        //        printf("lec simpl str=%s ns=%i  si=%i\n",  retistrs[ns].c_str(), ns, sizecu);
+                    }
+
 
                 }
 
                 fich.close();
             }
 
+            // printf("ok sim 3\n");
 
             for(int sp = 1; sp < maxspot; sp++) { //spots default
                 params.locallab.hueref = INFINITY;
@@ -1275,21 +1332,49 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 params.locallab.scaltm = dataspots[52][sp];
                 params.locallab.rewei = dataspots[53][sp];
                 params.locallab.sensitm = dataspots[54][sp];
+                params.locallab.retrab = dataspots[55][sp];
 
-                params.locallab.hueref = ((float) dataspots[55][sp]) / 100.f;
-                params.locallab.chromaref = dataspots[56][sp];
-                params.locallab.lumaref = dataspots[57][sp];
+                params.locallab.hueref = ((float) dataspots[56][sp]) / 100.f;
+                params.locallab.chromaref = dataspots[57][sp];
+                params.locallab.lumaref = dataspots[58][sp];
+
+
+                int *s_datc;
+                s_datc = new int[70];
+                int siz;
+
+                ipf.strcuv_data (retistrs[sp], s_datc, siz);
+                std::vector<double>   cretiend;
+
+                for(int j = 0; j < siz; j++) {
+                    cretiend.push_back((double) (s_datc[j]) / 1000.);
+                }
+
+                delete [] s_datc;
+
+                params.locallab.ccwTgaincurve = cretiend;
+
+                int cursize = params.locallab.ccwTgaincurve.size();
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+
 
                 ipf.Lab_Local(2, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
 
             }
 
+            //  printf("ok sim 4\n");
 
-            for (int i = 0; i < 58; i++) {
+
+            for (int i = 0; i < 59; i++) {
                 delete [] dataspots[i];
             }
 
             delete [] dataspots;
+
+
+
+
+            delete [] retistrs;
 
             if(params.locallab.inverssha) {
 
@@ -1299,6 +1384,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 delete [] shbuffer;
             }
+
+            //   printf("ok sim 5\n");
 
 
         }

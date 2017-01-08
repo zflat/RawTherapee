@@ -703,7 +703,7 @@ HISTORY_MSG_468;Local - Retinex Inverse
 HISTORY_MSG_469;Local - Hue scope
 HISTORY_MSG_470;Local - Spot
 HISTORY_MSG_471;Local - Blur Luminance only
-HISTORY_MSG_472;Local - --
+HISTORY_MSG_472;Local - Update GUI and Mip -1
 HISTORY_MSG_473;Local - Sh Radius
 HISTORY_MSG_474;Local - Sh Amount
 HISTORY_MSG_475;Local - Sh Damping
@@ -728,6 +728,9 @@ HISTORY_MSG_493;Local - TM edge stopping
 HISTORY_MSG_494;Local - TM scale
 HISTORY_MSG_495;Local - TM Reweighting
 HISTORY_MSG_496;Local - TM scope
+HISTORY_MSG_497;Local - Update GUI and Mip -2
+HISTORY_MSG_498;Local - Update GUI and Mip -3
+Update GUI and Mip -1
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot

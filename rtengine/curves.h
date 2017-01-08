@@ -562,6 +562,33 @@ public:
     }
 };
 
+class LocretigainCurverab
+{
+private:
+    LUTf lutLocretigainCurverab;  // 0xffff range
+    void Set(const Curve &pCurve);
+
+public:
+    float sum;
+
+    virtual ~LocretigainCurverab() {};
+    LocretigainCurverab();
+    void Reset();
+    void Set(const std::vector<double> &curvePoints);
+    float getSum() const
+    {
+        return sum;
+    }
+
+    float operator[](float index) const
+    {
+        return lutLocretigainCurverab[index];
+    }
+    operator bool (void) const
+    {
+        return lutLocretigainCurverab;
+    }
+};
 
 
 class WavCurve

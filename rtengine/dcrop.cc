@@ -801,7 +801,8 @@ void Crop::update (int todo)
         LUTu dummy;
         bool needslocal = params.locallab.enabled;
         LocretigainCurve locRETgainCurve;
-        params.locallab.getCurves(locRETgainCurve);
+        LocretigainCurverab locRETgainCurverab;
+        params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
         bool tyty = false;
         int maxspot = settings->nspot + 1;
 
@@ -930,6 +931,13 @@ void Crop::update (int todo)
                         params.locallab.scaltm = parent->scaltms[sp];
                         params.locallab.rewei = parent->reweis[sp];
                         params.locallab.sensitm = parent->sensitms[sp];
+                        params.locallab.retrab = parent->retrabs[sp];
+
+                        for(int j = 0; j < parent->sizeretics[sp]; j++) {
+                            params.locallab.ccwTgaincurve[j] = (double) (parent->reticurvs[sp * 500 + j]) / 1000.;
+                        }
+
+                        params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
 
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
@@ -949,7 +957,7 @@ void Crop::update (int todo)
                 int sp ;
                 sp = realspot;
                 bool locutili2 = parent->locutili;
-                params.locallab.getCurves(locRETgainCurve);
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
                 parent->sps[sp] = sp;
                 parent->circrads[sp] = params.locallab.circrad = parent->circrads[0];
                 parent->locx[sp] = params.locallab.locX = parent->locx[0];
@@ -1094,6 +1102,17 @@ void Crop::update (int todo)
                 parent->scaltms[sp] = params.locallab.scaltm = parent->scaltms[0];
                 parent->reweis[sp] = params.locallab.rewei = parent->reweis[0];
                 parent->sensitms[sp] = params.locallab.sensitm = parent->sensitms[0];
+                parent->retrabs[sp] = params.locallab.retrab = parent->retrabs[0];
+
+                for(int j = 0; j < parent->sizeretics[sp]; j++) {
+
+                    params.locallab.ccwTgaincurve[j] = (double) (parent->reticurvs[0 * 500 + j]) / 1000.;
+                    parent->reticurvs[sp * 500 + j] = (int) 1000.* params.locallab.ccwTgaincurve[j];
+                }
+
+
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];

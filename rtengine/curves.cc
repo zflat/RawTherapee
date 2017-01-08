@@ -953,6 +953,7 @@ void CurveFactory::complexLCurve (double br, double contr, const std::vector<dou
 {
 
     utili = false;
+
     // clear array that stores histogram valid before applying the custom curve
     if (outBeforeCCurveHistogram) {
         outBeforeCCurveHistogram.clear();
@@ -1162,6 +1163,51 @@ void CurveFactory::RGBCurve (const std::vector<double>& curvePoints, LUTf & outC
     }
 }
 
+
+LocretigainCurverab::LocretigainCurverab() : sum(0.f) {};
+
+void LocretigainCurverab::Reset()
+{
+    lutLocretigainCurverab.reset();
+    sum = 0.f;
+}
+
+void LocretigainCurverab::Set(const Curve &pCurve)
+{
+    if (pCurve.isIdentity()) {
+        Reset(); // raise this value if the quality suffers from this number of samples
+        return;
+    }
+
+    lutLocretigainCurverab(501); // raise this value if the quality suffers from this number of samples
+    sum = 0.f;
+
+    for (int i = 0; i < 501; i++) {
+        lutLocretigainCurverab[i] = pCurve.getVal(double(i) / 500.);
+
+        if(lutLocretigainCurverab[i] < 0.02f) {
+            lutLocretigainCurverab[i] = 0.02f;    //avoid 0.f for wavelet : under 0.01f quasi no action for each value
+        }
+
+        sum += lutLocretigainCurverab[i];
+    }
+
+    //lutLocCurve.dump("wav");
+}
+
+void LocretigainCurverab::Set(const std::vector<double> &curvePoints)
+{
+
+    if (!curvePoints.empty() && curvePoints[0] > FCT_Linear && curvePoints[0] < FCT_Unchanged) {
+        FlatCurve tcurve(curvePoints, false, CURVES_MIN_POLY_POINTS / 2);
+        tcurve.setIdentityValue(0.);
+        Set(tcurve);
+    } else {
+        Reset();
+    }
+}
+
+
 LocretigainCurve::LocretigainCurve() : sum(0.f) {};
 
 void LocretigainCurve::Reset()
@@ -1203,6 +1249,7 @@ void LocretigainCurve::Set(const std::vector<double> &curvePoints)
         Reset();
     }
 }
+
 
 
 void ColorAppearance::Reset()

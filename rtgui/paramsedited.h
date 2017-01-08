@@ -442,6 +442,7 @@ public:
     bool shariter;
     bool sensi;
     bool sensih;
+    bool retrab;
     bool sensicb;
     bool sensibn;
     bool sensitm;
@@ -468,6 +469,7 @@ public:
     bool inversret;
     bool inverssha;
     bool ccwTgaincurve;
+    bool ccwTgaincurverab;
     bool chrrt;
     bool mult[5];
     bool threshold;

@@ -618,7 +618,6 @@ void WaveletParams::getDefaultOpacityCurveBY(std::vector<double> &curve)
     }
 }
 
-
 void WaveletParams::getDefaultOpacityCurveW(std::vector<double> &curve)
 {
     double v[16] = { 0.00, 0.35, 0.35, 0.00,
@@ -903,6 +902,7 @@ void LocallabParams::setDefaults()
     shariter = 30;
     sensi = 19;
     sensih = 19;
+    retrab = 500;
     sensicb = 19;
     sensibn = 60;
     sensitm = 40;
@@ -940,18 +940,29 @@ void LocallabParams::setDefaults()
     threshold = 20;
 
     getDefaultCCWgainCurveT(ccwTgaincurve);
+    getDefaultCCWgainCurveTrab(ccwTgaincurverab);
 
 }
 
 void LocallabParams::getDefaultCCWgainCurveT(std::vector<double> &curve)
 {
-    double v[16] = { 0.00, 0.1, 0.35, 0.,
-                     0.35, 0.20, 0.35, 0.35,
-                     0.73, 0.50, 0.35, 0.35,
-                     1.00, 0.1, 0.00, 0.00
-                   };
+    /*    double v[24] = { 0.00, 0.1, 0.35, 0.,
+                         0.22, 0.18, 0.35, 0.35,
+                         0.45, 0.21, 0.35, 0.35,
+                         0.68, 0.55, 0.35, 0.35,
+                         0.88, 0.55, 0.35, 0.35,
+                         1.00, 0.17, 0.00, 0.00
+                       };
+                       */
 
-    curve.resize(17);
+
+    double v[12] =   {   0.00, 0.12, 0.35, 0.35,
+                         0.70, 0.50, 0.35, 0.35,
+                         1.00, 0.12, 0.35, 0.35,
+                     };
+
+
+    curve.resize(13);
     curve.at(0 ) = double(FCT_MinMaxCPoints);
 
     for (size_t i = 1; i < curve.size(); ++i) {
@@ -960,9 +971,28 @@ void LocallabParams::getDefaultCCWgainCurveT(std::vector<double> &curve)
 
 }
 
-void LocallabParams::getCurves(LocretigainCurve &cTgainCurve) const
+void LocallabParams::getDefaultCCWgainCurveTrab(std::vector<double> &curve)
+{
+
+    double v[12] =   {   0.00, 0.12, 0.35, 0.35,
+                         0.70, 0.50, 0.35, 0.35,
+                         1.00, 0.12, 0.35, 0.35,
+                     };
+
+
+    curve.resize(13);
+    curve.at(0 ) = double(FCT_MinMaxCPoints);
+
+    for (size_t i = 1; i < curve.size(); ++i) {
+        curve.at(i) = v[i - 1];
+    }
+
+}
+
+void LocallabParams::getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab) const
 {
     cTgainCurve.Set(this->ccwTgaincurve);
+    cTgainCurverab.Set(this->ccwTgaincurverab);
 
 }
 
@@ -2567,6 +2597,11 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_double_list("Locallab", "TgainCurve", ccwTgaincurve);
         }
 
+        if (!pedited || pedited->locallab.ccwTgaincurverab)  {
+            Glib::ArrayHandle<double> ccwTgaincurverab = locallab.ccwTgaincurverab;
+            keyFile.set_double_list("Locallab", "TgainCurverab", ccwTgaincurverab);
+        }
+
         if (!pedited || pedited->locallab.avoid) {
             keyFile.set_boolean ("Locallab", "Avoid", locallab.avoid);
         }
@@ -2702,6 +2737,11 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
         if (!pedited || pedited->locallab.sensih) {
             keyFile.set_integer ("Locallab", "Sensih", locallab.sensih);
         }
+
+        if (!pedited || pedited->locallab.retrab) {
+            keyFile.set_integer ("Locallab", "Retrab", locallab.retrab);
+        }
+
 
         if (!pedited || pedited->locallab.sensicb) {
             keyFile.set_integer ("Locallab", "Sensicb", locallab.sensicb);
@@ -4039,6 +4079,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                 }
             }
 
+            if (keyFile.has_key ("Locallab", "TgainCurverab")) {
+                locallab.ccwTgaincurverab = keyFile.get_double_list ("Locallab", "TgainCurverab");
+
+                if (pedited) {
+                    pedited->locallab.ccwTgaincurverab = true;
+                }
+            }
+
             if (keyFile.has_key ("Locallab", "Invers"))  {
                 locallab.invers  = keyFile.get_boolean ("Locallab", "Invers");
 
@@ -4288,6 +4336,15 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
                     pedited->locallab.sensih = true;
                 }
             }
+
+            if (keyFile.has_key ("Locallab", "Retrab"))  {
+                locallab.retrab  = keyFile.get_integer ("Locallab", "Retrab");
+
+                if (pedited) {
+                    pedited->locallab.retrab = true;
+                }
+            }
+
 
             //RAS
 
@@ -8619,6 +8676,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.sensi == other.locallab.sensi
         && locallab.sensitm == other.locallab.sensitm
         && locallab.sensih == other.locallab.sensih
+        && locallab.retrab == other.locallab.retrab
         && locallab.sensicb == other.locallab.sensicb
         && locallab.sensibn == other.locallab.sensibn
         && locallab.sensisha == other.locallab.sensisha
@@ -8638,6 +8696,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.vart == other.locallab.vart
         && locallab.threshold == other.locallab.threshold
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve
+        && locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab
         && pcvignette.enabled == other.pcvignette.enabled
         && pcvignette.strength == other.pcvignette.strength
         && pcvignette.feather == other.pcvignette.feather

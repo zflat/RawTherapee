@@ -138,6 +138,7 @@ protected:
     RetinextransmissionCurve dehatransmissionCurve;
     RetinexgaintransmissionCurve dehagaintransmissionCurve;
     LocretigainCurve locRETgainCurve;
+    LocretigainCurverab locRETgainCurverab;
 
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;
@@ -210,6 +211,8 @@ protected:
     bool opautili;
     bool wavcontlutili;
     int **dataspot;
+    std::string *retistr;
+
     LUTi circrads;
     LUTi centerx;
     LUTi centery;
@@ -266,7 +269,9 @@ protected:
     LUTi sensitms;
 
     int versionmip;
-
+    LUTi sizeretics;
+    LUTi reticurvs;
+    LUTi retrabs;
 
     LUTf huerefs;
     LUTf chromarefs;
@@ -296,6 +301,7 @@ public:
     void        stopProcessing ();
 //    void updatePreviewImage (int todo, Crop* cropCall = NULL);
 
+    std::string *retistrsav;
 
     void setPreviewScale    (int scale)
     {

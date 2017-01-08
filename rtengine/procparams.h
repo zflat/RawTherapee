@@ -46,6 +46,7 @@ class WavOpacityCurveWL;
 class RetinextransmissionCurve;
 class RetinexgaintransmissionCurve;
 class LocretigainCurve;
+class LocretigainCurverab;
 
 enum RenderingIntent {
     RI_PERCEPTUAL = INTENT_PERCEPTUAL,
@@ -889,6 +890,7 @@ public:
 
     int     sensi;
     int     sensih;
+    int     retrab;
     int     sensicb;
     int     sensibn;
     int     sensisha;
@@ -919,6 +921,8 @@ public:
     int     vart;
     int     chrrt;
     std::vector<double>   ccwTgaincurve;
+    std::vector<double>   ccwTgaincurverab;
+
     double mult[5];
     double threshold;
 
@@ -927,9 +931,9 @@ public:
         setDefaults();
     }
     void setDefaults();
-    void getCurves(LocretigainCurve &cTgainCurve) const;
+    void getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab) const;
     static void getDefaultCCWgainCurveT(std::vector<double> &curve);
-
+    static void getDefaultCCWgainCurveTrab(std::vector<double> &curve);
 
 };
 
