@@ -55,7 +55,7 @@ namespace
                 ? raw_image.get_thumbWidth() * raw_image.get_thumbHeight() * (raw_image.get_thumbBPS() / 8) * 3
                 : raw_image.get_thumbLength();
 
-        return raw_image.get_thumbOffset() + length < raw_image.get_file()->size;
+        return raw_image.get_thumbOffset() + length <= raw_image.get_file()->size;
     }
 
 }
@@ -466,6 +466,10 @@ Thumbnail* Thumbnail::loadFromRaw (const Glib::ustring& fname, RawMetaDataLocati
             int left_margin = ri->get_leftmargin();
             firstgreen += left_margin;
             int top_margin = ri->get_topmargin();
+            if(ri->get_maker() == "Sigma" && ri->DNGVERSION()) { // Hack to prevent sigma dng files from crashing
+                tmpw = (width - 2 - left_margin) / hskip;
+                tmph = (height - 2 - top_margin) / vskip;
+            }
 
             for (int row = 1 + top_margin, y = 0; row < iheight + top_margin  - 1 && y < tmph; row += vskip, y++) {
                 rofs = row * iwidth;
@@ -942,7 +946,7 @@ IImage8* Thumbnail::processImage (const procparams::ProcParams& params, int rhei
 
     ImProcFunctions ipf (&params, false);
     ipf.setScale (sqrt(double(fw * fw + fh * fh)) / sqrt(double(thumbImg->width * thumbImg->width + thumbImg->height * thumbImg->height))*scale);
-    ipf.updateColorProfiles (params.icm, options.rtSettings.monitorProfile, options.rtSettings.monitorIntent, false, false);
+    ipf.updateColorProfiles (options.rtSettings.monitorProfile, options.rtSettings.monitorIntent, false, false);
 
     LUTu hist16 (65536);
 

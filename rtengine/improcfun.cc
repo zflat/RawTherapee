@@ -68,7 +68,7 @@ void ImProcFunctions::setScale (double iscale)
     scale = iscale;
 }
 
-void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, const Glib::ustring& monitorProfile, RenderingIntent monitorIntent, bool softProof, bool gamutCheck)
+void ImProcFunctions::updateColorProfiles (const Glib::ustring& monitorProfile, RenderingIntent monitorIntent, bool softProof, bool gamutCheck)
 {
     // set up monitor transform
     if (monitorTransform) {
@@ -77,9 +77,15 @@ void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, con
 
     monitorTransform = nullptr;
 
-#if !defined(__APPLE__) // No support for monitor profiles on OS X, all data is sRGB
+    cmsHPROFILE monitor = nullptr;
 
-    cmsHPROFILE monitor = iccStore->getProfile (monitorProfile);
+    if (!monitorProfile.empty()) {
+#if !defined(__APPLE__) // No support for monitor profiles on OS X, all data is sRGB
+        monitor = iccStore->getProfile (monitorProfile);
+#else
+        monitor = iccStore->getProfile ("RT_sRGB");
+#endif
+    }
 
     if (monitor) {
         MyMutex::MyLock lcmsLock (*lcmsMutex);
@@ -92,25 +98,15 @@ void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, con
         if (softProof) {
             cmsHPROFILE oprof = nullptr;
 
-            if(icm.gamma != "default" || icm.freegamma) { // if select gamma output between BT709, sRGB, linear, low, high, 2.2 , 1.8
-                GammaValues ga;
-                iccStore->getGammaArray(icm, ga);
-                oprof = iccStore->createGammaProfile (icm, ga);
-            } else if (!icm.output.empty() && icm.output != ColorManagementParams::NoICMString) {
-                if(icm.gamma != "default" || icm.freegamma) { // if select gamma output between BT709, sRGB, linear, low, high, 2.2 , 1.8
-                    GammaValues ga;
-                    iccStore->getGammaArray(icm, ga);
-                    oprof = iccStore->createCustomGammaOutputProfile (icm, ga);
-                } else {
-                    oprof = iccStore->getProfile(icm.output);
-                }
+            if (!settings->printerProfile.empty()) {
+                oprof = iccStore->getProfile(settings->printerProfile);
             }
 
             if (oprof) {
                 // NOCACHE is for thread safety, NOOPTIMIZE for precision
                 flags = cmsFLAGS_SOFTPROOFING | cmsFLAGS_NOOPTIMIZE | cmsFLAGS_NOCACHE;
 
-                if (icm.outputBPC) {
+                if (settings->printerBPC) {
                     flags |= cmsFLAGS_BLACKPOINTCOMPENSATION;
                 }
 
@@ -122,7 +118,7 @@ void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, con
                                        iprof, TYPE_Lab_FLT,
                                        monitor, TYPE_RGB_8,
                                        oprof,
-                                       monitorIntent, icm.outputIntent,
+                                       monitorIntent, settings->printerIntent,
                                        flags
                                    );
 
@@ -144,8 +140,6 @@ void ImProcFunctions::updateColorProfiles (const ColorManagementParams& icm, con
 
         cmsCloseProfile(iprof);
     }
-
-#endif
 }
 
 void ImProcFunctions::firstAnalysis (const Imagefloat* const original, const ProcParams &params, LUTu & histogram)
