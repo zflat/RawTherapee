@@ -104,6 +104,7 @@ protected:
     multi_array2D<float, 4> conversionBuffer;
     LUTf wavclCurve;
     LUTf clToningcurve;
+    LUTf lllocalcurve;
     LUTf cl2Toningcurve;
     LUTf Noisecurve;
     LUTf NoiseCCcurve;
@@ -210,8 +211,10 @@ protected:
     bool clcutili;
     bool opautili;
     bool wavcontlutili;
+    bool locallutili;
     int **dataspot;
     std::string *retistr;
+    std::string *llstr;
 
     LUTi circrads;
     LUTi centerx;
@@ -272,6 +275,8 @@ protected:
     LUTi sizeretics;
     LUTi reticurvs;
     LUTi retrabs;
+    LUTi llcurvs;
+    LUTi sizellcs;
 
     LUTf huerefs;
     LUTf chromarefs;

@@ -184,6 +184,10 @@ void Options::updatePaths()
         lastWaveletCurvesDir = preferredPath;
     }
 
+    if (lastlocalCurvesDir.empty() || !Glib::file_test (lastlocalCurvesDir, Glib::FILE_TEST_EXISTS) || !Glib::file_test (lastlocalCurvesDir, Glib::FILE_TEST_IS_DIR)) {
+        lastlocalCurvesDir = preferredPath;
+    }
+
     if (lastPFCurvesDir.empty() || !Glib::file_test (lastPFCurvesDir, Glib::FILE_TEST_EXISTS) || !Glib::file_test (lastPFCurvesDir, Glib::FILE_TEST_IS_DIR)) {
         lastPFCurvesDir = preferredPath;
     }
@@ -722,6 +726,7 @@ void Options::setDefaults ()
     lastRetinexDir = "";
     lastDenoiseCurvesDir = "";
     lastWaveletCurvesDir = "";
+    lastlocalCurvesDir = "";
     lastPFCurvesDir = "";
     lastHsvCurvesDir = "";
     lastToneCurvesDir = "";
@@ -1834,6 +1839,7 @@ int Options::readFromFile (Glib::ustring fname)
                 safeDirGet(keyFile, "Dialogs", "LastRetinexDir", lastRetinexDir);
                 safeDirGet(keyFile, "Dialogs", "LastDenoiseCurvesDir", lastDenoiseCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastWaveletCurvesDir", lastWaveletCurvesDir);
+                safeDirGet(keyFile, "Dialogs", "LastlocalCurvesDir", lastlocalCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastPFCurvesDir", lastPFCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastHsvCurvesDir", lastHsvCurvesDir);
                 safeDirGet(keyFile, "Dialogs", "LastBWCurvesDir", lastBWCurvesDir);
@@ -2192,6 +2198,7 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_string ("Dialogs", "LastRetinexDir", lastRetinexDir);
         keyFile.set_string ("Dialogs", "LastDenoiseCurvesDir", lastDenoiseCurvesDir);
         keyFile.set_string ("Dialogs", "LastWaveletCurvesDir", lastWaveletCurvesDir);
+        keyFile.set_string ("Dialogs", "LastlocalCurvesDir", lastlocalCurvesDir);
         keyFile.set_string ("Dialogs", "LastPFCurvesDir", lastPFCurvesDir);
         keyFile.set_string ("Dialogs", "LastHsvCurvesDir", lastHsvCurvesDir);
         keyFile.set_string ("Dialogs", "LastBWCurvesDir", lastBWCurvesDir);

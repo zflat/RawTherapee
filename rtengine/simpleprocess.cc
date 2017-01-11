@@ -940,6 +940,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                                    params.labCurve.lccurve, curve1, curve2, satcurve, lhskcurve, 1);
 
     bool locutili = false;
+    bool locallutili = false;
 
     if(params.locallab.enabled) {
         MyTime t1, t2;
@@ -948,16 +949,16 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
         LocretigainCurverab locRETgainCurverab;
+        LUTf lllocalcurve(65536, 0);
 
-        //   params.locallab.getCurves(locRETgainCurve);
         int realspot = params.locallab.nbspot;
         int maxspot = settings->nspot + 1;
         ifstream fic0(datalab, ios::in);
         float** shbuffer;
         int versionmip = 0;
-        std::string delim[65] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
+        std::string delim[69] = {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z",
                                  "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
-                                 "&", "#", "{", "[", "]", "}", "$", "*", "?", ">", "!", ";", "<"
+                                 "&", "#", "{", "[", "]", "}", "$", "*", "?", ">", "!", ";", "<"",(", ")", "+", "-"
                                 };
 
         if(params.locallab.inverssha) {
@@ -985,7 +986,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 }
 
                 if(spotline.substr(0, pos) == "Spot") {
-                    // string str2 = spotline.substr (pos + 1, (posend - pos));
                     cont = 0;
                 }
 
@@ -995,7 +995,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             fic0.close();
         }
 
-        // printf("ok sim 1\n");
         ifstream fich(datalab, ios::in);
 
         if (fich && versionmip != 0) {
@@ -1011,6 +1010,9 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
             std::string *retistrs;
             retistrs = new std::string[maxspot];
+            std::string *llstrs;
+            llstrs = new std::string[maxspot];
+
             {
                 dataspots[2][0] =  params.locallab.circrad;
                 dataspots[3][0] =  params.locallab.locX;
@@ -1128,6 +1130,11 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 //curve Reti local
                 int siz = params.locallab.ccwTgaincurve.size();
+
+                if(siz > 69) {
+                    siz = 69;//avoid crash
+                }
+
                 int s_cur[siz + 1];
                 int s_datcur[siz + 1];
 
@@ -1142,10 +1149,32 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 }
 
                 inser = retistrs[0] = cur_str + "@";
-            }
 
-            //  printf("ok sim 2\n");
-            params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                int sizl = params.locallab.llcurve.size();
+
+                if(sizl > 69) {
+                    sizl = 69;
+                }
+
+                int s_curl[sizl + 1];
+                int s_datcurl[sizl + 1];
+
+                for(int j = 0; j < sizl; j++) {
+                    s_datcurl[j] = (int)  (1000. * params.locallab.llcurve[j]);
+                }
+
+                std::string ll_str = "";
+
+                for(int j = 0; j < sizl; j++) {
+                    ll_str = ll_str + std::to_string(s_datcurl[j]) + delim[j];
+                }
+
+                llstrs[0] = ll_str + "@";
+
+
+            }
+            locallutili = false;
+
 
             int ns;
             int realsp = params.locallab.nbspot;
@@ -1156,6 +1185,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 std::string spotline;
                 int cont = 0;
                 int sizecu;
+                int sizell;
 
                 while (getline(fich, line)) {
                     spotline = line;
@@ -1181,7 +1211,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     if(cont >= 2  && cont < 16) {
                         dataspots[cont][ns] = std::stoi(str3.c_str());
 
-                        //     printf("data=%d cont=%d ns=%d\n", dataspotd[cont][ns], cont, ns);
                     }
 
                     if(spotline.substr(0, pos) == "Currentspot") {
@@ -1194,14 +1223,13 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                     }
 
                     if(spotline.substr(0, pos) == "curveReti") {
-                        //  printf("cont=%i", cont);
                         std::string curstr;
                         int longecur;
                         std::string strend = spotline.substr (posend - 1, 1);
                         std::size_t posz = spotline.find(strend);
                         int longe;
 
-                        for(int sl = 0; sl < 65; sl++) {
+                        for(int sl = 0; sl < 69; sl++) {
                             if(delim[sl] == strend) {
                                 longe = sl + 1;
                             }
@@ -1212,13 +1240,31 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                         //        printf("lec simpl str=%s ns=%i  si=%i\n",  retistrs[ns].c_str(), ns, sizecu);
                     }
 
+                    if(spotline.substr(0, pos) == "curveLL") {
+                        std::string curstrl;
+                        int longecurl;
+                        std::string strendl = spotline.substr (posend - 1, 1);
+                        std::size_t poszl = spotline.find(strendl);
+                        int longel;
+
+                        for(int sl = 0; sl < 69; sl++) {
+                            if(delim[sl] == strendl) {
+                                longel = sl + 1;
+                            }
+                        }
+
+                        llstrs[ns] = str3;
+                        sizell = longel;
+                        // printf("lecture strLL=%s ns=%i  si=%i\n",  llstr[ns].c_str(), ns, sizell);
+
+                    }
+
 
                 }
 
                 fich.close();
             }
 
-            // printf("ok sim 3\n");
 
             for(int sp = 1; sp < maxspot; sp++) { //spots default
                 params.locallab.hueref = INFINITY;
@@ -1352,17 +1398,36 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 delete [] s_datc;
 
+                int *s_datcl;
+                s_datcl = new int[70];
+                int sizl;
+
+                ipf.strcuv_data (llstrs[sp], s_datcl, sizl);
+
+
+                std::vector<double>   cllend;
+
+                for(int j = 0; j < sizl; j++) {
+                    cllend.push_back((double) (s_datcl[j]) / 1000.);
+                }
+
+                delete [] s_datcl;
+
+                params.locallab.ccwTgaincurve.clear();
+                params.locallab.llcurve.clear();
+
                 params.locallab.ccwTgaincurve = cretiend;
+                params.locallab.llcurve = cllend;
 
-                int cursize = params.locallab.ccwTgaincurve.size();
+                //  int cursize = params.locallab.ccwTgaincurve.size();
                 params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                bool locallutili = false;
+                CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve, 1);
 
-
-                ipf.Lab_Local(2, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
-
+                ipf.Lab_Local(2, sp, (float**)shbuffer, labView, labView, 0, 0, 0, 0, fw, fh, fw, fh, locutili, 1, locRETgainCurve, locallutili, lllocalcurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                lllocalcurve.clear();
             }
 
-            //  printf("ok sim 4\n");
 
 
             for (int i = 0; i < 59; i++) {
@@ -1375,6 +1440,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
 
             delete [] retistrs;
+            delete [] llstrs;
 
             if(params.locallab.inverssha) {
 

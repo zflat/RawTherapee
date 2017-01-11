@@ -410,6 +410,26 @@ void CurveFactory::curveToning ( const std::vector<double>& curvePoints, LUTf & 
     fillCurveArray(dCurve.get(), ToningCurve, skip, needed);
 }
 
+void CurveFactory::curveLocal (bool & locallutili, const std::vector<double>& curvePoints, LUTf & LocalLCurve, int skip)
+{
+    bool needed = false;
+    std::unique_ptr<DiagonalCurve> dCurve;
+
+    if (!curvePoints.empty() && curvePoints[0] != 0) {
+        dCurve = std::unique_ptr<DiagonalCurve>(new DiagonalCurve(curvePoints, CURVES_MIN_POLY_POINTS / skip));
+
+        if (dCurve && !dCurve->isIdentity()) {
+            needed = true;
+            locallutili = true;
+        }
+    }
+
+    fillCurveArray(dCurve.get(), LocalLCurve, skip, needed);
+	//LocalLCurve.dump("wav");
+
+}
+
+
 
 void CurveFactory::localLCurve (double br, double contr, /*const std::vector<double>& curvePoints,*/
                                 LUTu & histogram, LUTf & outCurve,

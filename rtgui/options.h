@@ -285,6 +285,7 @@ public:
     Glib::ustring lastRetinexDir;
     Glib::ustring lastDenoiseCurvesDir;
     Glib::ustring lastWaveletCurvesDir;
+    Glib::ustring lastlocalCurvesDir;
     Glib::ustring lastPFCurvesDir;
     Glib::ustring lastHsvCurvesDir;
     Glib::ustring lastToneCurvesDir;

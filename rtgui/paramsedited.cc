@@ -345,6 +345,7 @@ void ParamsEdited::set (bool v)
     locallab.vart = v;
     locallab.ccwTgaincurve = v;
     locallab.ccwTgaincurverab = v;
+    locallab.llcurve = v;
 
     for(int i = 0; i < 5; i++) {
         locallab.mult[i] = v;
@@ -902,6 +903,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
         locallab.ccwTgaincurverab = locallab.ccwTgaincurverab && p.locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab;
+        locallab.llcurve = locallab.llcurve && p.locallab.llcurve == other.locallab.llcurve;
 
         for(int i = 0; i < 5; i++) {
             locallab.mult[i] = locallab.mult[i] && p.locallab.mult[i] == other.locallab.mult[i];
@@ -2326,6 +2328,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.ccwTgaincurve) {
         toEdit.locallab.ccwTgaincurve   = mods.locallab.ccwTgaincurve;
+    }
+
+    if (locallab.llcurve) {
+        toEdit.locallab.llcurve   = mods.locallab.llcurve;
     }
 
     if (locallab.ccwTgaincurverab) {

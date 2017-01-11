@@ -730,7 +730,7 @@ HISTORY_MSG_495;Local - TM Reweighting
 HISTORY_MSG_496;Local - TM scope
 HISTORY_MSG_497;Local - Update GUI and Mip -2
 HISTORY_MSG_498;Local - Update GUI and Mip -3
-Update GUI and Mip -1
+HISTORY_MSG_499;Local - L Curve
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot
@@ -1672,6 +1672,8 @@ TP_LOCALLAB_CIRCRADIUS;Spot size
 TP_LOCALLAB_COFR;Color & Light
 TP_LOCALLAB_CONTRAST;Contrast
 TP_LOCALLAB_DENOIS;Denoise
+TP_LOCALLAB_LUM;Local luminance
+TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP;To be active, lightness or chrominance must be different of 0
 TP_LOCALLAB_NOISELUMFINE;Luminance fine
 TP_LOCALLAB_NOISELUMCOARSE;Luminance coarse
 TP_LOCALLAB_NOISECHROFINE;Chroma fine

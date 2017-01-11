@@ -932,6 +932,8 @@ void LocallabParams::setDefaults()
     vart = 200;
     nbspot = 1;
     anbspot = 0;
+    llcurve.clear ();
+    llcurve.push_back(DCT_Linear);
 
     for(int i = 0; i < 5; i ++) {
         mult[i] = 100;
@@ -941,6 +943,7 @@ void LocallabParams::setDefaults()
 
     getDefaultCCWgainCurveT(ccwTgaincurve);
     getDefaultCCWgainCurveTrab(ccwTgaincurverab);
+    getDefaultLLCurve(llcurve);
 
 }
 
@@ -988,6 +991,23 @@ void LocallabParams::getDefaultCCWgainCurveTrab(std::vector<double> &curve)
     }
 
 }
+
+void LocallabParams::getDefaultLLCurve(std::vector<double> &curve)
+{
+    double v[4] = { 0.00, 0.00,
+                    //0.20, 0.20,
+                    //0.80, 0.80,
+                    1.00, 1.00
+                  };
+
+    curve.resize(5);
+    curve.at(0) = double(DCT_NURBS);
+
+    for (size_t i = 1; i < curve.size(); ++i) {
+        curve.at(i) = v[i - 1];
+    }
+}
+
 
 void LocallabParams::getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab) const
 {
@@ -2597,6 +2617,11 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_double_list("Locallab", "TgainCurve", ccwTgaincurve);
         }
 
+        if (!pedited || pedited->locallab.llcurve)  {
+            Glib::ArrayHandle<double> llcurve = locallab.llcurve;
+            keyFile.set_double_list("Locallab", "LLCurve", llcurve);
+        }
+
         if (!pedited || pedited->locallab.ccwTgaincurverab)  {
             Glib::ArrayHandle<double> ccwTgaincurverab = locallab.ccwTgaincurverab;
             keyFile.set_double_list("Locallab", "TgainCurverab", ccwTgaincurverab);
@@ -4076,6 +4101,14 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.ccwTgaincurve = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "LLCurve")) {
+                locallab.llcurve = keyFile.get_double_list ("Locallab", "LLCurve");
+
+                if (pedited) {
+                    pedited->locallab.llcurve = true;
                 }
             }
 
@@ -8697,6 +8730,7 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.threshold == other.locallab.threshold
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve
         && locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab
+        && locallab.llcurve == other.locallab.llcurve
         && pcvignette.enabled == other.pcvignette.enabled
         && pcvignette.strength == other.pcvignette.strength
         && pcvignette.feather == other.pcvignette.feather

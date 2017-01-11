@@ -470,6 +470,7 @@ public:
     bool inverssha;
     bool ccwTgaincurve;
     bool ccwTgaincurverab;
+    bool llcurve;
     bool chrrt;
     bool mult[5];
     bool threshold;

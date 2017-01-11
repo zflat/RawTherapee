@@ -922,6 +922,7 @@ public:
     int     chrrt;
     std::vector<double>   ccwTgaincurve;
     std::vector<double>   ccwTgaincurverab;
+    std::vector<double> llcurve;
 
     double mult[5];
     double threshold;
@@ -934,6 +935,7 @@ public:
     void getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab) const;
     static void getDefaultCCWgainCurveT(std::vector<double> &curve);
     static void getDefaultCCWgainCurveTrab(std::vector<double> &curve);
+    static void getDefaultLLCurve(std::vector<double> &curve);
 
 };
 
