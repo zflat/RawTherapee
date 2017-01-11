@@ -3415,9 +3415,8 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
                                         calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnewbef, true);//replace L-curve
                                     }
 
-                                    float lumnew = lllocalcurve[lumnewbef];
-                                    // float lumnew = lumnewbef; //lllocalcurve[lumnewbef];
-
+                                    float lumprov = lllocalcurve[lumnewbef * 1.9f];
+                                    float lumnew = 0.526316f * lumprov;
                                     float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
                                     float factorx = localFactor;
                                     float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
@@ -3454,9 +3453,9 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
 
                                     }
 
+                                    float lumprov = lllocalcurve[lumnewbef * 1.9f];
+                                    float lumnew = 0.526316f * lumprov;
 
-                                    float lumnew = lllocalcurve[lumnewbef];
-                                    // float lumnew = lumnewbef; //lllocalcurve[lumnewbef];
 
                                     //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
                                     float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
