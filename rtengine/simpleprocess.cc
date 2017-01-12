@@ -1389,7 +1389,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 s_datc = new int[70];
                 int siz;
 
-                ipf.strcuv_data (retistrs[sp], s_datc, siz);
+                ipf.strcurv_data (retistrs[sp], s_datc, siz);
                 std::vector<double>   cretiend;
 
                 for(int j = 0; j < siz; j++) {
@@ -1402,7 +1402,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 s_datcl = new int[70];
                 int sizl;
 
-                ipf.strcuv_data (llstrs[sp], s_datcl, sizl);
+                ipf.strcurv_data (llstrs[sp], s_datcl, sizl);
 
 
                 std::vector<double>   cllend;

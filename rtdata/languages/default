@@ -731,6 +731,13 @@ HISTORY_MSG_496;Local - TM scope
 HISTORY_MSG_497;Local - Update GUI and Mip -2
 HISTORY_MSG_498;Local - Update GUI and Mip -3
 HISTORY_MSG_499;Local - L Curve
+HISTORY_MSG_500;Local - Color and light
+HISTORY_MSG_501;Local - Blur and noise
+HISTORY_MSG_502;Local - Tone mapping
+HISTORY_MSG_503;Local - Retinex
+HISTORY_MSG_504;Local - Sharpening
+HISTORY_MSG_505;Local - CBDL
+HISTORY_MSG_506;Local - Denoise
 HISTORY_NEWSNAPSHOT;Add
 HISTORY_NEWSNAPSHOT_TOOLTIP;Shortcut: <b>Alt-s</b>
 HISTORY_SNAPSHOT;Snapshot

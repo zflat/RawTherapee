@@ -292,6 +292,13 @@ void ParamsEdited::set (bool v)
     gradient.centerX = v;
     gradient.centerY = v;
     locallab.enabled = v;
+    locallab.expcolor = v;
+    locallab.expblur = v;
+    locallab.exptonemap = v;
+    locallab.expreti = v;
+    locallab.expsharp = v;
+    locallab.expcbdl = v;
+    locallab.expdenoi = v;
     locallab.degree = v;
     locallab.locY = v;
     locallab.locX = v;
@@ -904,6 +911,13 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
         locallab.ccwTgaincurverab = locallab.ccwTgaincurverab && p.locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab;
         locallab.llcurve = locallab.llcurve && p.locallab.llcurve == other.locallab.llcurve;
+        locallab.expcolor = locallab.expcolor && p.locallab.expcolor == other.locallab.expcolor;
+        locallab.expblur = locallab.expblur && p.locallab.expblur == other.locallab.expblur;
+        locallab.exptonemap = locallab.exptonemap && p.locallab.exptonemap == other.locallab.exptonemap;
+        locallab.expreti = locallab.expreti && p.locallab.expreti == other.locallab.expreti;
+        locallab.expsharp = locallab.expsharp && p.locallab.expsharp == other.locallab.expsharp;
+        locallab.expcbdl = locallab.expcbdl && p.locallab.expcbdl == other.locallab.expcbdl;
+        locallab.expdenoi = locallab.expdenoi && p.locallab.expdenoi == other.locallab.expdenoi;
 
         for(int i = 0; i < 5; i++) {
             locallab.mult[i] = locallab.mult[i] && p.locallab.mult[i] == other.locallab.mult[i];
@@ -2119,6 +2133,34 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.enabled) {
         toEdit.locallab.enabled   = mods.locallab.enabled;
+    }
+
+    if (locallab.expcolor) {
+        toEdit.locallab.expcolor   = mods.locallab.expcolor;
+    }
+
+    if (locallab.expblur) {
+        toEdit.locallab.expblur   = mods.locallab.expblur;
+    }
+
+    if (locallab.exptonemap) {
+        toEdit.locallab.exptonemap   = mods.locallab.exptonemap;
+    }
+
+    if (locallab.expreti) {
+        toEdit.locallab.expreti   = mods.locallab.expreti;
+    }
+
+    if (locallab.expsharp) {
+        toEdit.locallab.expsharp   = mods.locallab.expsharp;
+    }
+
+    if (locallab.expcbdl) {
+        toEdit.locallab.expcbdl   = mods.locallab.expcbdl;
+    }
+
+    if (locallab.expdenoi) {
+        toEdit.locallab.expdenoi   = mods.locallab.expdenoi;
     }
 
     if (locallab.avoid) {

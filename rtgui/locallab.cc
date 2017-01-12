@@ -1,6 +1,24 @@
 /*
  *  This file is part of RawTherapee.
+ *
+ *  Copyright (c) 2004-2010 Gabor Horvath <hgabor@rawtherapee.com>
+ *
+ *  RawTherapee is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  RawTherapee is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
+ *  2017 Jacques Desmis <jdesmis@gmail.com>
  */
+
+
 #include "locallab.h"
 #include "rtimage.h"
 #include <iomanip>
@@ -18,7 +36,15 @@ using namespace rtengine::procparams;
 extern Options options;
 
 
-Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.)
+Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.),
+    expcolor(new MyExpander(true, M("TP_LOCALLAB_COFR"))),
+    expblur(new MyExpander(true, M("TP_LOCALLAB_BLUFR"))),
+    exptonemap(new MyExpander(true, M("TP_LOCALLAB_TM"))),
+    expreti(new MyExpander(true, M("TP_LOCALLAB_RETI"))),
+    expsharp(new MyExpander(true, M("TP_LOCALLAB_SHARP"))),
+    expcbdl(new MyExpander(true, M("TP_LOCALLAB_CBDL"))),
+    expdenoi(new MyExpander(true, M("TP_LOCALLAB_DENOIS")))
+
 {
     CurveListener::setMulti(true);
     ProcParams params;
@@ -57,33 +83,26 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     shapeFrame->set_border_width(0);
     shapeFrame->set_label_align(0.025, 0.5);
 
-    Gtk::Frame* colorFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_COFR")) );
-    colorFrame->set_border_width(0);
-    colorFrame->set_label_align(0.025, 0.5);
+    expcolor->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expcolor) );
+    enablecolorConn = expcolor->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expcolor) );
 
-    Gtk::Frame* sharpFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_SHARP")) );
-    sharpFrame->set_border_width(0);
-    sharpFrame->set_label_align(0.025, 0.5);
+    expblur->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expblur) );
+    enableblurConn = expblur->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expblur) );
 
-    Gtk::Frame* cbdlFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_CBDL")) );
-    cbdlFrame->set_border_width(0);
-    cbdlFrame->set_label_align(0.025, 0.5);
+    exptonemap->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), exptonemap) );
+    enabletonemapConn = exptonemap->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), exptonemap) );
 
-    Gtk::Frame* blurrFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_BLUFR")) );
-    blurrFrame->set_border_width(0);
-    blurrFrame->set_label_align(0.025, 0.5);
+    expreti->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expreti) );
+    enableretiConn = expreti->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expreti) );
 
-    Gtk::Frame* denoisFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_DENOIS")) );
-    denoisFrame->set_border_width(0);
-    denoisFrame->set_label_align(0.025, 0.5);
+    expsharp->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expsharp) );
+    enablesharpConn = expsharp->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expsharp) );
 
-    Gtk::Frame* tmFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_TM")) );
-    tmFrame->set_border_width(0);
-    tmFrame->set_label_align(0.025, 0.5);
+    expcbdl->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expcbdl) );
+    enablecbdlConn = expcbdl->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expcbdl) );
 
-    Gtk::Frame* retiFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_RETI")) );
-    retiFrame->set_border_width(0);
-    retiFrame->set_label_align(0.025, 0.5);
+    expdenoi->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expdenoi) );
+    enabledenoiConn = expdenoi->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expdenoi) );
 
     Gtk::VBox *shapeVBox = Gtk::manage ( new Gtk::VBox());
     shapeVBox->set_spacing(2);
@@ -481,8 +500,10 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
     colorVBox->pack_start (*invers);
 
-    colorFrame->add(*colorVBox);
-    pack_start (*colorFrame);
+//    colorFrame->add(*colorVBox);
+//    pack_start (*colorFrame);
+    expcolor->add(*colorVBox);
+    pack_start (*expcolor);
 
     blurrVBox->pack_start (*radius);
     blurrVBox->pack_start (*strength);
@@ -490,8 +511,8 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     blurrVBox->pack_start (*activlum);
 
     blurrVBox->pack_start (*inversrad);
-    blurrFrame->add(*blurrVBox);
-    pack_start (*blurrFrame);
+    expblur->add(*blurrVBox);
+    pack_start (*expblur);
 
     tmBox->pack_start (*stren);
     tmBox->pack_start (*gamma);
@@ -500,8 +521,8 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     tmBox->pack_start (*rewei);
     tmBox->pack_start (*sensitm);
 
-    tmFrame->add(*tmBox);
-    pack_start (*tmFrame);
+    exptonemap->add(*tmBox);
+    pack_start (*exptonemap);
 
 
     retiBox->pack_start (*retinexMethod);
@@ -517,18 +538,18 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     retiBox->pack_start(*CCWcurveEditorgainT, Gtk::PACK_SHRINK, 4);
     retiBox->pack_start (*inversret);
 
-    retiFrame->add(*retiBox);
-    pack_start (*retiFrame);
+    expreti->add(*retiBox);
+    pack_start (*expreti);
 
 
-    sharpFrame->add(*sharpVBox);
-    pack_start (*sharpFrame);
+    expsharp->add(*sharpVBox);
+    pack_start (*expsharp);
 
-    cbdlFrame->add(*cbdlVBox);
-    pack_start (*cbdlFrame);
+    expcbdl->add(*cbdlVBox);
+    pack_start (*expcbdl);
 
-    denoisFrame->add(*denoisVBox);
-    pack_start (*denoisFrame);
+    expdenoi->add(*denoisVBox);
+    pack_start (*expdenoi);
 
 
     pack_start (*transit);
@@ -621,6 +642,82 @@ Locallab::~Locallab()
     delete llCurveEditorG;
 
 }
+void Locallab::foldAllButMe (GdkEventButton* event, MyExpander *expander)
+{
+    if (event->button == 2) {
+        expcolor->set_expanded(expcolor == expander);
+        expblur->set_expanded(expblur == expander);
+        exptonemap->set_expanded(exptonemap == expander);
+        expreti->set_expanded(expreti == expander);
+        expsharp->set_expanded(expsharp == expander);
+        expcbdl->set_expanded(expcbdl == expander);
+        expdenoi->set_expanded(expdenoi == expander);
+
+    }
+}
+
+void Locallab::enableToggled(MyExpander *expander)
+{
+    if (listener) {
+        rtengine::ProcEvent event = NUMOFEVENTS;
+
+        if (expander == expcolor) {
+            event = EvLocenacolor;
+        } else if (expander == expblur) {
+            event = EvLocenablur;
+        } else if (expander == exptonemap) {
+            event = EvLocenatonemap;
+        } else if (expander == expreti) {
+            event = EvLocenareti;
+        } else if (expander == expsharp) {
+            event = EvLocenasharp;
+        } else if (expander == expcbdl) {
+            event = EvLocenacbdl;
+        } else if (expander == expdenoi) {
+            event = EvLocenadenoi;
+        } else {
+            return;
+        }
+
+        if (expander->get_inconsistent()) {
+            listener->panelChanged (event, M("GENERAL_UNCHANGED"));
+        } else if (expander->getEnabled()) {
+            listener->panelChanged (event, M("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (event, M("GENERAL_DISABLED"));
+        }
+
+    }
+}
+
+void Locallab::writeOptions(std::vector<int> &tpOpen)
+{
+    tpOpen.push_back (expcolor->get_expanded ());
+    tpOpen.push_back (expblur->get_expanded ());
+    tpOpen.push_back (exptonemap->get_expanded ());
+    tpOpen.push_back (expreti->get_expanded ());
+    tpOpen.push_back (expsharp->get_expanded ());
+    tpOpen.push_back (expcbdl->get_expanded ());
+    tpOpen.push_back (expdenoi->get_expanded ());
+
+}
+
+void Locallab::updateToolState(std::vector<int> &tpOpen)
+{
+    if(tpOpen.size() == 7) {
+        expcolor->set_expanded(tpOpen.at(0));
+        expblur->set_expanded(tpOpen.at(1));
+        exptonemap->set_expanded(tpOpen.at(2));
+        expreti->set_expanded(tpOpen.at(3));
+        expsharp->set_expanded(tpOpen.at(4));
+        expcbdl->set_expanded(tpOpen.at(5));
+        expdenoi->set_expanded(tpOpen.at(6));
+
+
+    }
+}
+
+
 
 void Locallab::neutral_pressed ()
 {
@@ -754,7 +851,7 @@ bool Locallab::localretComputed_ ()
     s_datc = new int[70];
     int siz;
     //printf("nexts=%s\n", nextstr2.c_str());
-    ImProcFunctions::strcuv_data (nextstr2, s_datc, siz);
+    ImProcFunctions::strcurv_data (nextstr2, s_datc, siz);
     std::vector<double>   creti;
 
     for(int j = 0; j < siz; j++) {
@@ -768,7 +865,7 @@ bool Locallab::localretComputed_ ()
     int *s_datcl;
     s_datcl = new int[70];
     int sizl;
-    ImProcFunctions::strcuv_data (nextll_str2, s_datcl, sizl);
+    ImProcFunctions::strcurv_data (nextll_str2, s_datcl, sizl);
     std::vector<double>   cll;
 
     for(int j = 0; j < sizl; j++) {
@@ -983,7 +1080,7 @@ bool Locallab::localComputed_ ()
     int *s_datc;
     s_datc = new int[70];
     int siz;
-    ImProcFunctions::strcuv_data (nextstr, s_datc, siz);
+    ImProcFunctions::strcurv_data (nextstr, s_datc, siz);
 
 
     std::vector<double>   creti;
@@ -1000,7 +1097,7 @@ bool Locallab::localComputed_ ()
     int *s_datcl;
     s_datcl = new int[70];
     int sizl;
-    ImProcFunctions::strcuv_data (nextll_str, s_datcl, sizl);
+    ImProcFunctions::strcurv_data (nextll_str, s_datcl, sizl);
 
 
     std::vector<double>   cll;
@@ -1140,6 +1237,13 @@ void Locallab::localretChanged  (int **datasp, std::string datastr, std::string 
 void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
     disableListener ();
+    enablecolorConn.block(true);
+    enableblurConn.block(true);
+    enabletonemapConn.block(true);
+    enableretiConn.block(true);
+    enablesharpConn.block(true);
+    enablecbdlConn.block(true);
+    enabledenoiConn.block(true);
 
 
     if (pedited) {
@@ -1203,6 +1307,13 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         llshape->setUnChanged  (!pedited->locallab.llcurve);
         inversret->set_inconsistent (multiImage && !pedited->locallab.inversret);
         cTgainshaperab->setUnChanged  (!pedited->locallab.ccwTgaincurverab);
+        expcolor->set_inconsistent   (!pedited->locallab.expcolor);
+        expblur->set_inconsistent   (!pedited->locallab.expblur);
+        exptonemap->set_inconsistent   (!pedited->locallab.exptonemap);
+        expreti->set_inconsistent   (!pedited->locallab.expreti);
+        expsharp->set_inconsistent   (!pedited->locallab.expsharp);
+        expcbdl->set_inconsistent   (!pedited->locallab.expcbdl);
+        expdenoi->set_inconsistent   (!pedited->locallab.expdenoi);
 
         if (!pedited->locallab.Smethod) {
             Smethod->set_active_text(M("GENERAL_UNCHANGED"));
@@ -1290,6 +1401,13 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     noiselumc->setValue (pp->locallab.noiselumc);
     noisechrof->setValue (pp->locallab.noisechrof);
     noisechroc->setValue (pp->locallab.noisechroc);
+    expcolor->setEnabled (pp->locallab.expcolor);
+    expblur->setEnabled (pp->locallab.expblur);
+    exptonemap->setEnabled (pp->locallab.exptonemap);
+    expreti->setEnabled (pp->locallab.expreti);
+    expsharp->setEnabled (pp->locallab.expsharp);
+    expcbdl->setEnabled (pp->locallab.expcbdl);
+    expdenoi->setEnabled (pp->locallab.expdenoi);
 
     for (int i = 0; i < 5; i++) {
         multiplier[i]->setValue(pp->locallab.mult[i]);
@@ -1362,6 +1480,14 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         locYT->setValue (pp->locallab.locYT);
 
     }
+
+    enablecolorConn.block(false);
+    enableblurConn.block(false);
+    enabletonemapConn.block(false);
+    enableretiConn.block(false);
+    enablesharpConn.block(false);
+    enablecbdlConn.block(false);
+    enabledenoiConn.block(false);
 
     enableListener ();
 }
@@ -1508,6 +1634,13 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.ccwTgaincurve       = cTgainshape->getCurve ();
     pp->locallab.ccwTgaincurverab       = cTgainshaperab->getCurve ();
     pp->locallab.llcurve       = llshape->getCurve ();
+    pp->locallab.expcolor      = expcolor->getEnabled();
+    pp->locallab.expblur      = expblur->getEnabled();
+    pp->locallab.exptonemap      = exptonemap->getEnabled();
+    pp->locallab.expreti      = expreti->getEnabled();
+    pp->locallab.expsharp      = expsharp->getEnabled();
+    pp->locallab.expcbdl      = expcbdl->getEnabled();
+    pp->locallab.expdenoi      = expdenoi->getEnabled();
 
     for (int i = 0; i < 5; i++) {
         pp->locallab.mult[i] = multiplier[i]->getIntValue();
@@ -1571,6 +1704,13 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.ccwTgaincurve        = !cTgainshape->isUnChanged ();
         pedited->locallab.ccwTgaincurverab        = !cTgainshaperab->isUnChanged ();
         pedited->locallab.llcurve        = !llshape->isUnChanged ();
+        pedited->locallab.expcolor     = !expcolor->get_inconsistent();
+        pedited->locallab.expblur     = !expblur->get_inconsistent();
+        pedited->locallab.exptonemap     = !exptonemap->get_inconsistent();
+        pedited->locallab.expreti     = !expreti->get_inconsistent();
+        pedited->locallab.expsharp     = !expsharp->get_inconsistent();
+        pedited->locallab.expcbdl     = !expcbdl->get_inconsistent();
+        pedited->locallab.expdenoi     = !expdenoi->get_inconsistent();
 
         for(int i = 0; i < 5; i++) {
             pedited->locallab.mult[i] = multiplier[i]->getEditedState();

@@ -23,6 +23,8 @@ class Locallab : public ToolParamBlock, public AdjusterListener, public Foldable
 {
 private:
     int lastObject;
+    void foldAllButMe (GdkEventButton* event, MyExpander *expander);
+    void enableToggled(MyExpander *expander);
 
 protected:
 //   Gtk::CheckButton* enabled;
@@ -74,11 +76,21 @@ protected:
     Adjuster* sensitm;
     Adjuster* retrab;
 
+    MyExpander* const expcolor;
+    MyExpander* const expblur;
+    MyExpander* const exptonemap;
+    MyExpander* const expreti;
+    MyExpander* const expsharp;
+    MyExpander* const expcbdl;
+    MyExpander* const expdenoi;
 
 
     sigc::connection lumaneutralPressedConn;
     sigc::connection lumacontrastPlusPressedConn;
     sigc::connection lumacontrastMinusPressedConn;
+    sigc::connection enablecolorConn, enableblurConn, enabletonemapConn;
+    sigc::connection enableretiConn, enablesharpConn, enablecbdlConn;
+    sigc::connection enabledenoiConn;
 
     Gtk::CheckButton* avoid;
     MyComboBoxText*   Smethod;
@@ -142,6 +154,8 @@ public:
 
     void updateGeometry (const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth = -1, const int fullHeight = -1);
     void SmethodChanged      ();
+    void writeOptions (std::vector<int> &tpOpen);
+    void updateToolState (std::vector<int> &tpOpen);
 
     void adjusterChanged (Adjuster* a, double newval);
     void enabledChanged ();

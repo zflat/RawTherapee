@@ -689,6 +689,27 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
         if(params.locallab.enabled) {
+            /*
+             *  This file is part of RawTherapee.
+             *
+             *  Copyright (c) 2004-2010 Gabor Horvath <hgabor@rawtherapee.com>
+             *
+             *  RawTherapee is free software: you can redistribute it and/or modify
+             *  it under the terms of the GNU General Public License as published by
+             *  the Free Software Foundation, either version 3 of the License, or
+             *  (at your option) any later version.
+             *
+             *  RawTherapee is distributed in the hope that it will be useful,
+             *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+             *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+             *  GNU General Public License for more details.
+             *
+             *  You should have received a copy of the GNU General Public License
+             *  along with RawTherapee.  If not, see <http://www.gnu.org/licenses/>.
+             *  2017 Jacques Desmis <jdesmis@gmail.com>
+             */
+
+
 
             Glib::ustring datalab = imgsrc->getFileName() + ".mip";
             ifstream fic0(datalab, ios::in);
@@ -1094,8 +1115,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             if (fich) {//may be a file with versionmip = 10000
                 //    if(versionmip == 10000) add new blank fields for tone-mapping because TM is 10001
                 //we must add new fields at the good place
-
-
                 std::string line;
                 std::string spotline;
                 int cont = 0;
@@ -1105,15 +1124,12 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     maxind = 49;
                     excurvret = false;
                     excurvll = false;
-
-
                 }
 
                 if(versionmip == 10001) {
                     maxind = 55;
                     excurvret = false;
                     excurvll = false;
-
                 }
 
                 int sizecu;
@@ -1394,13 +1410,11 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         }
 
                         if(spotline2.substr(0, pos2) == "Spot") {
-                            // string str2 = spotline.substr (pos + 1, (posend - pos));
                             cont2 = 0;
                         }
 
                         cont2++;
                         std::string str32 = spotline2.substr (pos2 + 1, (posend2 - pos2));
-                        //  int ns;
 
                         if(cont2 == 1) {
                             ns2 =  std::stoi(str32.c_str());
@@ -1467,8 +1481,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
             for(int sp = 1; sp < maxspot; sp++) { //spots default
-                //  if(sp != realspot) {
-                //   printf("after real sp=%d\n", sp);
                 params.locallab.hueref = INFINITY;
                 params.locallab.chromaref = INFINITY;
                 bool locutili = locutili;
@@ -1610,7 +1622,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 s_datc = new int[70];
                 int siz;
 
-                ipf.strcuv_data (retistr[sp], s_datc, siz);
+                ipf.strcurv_data (retistr[sp], s_datc, siz);
 
                 sizeretics[sp] = siz;
 
@@ -1627,7 +1639,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 s_datcl = new int[70];
                 int sizl;
 
-                ipf.strcuv_data (llstr[sp], s_datcl, sizl);
+                ipf.strcurv_data (llstr[sp], s_datcl, sizl);
 
                 sizellcs[sp] = sizl;
 
@@ -1648,14 +1660,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 params.locallab.llcurve.clear();
                 params.locallab.llcurve = cllend;
 
-                int lenL1 = params.locallab.llcurve.size();
-                /*
-                                for(int p = 0; p < lenL1; p++ ) {
-                                    printf("L=%3.1f ", 1000 * params.locallab.llcurve[p]);
-                                }
-
-                                printf("Lf LenL1=%i\n", lenL1);
-                */
                 locallutili = false;
                 params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
                 CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve, sca);//scale == 1 ? 1 : 16);
@@ -1850,7 +1854,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             s_datc = new int[70];
             int siz;
 
-            ipf.strcuv_data (retistr[0], s_datc, siz);
+            ipf.strcurv_data (retistr[0], s_datc, siz);
             sizeretics[sp] = siz;
             std::vector<double>   cretiend;
 
@@ -1874,7 +1878,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             s_datcl = new int[70];
             int sizl;
 
-            ipf.strcuv_data (llstr[0], s_datcl, sizl);
+            ipf.strcurv_data (llstr[0], s_datcl, sizl);
             sizellcs[sp] = sizl;
             std::vector<double>   cllend;
 
@@ -1890,15 +1894,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             params.locallab.llcurve = cllend;
 
             delete [] s_datcl;
-            int lenL = params.locallab.llcurve.size();
-            /*
-                        for(int p = 0; p < lenL; p++ ) {
-                            printf("X=%3.1f ", 1000 * params.locallab.llcurve[p]);
-
-                        }
-
-                        printf("Xf lenL=%i sizL=%i\n", lenL, sizl);
-            */
 
 
             params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);

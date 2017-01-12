@@ -474,6 +474,13 @@ public:
     bool chrrt;
     bool mult[5];
     bool threshold;
+    bool expcolor;
+    bool expblur;
+    bool exptonemap;
+    bool expreti;
+    bool expsharp;
+    bool expcbdl;
+    bool expdenoi;
 
 };
 

@@ -526,7 +526,13 @@ enum ProcEvent {
     EvlocallabCTgainCurverab = 496,
     Evlocallabretrab = 497,
     Evlocallabllshape = 498,
-
+    EvLocenacolor = 499,
+    EvLocenablur = 500,
+    EvLocenatonemap = 501,
+    EvLocenareti = 502,
+    EvLocenasharp = 503,
+    EvLocenacbdl = 504,
+    EvLocenadenoi = 505,
     NUMOFEVENTS
 
 

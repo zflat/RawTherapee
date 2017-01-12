@@ -875,6 +875,13 @@ public:
     int     thres;
     int     proxi;
     Glib::ustring qualityMethod;
+    bool expcolor;
+    bool expblur;
+    bool exptonemap;
+    bool expreti;
+    bool expsharp;
+    bool expcbdl;
+    bool expdenoi;
 
     int     lightness;
     int     contrast;

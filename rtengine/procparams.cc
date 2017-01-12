@@ -934,6 +934,13 @@ void LocallabParams::setDefaults()
     anbspot = 0;
     llcurve.clear ();
     llcurve.push_back(DCT_Linear);
+    expcolor = true;
+    expblur = true;
+    exptonemap = true;
+    expreti = true;
+    expsharp = true;
+    expcbdl = true;
+    expdenoi = true;
 
     for(int i = 0; i < 5; i ++) {
         mult[i] = 100;
@@ -2612,6 +2619,34 @@ int ProcParams::save (const Glib::ustring &fname, const Glib::ustring &fname2, b
             keyFile.set_boolean ("Locallab", "Enabled", locallab.enabled);
         }
 
+        if (!pedited || pedited->locallab.expcolor) {
+            keyFile.set_boolean ("Locallab", "Expcolor", locallab.expcolor);
+        }
+
+        if (!pedited || pedited->locallab.expblur) {
+            keyFile.set_boolean ("Locallab", "Expblur", locallab.expblur);
+        }
+
+        if (!pedited || pedited->locallab.exptonemap) {
+            keyFile.set_boolean ("Locallab", "Exptonemap", locallab.exptonemap);
+        }
+
+        if (!pedited || pedited->locallab.expreti) {
+            keyFile.set_boolean ("Locallab", "Expreti", locallab.expreti);
+        }
+
+        if (!pedited || pedited->locallab.expsharp) {
+            keyFile.set_boolean ("Locallab", "Expsharp", locallab.expsharp);
+        }
+
+        if (!pedited || pedited->locallab.expcbdl) {
+            keyFile.set_boolean ("Locallab", "Expcbdl", locallab.expcbdl);
+        }
+
+        if (!pedited || pedited->locallab.expdenoi) {
+            keyFile.set_boolean ("Locallab", "Expdenoi", locallab.expdenoi);
+        }
+
         if (!pedited || pedited->locallab.ccwTgaincurve)  {
             Glib::ArrayHandle<double> ccwTgaincurve = locallab.ccwTgaincurve;
             keyFile.set_double_list("Locallab", "TgainCurve", ccwTgaincurve);
@@ -4085,6 +4120,54 @@ int ProcParams::load (const Glib::ustring &fname, ParamsEdited* pedited)
 
                 if (pedited) {
                     pedited->locallab.enabled = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Expcolor")) {
+                locallab.expcolor = keyFile.get_boolean ("Locallab", "Expcolor");
+
+                if (pedited) {
+                    pedited->locallab.expcolor = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Expblur")) {
+                locallab.expblur = keyFile.get_boolean ("Locallab", "Expblur");
+
+                if (pedited) {
+                    pedited->locallab.expblur = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Exptonemap")) {
+                locallab.exptonemap = keyFile.get_boolean ("Locallab", "Exptonemap");
+
+                if (pedited) {
+                    pedited->locallab.exptonemap = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Expreti")) {
+                locallab.expreti = keyFile.get_boolean ("Locallab", "Expreti");
+
+                if (pedited) {
+                    pedited->locallab.expreti = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Expsharp")) {
+                locallab.expsharp = keyFile.get_boolean ("Locallab", "Expsharp");
+
+                if (pedited) {
+                    pedited->locallab.expsharp = true;
+                }
+            }
+
+            if (keyFile.has_key ("Locallab", "Expdenoi")) {
+                locallab.expdenoi = keyFile.get_boolean ("Locallab", "Expdenoi");
+
+                if (pedited) {
+                    pedited->locallab.expdenoi = true;
                 }
             }
 
@@ -8728,6 +8811,13 @@ bool ProcParams::operator== (const ProcParams& other)
         && locallab.anbspot == other.locallab.anbspot
         && locallab.vart == other.locallab.vart
         && locallab.threshold == other.locallab.threshold
+        && locallab.expcolor == other.locallab.expcolor
+        && locallab.expblur == other.locallab.expblur
+        && locallab.exptonemap == other.locallab.exptonemap
+        && locallab.expreti == other.locallab.expreti
+        && locallab.expsharp == other.locallab.expsharp
+        && locallab.expcbdl == other.locallab.expcbdl
+        && locallab.expdenoi == other.locallab.expdenoi
         && locallab.ccwTgaincurve == other.locallab.ccwTgaincurve
         && locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab
         && locallab.llcurve == other.locallab.llcurve
