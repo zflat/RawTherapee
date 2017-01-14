@@ -350,9 +350,10 @@ void ParamsEdited::set (bool v)
     locallab.nbspot = v;
     locallab.anbspot = v;
     locallab.vart = v;
-    locallab.ccwTgaincurve = v;
-    locallab.ccwTgaincurverab = v;
+    locallab.localTgaincurve = v;
+    locallab.localTgaincurverab = v;
     locallab.llcurve = v;
+    locallab.LHcurve = v;
 
     for(int i = 0; i < 5; i++) {
         locallab.mult[i] = v;
@@ -908,9 +909,10 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.nbspot = locallab.nbspot && p.locallab.nbspot == other.locallab.nbspot;
         locallab.anbspot = locallab.anbspot && p.locallab.anbspot == other.locallab.anbspot;
         locallab.vart = locallab.vart && p.locallab.vart == other.locallab.vart;
-        locallab.ccwTgaincurve = locallab.ccwTgaincurve && p.locallab.ccwTgaincurve == other.locallab.ccwTgaincurve;
-        locallab.ccwTgaincurverab = locallab.ccwTgaincurverab && p.locallab.ccwTgaincurverab == other.locallab.ccwTgaincurverab;
+        locallab.localTgaincurve = locallab.localTgaincurve && p.locallab.localTgaincurve == other.locallab.localTgaincurve;
+        locallab.localTgaincurverab = locallab.localTgaincurverab && p.locallab.localTgaincurverab == other.locallab.localTgaincurverab;
         locallab.llcurve = locallab.llcurve && p.locallab.llcurve == other.locallab.llcurve;
+        locallab.LHcurve = locallab.LHcurve && p.locallab.LHcurve == other.locallab.LHcurve;
         locallab.expcolor = locallab.expcolor && p.locallab.expcolor == other.locallab.expcolor;
         locallab.expblur = locallab.expblur && p.locallab.expblur == other.locallab.expblur;
         locallab.exptonemap = locallab.exptonemap && p.locallab.exptonemap == other.locallab.exptonemap;
@@ -2368,16 +2370,20 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.vart   = mods.locallab.vart;
     }
 
-    if (locallab.ccwTgaincurve) {
-        toEdit.locallab.ccwTgaincurve   = mods.locallab.ccwTgaincurve;
+    if (locallab.localTgaincurve) {
+        toEdit.locallab.localTgaincurve   = mods.locallab.localTgaincurve;
     }
 
     if (locallab.llcurve) {
         toEdit.locallab.llcurve   = mods.locallab.llcurve;
     }
 
-    if (locallab.ccwTgaincurverab) {
-        toEdit.locallab.ccwTgaincurverab   = mods.locallab.ccwTgaincurverab;
+    if (locallab.LHcurve) {
+        toEdit.locallab.LHcurve   = mods.locallab.LHcurve;
+    }
+
+    if (locallab.localTgaincurverab) {
+        toEdit.locallab.localTgaincurverab   = mods.locallab.localTgaincurverab;
     }
 
     for(int i = 0; i < 5; i++) {

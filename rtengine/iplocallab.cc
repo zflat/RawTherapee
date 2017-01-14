@@ -44,6 +44,7 @@
 
 #define CLIPC(a) ((a)>-42000?((a)<42000?(a):42000):-42000)  // limit a and b  to 130 probably enough ?
 #define CLIPL(x) LIM(x,0.f,40000.f) // limit L to about L=120 probably enough ?
+#define CLIPLOC(x) LIM(x,0.f,32767.f)
 namespace rtengine
 {
 using namespace procparams;
@@ -2530,6 +2531,14 @@ void ImProcFunctions::InverseContrast_Local(float ave, const local_contra & lco,
 static void calclight (float lum, int  koef, float & lumnew, bool inv)
 //replace L-curve that does not work in local
 {
+    int zac = 0;
+
+    if(!inv) {
+        zac = 1;
+    }
+
+    //printf("koef=%i zac=%i\n", koef, zac);
+
     float blac = 0.3f;
 
     if(inv == false) {
@@ -2538,12 +2547,13 @@ static void calclight (float lum, int  koef, float & lumnew, bool inv)
 
     if(koef > 0) {
         lumnew = lum + 0.2f * (33000.f - lum) * (float) koef / 100.f;
+        /*
+                if(lumnew > 32500.f) {
+                    float kc = 32500.f / lumnew;
+                    lumnew = lum + kc * 0.2f * (33000.f - lum) * (float)koef / 100.f;
 
-        if(lumnew > 32500.f) {
-            float kc = 32500.f / lumnew;
-            lumnew = lum + kc * 0.2f * (33000.f - lum) * (float)koef / 100.f;
-
-        }
+                }
+        */
     }
 
     if(koef < 0) {
@@ -2555,12 +2565,13 @@ static void calclight (float lum, int  koef, float & lumnew, bool inv)
 
         }
 
-        if(inv == false && koef == -100.f) {
+        if(inv == false && koef == -100) {
             lumnew = 0.f;
         }
 
     }
 
+    lumnew = CLIPLOC(lumnew);
 
 }
 
@@ -3028,7 +3039,7 @@ void ImProcFunctions::Sharp_Local(int call, int sp, float **loctemp, const float
 
 
 
-void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage * bufcoltra, int sp, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, LUTf & lllocalcurve, const local_params & lp, float ** deltE, LabImage * original, LabImage * transformed, int cx, int cy)
+void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage * bufcoltra, int sp, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, bool locallutili, LUTf & lllocalcurve, const local_params & lp, float ** deltE, LabImage * original, LabImage * transformed, int cx, int cy)
 {
     // BENCHFUN
 // chroma and lightness
@@ -3106,8 +3117,16 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
     ImProcFunctions::secondeg_begin (reducac2, vi2, aO, bO);//parabolic
 
     if(call <= 3) {
-        //  printf("actif\n");
+        //    printf("actif\n");
+        /*
+                if(lllocalcurve) {
+                    printf("COURBE\n");
+                }
 
+                if(!lllocalcurve) {
+                    printf("PAS DE COURBE\n");
+                }
+        */
         //Todo optimization in this first part with bufcolorig and bufcoltra
 
 #ifdef _OPENMP
@@ -3429,16 +3448,36 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
 
                                 case 1: { // inside transition zone
                                     // float lumnew = original->L[y][x];
-                                    float lumnewbef = bufcolorig->L[loy - begy - 1][lox - begx - 1];
+                                    float lumnew = bufcolorig->L[loy - begy - 1][lox - begx - 1];
+
+                                    float lightcont;
 
                                     if(lp.ligh != 0) {
-                                        //   calclight (original->L[y][x], lp.ligh , lumnew);//replace L-curve
-                                        calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnewbef, true);//replace L-curve
+                                        //   calclight (original->L[y][x], lp.ligh , lumnew);
+                                        calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
+
+                                        if(lllocalcurve) {
+                                            float lumprov = lllocalcurve[lumnew * 1.9f];
+                                            lightcont = 0.526316f * lumprov;
+                                        } else {
+                                            lightcont = lumnew;
+                                        }
+
+                                    } else {
+                                        lightcont = lumnew;
                                     }
 
-                                    float lumprov = lllocalcurve[lumnewbef * 1.9f];
-                                    float lumnew = 0.526316f * lumprov;
-                                    float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
+                                    /*
+                                                                        //  printf("ligh=%i\n", lp.ligh);
+                                                                        if(lp.ligh != 0) {
+                                                                            calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
+                                                                        }
+
+
+                                                                        float lumprov = lllocalcurve[lumnew * 1.9f];
+                                                                        float lightcont = 0.526316f * lumprov;
+                                    */
+                                    //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
                                     float factorx = localFactor;
                                     float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
                                     //   float diflc = lightcont - bufcolorig->L[loy - begy - 1][lox - begx - 1];
@@ -3466,20 +3505,24 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
                                 case 2: { // inside selection => full effect, no transition
                                     //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
                                     //  float lumnew = original->L[y][x];
-                                    float lumnewbef = bufcolorig->L[loy - begy - 1][lox - begx - 1];
+                                    float lumnew = bufcolorig->L[loy - begy - 1][lox - begx - 1];
+                                    float lightcont;
 
                                     if(lp.ligh != 0) {
                                         //   calclight (original->L[y][x], lp.ligh , lumnew);
-                                        calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnewbef, true);//replace L-curve
+                                        calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
 
+                                        if(lllocalcurve) {
+                                            float lumprov = lllocalcurve[lumnew * 1.9f];
+                                            lightcont = 0.526316f * lumprov;
+                                        } else {
+                                            lightcont = lumnew;
+                                        }
+
+                                    } else {
+                                        lightcont = lumnew;
                                     }
 
-                                    float lumprov = lllocalcurve[lumnewbef * 1.9f];
-                                    float lumnew = 0.526316f * lumprov;
-
-
-                                    //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                                    float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
 
                                     float fac = (100.f + realchro * falu) / 100.f; //chroma factor transition
                                     float diflc = lightcont - original->L[y][x];
@@ -3554,417 +3597,8 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
         //     printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
 
 
-    } else {
-        printf("NON\n");
-#ifdef _OPENMP
-        #pragma omp parallel if (multiThread)
-#endif
-        {
-#ifdef __SSE2__
-            float atan2Buffer[transformed->W] ALIGNED16;
-            float sqrtBuffer[transformed->W] ALIGNED16;
-            vfloat c327d68v = F2V(327.68f);
-#endif
-
-            float maxl = -100000.f;
-            float maxa = -100000.f;
-            float maxb = -100000.f;
-            float minl = 100000.f;
-            float mina = 100000.f;
-            float minb = 100000.f;
-            float maxrl = -100000.f;
-            float minrl = 100000.f;
-
-#ifdef _OPENMP
-            #pragma omp for schedule(dynamic,16)
-#endif
-
-            for (int y = 0; y < transformed->H; y++) {
-
-#ifdef __SSE2__
-                int i = 0;
-
-                for(; i < transformed->W - 3; i += 4) {
-                    vfloat av = LVFU(original->a[y][i]);
-                    vfloat bv = LVFU(original->b[y][i]);
-                    STVF(atan2Buffer[i], xatan2f(bv, av));
-                    STVF(sqrtBuffer[i], _mm_sqrt_ps(SQRV(bv) + SQRV(av)) / c327d68v);
-                }
-
-                for(; i < transformed->W; i++) {
-                    atan2Buffer[i] = xatan2f(original->b[y][i], original->a[y][i]);
-                    sqrtBuffer[i] = sqrt(SQR(original->b[y][i]) + SQR(original->a[y][i])) / 327.68f;
-                }
-
-#endif
-
-                int loy = cy + y;
-
-                for (int x = 0; x < transformed->W; x++) {
-                    int lox = cx + x;
-
-#ifdef __SSE2__
-                    float rhue = atan2Buffer[x];
-                    float rchro = sqrtBuffer[x];
-#else
-
-                    float rhue = xatan2f(original->b[y][x], original->a[y][x]);
-                    float rchro = sqrt(SQR(original->b[y][x]) + SQR(original->a[y][x])) / 327.68f;
-#endif
-                    float rL = original->L[y][x] / 327.68f;
-                    float rLL = original->L[y][x] / 327.68f;
-
-                    if(fabs(original->b[y][x]) < 0.01f) {
-                        original->b[y][x] = 0.01f;
-                    }
-
-                    float eps = 0.f;
-
-                    if(fabs(original->b[y][x]) < 0.001f) {
-                        eps = 0.01f;
-                    }
-
-                    float kab = (original->a[y][x] / (original->b[y][x] + eps));
-                    //prepare shape detection
-
-                    //end buf for square
-                    float realchro = 1.f;
-                    float deltachro = fabs(rchro - chromaref);
-
-                    float deltahue = fabs(rhue - hueref);
-
-                    if(deltahue > M_PI) {
-                        deltahue = -(deltahue - 2.f * M_PI);
-                    }
-
-                    float deltaE = 20.f * deltahue + deltachro; //pseudo deltaE between 0 and 280
-                    float deltaL = fabs (lumaref - rL); //between 0 and 100
-
-                    float kch = 1.f;
-                    float khu = 0.f;
-                    float fach = 1.f;
-                    float falu = 1.f;
-
-                    //kch acts on luma
-                    if(deltachro < 160.f * SQR(lp.sens / 100.f)) {
-                        kch = 1.f;
-                    } else {
-                        float ck = 160.f * SQR(lp.sens / 100.f);
-                        float ak = 1.f / (ck - 160.f);
-                        float bk = -160.f * ak;
-                        kch = ak * deltachro + bk;
-                    }
-
-                    if(lp.sens < 40.f ) {
-                        kch = pow(kch, pa * lp.sens + pb);    //increase under 40
-                    }
-
-                    bool kzon = false;
-
-                    //transition = difficult to avoid artifact with scope on flat area (sky...)
-                    //hue detection
-                    if((hueref + dhue) < M_PI && rhue < hueplus && rhue > huemoins) {//transition are good
-                        if(rhue >= hueplus - delhu)  {
-                            realchro = aplus * rhue + bplus;
-                            khu  = apl * rhue + bpl;
-
-                        } else if(rhue < huemoins + delhu)  {
-                            realchro = amoins * rhue + bmoins;
-                            khu = amo * rhue + bmo;
-
-                        } else {
-                            realchro = lp.chro;
-                            khu = 1.f;
-
-                        }
-
-                        kzon = true;
-                    } else if((hueref + dhue) >= M_PI && (rhue > huemoins  || rhue < hueplus )) {
-                        if(rhue >= hueplus - delhu  && rhue < hueplus)  {
-                            realchro = aplus * rhue + bplus;
-                            khu  = apl * rhue + bpl;
-
-                        } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
-                            realchro = amoins * rhue + bmoins;
-                            khu = amo * rhue + bmo;
-
-                        } else {
-                            realchro = lp.chro;
-                            khu = 1.f;
-
-                        }
-
-                        kzon = true;
-                    }
-
-                    if((hueref - dhue) > -M_PI && rhue < hueplus && rhue > huemoins) {
-                        if(rhue >= hueplus - delhu  && rhue < hueplus)  {
-                            realchro = aplus * rhue + bplus;
-                            khu  = apl * rhue + bpl;
-
-                        } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
-                            realchro = amoins * rhue + bmoins;
-                            khu = amo * rhue + bmo;
-
-                        } else {
-                            realchro = lp.chro;
-                            khu = 1.f;
-
-                        }
-
-                        kzon = true;
-                    } else if((hueref - dhue) <= -M_PI && (rhue > huemoins  || rhue < hueplus )) {
-                        if(rhue >= hueplus - delhu  && rhue < hueplus)  {
-                            realchro = aplus * rhue + bplus;
-                            khu  = apl * rhue + bpl;
-
-                        } else if(rhue >= huemoins && rhue < huemoins + delhu)  {
-                            realchro = amoins * rhue + bmoins;
-                            khu = amo * rhue + bmo;
-
-                        } else {
-                            realchro = lp.chro;
-                            khu = 1.f;
-
-                        }
-
-                        kzon = true;
-                    }
-
-
-                    //detection of deltaE and deltaL
-                    if(lp.sens <= 20.f) {//to try...
-                        //fach and kch acts on luma
-                        if(deltaE <  2.8f * lp.sens) {
-                            fach = khu;
-                        } else {
-                            fach = khu * (ahu * deltaE + bhu);
-                        }
-
-                        float kcr = 10.f;
-
-                        if (rchro < kcr) {
-                            fach *= (1.f / (kcr * kcr)) * rchro * rchro;
-                        }
-
-                        //fach = 1.f;//to avoid artifacts in some cases
-                        //can be probably improved
-                        if(lp.qualmet >= 1) {
-                            if(deltE[y][x] > lp.thr) {
-                                fach = 1.f;
-                            }
-                        } else {
-                            fach = 1.f;
-                        }
-
-                        //falu acts on chroma
-                        if(deltaL <  lp.sens) {
-                            falu = 1.f;
-                        } else {
-                            falu = 1.f;// alum * deltaL + blum;
-                        }
-
-                    }
-
-                    if(kzon) {
-                        if(lp.sens < 60.f) { //arbitrary value
-                            if(hueref < -1.1f && hueref > -2.8f) {// detect blue sky
-                                if(chromaref > 0.f && chromaref < 35.f * multchro) { // detect blue sky
-                                    if( (rhue > -2.79f && rhue < -1.11f) && (rchro < 35.f * multchro)) {
-                                        realchro *= 0.9f;
-                                    } else {
-                                        realchro = 1.f;
-                                    }
-                                }
-                            } else {
-                                realchro = lp.chro;
-                            }
-
-                            if(lp.sens < 50.f && lp.chro > 0.f) {
-                                if(hueref > -0.1f && hueref < 1.6f) {// detect skin
-                                    if(chromaref > 0.f && chromaref < 55.f * multchroskin) { // detect skin
-                                        if( (rhue > -0.09f && rhue < 1.59f) && (rchro < 55.f * multchroskin)) {
-                                            realchro *= 0.9f;
-                                        } else {
-                                            realchro = 1.f;
-                                        }
-                                    }
-                                } else {
-                                    realchro = lp.chro;
-                                }
-                            }
-                        }
-
-                    }
-
-                    float kLinf = rLL / (100.f);
-                    float kLsup = kLinf;
-
-                    float kdiff = 1.f;
-
-                    if(kzon) {///rhue < hueplus && rhue > huemoins
-
-                        if( (rLL > (lumaref - modlum) && rLL < (lumaref + modlum))) {
-                            kdiff = 1.f;
-                        } else if (rLL > 0.f && rLL <= (lumaref - modlum)) {
-                            kdiff = (aa * kLinf * kLinf + bb * kLinf);   //parabolic
-
-                            if(kdiff < 0.01f) {
-                                kdiff = 0.01f;
-                            }
-                        } else if (rLL <= 100.f && rLL >= (lumaref + modlum)) {
-
-                            kdiff = (aaa * kLsup * kLsup + bbb * kLsup + ccc);   //parabolic
-
-                            if(kdiff < 0.01f) {
-                                kdiff = 0.01f;
-                            }
-
-                        }
-
-                        //end luma
-                    } else {
-                        float ktes = 1.f;
-
-                        if( (rLL > (lumaref - modlum) && rLL < (lumaref + modlum))) {
-                            kdiff = ktes;
-                        } else if (rLL > 0.f && rLL <= (lumaref - modlum)) {
-
-                            kdiff = (ktes * (aO * kLinf * kLinf + bO * kLinf));    //parabolic
-
-                            if(kdiff < 0.01f) {
-                                kdiff = 0.01f;
-                            }
-
-                        } else if (rLL <= 100.f && rLL >= (lumaref + modlum)) {
-
-                            kdiff = (ktes * (aaaa * kLsup * kLsup + bbbb * kLsup + cccc));    //parabolic
-
-                            if(kdiff < 0.01f) {
-                                kdiff = 0.01f;
-                            }
-
-                        }
-
-                    }
-
-                    int zone;
-                    float localFactor;
-                    calcTransition (lox, loy, ach, lp, zone, localFactor);
-                    float th_r = 0.01f;
-
-                    if(rL > th_r) {//to avoid crash with very low gamut in rare cases ex : L=0.01 a=0.5 b=-0.9
-                        switch(zone) {
-                            case 0: { // outside selection and outside transition zone => no effect, keep original values
-                                transformed->L[y][x] = original->L[y][x];
-                                transformed->a[y][x] = original->a[y][x];
-                                transformed->b[y][x] = original->b[y][x];
-                                break;
-                            }
-
-                            case 1: { // inside transition zone
-                                float lumnewbef = original->L[y][x];
-
-                                if(lp.ligh != 0) {
-                                    calclight (original->L[y][x], lp.ligh , lumnewbef, true);//replace L-curve
-                                }
-
-                                float lumnew = lllocalcurve[lumnewbef];
-
-                                float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
-                                float factorx = localFactor;
-                                float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
-                                float diflc = lightcont - original->L[y][x];
-                                kdiff *= fach * kch;
-                                diflc *= kdiff ;
-
-                                diflc *= factorx; //transition lightess
-                                transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
-
-                                if(fabs(kab) > 1.f) {
-                                    transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
-                                    transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
-                                } else {
-                                    transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
-                                    transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab ;
-
-                                }
-
-                                break;
-                            }
-
-                            case 2: { // inside selection => full effect, no transition
-                                //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
-                                float lumnewbef = original->L[y][x];
-
-                                if(lp.ligh != 0) {
-                                    calclight (original->L[y][x], lp.ligh , lumnewbef, true);
-
-                                }
-
-                                float lumnew = lllocalcurve[lumnewbef];
-
-
-                                //    float lightcont = localcurve[original->L[y][x]]; //apply lightness
-                                float lightcont = lumnew ; //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
-
-                                float fac = (100.f + realchro * falu) / 100.f; //chroma factor transition
-                                float diflc = lightcont - original->L[y][x];
-                                kdiff *= fach * kch;
-                                diflc *= kdiff ;
-
-                                transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
-
-                                if(fabs(kab) > 1.f) {
-                                    transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
-                                    transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
-                                } else {
-                                    transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
-                                    transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab;
-
-                                }
-
-
-                            }
-
-                                //      if(rL > maxrl) maxrl = rL;
-                                //      if(rL < minrl) minrl = rL;
-
-
-                                /*
-                                                    if(transformed->L[y][x] > maxl) {
-                                                        maxl = transformed->L[y][x];
-                                                    }
-
-                                                    if(transformed->L[y][x] < minl) {
-                                                        minl = transformed->L[y][x];
-                                                    }
-
-                                                    if(transformed->a[y][x] > maxa) {
-                                                        maxa = transformed->a[y][x];
-                                                    }
-
-                                                    if(transformed->a[y][x] < mina) {
-                                                        mina = transformed->a[y][x];
-                                                    }
-
-                                                    if(transformed->b[y][x] > maxb) {
-                                                        maxb = transformed->b[y][x];
-                                                    }
-
-                                                    if(transformed->b[y][x] < minb) {
-                                                        minb = transformed->b[y][x];
-                                                    }
-                                */
-                        }
-                    }
-                }
-            }
-
-            //  printf("maxRL=%f minRL=%f\n", maxrl, minrl);
-            //     printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
-        }
     }
+
 }
 
 void ImProcFunctions::InverseColorLight_Local(const struct local_params & lp, LabImage * original, LabImage * transformed, int cx, int cy)
@@ -4202,586 +3836,593 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
         lco.dy = 1.f - 1.f / multh;
 
 
-        if(lp.blurena) {
 
-            if((radius >= GAUSS_SKIP || lp.stren > 0.1)) { // radius < GAUSS_SKIP means no gauss, just copy of original image
-                LabImage *tmp1;
-                LabImage *bufgb;
+        if((radius >= GAUSS_SKIP || lp.stren > 0.1)  && lp.blurena) { // radius < GAUSS_SKIP means no gauss, just copy of original image
+            LabImage *tmp1;
+            LabImage *bufgb;
+            int GW = transformed->W;
+            int GH = transformed->H;
+
+            if(call == 2  && !lp.invrad) { //simpleprocess
+                int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
+                int bfw = int(lp.lx + lp.lxL) + 1;
+                bufgb = new LabImage(bfw, bfh);
+
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for(int ir = 0; ir < bfh; ir++) //fill with 0
+                    for(int jr = 0; jr < bfw; jr++) {
+                        bufgb->L[ir][jr] = 0.f;
+                        bufgb->a[ir][jr] = 0.f;
+                        bufgb->b[ir][jr] = 0.f;
+                    }
+
+#ifdef _OPENMP
+//           #pragma omp parallel for
+#endif
+
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int(lp.xc - lp.lxL);
+                        int begy = int(lp.yc - lp.lyT);
+
+                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufgb->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
+                            bufgb->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
+                            bufgb->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
+                        }
+                    }
+
+                tmp1 = new LabImage(bfw, bfh);
+#ifdef _OPENMP
+                #pragma omp parallel
+#endif
+                {
+                    gaussianBlur (bufgb->L, tmp1->L, bfw, bfh, radius);
+                    gaussianBlur (bufgb->a, tmp1->a, bfw, bfh, radius);
+                    gaussianBlur (bufgb->b, tmp1->b, bfw, bfh, radius);
+
+                }
+
+
+
+            } else {
+                tmp1 = new LabImage(transformed->W, transformed->H);;
+
+#ifdef _OPENMP
+                #pragma omp parallel
+#endif
+                {
+                    gaussianBlur (original->L, tmp1->L, GW, GH, radius);
+                    gaussianBlur (original->a, tmp1->a, GW, GH, radius);
+                    gaussianBlur (original->b, tmp1->b, GW, GH, radius);
+
+                }
+            }
+
+            if(lp.stren > 0.1f) {
+                float mean = 0.f;//0 best result
+                float variance = lp.stren ; //(double) SQR(lp.stren)/sk;
+                addGaNoise (tmp1, tmp1, mean, variance, sk) ;
+            }
+
+            if(!lp.invrad) { //blur and noise (center)
+                //         BlurNoise_Local(call, lp, original, transformed, tmp1, cx, cy);
+                float hueplus = hueref + dhue;
+                float huemoins = hueref - dhue;
+
+                if(hueplus > M_PI) {
+                    hueplus = hueref + dhue - 2.f * M_PI;
+                }
+
+                if(huemoins < -M_PI) {
+                    huemoins = hueref - dhue + 2.f * M_PI;
+                }
+
+                // BlurNoise_Localold(call, lp, original, transformed, tmp1, cx, cy);
+
+                BlurNoise_Local(call, sp, tmp1, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
+
+            } else {
+
+                InverseBlurNoise_Local(lp, original, transformed, tmp1, cx, cy);
+
+            }
+
+            if(call == 2  && !lp.invrad) {
+                delete bufgb;
+            }
+
+            delete tmp1;
+        }
+
+        //      }
+
+//local denoise
+        if(lp.noiself > 0.f || lp.noiselc > 0.f || lp.noisecf > 0.f || lp.noisecc > 0.f  && call < 3 || noiscfactiv  && lp.denoiena) {
+            if(lp.noisecf > 0.1f || lp.noisecc > 0.1f) {
+                noiscfactiv = false;
+                levred = 7;
+            }
+
+            if(call == 1) {
+                LabImage *tmp1 = new LabImage(transformed->W, transformed->H);
                 int GW = transformed->W;
                 int GH = transformed->H;
 
-                if(call == 2  && !lp.invrad) { //simpleprocess
-                    int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                    int bfw = int(lp.lx + lp.lxL) + 1;
-                    bufgb = new LabImage(bfw, bfh);
 
-#ifdef _OPENMP
-                    #pragma omp parallel for
-#endif
+                for(int ir = 0; ir < GH; ir++)
+                    for(int jr = 0; jr < GW; jr++) {
+                        tmp1->L[ir][jr] = original->L[ir][jr];
+                        tmp1->a[ir][jr] = original->a[ir][jr];
+                        tmp1->b[ir][jr] = original->b[ir][jr];
+                    }
 
-                    for(int ir = 0; ir < bfh; ir++) //fill with 0
-                        for(int jr = 0; jr < bfw; jr++) {
-                            bufgb->L[ir][jr] = 0.f;
-                            bufgb->a[ir][jr] = 0.f;
-                            bufgb->b[ir][jr] = 0.f;
+                int DaubLen = 6;
+                int wavNestedLevels = 1;
+
+                int levwavL = levred;
+                int skip = 1;
+                wavelet_decomposition* Ldecomp = new wavelet_decomposition (tmp1->L[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+                wavelet_decomposition* adecomp = new wavelet_decomposition (tmp1->a[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+                wavelet_decomposition* bdecomp = new wavelet_decomposition (tmp1->b[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+
+                float madL[8][3];
+                float madab[8][3];
+                int edge;
+
+                if(!Ldecomp->memoryAllocationFailed) {
+
+                    for (int lvl = 0; lvl < levred; lvl++) {
+                        for (int dir = 1; dir < 4; dir++) {
+                            int Wlvl_L = Ldecomp->level_W(lvl);
+                            int Hlvl_L = Ldecomp->level_H(lvl);
+
+                            float ** WavCoeffs_L = Ldecomp->level_coeffs(lvl);
+
+                            madL[lvl][dir - 1] = SQR(Mad(WavCoeffs_L[dir], Wlvl_L * Hlvl_L));
+                        }
+                    }
+
+
+                    int ind = 0;
+                    float vari[levred];
+
+                    if(levred == 7) {
+                        edge = 2;
+                        vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+
+                        vari[3] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[4] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[5] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[6] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                    } else if(levred == 4) {
+                        edge = 3;
+                        vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[3] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiselc / 25.0));
+
+                    }
+
+                    if(( lp.noiself > 0.1f ||  lp.noiselc > 0.1f)) {
+                        vari[0] = max(0.0001f, vari[0]);
+                        vari[1] = max(0.0001f, vari[1]);
+                        vari[2] = max(0.0001f, vari[2]);
+                        vari[3] = max(0.0001f, vari[3]);
+
+                        if(levred == 7) {
+                            vari[4] = max(0.0001f, vari[4]);
+                            vari[5] = max(0.0001f, vari[5]);
+                            vari[6] = max(0.0001f, vari[6]);
                         }
 
-#ifdef _OPENMP
-//           #pragma omp parallel for
-#endif
+                        float* noisevarlum = nullptr;  // we need a dummy to pass it to WaveletDenoiseAllL
 
-                    for (int y = 0; y < transformed->H ; y++) //{
-                        for (int x = 0; x < transformed->W; x++) {
-                            int lox = cx + x;
-                            int loy = cy + y;
-                            int begx = int(lp.xc - lp.lxL);
-                            int begy = int(lp.yc - lp.lyT);
+                        WaveletDenoiseAllL(*Ldecomp, noisevarlum, madL, vari, edge);
+                    }
+                }
 
-                            if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                                bufgb->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
-                                bufgb->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
-                                bufgb->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
-                            }
+                float variC[levred];
+
+                if(!adecomp->memoryAllocationFailed && !bdecomp->memoryAllocationFailed) {
+                    if(levred == 7) {
+                        edge = 2;
+                        variC[0] = SQR(lp.noisecf / 10.0);
+                        variC[1] = SQR(lp.noisecf / 10.0);
+                        variC[2] = SQR(lp.noisecf / 10.0);
+
+                        variC[3] = SQR(lp.noisecf / 10.0);
+                        variC[4] = SQR(lp.noisecf / 10.0);
+                        variC[5] = SQR(lp.noisecc / 10.0);
+                        variC[6] = SQR(lp.noisecc / 10.0);
+                    } else if(levred == 4) {
+                        edge = 3;
+                        variC[0] = SQR(lp.noisecf / 10.0);
+                        variC[1] = SQR(lp.noisecf / 10.0);
+                        variC[2] = SQR(lp.noisecf / 10.0);
+                        variC[3] = SQR(lp.noisecf / 10.0);
+                    }
+
+
+                    if(( lp.noisecf > 0.1f ||  lp.noisecc > 0.1f  || noiscfactiv)) {
+                        float minic = 0.0001f;
+
+                        if(noiscfactiv) {
+                            minic = 0.01f;//only for artifact shape detection
                         }
 
-                    tmp1 = new LabImage(bfw, bfh);
-#ifdef _OPENMP
-                    #pragma omp parallel
-#endif
-                    {
-                        gaussianBlur (bufgb->L, tmp1->L, bfw, bfh, radius);
-                        gaussianBlur (bufgb->a, tmp1->a, bfw, bfh, radius);
-                        gaussianBlur (bufgb->b, tmp1->b, bfw, bfh, radius);
+                        variC[0] = max(minic, variC[0]);
+                        variC[1] = max(minic, variC[1]);
+                        variC[2] = max(minic, variC[2]);
+                        variC[3] = max(minic, variC[3]);
 
-                    }
+                        if(levred == 7) {
 
+                            variC[4] = max(0.0001f, variC[4]);
+                            variC[5] = max(0.0001f, variC[5]);
+                            variC[6] = max(0.0001f, variC[6]);
+                        }
 
+                        float* noisevarchrom = new float[GH * GW];
 
-                } else {
-                    tmp1 = new LabImage(transformed->W, transformed->H);;
+                        for(int q = 0; q < GH * GW; q++) {
+                            noisevarchrom[q] = 1.f;
+                        }
 
-#ifdef _OPENMP
-                    #pragma omp parallel
-#endif
-                    {
-                        gaussianBlur (original->L, tmp1->L, GW, GH, radius);
-                        gaussianBlur (original->a, tmp1->a, GW, GH, radius);
-                        gaussianBlur (original->b, tmp1->b, GW, GH, radius);
+                        float noisevarab_r = 100.f; //SQR(lp.noisecc / 10.0);
+                        WaveletDenoiseAllAB(*Ldecomp, *adecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
+                        WaveletDenoiseAllAB(*Ldecomp, *bdecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
+                        delete[] noisevarchrom;
 
                     }
                 }
 
-                if(lp.stren > 0.1f) {
-                    float mean = 0.f;//0 best result
-                    float variance = lp.stren ; //(double) SQR(lp.stren)/sk;
-                    addGaNoise (tmp1, tmp1, mean, variance, sk) ;
+                if(!Ldecomp->memoryAllocationFailed) {
+
+                    Ldecomp->reconstruct(tmp1->L[0]);
                 }
 
-                if(!lp.invrad) { //blur and noise (center)
-                    //         BlurNoise_Local(call, lp, original, transformed, tmp1, cx, cy);
-                    float hueplus = hueref + dhue;
-                    float huemoins = hueref - dhue;
+                if(!adecomp->memoryAllocationFailed) {
 
-                    if(hueplus > M_PI) {
-                        hueplus = hueref + dhue - 2.f * M_PI;
-                    }
-
-                    if(huemoins < -M_PI) {
-                        huemoins = hueref - dhue + 2.f * M_PI;
-                    }
-
-                    // BlurNoise_Localold(call, lp, original, transformed, tmp1, cx, cy);
-
-                    BlurNoise_Local(call, sp, tmp1, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
-
-                } else {
-
-                    InverseBlurNoise_Local(lp, original, transformed, tmp1, cx, cy);
-
+                    adecomp->reconstruct(tmp1->a[0]);
                 }
 
-                if(call == 2  && !lp.invrad) {
-                    delete bufgb;
+                if(!bdecomp->memoryAllocationFailed) {
+
+                    bdecomp->reconstruct(tmp1->b[0]);
                 }
 
+                DeNoise_Local(call, lp, original, transformed, tmp1, cx, cy);
                 delete tmp1;
+                delete Ldecomp;
+                delete adecomp;
+                delete bdecomp;
             }
-        }
 
-//local denoise
-        if(lp.denoiena) {
-            if(lp.noiself > 0.f || lp.noiselc > 0.f || lp.noisecf > 0.f || lp.noisecc > 0.f  && call < 3 || noiscfactiv) {
-                if(lp.noisecf > 0.1f || lp.noisecc > 0.1f) {
-                    noiscfactiv = false;
-                    levred = 7;
-                }
-
-                if(call == 1) {
-                    LabImage *tmp1 = new LabImage(transformed->W, transformed->H);
-                    int GW = transformed->W;
-                    int GH = transformed->H;
-
-
-                    for(int ir = 0; ir < GH; ir++)
-                        for(int jr = 0; jr < GW; jr++) {
-                            tmp1->L[ir][jr] = original->L[ir][jr];
-                            tmp1->a[ir][jr] = original->a[ir][jr];
-                            tmp1->b[ir][jr] = original->b[ir][jr];
-                        }
-
-                    int DaubLen = 6;
-                    int wavNestedLevels = 1;
-
-                    int levwavL = levred;
-                    int skip = 1;
-                    wavelet_decomposition* Ldecomp = new wavelet_decomposition (tmp1->L[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
-                    wavelet_decomposition* adecomp = new wavelet_decomposition (tmp1->a[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
-                    wavelet_decomposition* bdecomp = new wavelet_decomposition (tmp1->b[0], tmp1->W, tmp1->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
-
-                    float madL[8][3];
-                    float madab[8][3];
-                    int edge;
-
-                    if(!Ldecomp->memoryAllocationFailed) {
-
-                        for (int lvl = 0; lvl < levred; lvl++) {
-                            for (int dir = 1; dir < 4; dir++) {
-                                int Wlvl_L = Ldecomp->level_W(lvl);
-                                int Hlvl_L = Ldecomp->level_H(lvl);
-
-                                float ** WavCoeffs_L = Ldecomp->level_coeffs(lvl);
-
-                                madL[lvl][dir - 1] = SQR(Mad(WavCoeffs_L[dir], Wlvl_L * Hlvl_L));
-                            }
-                        }
-
-
-                        int ind = 0;
-                        float vari[levred];
-
-                        if(levred == 7) {
-                            edge = 2;
-                            vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-
-                            vari[3] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[4] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[5] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[6] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                        } else if(levred == 4) {
-                            edge = 3;
-                            vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[3] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiselc / 25.0));
-
-                        }
-
-                        if(( lp.noiself > 0.1f ||  lp.noiselc > 0.1f)) {
-                            vari[0] = max(0.0001f, vari[0]);
-                            vari[1] = max(0.0001f, vari[1]);
-                            vari[2] = max(0.0001f, vari[2]);
-                            vari[3] = max(0.0001f, vari[3]);
-
-                            if(levred == 7) {
-                                vari[4] = max(0.0001f, vari[4]);
-                                vari[5] = max(0.0001f, vari[5]);
-                                vari[6] = max(0.0001f, vari[6]);
-                            }
-
-                            float* noisevarlum = nullptr;  // we need a dummy to pass it to WaveletDenoiseAllL
-
-                            WaveletDenoiseAllL(*Ldecomp, noisevarlum, madL, vari, edge);
-                        }
-                    }
-
-                    float variC[levred];
-
-                    if(!adecomp->memoryAllocationFailed && !bdecomp->memoryAllocationFailed) {
-                        if(levred == 7) {
-                            edge = 2;
-                            variC[0] = SQR(lp.noisecf / 10.0);
-                            variC[1] = SQR(lp.noisecf / 10.0);
-                            variC[2] = SQR(lp.noisecf / 10.0);
-
-                            variC[3] = SQR(lp.noisecf / 10.0);
-                            variC[4] = SQR(lp.noisecf / 10.0);
-                            variC[5] = SQR(lp.noisecc / 10.0);
-                            variC[6] = SQR(lp.noisecc / 10.0);
-                        } else if(levred == 4) {
-                            edge = 3;
-                            variC[0] = SQR(lp.noisecf / 10.0);
-                            variC[1] = SQR(lp.noisecf / 10.0);
-                            variC[2] = SQR(lp.noisecf / 10.0);
-                            variC[3] = SQR(lp.noisecf / 10.0);
-                        }
-
-
-                        if(( lp.noisecf > 0.1f ||  lp.noisecc > 0.1f  || noiscfactiv)) {
-                            float minic = 0.0001f;
-
-                            if(noiscfactiv) {
-                                minic = 0.01f;//only for artifact shape detection
-                            }
-
-                            variC[0] = max(minic, variC[0]);
-                            variC[1] = max(minic, variC[1]);
-                            variC[2] = max(minic, variC[2]);
-                            variC[3] = max(minic, variC[3]);
-
-                            if(levred == 7) {
-
-                                variC[4] = max(0.0001f, variC[4]);
-                                variC[5] = max(0.0001f, variC[5]);
-                                variC[6] = max(0.0001f, variC[6]);
-                            }
-
-                            float* noisevarchrom = new float[GH * GW];
-
-                            for(int q = 0; q < GH * GW; q++) {
-                                noisevarchrom[q] = 1.f;
-                            }
-
-                            float noisevarab_r = 100.f; //SQR(lp.noisecc / 10.0);
-                            WaveletDenoiseAllAB(*Ldecomp, *adecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
-                            WaveletDenoiseAllAB(*Ldecomp, *bdecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
-                            delete[] noisevarchrom;
-
-                        }
-                    }
-
-                    if(!Ldecomp->memoryAllocationFailed) {
-
-                        Ldecomp->reconstruct(tmp1->L[0]);
-                    }
-
-                    if(!adecomp->memoryAllocationFailed) {
-
-                        adecomp->reconstruct(tmp1->a[0]);
-                    }
-
-                    if(!bdecomp->memoryAllocationFailed) {
-
-                        bdecomp->reconstruct(tmp1->b[0]);
-                    }
-
-                    DeNoise_Local(call, lp, original, transformed, tmp1, cx, cy);
-                    delete tmp1;
-                    delete Ldecomp;
-                    delete adecomp;
-                    delete bdecomp;
-                }
-
-                if(call == 2) { //simpleprocess
-                    LabImage *bufwv;
-                    int GW = transformed->W;
-                    int GH = transformed->H;
-                    int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                    int bfw = int(lp.lx + lp.lxL) + 1;
-                    bufwv = new LabImage(bfw, bfh);
+            if(call == 2) { //simpleprocess
+                LabImage *bufwv;
+                int GW = transformed->W;
+                int GH = transformed->H;
+                int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
+                int bfw = int(lp.lx + lp.lxL) + 1;
+                bufwv = new LabImage(bfw, bfh);
 #ifdef _OPENMP
-                    #pragma omp parallel for
+                #pragma omp parallel for
 #endif
 
-                    for(int ir = 0; ir < bfh; ir++) //fill with 0
-                        for(int jr = 0; jr < bfw; jr++) {
-                            bufwv->L[ir][jr] = 0.f;
-                            bufwv->a[ir][jr] = 0.f;
-                            bufwv->b[ir][jr] = 0.f;
+                for(int ir = 0; ir < bfh; ir++) //fill with 0
+                    for(int jr = 0; jr < bfw; jr++) {
+                        bufwv->L[ir][jr] = 0.f;
+                        bufwv->a[ir][jr] = 0.f;
+                        bufwv->b[ir][jr] = 0.f;
 
-                        }
+                    }
 
 #ifdef _OPENMP
 //           #pragma omp parallel for
 #endif
 
-                    for (int y = 0; y < transformed->H ; y++) //{
-                        for (int x = 0; x < transformed->W; x++) {
-                            int lox = cx + x;
-                            int loy = cy + y;
-                            int begx = int(lp.xc - lp.lxL);
-                            int begy = int(lp.yc - lp.lyT);
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int(lp.xc - lp.lxL);
+                        int begy = int(lp.yc - lp.lyT);
 
-                            if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                                bufwv->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
-                                bufwv->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
-                                bufwv->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
-                            }
+                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufwv->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
+                            bufwv->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
+                            bufwv->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
                         }
+                    }
 
-                    int DaubLen = 6;
-                    int wavNestedLevels = 1;
+                int DaubLen = 6;
+                int wavNestedLevels = 1;
 
-                    int levwavL = levred;
-                    int skip = 1;
-                    wavelet_decomposition* Ldecomp = new wavelet_decomposition (bufwv->L[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
-                    wavelet_decomposition* adecomp = new wavelet_decomposition (bufwv->a[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
-                    wavelet_decomposition* bdecomp = new wavelet_decomposition (bufwv->b[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+                int levwavL = levred;
+                int skip = 1;
+                wavelet_decomposition* Ldecomp = new wavelet_decomposition (bufwv->L[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+                wavelet_decomposition* adecomp = new wavelet_decomposition (bufwv->a[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
+                wavelet_decomposition* bdecomp = new wavelet_decomposition (bufwv->b[0], bufwv->W, bufwv->H, levwavL, 1, skip, max(1, wavNestedLevels), DaubLen);
 
-                    float madL[8][3];
-                    float madab[8][3];
-                    int edge;
+                float madL[8][3];
+                float madab[8][3];
+                int edge;
 
 //           if(!Ldecomp->memoryAllocationFailed) {
-                    if(!Ldecomp->memoryAllocationFailed) {
+                if(!Ldecomp->memoryAllocationFailed) {
 
-                        for (int lvl = 0; lvl < levred; lvl++) {
-                            for (int dir = 1; dir < 4; dir++) {
-                                int Wlvl_L = Ldecomp->level_W(lvl);
-                                int Hlvl_L = Ldecomp->level_H(lvl);
+                    for (int lvl = 0; lvl < levred; lvl++) {
+                        for (int dir = 1; dir < 4; dir++) {
+                            int Wlvl_L = Ldecomp->level_W(lvl);
+                            int Hlvl_L = Ldecomp->level_H(lvl);
 
-                                float ** WavCoeffs_L = Ldecomp->level_coeffs(lvl);
+                            float ** WavCoeffs_L = Ldecomp->level_coeffs(lvl);
 
-                                madL[lvl][dir - 1] = SQR(Mad(WavCoeffs_L[dir], Wlvl_L * Hlvl_L));
-                            }
+                            madL[lvl][dir - 1] = SQR(Mad(WavCoeffs_L[dir], Wlvl_L * Hlvl_L));
                         }
+                    }
 
 
-                        int ind = 0;
+                    int ind = 0;
 
-                        float vari[levred];
+                    float vari[levred];
+
+                    if(levred == 7) {
+                        edge = 2;
+                        vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+
+                        vari[3] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[4] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[5] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                        vari[6] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
+                    } else if(levred == 4) {
+                        edge = 3;
+                        vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
+                        vari[3] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiselc / 25.0));
+
+                    }
+
+                    if(( lp.noiself > 0.1f ||  lp.noiselc > 0.1f)) {
+                        vari[0] = max(0.0001f, vari[0]);
+                        vari[1] = max(0.0001f, vari[1]);
+                        vari[2] = max(0.0001f, vari[2]);
+                        vari[3] = max(0.0001f, vari[3]);
 
                         if(levred == 7) {
-                            edge = 2;
-                            vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
 
-                            vari[3] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[4] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[5] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                            vari[6] = 8.f * SQR((lp.noiselc / 125.0) * (1.0 + lp.noiselc / 25.0));
-                        } else if(levred == 4) {
-                            edge = 3;
-                            vari[0] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[1] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[2] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiself / 25.0));
-                            vari[3] = 8.f * SQR((lp.noiself / 125.0) * (1.0 + lp.noiselc / 25.0));
-
+                            vari[4] = max(0.0001f, vari[4]);
+                            vari[5] = max(0.0001f, vari[5]);
+                            vari[6] = max(0.0001f, vari[6]);
                         }
 
-                        if(( lp.noiself > 0.1f ||  lp.noiselc > 0.1f)) {
-                            vari[0] = max(0.0001f, vari[0]);
-                            vari[1] = max(0.0001f, vari[1]);
-                            vari[2] = max(0.0001f, vari[2]);
-                            vari[3] = max(0.0001f, vari[3]);
+                        float* noisevarlum = nullptr;  // we need a dummy to pass it to WaveletDenoiseAllL
 
-                            if(levred == 7) {
-
-                                vari[4] = max(0.0001f, vari[4]);
-                                vari[5] = max(0.0001f, vari[5]);
-                                vari[6] = max(0.0001f, vari[6]);
-                            }
-
-                            float* noisevarlum = nullptr;  // we need a dummy to pass it to WaveletDenoiseAllL
-
-                            WaveletDenoiseAllL(*Ldecomp, noisevarlum, madL, vari, edge);
-                        }
+                        WaveletDenoiseAllL(*Ldecomp, noisevarlum, madL, vari, edge);
                     }
-
-                    float variC[levred];
-
-                    if(!adecomp->memoryAllocationFailed && !bdecomp->memoryAllocationFailed) {
-
-                        if(levred == 7) {
-                            edge = 2;
-                            variC[0] = SQR(lp.noisecf / 10.0);
-                            variC[1] = SQR(lp.noisecf / 10.0);
-                            variC[2] = SQR(lp.noisecf / 10.0);
-
-                            variC[3] = SQR(lp.noisecf / 10.0);
-                            variC[4] = SQR(lp.noisecf / 10.0);
-                            variC[5] = SQR(lp.noisecc / 10.0);
-                            variC[6] = SQR(lp.noisecc / 10.0);
-                        } else if(levred == 4) {
-                            edge = 3;
-                            variC[0] = SQR(lp.noisecf / 10.0);
-                            variC[1] = SQR(lp.noisecf / 10.0);
-                            variC[2] = SQR(lp.noisecf / 10.0);
-                            variC[3] = SQR(lp.noisecf / 10.0);
-                        }
-
-                        if(( lp.noisecf > 0.1f ||  lp.noisecc > 0.1f  || noiscfactiv)) {
-                            float minic = 0.0001f;
-
-                            if(noiscfactiv) {
-                                minic = 0.01f;//only for artifact shape detection
-                            }
-
-                            variC[0] = max(minic, variC[0]);
-                            variC[1] = max(minic, variC[1]);
-                            variC[2] = max(minic, variC[2]);
-                            variC[3] = max(minic, variC[3]);
-
-                            if(levred == 7) {
-
-                                variC[4] = max(0.0001f, variC[4]);
-                                variC[5] = max(0.0001f, variC[5]);
-                                variC[6] = max(0.0001f, variC[6]);
-                            }
-
-                            float* noisevarchrom = new float[bfh * bfw];
-
-                            for(int q = 0; q < bfh * bfw; q++) {
-                                noisevarchrom[q] = 1.f;
-                            }
-
-                            float noisevarab_r = 100.f; //SQR(lp.noisecc / 10.0);
-                            WaveletDenoiseAllAB(*Ldecomp, *adecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
-                            WaveletDenoiseAllAB(*Ldecomp, *bdecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
-                            delete[] noisevarchrom;
-
-                        }
-                    }
-
-                    if(!Ldecomp->memoryAllocationFailed) {
-
-                        Ldecomp->reconstruct(bufwv->L[0]);
-                    }
-
-                    if(!adecomp->memoryAllocationFailed) {
-
-                        adecomp->reconstruct(bufwv->a[0]);
-                    }
-
-                    if(!bdecomp->memoryAllocationFailed) {
-
-                        bdecomp->reconstruct(bufwv->b[0]);
-                    }
-
-                    DeNoise_Local(call, lp, original, transformed, bufwv, cx, cy);
-                    delete bufwv;
-                    delete Ldecomp;
-                    delete adecomp;
-                    delete bdecomp;
-
-
                 }
+
+                float variC[levred];
+
+                if(!adecomp->memoryAllocationFailed && !bdecomp->memoryAllocationFailed) {
+
+                    if(levred == 7) {
+                        edge = 2;
+                        variC[0] = SQR(lp.noisecf / 10.0);
+                        variC[1] = SQR(lp.noisecf / 10.0);
+                        variC[2] = SQR(lp.noisecf / 10.0);
+
+                        variC[3] = SQR(lp.noisecf / 10.0);
+                        variC[4] = SQR(lp.noisecf / 10.0);
+                        variC[5] = SQR(lp.noisecc / 10.0);
+                        variC[6] = SQR(lp.noisecc / 10.0);
+                    } else if(levred == 4) {
+                        edge = 3;
+                        variC[0] = SQR(lp.noisecf / 10.0);
+                        variC[1] = SQR(lp.noisecf / 10.0);
+                        variC[2] = SQR(lp.noisecf / 10.0);
+                        variC[3] = SQR(lp.noisecf / 10.0);
+                    }
+
+                    if(( lp.noisecf > 0.1f ||  lp.noisecc > 0.1f  || noiscfactiv)) {
+                        float minic = 0.0001f;
+
+                        if(noiscfactiv) {
+                            minic = 0.01f;//only for artifact shape detection
+                        }
+
+                        variC[0] = max(minic, variC[0]);
+                        variC[1] = max(minic, variC[1]);
+                        variC[2] = max(minic, variC[2]);
+                        variC[3] = max(minic, variC[3]);
+
+                        if(levred == 7) {
+
+                            variC[4] = max(0.0001f, variC[4]);
+                            variC[5] = max(0.0001f, variC[5]);
+                            variC[6] = max(0.0001f, variC[6]);
+                        }
+
+                        float* noisevarchrom = new float[bfh * bfw];
+
+                        for(int q = 0; q < bfh * bfw; q++) {
+                            noisevarchrom[q] = 1.f;
+                        }
+
+                        float noisevarab_r = 100.f; //SQR(lp.noisecc / 10.0);
+                        WaveletDenoiseAllAB(*Ldecomp, *adecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
+                        WaveletDenoiseAllAB(*Ldecomp, *bdecomp, noisevarchrom, madL, variC, edge, noisevarab_r, false, false, false);
+                        delete[] noisevarchrom;
+
+                    }
+                }
+
+                if(!Ldecomp->memoryAllocationFailed) {
+
+                    Ldecomp->reconstruct(bufwv->L[0]);
+                }
+
+                if(!adecomp->memoryAllocationFailed) {
+
+                    adecomp->reconstruct(bufwv->a[0]);
+                }
+
+                if(!bdecomp->memoryAllocationFailed) {
+
+                    bdecomp->reconstruct(bufwv->b[0]);
+                }
+
+                DeNoise_Local(call, lp, original, transformed, bufwv, cx, cy);
+                delete bufwv;
+                delete Ldecomp;
+                delete adecomp;
+                delete bdecomp;
+
 
             }
+
         }
 
+// && lp.colorena
+        //   printf("Ligh = %i \n", lp.ligh);
 
-       if(lp.colorena) {
-            if(!lp.inv  && (lp.chro != 0 || lp.ligh != 0)) { // || lllocalcurve)) { //interior ellipse renforced lightness and chroma  //locallutili
-                float maxhur = -10.f;
-                float minhur = 10.f;
-                float hueplus = hueref + dhue;
-                float huemoins = hueref - dhue;
+        if(!lp.inv  && (lp.chro != 0 || lp.ligh != 0) && lp.colorena) { // || lllocalcurve)) { //interior ellipse renforced lightness and chroma  //locallutili
+            float maxhur = -10.f;
+            float minhur = 10.f;
+            float hueplus = hueref + dhue;
+            float huemoins = hueref - dhue;
 
-                if(hueplus > M_PI) {
-                    hueplus = hueref + dhue - 2.f * M_PI;
-                }
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhue - 2.f * M_PI;
+            }
 
-                if(huemoins < -M_PI) {
-                    huemoins = hueref - dhue + 2.f * M_PI;
-                }
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhue + 2.f * M_PI;
+            }
 
-                LabImage *bufcolorig;
-                LabImage *bufcoltra;
+            LabImage *bufcolorig;
+            LabImage *bufcoltra;
 
-                if(call <= 3) { //simpleprocess
-                    int GW = transformed->W;
-                    int GH = transformed->H;
-                    int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                    int bfw = int(lp.lx + lp.lxL) + 1;
-                    bufcolorig = new LabImage(bfw, bfh);
-                    //    bufcoltra = new LabImage(bfw, bfh);
+            if(call <= 3) { //simpleprocess
+                int GW = transformed->W;
+                int GH = transformed->H;
+                int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
+                int bfw = int(lp.lx + lp.lxL) + 1;
+                bufcolorig = new LabImage(bfw, bfh);
+                //    bufcoltra = new LabImage(bfw, bfh);
 
 #ifdef _OPENMP
-                    #pragma omp parallel for
+                #pragma omp parallel for
 #endif
 
-                    for(int ir = 0; ir < bfh; ir++) //fill with 0
-                        for(int jr = 0; jr < bfw; jr++) {
-                            bufcolorig->L[ir][jr] = 0.f;
-                            bufcolorig->a[ir][jr] = 0.f;
-                            bufcolorig->b[ir][jr] = 0.f;
-                            //    bufcoltra->L[ir][jr] = 0.f;
-                            //    bufcoltra->a[ir][jr] = 0.f;
-                            //    bufcoltra->b[ir][jr] = 0.f;
+                for(int ir = 0; ir < bfh; ir++) //fill with 0
+                    for(int jr = 0; jr < bfw; jr++) {
+                        bufcolorig->L[ir][jr] = 0.f;
+                        bufcolorig->a[ir][jr] = 0.f;
+                        bufcolorig->b[ir][jr] = 0.f;
+                        //    bufcoltra->L[ir][jr] = 0.f;
+                        //    bufcoltra->a[ir][jr] = 0.f;
+                        //    bufcoltra->b[ir][jr] = 0.f;
 
-                        }
+                    }
 
 #ifdef _OPENMP
 //           #pragma omp parallel for
 #endif
 
-                    for (int y = 0; y < transformed->H ; y++) //{
-                        for (int x = 0; x < transformed->W; x++) {
-                            int lox = cx + x;
-                            int loy = cy + y;
-                            int begx = int(lp.xc - lp.lxL);
-                            int begy = int(lp.yc - lp.lyT);
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int(lp.xc - lp.lxL);
+                        int begy = int(lp.yc - lp.lyT);
 
-                            if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                                bufcolorig->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
-                                bufcolorig->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
-                                bufcolorig->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
-                                //float lumprov = bufcolorig->L[loy - begy - 1][lox - begx - 1];
-                                //float lumnew = lllocalcurve[lumprov];
+                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufcolorig->L[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
+                            bufcolorig->a[loy - begy - 1][lox - begx - 1] = original->a[y][x];//fill square buffer with datas
+                            bufcolorig->b[loy - begy - 1][lox - begx - 1] = original->b[y][x];//fill square buffer with datas
+                            //float lumprov = bufcolorig->L[loy - begy - 1][lox - begx - 1];
+                            //float lumnew = lllocalcurve[lumprov];
 
-                                //float lumnew = lllocalcurve[bufcolorig->L[loy - begy - 1][lox - begx - 1]];
-                                //bufcolorig->L[loy - begy - 1][lox - begx - 1] = lumnew;
+                            //float lumnew = lllocalcurve[bufcolorig->L[loy - begy - 1][lox - begx - 1]];
+                            //bufcolorig->L[loy - begy - 1][lox - begx - 1] = lumnew;
 
-                                //    bufcoltra->L[loy - begy - 1][lox - begx - 1] = transformed->L[y][x];//fill square buffer with datas
-                                //    bufcoltra->a[loy - begy - 1][lox - begx - 1] = transformed->a[y][x];//fill square buffer with datas
-                                //    bufcoltra->b[loy - begy - 1][lox - begx - 1] = transformed->b[y][x];//fill square buffer with datas
-                            }
+                            //    bufcoltra->L[loy - begy - 1][lox - begx - 1] = transformed->L[y][x];//fill square buffer with datas
+                            //    bufcoltra->a[loy - begy - 1][lox - begx - 1] = transformed->a[y][x];//fill square buffer with datas
+                            //    bufcoltra->b[loy - begy - 1][lox - begx - 1] = transformed->b[y][x];//fill square buffer with datas
                         }
+                    }
 
 
-                }
-
-                ColorLight_Local(call, bufcolorig, bufcoltra, sp, moy, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lllocalcurve, lp, deltE, original, transformed, cx, cy);
-
-                if(call <= 3) {
-
-                    delete bufcolorig;
-                    //    delete bufcoltra;
-                }
-            }
-//inverse
-            else if(lp.inv  && (lp.chro != 0 || lp.ligh != 0)) {
-
-                InverseColorLight_Local(lp, original, transformed, cx, cy);
             }
 
+            /*
+            if(locallutili) printf("Courbe oui\n");
+            if(!locallutili) printf("Courbe NON\n");
+            if(lllocalcurve) printf("Courbe RE OUI\n");
+            if(!lllocalcurve) printf("CouRE NON\n");
+            */
 
-            if(!lp.inv  && lp.cont != 0) {   //contrast interior ellipse
-                const float pm = lp.cont < 0.f ? -1.f : 1.f;
-                float hueplus = hueref + dhue;
-                float huemoins = hueref - dhue;
+            ColorLight_Local(call, bufcolorig, bufcoltra, sp, moy, hueplus, huemoins, hueref, dhue, chromaref, lumaref, locallutili, lllocalcurve, lp, deltE, original, transformed, cx, cy);
 
-                if(hueplus > M_PI) {
-                    hueplus = hueref + dhue - 2.f * M_PI;
-                }
+            if(call <= 3) {
 
-                if(huemoins < -M_PI) {
-                    huemoins = hueref - dhue + 2.f * M_PI;
-                }
-
-                Contrast_Local(call, moy, hueplus, huemoins, hueref, dhue, chromaref, pm, lco, lumaref, av, lp, deltE, original, transformed, cx, cy);
-            } else if(lp.inv && lp.cont != 0) {
-
-                float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
-                float multH = (float) lp.cont * (maxh - 1.f) / 100.f + 1.f;
-
-                lco.ah = (multH - 1.f) / (av - 100.f); //av ==> lumaref
-                lco.bh = 1.f - 100.f * lco.ah;
-                lco.al = (multL - 1.f) / av;
-                lco.bl = 1.f;
-
-                InverseContrast_Local(ave, lco, lp, original, transformed, cx, cy);
+                delete bufcolorig;
+                //    delete bufcoltra;
             }
         }
+//inverse
+        else if(lp.inv  && (lp.chro != 0 || lp.ligh != 0) && lp.colorena) {
+
+            InverseColorLight_Local(lp, original, transformed, cx, cy);
+        }
+
+
+        if(!lp.inv  && lp.cont != 0 && lp.colorena) {   //contrast interior ellipse
+            const float pm = lp.cont < 0.f ? -1.f : 1.f;
+            float hueplus = hueref + dhue;
+            float huemoins = hueref - dhue;
+
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhue - 2.f * M_PI;
+            }
+
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhue + 2.f * M_PI;
+            }
+
+            Contrast_Local(call, moy, hueplus, huemoins, hueref, dhue, chromaref, pm, lco, lumaref, av, lp, deltE, original, transformed, cx, cy);
+        } else if(lp.inv && lp.cont != 0 && lp.colorena) {
+
+            float multL = (float)lp.cont * (maxl - 1.f) / 100.f + 1.f;
+            float multH = (float) lp.cont * (maxh - 1.f) / 100.f + 1.f;
+
+            lco.ah = (multH - 1.f) / (av - 100.f); //av ==> lumaref
+            lco.bh = 1.f - 100.f * lco.ah;
+            lco.al = (multL - 1.f) / av;
+            lco.bl = 1.f;
+
+            InverseContrast_Local(ave, lco, lp, original, transformed, cx, cy);
+        }
+
+        //     }
 
 // end contrast interior and exterior
 
 //Tone mapping
 
-
+//&& lp.tonemapena
         if(lp.strengt != 0.f  && lp.tonemapena) {
             LabImage *tmp1;
             LabImage *tmp;
@@ -4858,281 +4499,115 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
         }
 
 //begin cbdl
-        if(lp.cbdlena) {
-            if(lp.mulloc[0] != 1.f || lp.mulloc[1] != 1.f || lp.mulloc[2] != 1.f || lp.mulloc[3] != 1.f || lp.mulloc[4] != 1.f) {
-                int GW = original->W;
-                int GH = original->H;
-                float **bufsh;//buffer por square zone
-                float **loctemp;
-                float **hbuffer;
-                int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                int bfw = int(lp.lx + lp.lxL) + 1;
-                float b_l = -5.f;
-                float t_l = 25.f;
-                float t_r = 120.f;
-                float b_r = 170.f;
-                double skinprot = 0.;
-                int choice = 0;
+        if(lp.mulloc[0] != 1.f || lp.mulloc[1] != 1.f || lp.mulloc[2] != 1.f || lp.mulloc[3] != 1.f || lp.mulloc[4] != 1.f && lp.cbdlena) {
+            int GW = original->W;
+            int GH = original->H;
+            float **bufsh;//buffer por square zone
+            float **loctemp;
+            float **hbuffer;
+            int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
+            int bfw = int(lp.lx + lp.lxL) + 1;
+            float b_l = -5.f;
+            float t_l = 25.f;
+            float t_r = 120.f;
+            float b_r = 170.f;
+            double skinprot = 0.;
+            int choice = 0;
 
 
-                if(call == 2) { //call from simpleprocess
-                    bufsh   = new float*[bfh];
+            if(call == 2) { //call from simpleprocess
+                bufsh   = new float*[bfh];
 
-                    for (int i = 0; i < bfh; i++) {
-                        bufsh[i] = new float[bfw];
-                    }
+                for (int i = 0; i < bfh; i++) {
+                    bufsh[i] = new float[bfw];
+                }
 
 #ifdef _OPENMP
-                    #pragma omp parallel for
+                #pragma omp parallel for
 #endif
 
-                    for(int ir = 0; ir < bfh; ir++) //fill with 0
-                        for(int jr = 0; jr < bfw; jr++) {
-                            bufsh[ir][jr] = 0.f;
-                        }
-
-
-#ifdef _OPENMP
-//           #pragma omp parallel for
-#endif
-
-                    for (int y = 0; y < transformed->H ; y++) //{
-                        for (int x = 0; x < transformed->W; x++) {
-                            int lox = cx + x;
-                            int loy = cy + y;
-                            int begx = int(lp.xc - lp.lxL);
-                            int begy = int(lp.yc - lp.lyT);
-
-                            if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                                bufsh[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
-                            }
-                        }
-
-                    loctemp = new float*[bfh];//allocate temp
-
-                    for (int i = 0; i < bfh; i++) {
-                        loctemp[i] = new float[bfw];
+                for(int ir = 0; ir < bfh; ir++) //fill with 0
+                    for(int jr = 0; jr < bfw; jr++) {
+                        bufsh[ir][jr] = 0.f;
                     }
-
-                    hbuffer = new float*[bfh];//allocate buffer for sharp
-
-                    for (int i = 0; i < bfh; i++) {
-                        hbuffer[i] = new float[bfw];
-                    }
-
-                    ImProcFunctions::cbdl_local_temp(bufsh, bufsh, loctemp, bfw, bfh, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
-
-
-                } else { //call from dcrop.cc
-                    loctemp = new float*[GH];//allocate temp
-
-                    for (int i = 0; i < GH; i++) {
-                        loctemp[i] = new float[GW];
-                    }
-
-                    ImProcFunctions::cbdl_local_temp(original->L, original->L, loctemp, GW, GH, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
-
-                }
-
-
-                // I initialize these variable in case of !
-                float hueplus = hueref + dhue;
-                float huemoins = hueref - dhue;
-
-                if(hueplus > M_PI) {
-                    hueplus = hueref + dhue - 2.f * M_PI;
-                }
-
-                if(huemoins < -M_PI) {
-                    huemoins = hueref - dhue + 2.f * M_PI;
-                }
-
-                cbdl_Local(call, sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
-
-                if(call == 2) {
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] loctemp[i];
-                    }
-
-                    delete [] loctemp;
-
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] bufsh[i];
-                    }
-
-                    delete [] bufsh;
-
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] hbuffer[i];
-                    }
-
-                    delete [] hbuffer;
-                } else {
-                    for (int i = 0; i < GH; i++) {
-                        delete [] loctemp[i];
-                    }
-
-                    delete [] loctemp;
-
-                }
-
-
-
-            }
-
-        }
-
-//end cbdl
-        if(lp.sharpena) {
-            if(!lp.invshar && lp.shrad > 0.42 && call < 3) { //interior ellipse for sharpening, call = 1 and 2 only with Dcrop and simpleprocess
-
-                int GW = original->W;
-                int GH = original->H;
-                float **bufsh;//buffer por square zone
-                float **loctemp;
-                float **hbuffer;
-                int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
-                int bfw = int(lp.lx + lp.lxL) + 1;
-
-                if(call == 2) { //call from simpleprocess
-                    bufsh   = new float*[bfh];
-
-                    for (int i = 0; i < bfh; i++) {
-                        bufsh[i] = new float[bfw];
-                    }
-
-#ifdef _OPENMP
-                    #pragma omp parallel for
-#endif
-
-                    for(int ir = 0; ir < bfh; ir++) //fill with 0
-                        for(int jr = 0; jr < bfw; jr++) {
-                            bufsh[ir][jr] = 0.f;
-                        }
-
-                    //    int begx = int(lp.xc - lp.lxL);
-                    //    int begy = int(lp.yc - lp.lyT);
 
 
 #ifdef _OPENMP
 //           #pragma omp parallel for
 #endif
 
-                    for (int y = 0; y < transformed->H ; y++) //{
-                        for (int x = 0; x < transformed->W; x++) {
-                            int lox = cx + x;
-                            int loy = cy + y;
-                            int begx = int(lp.xc - lp.lxL);
-                            int begy = int(lp.yc - lp.lyT);
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int(lp.xc - lp.lxL);
+                        int begy = int(lp.yc - lp.lyT);
 
-                            if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                                bufsh[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
-                            }
+                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufsh[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
                         }
-
-                    loctemp = new float*[bfh];//allocate temp
-
-                    for (int i = 0; i < bfh; i++) {
-                        loctemp[i] = new float[bfw];
                     }
 
-                    hbuffer = new float*[bfh];//allocate buffer for sharp
+                loctemp = new float*[bfh];//allocate temp
 
-                    for (int i = 0; i < bfh; i++) {
-                        hbuffer[i] = new float[bfw];
-                    }
-
-
-
-                    //      ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
-                    //sharpen only square area instaed of all image
-                    ImProcFunctions::deconvsharpeningloc(bufsh, hbuffer, bfw, bfh, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
-                } else { //call from dcrop.cc
-                    loctemp = new float*[GH];//allocate temp
-
-                    for (int i = 0; i < GH; i++) {
-                        loctemp[i] = new float[GW];
-                    }
-
-                    ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
-
+                for (int i = 0; i < bfh; i++) {
+                    loctemp[i] = new float[bfw];
                 }
 
-                float hueplus = hueref + dhue;
-                float huemoins = hueref - dhue;
+                hbuffer = new float*[bfh];//allocate buffer for sharp
 
-                if(hueplus > M_PI) {
-                    hueplus = hueref + dhue - 2.f * M_PI;
+                for (int i = 0; i < bfh; i++) {
+                    hbuffer[i] = new float[bfw];
                 }
 
-                if(huemoins < -M_PI) {
-                    huemoins = hueref - dhue + 2.f * M_PI;
-                }
+                ImProcFunctions::cbdl_local_temp(bufsh, bufsh, loctemp, bfw, bfh, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
 
-                //sharpen ellipse and transition
-                Sharp_Local(call, sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
 
-                //cleann all
-                if(call == 2  && !lp.invshar) {
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] loctemp[i];
-                    }
-
-                    delete [] loctemp;
-
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] bufsh[i];
-                    }
-
-                    delete [] bufsh;
-
-                    for (int i = 0; i < bfh; i++) {
-                        delete [] hbuffer[i];
-                    }
-
-                    delete [] hbuffer;
-                } else {
-                    for (int i = 0; i < GH; i++) {
-                        delete [] loctemp[i];
-                    }
-
-                    delete [] loctemp;
-
-                }
-
-                /*            for (int i = 0; i < GH; i++) {
-                                delete [] hbuffer[i];
-                            }
-
-                            delete [] hbuffer;
-                */
-
-            } else if(lp.invshar && lp.shrad > 0.42 && call < 3 ) {
-                int GW = original->W;
-                int GH = original->H;
-
-                float **loctemp = new float*[GH];
+            } else { //call from dcrop.cc
+                loctemp = new float*[GH];//allocate temp
 
                 for (int i = 0; i < GH; i++) {
                     loctemp[i] = new float[GW];
                 }
 
-                ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
+                ImProcFunctions::cbdl_local_temp(original->L, original->L, loctemp, GW, GH, lp.mulloc, lp.threshol, skinprot, false,  b_l, t_l, t_r, b_r, choice, sk);
 
-                float hueplus = hueref + dhue;
-                float huemoins = hueref - dhue;
+            }
 
-                if(hueplus > M_PI) {
-                    hueplus = hueref + dhue - 2.f * M_PI;
+
+            // I initialize these variable in case of !
+            float hueplus = hueref + dhue;
+            float huemoins = hueref - dhue;
+
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhue - 2.f * M_PI;
+            }
+
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhue + 2.f * M_PI;
+            }
+
+            cbdl_Local(call, sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
+
+            if(call == 2) {
+                for (int i = 0; i < bfh; i++) {
+                    delete [] loctemp[i];
                 }
 
-                if(huemoins < -M_PI) {
-                    huemoins = hueref - dhue + 2.f * M_PI;
+                delete [] loctemp;
+
+                for (int i = 0; i < bfh; i++) {
+                    delete [] bufsh[i];
                 }
 
-                InverseSharp_Local(sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
-                // InverseSharp_Local(sp, loctemp, dataspot, lp, original, transformed, cx, cy);
+                delete [] bufsh;
 
+                for (int i = 0; i < bfh; i++) {
+                    delete [] hbuffer[i];
+                }
+
+                delete [] hbuffer;
+            } else {
                 for (int i = 0; i < GH; i++) {
                     delete [] loctemp[i];
                 }
@@ -5140,8 +4615,173 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 delete [] loctemp;
 
             }
+
+
+
         }
 
+//       }
+
+//end cbdl
+        if(!lp.invshar && lp.shrad > 0.42 && call < 3  && lp.sharpena) { //interior ellipse for sharpening, call = 1 and 2 only with Dcrop and simpleprocess
+
+            int GW = original->W;
+            int GH = original->H;
+            float **bufsh;//buffer por square zone
+            float **loctemp;
+            float **hbuffer;
+            int bfh = int(lp.ly + lp.lyT) + 1;//bfw bfh real size of square zone
+            int bfw = int(lp.lx + lp.lxL) + 1;
+
+            if(call == 2) { //call from simpleprocess
+                bufsh   = new float*[bfh];
+
+                for (int i = 0; i < bfh; i++) {
+                    bufsh[i] = new float[bfw];
+                }
+
+#ifdef _OPENMP
+                #pragma omp parallel for
+#endif
+
+                for(int ir = 0; ir < bfh; ir++) //fill with 0
+                    for(int jr = 0; jr < bfw; jr++) {
+                        bufsh[ir][jr] = 0.f;
+                    }
+
+                //    int begx = int(lp.xc - lp.lxL);
+                //    int begy = int(lp.yc - lp.lyT);
+
+
+#ifdef _OPENMP
+//           #pragma omp parallel for
+#endif
+
+                for (int y = 0; y < transformed->H ; y++) //{
+                    for (int x = 0; x < transformed->W; x++) {
+                        int lox = cx + x;
+                        int loy = cy + y;
+                        int begx = int(lp.xc - lp.lxL);
+                        int begy = int(lp.yc - lp.lyT);
+
+                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
+                            bufsh[loy - begy - 1][lox - begx - 1] = original->L[y][x];//fill square buffer with datas
+                        }
+                    }
+
+                loctemp = new float*[bfh];//allocate temp
+
+                for (int i = 0; i < bfh; i++) {
+                    loctemp[i] = new float[bfw];
+                }
+
+                hbuffer = new float*[bfh];//allocate buffer for sharp
+
+                for (int i = 0; i < bfh; i++) {
+                    hbuffer[i] = new float[bfw];
+                }
+
+
+
+                //      ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
+                //sharpen only square area instaed of all image
+                ImProcFunctions::deconvsharpeningloc(bufsh, hbuffer, bfw, bfh, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
+            } else { //call from dcrop.cc
+                loctemp = new float*[GH];//allocate temp
+
+                for (int i = 0; i < GH; i++) {
+                    loctemp[i] = new float[GW];
+                }
+
+                ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
+
+            }
+
+            float hueplus = hueref + dhue;
+            float huemoins = hueref - dhue;
+
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhue - 2.f * M_PI;
+            }
+
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhue + 2.f * M_PI;
+            }
+
+            //sharpen ellipse and transition
+            Sharp_Local(call, sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
+
+            //cleann all
+            if(call == 2  && !lp.invshar) {
+                for (int i = 0; i < bfh; i++) {
+                    delete [] loctemp[i];
+                }
+
+                delete [] loctemp;
+
+                for (int i = 0; i < bfh; i++) {
+                    delete [] bufsh[i];
+                }
+
+                delete [] bufsh;
+
+                for (int i = 0; i < bfh; i++) {
+                    delete [] hbuffer[i];
+                }
+
+                delete [] hbuffer;
+            } else {
+                for (int i = 0; i < GH; i++) {
+                    delete [] loctemp[i];
+                }
+
+                delete [] loctemp;
+
+            }
+
+            /*            for (int i = 0; i < GH; i++) {
+                            delete [] hbuffer[i];
+                        }
+
+                        delete [] hbuffer;
+            */
+
+        } else if(lp.invshar && lp.shrad > 0.42 && call < 3 && lp.sharpena) {
+            int GW = original->W;
+            int GH = original->H;
+
+            float **loctemp = new float*[GH];
+
+            for (int i = 0; i < GH; i++) {
+                loctemp[i] = new float[GW];
+            }
+
+            ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
+
+            float hueplus = hueref + dhue;
+            float huemoins = hueref - dhue;
+
+            if(hueplus > M_PI) {
+                hueplus = hueref + dhue - 2.f * M_PI;
+            }
+
+            if(huemoins < -M_PI) {
+                huemoins = hueref - dhue + 2.f * M_PI;
+            }
+
+            InverseSharp_Local(sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
+            // InverseSharp_Local(sp, loctemp, dataspot, lp, original, transformed, cx, cy);
+
+            for (int i = 0; i < GH; i++) {
+                delete [] loctemp[i];
+            }
+
+            delete [] loctemp;
+
+        }
+
+        //      }
+//&& lp.retiena
         if(lp.str > 0.f  && lp.retiena) {
             int GW = transformed->W;
             int GH = transformed->H;

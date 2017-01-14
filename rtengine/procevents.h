@@ -533,6 +533,8 @@ enum ProcEvent {
     EvLocenasharp = 503,
     EvLocenacbdl = 504,
     EvLocenadenoi = 505,
+    EvlocallabLHshape = 506,
+
     NUMOFEVENTS
 
 

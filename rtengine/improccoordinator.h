@@ -140,6 +140,7 @@ protected:
     RetinexgaintransmissionCurve dehagaintransmissionCurve;
     LocretigainCurve locRETgainCurve;
     LocretigainCurverab locRETgainCurverab;
+    LocLHCurve loclhCurve;
 
     ColorAppearance customColCurve1;
     ColorAppearance customColCurve2;

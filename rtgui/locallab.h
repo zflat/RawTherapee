@@ -19,7 +19,7 @@
 #include "../rtengine/improcfun.h"
 
 
-class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public rtengine::localListener, public CurveListener, public EditSubscriber
+class Locallab : public ToolParamBlock, public AdjusterListener, public FoldableToolPanel, public rtengine::localListener, public CurveListener, public EditSubscriber, public ColorProvider
 {
 private:
     int lastObject;
@@ -112,13 +112,15 @@ protected:
     MyComboBoxText*   qualityMethod;
     Gtk::Label* labmdh;
     Gtk::HBox* dhbox;
-    CurveEditorGroup* CCWcurveEditorgainT;
+    CurveEditorGroup* LocalcurveEditorgainT;
     FlatCurveEditor* cTgainshape;
-    CurveEditorGroup* CCWcurveEditorgainTrab;
+    CurveEditorGroup* LocalcurveEditorgainTrab;
     FlatCurveEditor* cTgainshaperab;
     CurveEditorGroup* llCurveEditorG;
+    CurveEditorGroup* llCurveEditorG2;
     DiagonalCurveEditor* llshape;
     Gtk::Image* irg;
+    FlatCurveEditor* LHshape;
 
     int nextdatasp[59];
     int nextlength;
@@ -180,6 +182,7 @@ public:
     void lumacontrastPlusPressed ();
     void lumacontrastMinusPressed ();
     void neutral_pressed       ();
+    virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
 
     // EditSubscriber interface
     CursorShape getCursor(int objectID);

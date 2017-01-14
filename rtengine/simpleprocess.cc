@@ -948,6 +948,8 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
         Glib::ustring datalab = imgsrc->getFileName() + ".mip";
         LocretigainCurve locRETgainCurve;
+        LocLHCurve loclhCurve;
+
         LocretigainCurverab locRETgainCurverab;
         LUTf lllocalcurve(65536, 0);
 
@@ -1129,7 +1131,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 dataspots[58][0] = params.locallab.lumaref;
 
                 //curve Reti local
-                int siz = params.locallab.ccwTgaincurve.size();
+                int siz = params.locallab.localTgaincurve.size();
 
                 if(siz > 69) {
                     siz = 69;//avoid crash
@@ -1139,7 +1141,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 int s_datcur[siz + 1];
 
                 for(int j = 0; j < siz; j++) {
-                    s_datcur[j] = (int)  (1000. * params.locallab.ccwTgaincurve[j]);
+                    s_datcur[j] = (int)  (1000. * params.locallab.localTgaincurve[j]);
                 }
 
                 std::string cur_str = "";
@@ -1413,14 +1415,13 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 delete [] s_datcl;
 
-                params.locallab.ccwTgaincurve.clear();
+                params.locallab.localTgaincurve.clear();
                 params.locallab.llcurve.clear();
 
-                params.locallab.ccwTgaincurve = cretiend;
+                params.locallab.localTgaincurve = cretiend;
                 params.locallab.llcurve = cllend;
 
-                //  int cursize = params.locallab.ccwTgaincurve.size();
-                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 bool locallutili = false;
                 CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve, 1);
 

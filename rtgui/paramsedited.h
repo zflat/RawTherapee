@@ -468,9 +468,10 @@ public:
     bool inversrad;
     bool inversret;
     bool inverssha;
-    bool ccwTgaincurve;
-    bool ccwTgaincurverab;
+    bool localTgaincurve;
+    bool localTgaincurverab;
     bool llcurve;
+    bool LHcurve;
     bool chrrt;
     bool mult[5];
     bool threshold;

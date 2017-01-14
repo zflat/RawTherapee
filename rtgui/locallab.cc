@@ -170,6 +170,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     std::vector<double> defaultCurve;
     std::vector<double> defaultCurve2;
     std::vector<double> defaultCurve2rab;
+    std::vector<double> defaultCurve3;
 
     irg   = Gtk::manage (new RTImage ("Chanmixer-RG.png"));
 
@@ -177,24 +178,37 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     llCurveEditorG->setCurveListener (this);
 
     rtengine::LocallabParams::getDefaultLLCurve(defaultCurve);
-//   llshape = static_cast<DiagonalCurveEditor*>(llCurveEditorG->addCurve(CT_Diagonal, M("TP_LOCALLAB_LL"), irg, false));
     llshape = static_cast<DiagonalCurveEditor*>(llCurveEditorG->addCurve(CT_Diagonal, "L*"));
     llshape->setResetCurve(DiagonalCurveType(defaultCurve.at(0)), defaultCurve);
     llshape->setTooltip(M("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
-//    lshape->setEditID(EUID_Lab_LCurve, BT_SINGLEPLANE_FLOAT);
-
-    /*
-     //   llshape->setLeftBarColorProvider(this, 1);
-        llshape->setRangeDefaultMilestones(0.25, 0.5, 0.75);
-        milestones.push_back( GradientMilestone(0., 0., 0., 0.) );
-        milestones.push_back( GradientMilestone(1., 1., 1., 1.) );
-
-        llshape->setBottomBarBgGradient(milestones);
-    */
     milestones.push_back( GradientMilestone(0., 0., 0., 0.) );
     milestones.push_back( GradientMilestone(1., 1., 1., 1.) );
     llshape->setBottomBarBgGradient(milestones);
     llshape->setLeftBarBgGradient(milestones);
+
+    llCurveEditorG2 = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_LUM"));
+    llCurveEditorG2->setCurveListener (this);
+
+    rtengine::LocallabParams::getDefaultLHCurve(defaultCurve3);
+
+    LHshape = static_cast<FlatCurveEditor*>(llCurveEditorG2->addCurve(CT_Flat, "", nullptr, false, false));
+
+    LHshape->setIdentityValue(0.);
+    LHshape->setResetCurve(FlatCurveType(defaultCurve3.at(0)), defaultCurve3);
+    LHshape->setTooltip(M("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
+    LHshape->setCurveColorProvider(this, 1);
+    milestones.clear();
+
+    for (int i = 0; i < 7; i++) {
+        float R, G, B;
+        float x = float(i) * (1.0f / 6.0);
+        Color::hsv2rgb01(x, 0.5f, 0.5f, R, G, B);
+        milestones.push_back( GradientMilestone(double(x), double(R), double(G), double(B)) );
+    }
+
+    LHshape->setBottomBarBgGradient(milestones);
+
+    llCurveEditorG2->curveListComplete();
 
     llCurveEditorG->curveListComplete();
 
@@ -310,34 +324,47 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
 //    std::vector<double> defaultCurve;
 
-    CCWcurveEditorgainT = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAIN"));
-    CCWcurveEditorgainT->setCurveListener (this);
-    rtengine::LocallabParams::getDefaultCCWgainCurveT(defaultCurve2);
+    LocalcurveEditorgainT = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAIN"));
+    LocalcurveEditorgainT->setCurveListener (this);
+    rtengine::LocallabParams::getDefaultLocalgainCurveT(defaultCurve2);
 
-    cTgainshape = static_cast<FlatCurveEditor*>(CCWcurveEditorgainT->addCurve(CT_Flat, "", nullptr, false, false));
+
+    cTgainshape = static_cast<FlatCurveEditor*>(LocalcurveEditorgainT->addCurve(CT_Flat, "", nullptr, false, false));
+
     cTgainshape->setIdentityValue(0.);
     cTgainshape->setResetCurve(FlatCurveType(defaultCurve2.at(0)), defaultCurve2);
     cTgainshape->setTooltip(M("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
+    /*
+        cTgainshape->setCurveColorProvider(this, 1);
+        milestones.clear();
+
+        for (int i = 0; i < 7; i++) {
+            float R, G, B;
+            float x = float(i) * (1.0f / 6.0);
+            Color::hsv2rgb01(x, 0.5f, 0.5f, R, G, B);
+            milestones.push_back( GradientMilestone(double(x), double(R), double(G), double(B)) );
+        }
+
+        cTgainshape->setBottomBarBgGradient(milestones);
+    */
+
+    LocalcurveEditorgainTrab = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAINRAB"));
+    LocalcurveEditorgainTrab->setCurveListener (this);
+
+    rtengine::LocallabParams::getDefaultLocalgainCurveTrab(defaultCurve2rab);
 
 
-
-    CCWcurveEditorgainTrab = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAINRAB"));
-    CCWcurveEditorgainTrab->setCurveListener (this);
-
-    rtengine::LocallabParams::getDefaultCCWgainCurveTrab(defaultCurve2rab);
-
-
-    cTgainshaperab = static_cast<FlatCurveEditor*>(CCWcurveEditorgainTrab->addCurve(CT_Flat, "", nullptr, false, false));
+    cTgainshaperab = static_cast<FlatCurveEditor*>(LocalcurveEditorgainTrab->addCurve(CT_Flat, "", nullptr, false, false));
 
 
     cTgainshaperab->setIdentityValue(0.);
     cTgainshaperab->setResetCurve(FlatCurveType(defaultCurve2rab.at(0)), defaultCurve2rab);
     cTgainshaperab->setTooltip(M("TP_RETINEX_GAINTRANSMISSIONRAB_TOOLTIP"));
 
-    CCWcurveEditorgainT->curveListComplete();
-    CCWcurveEditorgainT->show();
-    CCWcurveEditorgainTrab->curveListComplete();
-    CCWcurveEditorgainTrab->show();
+    LocalcurveEditorgainT->curveListComplete();
+    LocalcurveEditorgainT->show();
+    LocalcurveEditorgainTrab->curveListComplete();
+    LocalcurveEditorgainTrab->show();
 
 //    retiFrame->add(*retiBox);
 //    pack_start (*retiFrame);
@@ -497,6 +524,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start(*llCurveEditorG, Gtk::PACK_SHRINK, 2);
+    colorVBox->pack_start(*llCurveEditorG2, Gtk::PACK_SHRINK, 2);
 
     colorVBox->pack_start (*invers);
 
@@ -533,9 +561,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     retiBox->pack_start (*sensih);
     retiBox->pack_start (*retrab);
 
-    retiBox->pack_start(*CCWcurveEditorgainTrab, Gtk::PACK_SHRINK, 4);
+    retiBox->pack_start(*LocalcurveEditorgainTrab, Gtk::PACK_SHRINK, 4);
 
-    retiBox->pack_start(*CCWcurveEditorgainT, Gtk::PACK_SHRINK, 4);
+    retiBox->pack_start(*LocalcurveEditorgainT, Gtk::PACK_SHRINK, 4);
     retiBox->pack_start (*inversret);
 
     expreti->add(*retiBox);
@@ -637,9 +665,10 @@ Locallab::~Locallab()
         delete *i;
     }
 
-    delete CCWcurveEditorgainT;
-    delete CCWcurveEditorgainTrab;
+    delete LocalcurveEditorgainT;
+    delete LocalcurveEditorgainTrab;
     delete llCurveEditorG;
+    delete llCurveEditorG2;
 
 }
 void Locallab::foldAllButMe (GdkEventButton* event, MyExpander *expander)
@@ -817,7 +846,8 @@ void Locallab::lumacontrastMinusPressed ()
 void Locallab::autoOpenCurve ()
 {
     cTgainshape->openIfNonlinear();
-    llshape->openIfNonlinear();
+    //  llshape->openIfNonlinear();
+    //  LHshape->openIfNonlinear();
 
 }
 
@@ -1303,10 +1333,11 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
         inverssha->set_inconsistent (multiImage && !pedited->locallab.inverssha);
-        cTgainshape->setUnChanged  (!pedited->locallab.ccwTgaincurve);
+        cTgainshape->setUnChanged  (!pedited->locallab.localTgaincurve);
         llshape->setUnChanged  (!pedited->locallab.llcurve);
+        LHshape->setUnChanged  (!pedited->locallab.LHcurve);
         inversret->set_inconsistent (multiImage && !pedited->locallab.inversret);
-        cTgainshaperab->setUnChanged  (!pedited->locallab.ccwTgaincurverab);
+        cTgainshaperab->setUnChanged  (!pedited->locallab.localTgaincurverab);
         expcolor->set_inconsistent   (!pedited->locallab.expcolor);
         expblur->set_inconsistent   (!pedited->locallab.expblur);
         exptonemap->set_inconsistent   (!pedited->locallab.exptonemap);
@@ -1392,9 +1423,10 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     anbspot->setValue (pp->locallab.anbspot);
     vart->setValue (pp->locallab.vart);
     chrrt->setValue (pp->locallab.chrrt);
-    cTgainshape->setCurve (pp->locallab.ccwTgaincurve);
-    cTgainshaperab->setCurve (pp->locallab.ccwTgaincurverab);
+    cTgainshape->setCurve (pp->locallab.localTgaincurve);
+    cTgainshaperab->setCurve (pp->locallab.localTgaincurverab);
     llshape->setCurve (pp->locallab.llcurve);
+    LHshape->setCurve (pp->locallab.LHcurve);
     lastactivlum = pp->locallab.activlum;
     lastanbspot = pp->locallab.anbspot;
     noiselumf->setValue (pp->locallab.noiselumf);
@@ -1631,9 +1663,10 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.anbspot = anbspot->getIntValue ();
     pp->locallab.vart = vart->getIntValue ();
     pp->locallab.chrrt = chrrt->getIntValue ();
-    pp->locallab.ccwTgaincurve       = cTgainshape->getCurve ();
-    pp->locallab.ccwTgaincurverab       = cTgainshaperab->getCurve ();
+    pp->locallab.localTgaincurve       = cTgainshape->getCurve ();
+    pp->locallab.localTgaincurverab       = cTgainshaperab->getCurve ();
     pp->locallab.llcurve       = llshape->getCurve ();
+    pp->locallab.LHcurve       = LHshape->getCurve ();
     pp->locallab.expcolor      = expcolor->getEnabled();
     pp->locallab.expblur      = expblur->getEnabled();
     pp->locallab.exptonemap      = exptonemap->getEnabled();
@@ -1701,9 +1734,10 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.anbspot = anbspot->getEditedState ();
         pedited->locallab.vart = vart->getEditedState ();
         pedited->locallab.chrrt = chrrt->getEditedState ();
-        pedited->locallab.ccwTgaincurve        = !cTgainshape->isUnChanged ();
-        pedited->locallab.ccwTgaincurverab        = !cTgainshaperab->isUnChanged ();
+        pedited->locallab.localTgaincurve        = !cTgainshape->isUnChanged ();
+        pedited->locallab.localTgaincurverab        = !cTgainshaperab->isUnChanged ();
         pedited->locallab.llcurve        = !llshape->isUnChanged ();
+        pedited->locallab.LHcurve        = !LHshape->isUnChanged ();
         pedited->locallab.expcolor     = !expcolor->get_inconsistent();
         pedited->locallab.expblur     = !expblur->get_inconsistent();
         pedited->locallab.exptonemap     = !exptonemap->get_inconsistent();
@@ -1787,6 +1821,9 @@ void Locallab::curveChanged (CurveEditor* ce)
 
         else if (ce == cTgainshaperab) {
             listener->panelChanged (EvlocallabCTgainCurverab, M("HISTORY_CUSTOMCURVE"));
+        } else if (ce == LHshape) {
+            listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+
         } else if (ce == llshape) {
             listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
             int strval = retrab->getValue();
@@ -1806,7 +1843,8 @@ void Locallab::curveChanged (CurveEditor* ce)
 void Locallab::retinexMethodChanged()
 {
     retrab->hide();
-    CCWcurveEditorgainTrab->hide();
+    LocalcurveEditorgainTrab->hide();
+    llCurveEditorG2->hide();
 
     if (listener) {
         listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
@@ -2519,9 +2557,10 @@ void Locallab::setBatchMode (bool batchMode)
     nbspot->showEditedCB ();
     anbspot->showEditedCB ();
     vart->showEditedCB ();
-    CCWcurveEditorgainT->setBatchMode (batchMode);
-    CCWcurveEditorgainTrab->setBatchMode (batchMode);
+    LocalcurveEditorgainT->setBatchMode (batchMode);
+    LocalcurveEditorgainTrab->setBatchMode (batchMode);
     llCurveEditorG->setBatchMode (batchMode);
+    llCurveEditorG2->setBatchMode (batchMode);
     chrrt->showEditedCB ();
 
     for (int i = 0; i < 5; i++) {
@@ -2548,6 +2587,50 @@ void Locallab::editToggled ()
         unsubscribe();
     }
 }
+
+void Locallab::colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller *caller)
+{
+
+    float R, G, B;
+
+    if (elemType == ColorCaller::CCET_VERTICAL_BAR) {
+        valY = 0.5;
+    }
+
+    if (callerId == 1) {         // ch - main curve
+
+        Color::hsv2rgb01(float(valX), float(valY), 0.5f, R, G, B);
+    } else if (callerId == 2) {  // cc - bottom bar
+
+        float value = (1.f - 0.7f) * float(valX) + 0.7f;
+        // whole hue range
+        // Y axis / from 0.15 up to 0.75 (arbitrary values; was 0.45 before)
+        Color::hsv2rgb01(float(valY), float(valX), value, R, G, B);
+    } else if (callerId == 3) {  // lc - bottom bar
+
+        float value = (1.f - 0.7f) * float(valX) + 0.7f;
+        // Y axis / from 0.15 up to 0.75 (arbitrary values; was 0.45 before)
+        Color::hsv2rgb01(float(valY), float(valX), value, R, G, B);
+    } else if (callerId == 4) {  // LH - bottom bar
+        Color::hsv2rgb01(float(valX), 0.5f, float(valY), R, G, B);
+    } else if (callerId == 5) {  // HH - bottom bar
+        float h = float((valY - 0.5) * 0.3 + valX);
+
+        if (h > 1.0f) {
+            h -= 1.0f;
+        } else if (h < 0.0f) {
+            h += 1.0f;
+        }
+
+        Color::hsv2rgb01(h, 0.5f, 0.5f, R, G, B);
+    }
+
+    caller->ccRed = double(R);
+    caller->ccGreen = double(G);
+    caller->ccBlue = double(B);
+}
+
+
 
 CursorShape Locallab::getCursor(int objectID)
 {

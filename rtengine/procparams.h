@@ -47,6 +47,8 @@ class RetinextransmissionCurve;
 class RetinexgaintransmissionCurve;
 class LocretigainCurve;
 class LocretigainCurverab;
+class LocLHCurve;
+
 
 enum RenderingIntent {
     RI_PERCEPTUAL = INTENT_PERCEPTUAL,
@@ -927,9 +929,10 @@ public:
     int     anbspot;
     int     vart;
     int     chrrt;
-    std::vector<double>   ccwTgaincurve;
-    std::vector<double>   ccwTgaincurverab;
+    std::vector<double>   localTgaincurve;
+    std::vector<double>   localTgaincurverab;
     std::vector<double> llcurve;
+    std::vector<double> LHcurve;
 
     double mult[5];
     double threshold;
@@ -939,10 +942,11 @@ public:
         setDefaults();
     }
     void setDefaults();
-    void getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab) const;
-    static void getDefaultCCWgainCurveT(std::vector<double> &curve);
-    static void getDefaultCCWgainCurveTrab(std::vector<double> &curve);
+    void getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab, LocLHCurve & lhCurve) const;
+    static void getDefaultLocalgainCurveT(std::vector<double> &curve);
+    static void getDefaultLocalgainCurveTrab(std::vector<double> &curve);
     static void getDefaultLLCurve(std::vector<double> &curve);
+    static void getDefaultLHCurve(std::vector<double> &curve);
 
 };
 

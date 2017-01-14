@@ -839,7 +839,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                         //10003
                         //std::string t_curvll = "3000A0B0C200D200E800F800G1000H1000I";
                         //std::string t_curvll = "0A";
-                        std::string t_curvll = "3000A0B0C1000D1000E";//with that it works !
+                        std::string t_curvll = "3000A0B0C499D501E1000F1000G";// "3000A0B0C1000D1000E";//with that it works !
 
                         //all variables except locRETgainCurve 'coomon for all)
                         fic << "Mipversion=" << t_mipversion << '@' << endl;
@@ -1044,7 +1044,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
                 //curve Reti local
-                int siz = params.locallab.ccwTgaincurve.size();
+                int siz = params.locallab.localTgaincurve.size();
 
                 if(siz > 69) {
                     siz = 69;    //to avoid crash
@@ -1054,7 +1054,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 int s_datcur[siz + 1];
 
                 for(int j = 0; j < siz; j++) {
-                    s_datcur[j] = reticurvs[0 + j] = (int)  (1000. * params.locallab.ccwTgaincurve[j]);
+                    s_datcur[j] = reticurvs[0 + j] = (int)  (1000. * params.locallab.localTgaincurve[j]);
                 }
 
                 std::string cur_str = "";
@@ -1240,7 +1240,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             if(versionmip == 10002) {
 
                 for(int sp = 1; sp < maxspot; sp++) { // spots default
-                    std::string ll_str = "3000A0B0C1000D1000E"; //"3000A0B0C200D200E800F800G1000H1000I";//"0A"
+                    std::string ll_str = "3000A0B0C499D501E1000F1000G"; //"3000A0B0C1000D1000E"; //"3000A0B0C200D200E800F800G1000H1000I";//"0A"
                     llstr[sp] = ll_str + "@";
                 }
             }
@@ -1317,7 +1317,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                     //10003
                     //std::string t_curvll = "3000A0B0C200D200E800F800G1000H1000I";//8 points
                     //std::string t_curvll = "0A";//0 points
-                    std::string t_curvll = "3000A0B0C1000D1000E";//0 points with marks
+                    std::string t_curvll = "3000A0B0C499D501E1000F1000G"; //"3000A0B0C1000D1000E";//0 points with marks
 
                     //all variables except locRETgainCurve 'coomon for all)
                     fic << "Mipversion=" << t_mipversion << '@' << endl;
@@ -1652,16 +1652,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 delete [] s_datcl;
 
-                params.locallab.ccwTgaincurve.clear();
-                params.locallab.ccwTgaincurve = cretiend;
+                params.locallab.localTgaincurve.clear();
+                params.locallab.localTgaincurve = cretiend;
 
-                int lenc = params.locallab.ccwTgaincurve.size();
+                int lenc = params.locallab.localTgaincurve.size();
 
                 params.locallab.llcurve.clear();
                 params.locallab.llcurve = cllend;
 
                 locallutili = false;
-                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve, sca);//scale == 1 ? 1 : 16);
 
                 ipf.Lab_Local(3, sp, (float**)shbuffer, nprevl, nprevl, 0, 0, 0, 0, pW, pH, fw, fh, locutili, scale, locRETgainCurve, locallutili, lllocalcurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
@@ -1866,10 +1866,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
             }
 
-            params.locallab.ccwTgaincurve.clear();
-            params.locallab.ccwTgaincurve = cretiend;
+            params.locallab.localTgaincurve.clear();
+            params.locallab.localTgaincurve = cretiend;
 
-            int lenc = params.locallab.ccwTgaincurve.size();
+            int lenc = params.locallab.localTgaincurve.size();
 
 
             delete [] s_datc;
@@ -1896,7 +1896,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete [] s_datcl;
 
 
-            params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+            params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
             locallutili = false;
             CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve, sca);//scale == 1 ? 1 : 16);
 

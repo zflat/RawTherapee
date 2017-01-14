@@ -803,6 +803,8 @@ void Crop::update (int todo)
         LUTu dummy;
         bool needslocal = params.locallab.enabled;
         LocretigainCurve locRETgainCurve;
+        LocLHCurve loclhCurve;
+
         LocretigainCurverab locRETgainCurverab;
         locallutili = false;
         int sca = skip;
@@ -941,8 +943,8 @@ void Crop::update (int todo)
                             cretie.push_back((double) (parent->reticurvs[sp * 500 + j]) / 1000.);
                         }
 
-                        params.locallab.ccwTgaincurve.clear();
-                        params.locallab.ccwTgaincurve = cretie;
+                        params.locallab.localTgaincurve.clear();
+                        params.locallab.localTgaincurve = cretie;
 
                         std::vector<double>   llc;
 
@@ -953,7 +955,7 @@ void Crop::update (int todo)
                         params.locallab.llcurve.clear();
                         params.locallab.llcurve = llc;
 
-                        params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                        params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                         locallutili = false;
                         CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve2, sca);
 
@@ -975,7 +977,7 @@ void Crop::update (int todo)
                 int sp ;
                 sp = realspot;
                 bool locutili2 = parent->locutili;
-                //    params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                //    params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 locallutili = false;
 
 
@@ -1132,8 +1134,8 @@ void Crop::update (int todo)
                     parent->reticurvs[sp * 500 + j] = parent->reticurvs[0 * 500 + j];
                 }
 
-                params.locallab.ccwTgaincurve.clear();
-                params.locallab.ccwTgaincurve = ccret;
+                params.locallab.localTgaincurve.clear();
+                params.locallab.localTgaincurve = ccret;
 
                 std::vector<double>   llcL;
 
@@ -1145,7 +1147,7 @@ void Crop::update (int todo)
                 params.locallab.llcurve.clear();
                 params.locallab.llcurve = llcL;
 
-                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab);
+                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 locallutili = false;
 
                 CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve2, sca);// skip == 1 ? 1 : 16);
