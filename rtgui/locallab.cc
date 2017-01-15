@@ -121,11 +121,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     Smethod->set_active(0);
     Smethodconn = Smethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::SmethodChanged) );
 
-    locX = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH"), 0, 2000, 1, 250));
+    locX = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locX->setAdjusterListener (this);
 
-    locXL = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH_L"), 0, 2000, 1, 250));
+    locXL = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH_L"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locXL->setAdjusterListener (this);
 
@@ -133,11 +133,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     //degree->set_tooltip_text (M("TP_LOCAL_DEGREE_TOOLTIP"));
     degree->setAdjusterListener (this);
 
-    locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 2000, 1, 250));
+    locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locY->setAdjusterListener (this);
 
-    locYT = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT_T"), 0, 2000, 1, 250));
+    locYT = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT_T"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locYT->setAdjusterListener (this);
 
