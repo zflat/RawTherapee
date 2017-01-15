@@ -1013,7 +1013,11 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
             std::string *retistrs;
             retistrs = new std::string[maxspot];
             std::string *llstrs;
+
             llstrs = new std::string[maxspot];
+            std::string *lhstrs;
+
+            lhstrs = new std::string[maxspot];
 
             {
                 dataspots[2][0] =  params.locallab.circrad;
@@ -1174,6 +1178,28 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 llstrs[0] = ll_str + "@";
 
 
+                int sizh = params.locallab.LHcurve.size();
+
+                if(sizh > 69) {
+                    sizh = 69;
+                }
+
+                int s_curh[sizh + 1];
+                int s_datcurh[sizh + 1];
+
+                for(int j = 0; j < sizh; j++) {
+                    s_datcurh[j] = (int)  (1000. * params.locallab.LHcurve[j]);
+                }
+
+                std::string lh_str = "";
+
+                for(int j = 0; j < sizl; j++) {
+                    lh_str = lh_str + std::to_string(s_datcurh[j]) + delim[j];
+                }
+
+                lhstrs[0] = lh_str + "@";
+
+
             }
             locallutili = false;
 
@@ -1188,6 +1214,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 int cont = 0;
                 int sizecu;
                 int sizell;
+                int sizelh;
 
                 while (getline(fich, line)) {
                     spotline = line;
@@ -1261,6 +1288,23 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                     }
 
+                    if(spotline.substr(0, pos) == "curveLH") {
+                        std::string curstrh;
+                        int longecurh;
+                        std::string strendh = spotline.substr (posend - 1, 1);
+                        std::size_t poszh = spotline.find(strendh);
+                        int longeh;
+
+                        for(int sh = 0; sh < 69; sh++) {
+                            if(delim[sh] == strendh) {
+                                longeh = sh + 1;
+                            }
+                        }
+
+                        lhstrs[ns] = str3;
+                        sizelh = longeh;
+                        //printf("lecture strLH=%s ns=%i  si=%i\n",  lhstr[ns].c_str(), ns, sizelh);
+                    }
 
                 }
 
@@ -1415,11 +1459,30 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
                 delete [] s_datcl;
 
+
+                int *s_datch;
+                s_datch = new int[70];
+                int sizh;
+
+                ipf.strcurv_data (lhstrs[sp], s_datch, sizh);
+
+
+                std::vector<double>   clhend;
+
+                for(int j = 0; j < sizh; j++) {
+                    clhend.push_back((double) (s_datch[j]) / 1000.);
+                }
+
+
                 params.locallab.localTgaincurve.clear();
                 params.locallab.llcurve.clear();
+                params.locallab.LHcurve.clear();
 
                 params.locallab.localTgaincurve = cretiend;
                 params.locallab.llcurve = cllend;
+                params.locallab.LHcurve = clhend;
+
+
 
                 params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 bool locallutili = false;
@@ -1442,6 +1505,7 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
 
             delete [] retistrs;
             delete [] llstrs;
+            delete [] lhstrs;
 
             if(params.locallab.inverssha) {
 

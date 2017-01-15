@@ -175,11 +175,6 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     lp.senscb = local_sensicb;
     lp.cont = local_contrast;
     lp.ligh = local_lightness;
-    /*
-        if(fabs(lp.ligh < 2.f)) {
-            lp.ligh /= 5.f;
-        }
-    */
     lp.trans = local_transit;
     lp.rad = radius;
     lp.stren = strength;
@@ -2544,11 +2539,11 @@ static void calclight (float lum, int  koef, float & lumnew, bool inv)
         blac = 0.99f;
     }
 
-    if(koef > 0.f) {
+    if(koef > 0) {
         lumnew = lum + 0.2f * (33000.f - lum) * (float) koef / 100.f;
     }
 
-    if(koef < 0.f) {
+    if(koef < 0) {
         lumnew = lum + blac * lum * (float) koef / 100.f;//0.999 instead of 0.2
 
         if(lumnew < 0.f) {
