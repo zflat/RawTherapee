@@ -178,7 +178,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     llCurveEditorG->setCurveListener (this);
 
     rtengine::LocallabParams::getDefaultLLCurve(defaultCurve);
-    llshape = static_cast<DiagonalCurveEditor*>(llCurveEditorG->addCurve(CT_Diagonal, "L*"));
+    llshape = static_cast<DiagonalCurveEditor*>(llCurveEditorG->addCurve(CT_Diagonal, "L(L)"));
     llshape->setResetCurve(DiagonalCurveType(defaultCurve.at(0)), defaultCurve);
     llshape->setTooltip(M("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
     milestones.push_back( GradientMilestone(0., 0., 0., 0.) );
@@ -186,16 +186,14 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     llshape->setBottomBarBgGradient(milestones);
     llshape->setLeftBarBgGradient(milestones);
 
-    llCurveEditorG2 = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_LUM"));
-    llCurveEditorG2->setCurveListener (this);
 
     rtengine::LocallabParams::getDefaultLHCurve(defaultCurve3);
 
-    LHshape = static_cast<FlatCurveEditor*>(llCurveEditorG2->addCurve(CT_Flat, "", nullptr, false, false));
+    LHshape = static_cast<FlatCurveEditor*>(llCurveEditorG->addCurve(CT_Flat, "L(H)", nullptr, false, true));
 
     LHshape->setIdentityValue(0.);
     LHshape->setResetCurve(FlatCurveType(defaultCurve3.at(0)), defaultCurve3);
-    LHshape->setTooltip(M("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
+    LHshape->setTooltip(M("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
     LHshape->setCurveColorProvider(this, 1);
     milestones.clear();
 
@@ -208,11 +206,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
     LHshape->setBottomBarBgGradient(milestones);
 
-    llCurveEditorG2->curveListComplete();
 
     llCurveEditorG->curveListComplete();
 
-//    pack_start( *llCurveEditorG, Gtk::PACK_SHRINK, 2);
 
 
     lightness = Gtk::manage (new Adjuster (M("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
@@ -524,7 +520,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
     colorVBox->pack_start(*llCurveEditorG, Gtk::PACK_SHRINK, 2);
-    colorVBox->pack_start(*llCurveEditorG2, Gtk::PACK_SHRINK, 2);
+    //  colorVBox->pack_start(*llCurveEditorG2, Gtk::PACK_SHRINK, 2);
 
     colorVBox->pack_start (*invers);
 
@@ -668,7 +664,7 @@ Locallab::~Locallab()
     delete LocalcurveEditorgainT;
     delete LocalcurveEditorgainTrab;
     delete llCurveEditorG;
-    delete llCurveEditorG2;
+//    delete llCurveEditorG2;
 
 }
 void Locallab::foldAllButMe (GdkEventButton* event, MyExpander *expander)
@@ -906,6 +902,19 @@ bool Locallab::localretComputed_ ()
 
     llshape->setCurve (cll);
 
+    int *s_datch;
+    s_datch = new int[70];
+    int sizh;
+    ImProcFunctions::strcurv_data (nextlh_str2, s_datch, sizh);
+    std::vector<double>   clh;
+
+    for(int j = 0; j < sizh; j++) {
+        clh.push_back((double) (s_datch[j]) / 1000.);
+    }
+
+    delete [] s_datch;
+
+    LHshape->setCurve (clh);
 
 
     enableListener ();
@@ -968,6 +977,10 @@ bool Locallab::localretComputed_ ()
 
     if (listener) {//for curve
         listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
+    }
+
+    if (listener) {//for curve
+        listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
     }
 
 
@@ -1140,6 +1153,22 @@ bool Locallab::localComputed_ ()
     llshape->setCurve (cll);
 
 
+    //LHcurv
+    int *s_datch;
+    s_datch = new int[70];
+    int sizh;
+    ImProcFunctions::strcurv_data (nextlh_str, s_datch, sizh);
+
+
+    std::vector<double>   clh;
+
+    for(int j = 0; j < sizh; j++) {
+        clh.push_back((double) (s_datch[j]) / 1000.);
+    }
+
+    delete [] s_datch;
+    LHshape->setCurve (clh);
+
 
     //  usleep(10000);
 
@@ -1239,11 +1268,14 @@ bool Locallab::localComputed_ ()
         listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
     }
 
+    if (listener) {//for curve LH
+        listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+    }
 
     return false;
 }
 
-void Locallab::localChanged  (int **datasp, std::string datastr, std::string ll_str, int sp, int maxdat)
+void Locallab::localChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat)
 {
     for(int i = 2; i < 59; i++) {//58
         nextdatasp[i] = datasp[i][sp];
@@ -1251,15 +1283,19 @@ void Locallab::localChanged  (int **datasp, std::string datastr, std::string ll_
 
     nextstr = datastr;
     nextll_str = ll_str;
+    nextlh_str = lh_str;
+
     nextlength = maxdat;
     g_idle_add (localChangedUI, this);
 }
 
-void Locallab::localretChanged  (int **datasp, std::string datastr, std::string ll_str, int sp, int maxdat)
+void Locallab::localretChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat)
 {
     nextlength = maxdat;
     nextstr2 = datastr;
     nextll_str2 = ll_str;
+    nextlh_str2 = lh_str;
+
     g_idle_add (localretChangedUI, this);
 }
 
@@ -1823,6 +1859,15 @@ void Locallab::curveChanged (CurveEditor* ce)
             listener->panelChanged (EvlocallabCTgainCurverab, M("HISTORY_CUSTOMCURVE"));
         } else if (ce == LHshape) {
             listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+            int strval = retrab->getValue();
+            //update MIP
+            retrab->setValue(strval + 1);
+            adjusterChanged(retrab, strval + 1);
+            usleep(10000);//to test
+            retrab->setValue(strval);
+
+            adjusterChanged(retrab, strval);
+
 
         } else if (ce == llshape) {
             listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
@@ -1844,7 +1889,7 @@ void Locallab::retinexMethodChanged()
 {
     retrab->hide();
     LocalcurveEditorgainTrab->hide();
-    llCurveEditorG2->hide();
+    //  llCurveEditorG2->hide();
 
     if (listener) {
         listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
@@ -2560,7 +2605,7 @@ void Locallab::setBatchMode (bool batchMode)
     LocalcurveEditorgainT->setBatchMode (batchMode);
     LocalcurveEditorgainTrab->setBatchMode (batchMode);
     llCurveEditorG->setBatchMode (batchMode);
-    llCurveEditorG2->setBatchMode (batchMode);
+//    llCurveEditorG2->setBatchMode (batchMode);
     chrrt->showEditedCB ();
 
     for (int i = 0; i < 5; i++) {

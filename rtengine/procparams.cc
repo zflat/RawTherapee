@@ -1020,12 +1020,12 @@ void LocallabParams::getDefaultLocalgainCurveTrab(std::vector<double> &curve)
 
 void LocallabParams::getDefaultLLCurve(std::vector<double> &curve)
 {
-    double v[6] = { 0.00, 0.00,
-                    0.499, 0.501,
+    double v[4] = { 0.00, 0.00,
+                    //  0.499, 0.501,
                     1.00, 1.00
                   };
 
-    curve.resize(7);
+    curve.resize(5);
     curve.at(0) = double(DCT_NURBS);
 
     for (size_t i = 1; i < curve.size(); ++i) {

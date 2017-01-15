@@ -59,7 +59,8 @@ struct local_params {
     int cir;
     float thr;
     int prox;
-    int chro, cont, ligh, sens, sensh, senscb, sensbn, senstm;
+    int chro, cont, sens, sensh, senscb, sensbn, senstm;
+    float ligh;
     int shamo, shdamp, shiter, senssha;
     double shrad;
     double rad;
@@ -144,7 +145,7 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     int local_sensih = locallab.sensih;
     int local_sensicb = locallab.sensicb;
     int local_contrast = locallab.contrast;
-    int local_lightness = locallab.lightness;
+    float local_lightness = (float) locallab.lightness;
     int local_transit = locallab.transit;
     double radius = (double) locallab.radius;
     double sharradius = ((double) locallab.sharradius) / 100. ;
@@ -174,6 +175,11 @@ static void calcLocalParams(int oW, int oH, const LocallabParams& locallab, stru
     lp.senscb = local_sensicb;
     lp.cont = local_contrast;
     lp.ligh = local_lightness;
+
+    if(fabs(lp.ligh < 2.f)) {
+        lp.ligh /= 5.f;
+    }
+
     lp.trans = local_transit;
     lp.rad = radius;
     lp.stren = strength;
@@ -2528,16 +2534,9 @@ void ImProcFunctions::InverseContrast_Local(float ave, const local_contra & lco,
     }
 }
 
-static void calclight (float lum, int  koef, float & lumnew, bool inv)
-//replace L-curve that does not work in local
+static void calclight (float lum, float  koef, float & lumnew, bool inv)
+//replace L-curve that does not work in local or bad
 {
-    int zac = 0;
-
-    if(!inv) {
-        zac = 1;
-    }
-
-    //printf("koef=%i zac=%i\n", koef, zac);
 
     float blac = 0.3f;
 
@@ -2545,27 +2544,20 @@ static void calclight (float lum, int  koef, float & lumnew, bool inv)
         blac = 0.99f;
     }
 
-    if(koef > 0) {
-        lumnew = lum + 0.2f * (33000.f - lum) * (float) koef / 100.f;
-        /*
-                if(lumnew > 32500.f) {
-                    float kc = 32500.f / lumnew;
-                    lumnew = lum + kc * 0.2f * (33000.f - lum) * (float)koef / 100.f;
-
-                }
-        */
+    if(koef > 0.f) {
+        lumnew = lum + 0.2f * (33000.f - lum) * koef / 100.f;
     }
 
-    if(koef < 0) {
-        lumnew = lum + blac * lum * (float)koef / 100.f;//0.999 instead of 0.2
+    if(koef < 0.f) {
+        lumnew = lum + blac * lum * koef / 100.f;//0.999 instead of 0.2
 
         if(lumnew < 0.f) {
             float kc = lum / (lum - lumnew);
-            lumnew = lum + kc * 0.2f * lum * (float)koef / 100.f;
+            lumnew = lum + kc * 0.2f * lum * koef / 100.f;
 
         }
 
-        if(inv == false && koef == -100) {
+        if(inv == false && koef == -100.f) {
             lumnew = 0.f;
         }
 
@@ -3039,7 +3031,7 @@ void ImProcFunctions::Sharp_Local(int call, int sp, float **loctemp, const float
 
 
 
-void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage * bufcoltra, int sp, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, bool locallutili, LUTf & lllocalcurve, const local_params & lp, float ** deltE, LabImage * original, LabImage * transformed, int cx, int cy)
+void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage * bufcoltra, int sp, float moy, const float hueplus, const float huemoins, const float hueref, const float dhue, const float chromaref, const float lumaref, bool locallutili, LUTf & lllocalcurve, const LocLHCurve & loclhCurve, const local_params & lp, float ** deltE, LabImage * original, LabImage * transformed, int cx, int cy)
 {
     // BENCHFUN
 // chroma and lightness
@@ -3452,8 +3444,7 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
 
                                     float lightcont;
 
-                                    if(lp.ligh != 0) {
-                                        //   calclight (original->L[y][x], lp.ligh , lumnew);
+                                    if(lp.ligh != 0.f) {
                                         calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
 
                                         if(lllocalcurve) {
@@ -3463,21 +3454,32 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
                                             lightcont = lumnew;
                                         }
 
+                                        if(loclhCurve) {
+                                            float l_r;//Luminance Lab in 0..1
+                                            l_r = lightcont / 32768.f;
+                                            {
+                                                float khu = 1.9f; //in reserve in case of!
+
+                                                float valparam = float((loclhCurve[500.f * Color::huelab_to_huehsv2(rhue)] - 0.5f)); //get l_r=f(H)
+                                                float valparamneg;
+                                                valparamneg = valparam;
+
+                                                if(valparam > 0.f) {
+                                                    l_r = (1.f - valparam) * l_r + valparam * (1.f - SQR(((SQR(1.f - min(l_r, 1.0f))))));
+                                                } else
+                                                    //for negative
+                                                {
+                                                    l_r *= (1.f + khu * valparamneg);
+                                                }
+                                            }
+
+                                            lightcont = l_r * 32768.f;
+                                        }
+
                                     } else {
                                         lightcont = lumnew;
                                     }
 
-                                    /*
-                                                                        //  printf("ligh=%i\n", lp.ligh);
-                                                                        if(lp.ligh != 0) {
-                                                                            calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
-                                                                        }
-
-
-                                                                        float lumprov = lllocalcurve[lumnew * 1.9f];
-                                                                        float lightcont = 0.526316f * lumprov;
-                                    */
-                                    //original->L[y][x] + (lp.ligh /100.f)*original->L[y][x] ; //apply lightness
                                     float factorx = localFactor;
                                     float fac = (100.f + factorx * realchro * falu) / 100.f; //chroma factor transition
                                     //   float diflc = lightcont - bufcolorig->L[loy - begy - 1][lox - begx - 1];
@@ -3503,12 +3505,10 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
                                 }
 
                                 case 2: { // inside selection => full effect, no transition
-                                    //  float lightcont = original->L[y][x] + (lp.ligh /100.f)*original->L[y][x]; //apply lightness
-                                    //  float lumnew = original->L[y][x];
                                     float lumnew = bufcolorig->L[loy - begy - 1][lox - begx - 1];
                                     float lightcont;
 
-                                    if(lp.ligh != 0) {
+                                    if(lp.ligh != 0.f) {
                                         //   calclight (original->L[y][x], lp.ligh , lumnew);
                                         calclight (bufcolorig->L[loy - begy - 1][lox - begx - 1], lp.ligh , lumnew, true);//replace L-curve
 
@@ -3517,6 +3517,28 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
                                             lightcont = 0.526316f * lumprov;
                                         } else {
                                             lightcont = lumnew;
+                                        }
+
+                                        if(loclhCurve) {
+                                            float l_r;//Luminance Lab in 0..1
+                                            l_r = lightcont / 32768.f;
+                                            {
+                                                float khu = 1.9f;
+
+                                                float valparam = float((loclhCurve[500.f * Color::huelab_to_huehsv2(rhue)] - 0.5f)); //get l_r=f(H)
+                                                float valparamneg;
+                                                valparamneg = valparam;
+
+                                                if(valparam > 0.f) {
+                                                    l_r = (1.f - valparam) * l_r + valparam * (1.f - SQR(((SQR(1.f - min(l_r, 1.0f))))));
+                                                } else
+                                                    //for negative
+                                                {
+                                                    l_r *= (1.f + khu * valparamneg);
+                                                }
+                                            }
+
+                                            lightcont = l_r * 32768.f;
                                         }
 
                                     } else {
@@ -3623,7 +3645,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params & lp, La
                 case 0: { // outside selection and outside transition zone => no effect, keep original values
                     float lumnew = original->L[y][x];
 
-                    if(lp.ligh != 0) {
+                    if(lp.ligh != 0.f) {
                         calclight (original->L[y][x], lp.ligh , lumnew, false);
                     }
 
@@ -3643,7 +3665,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params & lp, La
                     float fac = (100.f + factorx * lp.chro) / 100.f; //chroma factor transition
                     float lumnew = original->L[y][x];
 
-                    if(lp.ligh != 0) {
+                    if(lp.ligh != 0.f) {
                         calclight (original->L[y][x], lp.ligh , lumnew, false);
                     }
 
@@ -3670,8 +3692,7 @@ void ImProcFunctions::InverseColorLight_Local(const struct local_params & lp, La
 
 }
 
-
-void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * original, LabImage * transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, bool locallutili, LUTf & lllocalcurve, double & hueref, double & chromaref, double & lumaref)
+void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * original, LabImage * transformed, int sx, int sy, int cx, int cy, int oW, int oH,  int fw, int fh, bool locutili, int sk, const LocretigainCurve & locRETgainCcurve, bool locallutili, LUTf & lllocalcurve, const LocLHCurve & loclhCurve, double & hueref, double & chromaref, double & lumaref)
 {
     //general call of others functions : important return hueref, chromaref, lumaref
     if(params->locallab.enabled) {
@@ -4297,7 +4318,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
 // && lp.colorena
         //   printf("Ligh = %i \n", lp.ligh);
 
-        if(!lp.inv  && (lp.chro != 0 || lp.ligh != 0) && lp.colorena) { // || lllocalcurve)) { //interior ellipse renforced lightness and chroma  //locallutili
+        if(!lp.inv  && (lp.chro != 0 || lp.ligh != 0.f) && lp.colorena) { // || lllocalcurve)) { //interior ellipse renforced lightness and chroma  //locallutili
             float maxhur = -10.f;
             float minhur = 10.f;
             float hueplus = hueref + dhue;
@@ -4374,7 +4395,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             if(!lllocalcurve) printf("CouRE NON\n");
             */
 
-            ColorLight_Local(call, bufcolorig, bufcoltra, sp, moy, hueplus, huemoins, hueref, dhue, chromaref, lumaref, locallutili, lllocalcurve, lp, deltE, original, transformed, cx, cy);
+            ColorLight_Local(call, bufcolorig, bufcoltra, sp, moy, hueplus, huemoins, hueref, dhue, chromaref, lumaref, locallutili, lllocalcurve, loclhCurve, lp, deltE, original, transformed, cx, cy);
 
             if(call <= 3) {
 
@@ -4383,7 +4404,7 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             }
         }
 //inverse
-        else if(lp.inv  && (lp.chro != 0 || lp.ligh != 0) && lp.colorena) {
+        else if(lp.inv  && (lp.chro != 0 || lp.ligh != 0.f) && lp.colorena) {
 
             InverseColorLight_Local(lp, original, transformed, cx, cy);
         }

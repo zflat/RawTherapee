@@ -216,6 +216,7 @@ protected:
     int **dataspot;
     std::string *retistr;
     std::string *llstr;
+    std::string *lhstr;
 
     LUTi circrads;
     LUTi centerx;
@@ -278,6 +279,8 @@ protected:
     LUTi retrabs;
     LUTi llcurvs;
     LUTi sizellcs;
+    LUTi lhcurvs;
+    LUTi sizelhcs;
 
     LUTf huerefs;
     LUTf chromarefs;

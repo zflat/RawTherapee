@@ -955,6 +955,15 @@ void Crop::update (int todo)
                         params.locallab.llcurve.clear();
                         params.locallab.llcurve = llc;
 
+                        std::vector<double>   lhc;
+
+                        for(int j = 0; j < parent->sizelhcs[sp]; j++) {
+                            lhc.push_back((double) (parent->lhcurvs[sp * 500 + j]) / 1000.);
+                        }
+
+                        params.locallab.LHcurve.clear();
+                        params.locallab.LHcurve = lhc;
+
                         params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                         locallutili = false;
                         CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve2, sca);
@@ -963,7 +972,7 @@ void Crop::update (int todo)
                         params.locallab.chromaref = parent->chromarefs[sp];
                         params.locallab.lumaref = parent->lumarefs[sp];
 
-                        parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, locallutili, lllocalcurve2, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                        parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                         lllocalcurve2.clear();
 
                         if(skip <= 2) {
@@ -1147,6 +1156,16 @@ void Crop::update (int todo)
                 params.locallab.llcurve.clear();
                 params.locallab.llcurve = llcL;
 
+                std::vector<double>   lhcL;
+
+                for(int j = 0; j < parent->sizelhcs[sp]; j++) {
+                    lhcL.push_back((double) (parent->lhcurvs[0 * 500 + j]) / 1000.);
+                    parent->lhcurvs[sp * 500 + j] = parent->lhcurvs[0 * 500 + j] ;
+                }
+
+                params.locallab.LHcurve.clear();
+                params.locallab.LHcurve = lhcL;
+
                 params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 locallutili = false;
 
@@ -1157,7 +1176,7 @@ void Crop::update (int todo)
                 params.locallab.chromaref = parent->chromarefs[sp];
                 params.locallab.lumaref = parent->lumarefs[sp];
 
-                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, locallutili, lllocalcurve2, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 lllocalcurve2.clear();
 
 

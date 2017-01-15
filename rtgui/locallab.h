@@ -117,7 +117,6 @@ protected:
     CurveEditorGroup* LocalcurveEditorgainTrab;
     FlatCurveEditor* cTgainshaperab;
     CurveEditorGroup* llCurveEditorG;
-    CurveEditorGroup* llCurveEditorG2;
     DiagonalCurveEditor* llshape;
     Gtk::Image* irg;
     FlatCurveEditor* LHshape;
@@ -128,6 +127,8 @@ protected:
     std::string nextstr2;
     std::string nextll_str;
     std::string nextll_str2;
+    std::string nextlh_str;
+    std::string nextlh_str2;
 
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
@@ -171,8 +172,8 @@ public:
     void inversshaChanged ();
     void curveChanged (CurveEditor* ce);
     void autoOpenCurve ();
-    void localChanged           (int **datasp, std::string datastr, std::string ll_str, int sp, int maxdat);
-    void localretChanged           (int **datasp, std::string datastr, std::string ll_str, int sp, int maxdat);
+    void localChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat);
+    void localretChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat);
     bool localComputed_         ();
     bool localretComputed_         ();
     void setEditProvider (EditDataProvider* provider);
