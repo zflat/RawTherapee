@@ -986,9 +986,7 @@ void Crop::update (int todo)
                 int sp ;
                 sp = realspot;
                 bool locutili2 = parent->locutili;
-                //    params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
                 locallutili = false;
-
 
                 parent->sps[sp] = sp;
                 parent->circrads[sp] = params.locallab.circrad = parent->circrads[0];

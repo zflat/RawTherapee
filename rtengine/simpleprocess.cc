@@ -1516,8 +1516,6 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
                 delete [] shbuffer;
             }
 
-            //   printf("ok sim 5\n");
-
 
         }
 

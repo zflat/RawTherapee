@@ -762,8 +762,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             if(fic.fail() || versionmip == 0  || params.locallab.nbspot == 0) { //initialize mip with default values if no file or old file to prevent crash
 
                 ofstream fic(datalab, ios::out | ios::trunc);  // ouverture en écriture avec effacement du fichier ouvert
-                //ios::ate end of file ==
-                //ios::app append at the end of file
 
                 if(params.locallab.nbspot == 0) {
                     params.locallab.nbspot = 1;
@@ -835,11 +833,9 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                         //versionmip = 10002 Reticurv
                         int t_retrab = 500;
-                        // 24 points     string t_curvret = "1000A0B100C350D0E220F180G350H350I450J210K350L350M680N550O350P350Q880R550S350T350U1000V170W0X0Y";
 
                         std::string t_curvret = "1000A0B120C350D350E700F500G350H350I1000J120K350L350M";//12 points
                         //10003
-                        //std::string t_curvll = "3000A0B0C200D200E800F800G1000H1000I";
                         //std::string t_curvll = "0A";
                         std::string t_curvll = "3000A0B0C1000D1000E"; //"3000A0B0C499D501E1000F1000G";// "3000A0B0C1000D1000E";//with that it works !
 
@@ -1318,7 +1314,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                 for(int sp = ns + 1 ; sp < maxspot; sp++) { // spots default
                     int t_sp = sp;
-                    // string t_Smethod = "IND";//prov can be suppress after!
                     int t_mipversion = 10004;
                     int t_circrad = 18;
                     int t_locX = 250;
@@ -1380,13 +1375,10 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                     std::string t_curvret = "1000A0B120C350D350E700F500G350H350I1000J120K350L350M";//12 points
                     //10003
-                    //std::string t_curvll = "3000A0B0C200D200E800F800G1000H1000I";//8 points
-                    //std::string t_curvll = "0A";//0 points
                     std::string t_curvll = "3000A0B0C1000D1000E"; //"3000A0B0C499D501E1000F1000G"; //"3000A0B0C1000D1000E";//0 points with marks
                     //10004
                     std::string t_curvlh = "1000A0B500C350D350E166F500G350H350I333J500K350L350M500N500O350P350Q666R500S350T350U833V500W350X350Y";
 
-                    //all variables except locRETgainCurve 'coomon for all)
                     fic << "Mipversion=" << t_mipversion << '@' << endl;
                     fic << "Spot=" << t_sp << '@' << endl;
                     fic << "Circrad=" << t_circrad << '@' << endl;
@@ -1559,7 +1551,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
                     }
 
-                    fich2.close();
+                    fich2.close() ;
+
                 }
 
 
@@ -2023,10 +2016,6 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             params.locallab.LHcurve = clhend;
 
             delete [] s_datch;
-
-
-
-
 
             params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
             locallutili = false;

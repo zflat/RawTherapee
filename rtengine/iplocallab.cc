@@ -1267,90 +1267,6 @@ void ImProcFunctions::BlurNoise_Local(int call, int sp, LabImage * tmp1, const f
     }
 }
 
-
-/*
-void ImProcFunctions::BlurNoise_Localold(int call, const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy)
-{
-//local blur and noise
-    //BENCHFUN
-
-    const float ach = (float)lp.trans / 100.f;
-
-    #pragma omp parallel for schedule(dynamic,16) if (multiThread)
-
-    for (int y = 0; y < transformed->H; y++) {
-        int loy = cy + y;
-
-        for (int x = 0; x < transformed->W; x++) {
-            int lox = cx + x;
-
-            int zone;
-            float localFactor;
-            calcTransition(lox, loy, ach, lp, zone, localFactor);
-            int begx = int(lp.xc - lp.lxL);
-            int begy = int(lp.yc - lp.lyT);
-
-            switch(zone) {
-                case 0: { // outside selection and outside transition zone => no effect, keep original values
-                    transformed->L[y][x] = original->L[y][x];
-                    transformed->a[y][x] = original->a[y][x];
-                    transformed->b[y][x] = original->b[y][x];
-                    break;
-                }
-
-                case 1: { // inside transition zone
-                    float factorx = localFactor;
-                    float difL, difa, difb;
-
-                    if(call == 2) {//simpleprocess
-                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                            difL = tmp1->L[loy - begy - 1][lox - begx - 1] - original->L[y][x];
-                            difa = tmp1->a[loy - begy - 1][lox - begx - 1] - original->a[y][x];
-                            difb = tmp1->b[loy - begy - 1][lox - begx - 1] - original->b[y][x];
-                        }
-                    } else {
-                        difL = tmp1->L[y][x] - original->L[y][x];
-                        difa = tmp1->a[y][x] - original->a[y][x];
-                        difb = tmp1->b[y][x] - original->b[y][x];
-                    }
-
-                    difL *= factorx;
-                    difa *= factorx;
-                    difb *= factorx;
-                    transformed->L[y][x] = original->L[y][x] + difL;
-                    transformed->a[y][x] = original->a[y][x] + difa;
-                    transformed->b[y][x] = original->b[y][x] + difb;
-
-                    break;
-                }
-
-                case 2: { // inside selection => full effect, no transition
-                    float difL, difa, difb;
-
-                    if(call == 2) {//simpleprocess
-
-                        if(lox >= (lp.xc - lp.lxL) && lox < (lp.xc + lp.lx) && loy >= (lp.yc - lp.lyT) && loy < (lp.yc + lp.ly)) {
-                            difL = tmp1->L[loy - begy - 1][lox - begx - 1] - original->L[y][x];
-                            difa = tmp1->a[loy - begy - 1][lox - begx - 1] - original->a[y][x];
-                            difb = tmp1->b[loy - begy - 1][lox - begx - 1] - original->b[y][x];
-                        }
-                    } else {
-                        difL = tmp1->L[y][x] - original->L[y][x];
-                        difa = tmp1->a[y][x] - original->a[y][x];
-                        difb = tmp1->b[y][x] - original->b[y][x];
-
-                    }
-
-                    transformed->L[y][x] = original->L[y][x] + difL;
-                    transformed->a[y][x] = original->a[y][x] + difa;
-                    transformed->b[y][x] = original->b[y][x] + difb;
-
-                }
-            }
-        }
-    }
-}
-*/
 void ImProcFunctions::InverseReti_Local(const struct local_params& lp, LabImage* original, LabImage* transformed, const LabImage* const tmp1, int cx, int cy, int chro)
 {
     // BENCHFUN
@@ -3565,58 +3481,12 @@ void ImProcFunctions::ColorLight_Local(int call, LabImage * bufcolorig, LabImage
 
                                 }
 
-                                    /*
-                                                                        transformed->L[y][x] = CLIPL(original->L[y][x] + diflc);
-
-                                                                        if(fabs(kab) > 1.f) {
-                                                                            transformed->a[y][x] = CLIPC(original->a[y][x] * fac) ;
-                                                                            transformed->b[y][x] = CLIPC(original->a[y][x] * fac) / kab;
-                                                                        } else {
-                                                                            transformed->b[y][x] = CLIPC(original->b[y][x] * fac);
-                                                                            transformed->a[y][x] = CLIPC(original->b[y][x] * fac) * kab;
-
-                                                                        }
-                                    */
-
                             }
-
-                            //      if(rL > maxrl) maxrl = rL;
-                            //      if(rL < minrl) minrl = rL;
-
-
-                            /*
-                                                if(transformed->L[y][x] > maxl) {
-                                                    maxl = transformed->L[y][x];
-                                                }
-
-                                                if(transformed->L[y][x] < minl) {
-                                                    minl = transformed->L[y][x];
-                                                }
-
-                                                if(transformed->a[y][x] > maxa) {
-                                                    maxa = transformed->a[y][x];
-                                                }
-
-                                                if(transformed->a[y][x] < mina) {
-                                                    mina = transformed->a[y][x];
-                                                }
-
-                                                if(transformed->b[y][x] > maxb) {
-                                                    maxb = transformed->b[y][x];
-                                                }
-
-                                                if(transformed->b[y][x] < minb) {
-                                                    minb = transformed->b[y][x];
-                                                }
-                            */
                         }
                     }
                 }
             }
         }
-
-        //  printf("maxRL=%f minRL=%f\n", maxrl, minrl);
-        //     printf("sp=%i ML=%f ml=%f Ma=%f ma=%f Mb=%f mb=%f\n", sp, maxl / 327.f, minl / 327.f, maxa / 327.f, mina / 327.f, maxb / 327.f, minb / 327.f);
 
 
     }
@@ -3703,8 +3573,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
 // init variables to display Munsell corrections
         MunsellDebugInfo* MunsDebugInfo = new MunsellDebugInfo();
 #endif
-//ImProcFunctions ipf;
-
 
 
         int GW = transformed->W;
@@ -3910,7 +3778,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 }
 
 
-
             } else {
                 tmp1 = new LabImage(transformed->W, transformed->H);;
 
@@ -3943,8 +3810,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 if(huemoins < -M_PI) {
                     huemoins = hueref - dhue + 2.f * M_PI;
                 }
-
-                // BlurNoise_Localold(call, lp, original, transformed, tmp1, cx, cy);
 
                 BlurNoise_Local(call, sp, tmp1, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
 
@@ -4177,7 +4042,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                 float madab[8][3];
                 int edge;
 
-//           if(!Ldecomp->memoryAllocationFailed) {
                 if(!Ldecomp->memoryAllocationFailed) {
 
                     for (int lvl = 0; lvl < levred; lvl++) {
@@ -4315,8 +4179,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
 
         }
 
-// && lp.colorena
-        //   printf("Ligh = %i \n", lp.ligh);
 
         if(!lp.inv  && (lp.chro != 0 || lp.ligh != 0.f) && lp.colorena) { // || lllocalcurve)) { //interior ellipse renforced lightness and chroma  //locallutili
             float maxhur = -10.f;
@@ -4352,9 +4214,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                         bufcolorig->L[ir][jr] = 0.f;
                         bufcolorig->a[ir][jr] = 0.f;
                         bufcolorig->b[ir][jr] = 0.f;
-                        //    bufcoltra->L[ir][jr] = 0.f;
-                        //    bufcoltra->a[ir][jr] = 0.f;
-                        //    bufcoltra->b[ir][jr] = 0.f;
 
                     }
 
@@ -4670,9 +4529,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                         bufsh[ir][jr] = 0.f;
                     }
 
-                //    int begx = int(lp.xc - lp.lxL);
-                //    int begy = int(lp.yc - lp.lyT);
-
 
 #ifdef _OPENMP
 //           #pragma omp parallel for
@@ -4702,9 +4558,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                     hbuffer[i] = new float[bfw];
                 }
 
-
-
-                //      ImProcFunctions::deconvsharpeningloc(original->L, shbuffer, GW, GH, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
                 //sharpen only square area instaed of all image
                 ImProcFunctions::deconvsharpeningloc(bufsh, hbuffer, bfw, bfh, loctemp, params->locallab.shardamping, (double)params->locallab.sharradius / 100., params->locallab.shariter, params->locallab.sharamount);
             } else { //call from dcrop.cc
@@ -4791,7 +4644,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             }
 
             InverseSharp_Local(sp, loctemp, hueplus, huemoins, hueref, dhue, chromaref, lumaref, lp, deltE, original, transformed, cx, cy);
-            // InverseSharp_Local(sp, loctemp, dataspot, lp, original, transformed, cx, cy);
 
             for (int i = 0; i < GH; i++) {
                 delete [] loctemp[i];
@@ -4807,7 +4659,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
             int GW = transformed->W;
             int GH = transformed->H;
 
-            // float **bufreti;//buffer por square zone
             LabImage *bufreti;
 
             float **loctemp;
@@ -4853,8 +4704,6 @@ void ImProcFunctions::Lab_Local(int call, int sp, float** shbuffer, LabImage * o
                         bufreti->b[ir][jr] = 0.f;
                     }
 
-                //    int begx = int(lp.xc - lp.lxL);
-                //    int begy = int(lp.yc - lp.lyT);
 
 
 #ifdef _OPENMP
