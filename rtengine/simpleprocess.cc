@@ -946,7 +946,20 @@ IImage16* processImage (ProcessingJob* pjob, int& errorCode, ProgressListener* p
         MyTime t1, t2;
         t1.set();
 
-        Glib::ustring datalab = imgsrc->getFileName() + ".mip";
+        //Glib::ustring datalab = imgsrc->getFileName() + ".mip";
+
+        Glib::ustring pop = options.getUserProfilePath() + "/";
+        Glib::ustring datalab;
+
+        if(options.mip == MI_opt) {
+            datalab = pop + Glib::path_get_basename (imgsrc->getFileName () + ".mip");
+        }
+
+        if(options.mip == MI_prev) {
+            datalab = imgsrc->getFileName() + ".mip";
+        }
+
+
         LocretigainCurve locRETgainCurve;
         LocLHCurve loclhCurve;
 

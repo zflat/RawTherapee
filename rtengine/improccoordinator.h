@@ -51,6 +51,8 @@ class ImProcCoordinator : public StagedImageProcessor
 {
 
     friend class Crop;
+private:
+
 
 protected:
     Imagefloat *orig_prev;

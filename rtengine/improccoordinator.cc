@@ -712,9 +712,30 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
              */
 
 
+            //  Glib::ustring datalab = imgsrc->getFileName() + ".mip";
+            //  printf("mip file=%s \n", datalab.c_str());
+            Glib::ustring pop = options.getUserProfilePath() + "/";
+            Glib::ustring datal;
 
-            Glib::ustring datalab = imgsrc->getFileName() + ".mip";
-            ifstream fic0(datalab, ios::in);
+            if(options.mip == MI_opt) {
+                datal = pop + Glib::path_get_basename (imgsrc->getFileName () + ".mip");
+            }
+
+            if(options.mip == MI_prev) {
+                datal = imgsrc->getFileName() + ".mip";
+            }
+
+            /*
+            //test to see if wofstream and wifstream works with NON ASCII, but it's bad
+                        wofstream test(datal, ios::out);
+                        if(test.fail()) printf("ca va pas\n");
+                        else ("ca va bien\n");
+                        test.close();
+            */
+            ifstream fic0(datal, ios::in);
+
+            printf("mip files in=%s\n", datal.c_str());
+            //    if(! fic0.fail())    {
             float **shbuffer;
             versionmip = 0;
             int maxdat;
@@ -754,14 +775,16 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 fic0.close();
             }
 
-            ifstream fic(datalab, ios::in);
+            printf("mipvers=%i\n", versionmip);
+            ifstream fic(datal, ios::in);
             bool reinit = false;
+
             //printf("versionmip=%i  nbspot=%i\n", versionmip, params.locallab.nbspot) ;
 
 
             if(fic.fail() || versionmip == 0  || params.locallab.nbspot == 0) { //initialize mip with default values if no file or old file to prevent crash
 
-                ofstream fic(datalab, ios::out | ios::trunc);  // ouverture en écriture avec effacement du fichier ouvert
+                ofstream fic(datal, ios::out | ios::trunc);  // ouverture en écriture avec effacement du fichier ouvert
 
                 if(params.locallab.nbspot == 0) {
                     params.locallab.nbspot = 1;
@@ -1141,7 +1164,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             bool excurvll = true;
             bool excurvlh = true;
 
-            ifstream fich(datalab, ios::in);
+            ifstream fich(datal, ios::in);
 
             if (fich) {//may be a file with versionmip = 10000
                 //    if(versionmip == 10000) add new blank fields for tone-mapping because TM is 10001
@@ -1309,7 +1332,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
 
 
             if(ns <  (maxspot - 1)) {
-                ofstream fic(datalab, ios::out | ios::app);  // ouverture en écriture avec effacement du fichier ouvert
+                ofstream fic(datal, ios::out | ios::app);  // ouverture en écriture avec effacement du fichier ouvert
 
 
                 for(int sp = ns + 1 ; sp < maxspot; sp++) { // spots default
@@ -1447,7 +1470,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
                 fic.close();
 
 
-                ifstream fich2(datalab, ios::in);
+                ifstream fich2(datal, ios::in);
 
                 if (fich2) {
 
@@ -2031,7 +2054,7 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             nextParams.locallab.lumaref = params.locallab.lumaref;
 
 
-            ofstream fou(datalab, ios::out | ios::trunc);
+            ofstream fou(datal, ios::out | ios::trunc);
 
             if(fou)
 
@@ -2189,8 +2212,8 @@ void ImProcCoordinator::updatePreviewImage (int todo, Crop* cropCall)
             delete [] lhstr;
 
 
+            //          }
         }
-
 
 
         histCCurve.clear();

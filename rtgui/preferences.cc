@@ -494,6 +494,21 @@ Gtk::Widget* Preferences::getProcParamsPanel ()
     fdp->add (*vbdp);
     mvbpp->pack_start (*fdp, Gtk::PACK_SHRINK, 4);
 
+    Gtk::Frame* fmip = Gtk::manage (new Gtk::Frame (M("PREFERENCES_MIP")));
+    Gtk::HBox* hbmip = Gtk::manage (new Gtk::HBox (false, 4));
+    Gtk::Label* lmip = Gtk::manage (new Gtk::Label (M("PREFERENCES_MIP_LABEL")));
+    cmip = Gtk::manage (new Gtk::ComboBoxText ());
+    cmip->append_text (M("PREFERENCES_MIP_PREV"));
+    cmip->append_text (M("PREFERENCES_MIP_OPT"));
+    cmip->set_active (1);
+    cmip->set_tooltip_text(M("PREFERENCES_MIP_TOOLTIP"));
+
+    hbmip->pack_start (*lmip, Gtk::PACK_SHRINK);
+    hbmip->pack_start (*cmip);
+    fmip->add (*hbmip);
+    hbmip->set_border_width(4);
+    mvbpp->pack_start (*fmip, Gtk::PACK_SHRINK, 4);
+
     Gtk::Frame* fdf = Gtk::manage (new Gtk::Frame (M("PREFERENCES_DARKFRAME")) );
     Gtk::HBox* hb42 = Gtk::manage (new Gtk::HBox ());
     darkFrameDir = Gtk::manage(new Gtk::FileChooserButton(M("PREFERENCES_DIRDARKFRAMES"), Gtk::FILE_CHOOSER_ACTION_SELECT_FOLDER));
@@ -548,6 +563,8 @@ Gtk::Widget* Preferences::getProcParamsPanel ()
     vbmd->pack_start (*ckbTunnelMetaData, Gtk::PACK_SHRINK, 4);
     fmd->add (*vbmd);
     mvbpp->pack_start (*fmd, Gtk::PACK_SHRINK, 4);
+
+
 
     return mvbpp;
 }
@@ -729,13 +746,14 @@ Gtk::Widget* Preferences::getColorManagementPanel ()
     Gtk::Label* mplabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONPROFILE") + ":", Gtk::ALIGN_LEFT));
 
     monIntent = Gtk::manage (new Gtk::ComboBoxText ());
-    Gtk::Label* milabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONINTENT")+":", Gtk::ALIGN_LEFT));
+    Gtk::Label* milabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_MONINTENT") + ":", Gtk::ALIGN_LEFT));
 
     monProfile->set_size_request(80, -1);
     monProfile->append_text (M("PREFERENCES_PROFILE_NONE"));
     monProfile->set_active (0);
 
     const std::vector<Glib::ustring> profiles = rtengine::ICCStore::getInstance ()->getProfiles (rtengine::ICCStore::ProfileType::MONITOR);
+
     for (const auto profile : profiles) {
         monProfile->append_text (profile);
     }
@@ -793,15 +811,17 @@ Gtk::Widget* Preferences::getColorManagementPanel ()
     Gtk::Label* pplabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_PRTPROFILE") + ":", Gtk::ALIGN_LEFT));
 
     prtIntent = Gtk::manage (new Gtk::ComboBoxText ());
-    Gtk::Label* pilabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_PRTINTENT")+":", Gtk::ALIGN_LEFT));
+    Gtk::Label* pilabel = Gtk::manage (new Gtk::Label (M("PREFERENCES_PRTINTENT") + ":", Gtk::ALIGN_LEFT));
 
     prtProfile->set_size_request(80, -1);
     prtProfile->append_text (M("PREFERENCES_PROFILE_NONE"));
     prtProfile->set_active (0);
 
     const std::vector<Glib::ustring> prtprofiles = rtengine::ICCStore::getInstance ()->getProfiles (rtengine::ICCStore::ProfileType::PRINTER);
-    for (const auto prtprofile : prtprofiles)
+
+    for (const auto prtprofile : prtprofiles) {
         prtProfile->append_text (prtprofile);
+    }
 
     // same order as the enum
     prtIntent->append_text (M("PREFERENCES_INTENT_PERCEPTUAL"));
@@ -1554,38 +1574,47 @@ void Preferences::storePreferences ()
     } else {
         moptions.rtSettings.printerProfile = prtProfile->get_active_text ();
     }
+
     switch (prtIntent->get_active_row_number ()) {
-    default:
-    case 0:
-        moptions.rtSettings.printerIntent = rtengine::RI_PERCEPTUAL;
-        break;
-    case 1:
-        moptions.rtSettings.printerIntent = rtengine::RI_RELATIVE;
-        break;
-    case 2:
-        moptions.rtSettings.printerIntent = rtengine::RI_ABSOLUTE;
-        break;
+        default:
+        case 0:
+            moptions.rtSettings.printerIntent = rtengine::RI_PERCEPTUAL;
+            break;
+
+        case 1:
+            moptions.rtSettings.printerIntent = rtengine::RI_RELATIVE;
+            break;
+
+        case 2:
+            moptions.rtSettings.printerIntent = rtengine::RI_ABSOLUTE;
+            break;
     }
+
     moptions.rtSettings.printerBPC = prtBPC->get_active ();
 
 #if !defined(__APPLE__) // monitor profile not supported on apple
+
     if (!monProfile->get_active_row_number()) {
         moptions.rtSettings.monitorProfile = "";
     } else {
         moptions.rtSettings.monitorProfile = monProfile->get_active_text ();
     }
+
     switch (monIntent->get_active_row_number ()) {
-    default:
-    case 0:
-        moptions.rtSettings.monitorIntent = rtengine::RI_PERCEPTUAL;
-        break;
-    case 1:
-        moptions.rtSettings.monitorIntent = rtengine::RI_RELATIVE;
-        break;
-    case 2:
-        moptions.rtSettings.monitorIntent = rtengine::RI_ABSOLUTE;
-        break;
+        default:
+        case 0:
+            moptions.rtSettings.monitorIntent = rtengine::RI_PERCEPTUAL;
+            break;
+
+        case 1:
+            moptions.rtSettings.monitorIntent = rtengine::RI_RELATIVE;
+            break;
+
+        case 2:
+            moptions.rtSettings.monitorIntent = rtengine::RI_ABSOLUTE;
+            break;
     }
+
     moptions.rtSettings.monitorBPC = monBPC->get_active ();
 #if defined(WIN32)
     moptions.rtSettings.autoMonitorProfile  = cbAutoMonProfile->get_active ();
@@ -1609,6 +1638,7 @@ void Preferences::storePreferences ()
 
     moptions.prevdemo = (prevdemo_t)cprevdemo->get_active_row_number ();
     moptions.serializeTiffRead = ctiffserialize->get_active();
+    moptions.mip = (mip_t)cmip->get_active_row_number ();
 
     if (sdcurrent->get_active ()) {
         moptions.startupDir = STARTUPDIR_CURRENT;
@@ -1704,34 +1734,42 @@ void Preferences::fillPreferences ()
     ctiffserialize->set_active(moptions.serializeTiffRead);
 
     setActiveTextOrIndex (*prtProfile, moptions.rtSettings.printerProfile, 0);
+
     switch (moptions.rtSettings.printerIntent) {
-    default:
-    case rtengine::RI_PERCEPTUAL:
-        prtIntent->set_active (0);
-        break;
-    case rtengine::RI_RELATIVE:
-        prtIntent->set_active (1);
-        break;
-    case rtengine::RI_ABSOLUTE:
-        prtIntent->set_active (2);
-        break;
+        default:
+        case rtengine::RI_PERCEPTUAL:
+            prtIntent->set_active (0);
+            break;
+
+        case rtengine::RI_RELATIVE:
+            prtIntent->set_active (1);
+            break;
+
+        case rtengine::RI_ABSOLUTE:
+            prtIntent->set_active (2);
+            break;
     }
+
     prtBPC->set_active (moptions.rtSettings.printerBPC);
 
 #if !defined(__APPLE__) // monitor profile not supported on apple
     setActiveTextOrIndex (*monProfile, moptions.rtSettings.monitorProfile, 0);
+
     switch (moptions.rtSettings.monitorIntent) {
-    default:
-    case rtengine::RI_PERCEPTUAL:
-        monIntent->set_active (0);
-        break;
-    case rtengine::RI_RELATIVE:
-        monIntent->set_active (1);
-        break;
-    case rtengine::RI_ABSOLUTE:
-        monIntent->set_active (2);
-        break;
+        default:
+        case rtengine::RI_PERCEPTUAL:
+            monIntent->set_active (0);
+            break;
+
+        case rtengine::RI_RELATIVE:
+            monIntent->set_active (1);
+            break;
+
+        case rtengine::RI_ABSOLUTE:
+            monIntent->set_active (2);
+            break;
     }
+
     monBPC->set_active (moptions.rtSettings.monitorBPC);
 #if defined(WIN32)
     cbAutoMonProfile->set_active(moptions.rtSettings.autoMonitorProfile);
@@ -1753,6 +1791,7 @@ void Preferences::fillPreferences ()
     dnwavlev->set_active (moptions.rtSettings.nrwavlevel);
     cprevdemo->set_active (moptions.prevdemo);
     cbdaubech->set_active (moptions.rtSettings.daubech);
+    cmip->set_active (moptions.mip);
 
 //  cbAutocielab->set_active (moptions.rtSettings.autocielab);
     cbciecamfloat->set_active (moptions.rtSettings.ciecamfloat);
@@ -2103,8 +2142,9 @@ void Preferences::iccDirChanged ()
 
     monProfile->append (M("PREFERENCES_PROFILE_NONE"));
 
-    for (const auto& profile : profiles)
+    for (const auto& profile : profiles) {
         monProfile->append (profile);
+    }
 
     setActiveTextOrIndex(*monProfile, currentSelection, 0);
 }
@@ -2227,9 +2267,8 @@ void Preferences::workflowUpdate ()
     }
 
     if(  moptions.rtSettings.printerProfile != options.rtSettings.printerProfile
-       ||moptions.rtSettings.printerBPC     != options.rtSettings.printerBPC
-       ||moptions.rtSettings.printerIntent  != options.rtSettings.printerIntent)
-    {
+            || moptions.rtSettings.printerBPC     != options.rtSettings.printerBPC
+            || moptions.rtSettings.printerIntent  != options.rtSettings.printerIntent) {
         // Update the position of the Histogram
         parent->updateProfiles(moptions.rtSettings.printerProfile, moptions.rtSettings.printerIntent, moptions.rtSettings.printerBPC);
     }
@@ -2283,12 +2322,16 @@ void Preferences::delExtPressed ()
 void Preferences::moveExtUpPressed ()
 {
     const Glib::RefPtr<Gtk::TreeSelection> selection = extensions->get_selection ();
-    if (!selection)
+
+    if (!selection) {
         return;
+    }
 
     const Gtk::TreeModel::iterator selected = selection->get_selected ();
-    if (!selected || selected == extensionModel->children ().begin ())
+
+    if (!selected || selected == extensionModel->children ().begin ()) {
         return;
+    }
 
     Gtk::TreeModel::iterator previous = selected;
     --previous;
@@ -2298,16 +2341,22 @@ void Preferences::moveExtUpPressed ()
 void Preferences::moveExtDownPressed ()
 {
     const Glib::RefPtr<Gtk::TreeSelection> selection = extensions->get_selection ();
-    if (!selection)
+
+    if (!selection) {
         return;
+    }
 
     const Gtk::TreeModel::iterator selected = selection->get_selected ();
-    if (!selected)
+
+    if (!selected) {
         return;
+    }
 
     Gtk::TreeModel::iterator next = selected;
-    if (++next)
+
+    if (++next) {
         extensionModel->iter_swap (selected, next);
+    }
 }
 
 void Preferences::clearProfilesPressed ()

@@ -814,7 +814,19 @@ void Crop::update (int todo)
 
         if(needslocal ) {
             //   if(tyty ) {
-            Glib::ustring datalab = parent->imgsrc->getFileName() + ".mip";
+            //Glib::ustring datalab2 = parent->imgsrc->getFileName() + ".mip";
+            Glib::ustring pop = options.getUserProfilePath() + "/";
+
+            Glib::ustring datalab;
+
+            if(options.mip == MI_opt) {
+                datalab = pop + Glib::path_get_basename (parent->imgsrc->getFileName () + ".mip");
+            }
+
+            if(options.mip == MI_prev) {
+                datalab = parent->imgsrc->getFileName() + ".mip";
+            }
+
 
             ifstream fich(datalab, ios::in);
 

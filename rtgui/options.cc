@@ -425,6 +425,8 @@ void Options::setDefaults ()
     histogramFullMode = false;
     curvebboxpos = 1;
     prevdemo = PD_Sidecar;
+    mip = MI_opt;
+
     rgbDenoiseThreadLimit = 0;
 #if defined( _OPENMP ) && defined( __x86_64__ )
     clutCacheSize = omp_get_num_procs();
@@ -1278,6 +1280,10 @@ int Options::readFromFile (Glib::ustring fname)
                     prevdemo             = (prevdemo_t)keyFile.get_integer ("Performance", "PreviewDemosaicFromSidecar");
                 }
 
+                if (keyFile.has_key ("Profiles", "Mipfiles")) {
+                    mip             = (mip_t)keyFile.get_integer ("Profiles", "Mipfiles");
+                }
+
                 if (keyFile.has_key ("Performance", "Daubechies")) {
                     rtSettings.daubech         = keyFile.get_boolean ("Performance", "Daubechies");
                 }
@@ -2043,6 +2049,7 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_integer ("Profiles", "LoadParamsFromLocation", paramsLoadLocation);
         keyFile.set_string  ("Profiles", "CustomProfileBuilderPath", CPBPath);
         keyFile.set_integer ("Profiles", "CustomProfileBuilderKeys", CPBKeys);
+        keyFile.set_integer ("Profiles", "Mipfiles", mip);
 
         keyFile.set_string  ("GUI", "Font", font);
         keyFile.set_string  ("GUI", "ColorPickerFont", colorPickerFont);

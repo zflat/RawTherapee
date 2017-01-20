@@ -129,6 +129,7 @@ protected:
     Gtk::ComboBoxText* cprevdemo;
     Gtk::CheckButton* ctiffserialize;
     Gtk::ComboBoxText* curveBBoxPosC;
+    Gtk::ComboBoxText* cmip;
 
     Gtk::ComboBoxText* theme;
     Gtk::CheckButton* slimUI;
