@@ -514,12 +514,14 @@ void ProfileStoreEntry::setValues(Glib::ustring label, PSEType type, unsigned sh
 ProfileStoreLabel::ProfileStoreLabel(const ProfileStoreEntry *entry) : Gtk::Label(entry->label), entry(entry)
 {
     set_alignment(0, 0.5);
+    set_ellipsize(Pango::ELLIPSIZE_END);
     show();
 }
 
 ProfileStoreComboBox::ProfileStoreComboBox ()
 {
     updateProfileList();
+    setPreferredWidth(50, 120);
 }
 
 Glib::ustring ProfileStoreComboBox::getCurrentLabel()
@@ -569,6 +571,11 @@ void ProfileStoreComboBox::refreshProfileList_ (Gtk::TreeModel::Row *parentRow, 
                     newSubMenu[methodColumns.label] = entry->label;
                     newSubMenu[methodColumns.profileStoreEntry] = entry;
 
+                    // HACK: Workaround for bug in Gtk+ 3.18...
+                    Gtk::TreeModel::Row menuHeader = *(refTreeModel->append(newSubMenu->children()));
+                    menuHeader[methodColumns.label] = entry->label;
+                    menuHeader[methodColumns.profileStoreEntry] = entry;
+
                     refreshProfileList_ (&newSubMenu, entry->folderId, false, entryList);
                 } else {
                     refreshProfileList_ (parentRow, entry->folderId, true, entryList);
@@ -589,7 +596,6 @@ void ProfileStoreComboBox::refreshProfileList_ (Gtk::TreeModel::Row *parentRow, 
         }
     }
 }
-
 /** @brief Get the ProfileStore's entry list and recreate the combobox entries.
   * If you want to update the ProfileStore list itself (rescan the dir tree), use the "ProfileStore::parseProfiles" method instead
   *
@@ -606,13 +612,11 @@ void ProfileStoreComboBox::updateProfileList ()
     // Assign the model to the Combobox
     set_model(refTreeModel);
 
-
     // this will lock the profilestore's entry list too
     const std::vector<const ProfileStoreEntry*> *entryList = profileStore.getFileList();
 
-    Gtk::TreeModel::Row root;
     //profileStore.dumpFolderList();
-    refreshProfileList_ (&root, entryList->at(0)->parentFolderId, true, entryList);
+    refreshProfileList_ (NULL, entryList->at(0)->parentFolderId, true, entryList);
 
     if (entryList->at(0)->parentFolderId != 0) {
         // special case for the Internal default entry
@@ -623,6 +627,10 @@ void ProfileStoreComboBox::updateProfileList ()
     profileStore.releaseFileList();
 
     pack_start(methodColumns.label, false);
+
+    Gtk::CellRendererText* cellRenderer = dynamic_cast<Gtk::CellRendererText*>(get_first_cell());
+    cellRenderer->property_ellipsize() = Pango::ELLIPSIZE_MIDDLE;
+    cellRenderer->property_ellipsize_set() = true;
 }
 
 Gtk::TreeIter ProfileStoreComboBox::findRowFromEntry_ (Gtk::TreeModel::Children childs, const ProfileStoreEntry *pse)

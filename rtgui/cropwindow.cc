@@ -98,7 +98,7 @@ CropWindow::CropWindow (ImageArea* parent, bool isLowUpdatePriority_, bool isDet
     buttonSet.add (bZoom100);
     buttonSet.add (bClose);
 
-    buttonSet.setColors (Gdk::Color("black"), Gdk::Color("white"));
+    buttonSet.setColors (Gdk::RGBA("black"), Gdk::RGBA("white"));
     buttonSet.setButtonListener (this);
 
     int bsw, bsh;
@@ -1187,27 +1187,29 @@ void CropWindow::updateCursor (int x, int y)
     EditSubscriber *editSubscriber = iarea->getCurrSubscriber();
     ToolMode tm = iarea->getToolMode ();
 
+    CursorShape newType = cursor_type;
+
     if (state == SNormal) {
         if (onArea (CropWinButtons, x, y)) {
-            cursorManager.setCursor (iarea->get_window(), CSArrow);
+            newType = CSArrow;
         } else if (onArea (CropToolBar, x, y)) {
-            cursorManager.setCursor (iarea->get_window(), CSMove);
+            newType = CSMove;
         } else if (onArea (CropResize, x, y)) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeDiagonal);
+            newType = CSResizeDiagonal;
         } else if (tm == TMColorPicker && hoveredPicker) {
-            cursorManager.setCursor (iarea->get_window(), CSMove);
+            newType = CSMove;
         } else if (tm == TMHand && (onArea (CropTopLeft, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeTopLeft);
+            newType = CSResizeTopLeft;
         } else if (tm == TMHand && (onArea (CropTopRight, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeTopRight);
+            newType = CSResizeTopRight;
         } else if (tm == TMHand && (onArea (CropBottomLeft, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeBottomLeft);
+            newType = CSResizeBottomLeft;
         } else if (tm == TMHand && (onArea (CropBottomRight, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeBottomRight);
+            newType = CSResizeBottomRight;
         } else if (tm == TMHand && (onArea (CropTop, x, y) || onArea (CropBottom, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeHeight);
+            newType = CSResizeHeight;
         } else if (tm == TMHand && (onArea (CropLeft, x, y) || onArea (CropRight, x, y))) {
-            cursorManager.setCursor (iarea->get_window(), CSResizeWidth);
+            newType = CSResizeWidth;
         } else if (onArea (CropImage, x, y)) {
             int objectID = -1;
 
@@ -1218,21 +1220,21 @@ void CropWindow::updateCursor (int x, int y)
             }
 
             if (objectID > -1) {
-                cursorManager.setCursor (iarea->get_window(), editSubscriber->getCursor(objectID));
+                newType = editSubscriber->getCursor(objectID);
             } else if (tm == TMHand) {
                 if (onArea (CropObserved, x, y)) {
-                    cursorManager.setCursor (iarea->get_window(), CSMove);
+                    newType = CSMove;
                 } else {
-                    cursorManager.setCursor (iarea->get_window(), CSOpenHand);
+                    newType = CSOpenHand;
                 }
             } else if (tm == TMSpotWB) {
-                cursorManager.setCursor (iarea->get_window(), CSSpotWB);
+                newType = CSSpotWB;
             } else if (tm == TMCropSelect) {
-                cursorManager.setCursor (iarea->get_window(), CSCropSelect);
+                newType = CSCropSelect;
             } else if (tm == TMStraighten) {
-                cursorManager.setCursor (iarea->get_window(), CSStraighten);
+                newType = CSStraighten;
             } else if (tm == TMColorPicker) {
-                cursorManager.setCursor (iarea->get_window(), CSAddColPicker);
+                newType = CSAddColPicker;
             }
         } else {
             int objectID = -1;
@@ -1244,36 +1246,42 @@ void CropWindow::updateCursor (int x, int y)
             }
 
             if (objectID > -1) {
-                cursorManager.setCursor (iarea->get_window(), editSubscriber->getCursor(objectID));
+                newType = editSubscriber->getCursor(objectID);
             } else {
-                cursorManager.setCursor (iarea->get_window(), CSArrow);
+                newType = CSArrow;
             }
         }
     } else if (state == SCropSelecting) {
-        cursorManager.setCursor (iarea->get_window(), CSCropSelect);
+        newType = CSCropSelect;
     } else if (state == SRotateSelecting) {
-        cursorManager.setCursor (iarea->get_window(), CSStraighten);
+        newType = CSStraighten;
     } else if (state == SCropMove || state == SCropWinMove || state == SObservedMove) {
-        cursorManager.setCursor (iarea->get_window(), CSMove);
+        newType = CSMove;
     } else if (state == SHandMove || state == SCropImgMove) {
-        cursorManager.setCursor (iarea->get_window(), CSClosedHand);
+        newType = CSClosedHand;
     } else if (state == SResizeW1 || state == SResizeW2) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeWidth);
+        newType = CSResizeWidth;
     } else if (state == SResizeH1 || state == SResizeH2) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeHeight);
+        newType = CSResizeHeight;
     } else if (state == SResizeTL) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeTopLeft);
+        newType = CSResizeTopLeft;
     } else if (state == SResizeTR) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeTopRight);
+        newType = CSResizeTopRight;
     } else if (state == SResizeBL) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeBottomLeft);
+        newType = CSResizeBottomLeft;
     } else if (state == SResizeBR) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeBottomRight);
+        newType = CSResizeBottomRight;
     } else if (state == SCropWinResize) {
-        cursorManager.setCursor (iarea->get_window(), CSResizeDiagonal);
+        newType = CSResizeDiagonal;
     } else if (state == SDragPicker) {
-        cursorManager.setCursor (iarea->get_window(), CSMove2D);
+        newType = CSMove2D;
     }
+
+    if (newType != cursor_type) {
+        cursor_type = newType;
+        CursorManager::setWidgetCursor(iarea->get_window(), cursor_type);
+    }
+
 }
 
 void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
@@ -1290,22 +1298,23 @@ void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
 
     // draw the background
     backColor = iarea->previewModePanel->GetbackColor();
+    Glib::RefPtr<Gtk::StyleContext> style = iarea->get_style_context();
     options.bgcolor = backColor;
 
     if (backColor == 0) {
-        Gdk::Color cback = iarea->get_style()->get_bg(Gtk::STATE_NORMAL);
-        cr->set_source_rgb (cback.get_red_p(), cback.get_green_p(), cback.get_blue_p());
-    } else if (backColor == 1) {
-        cr->set_source_rgb (0, 0, 0);
-    } else if (backColor == 2) {
-        cr->set_source_rgb (1, 1, 1);
+        style->render_background(cr, x + imgAreaX, y + imgAreaY, imgAreaW, imgAreaH);
+    } else {
+        if (backColor == 1) {
+            cr->set_source_rgb (0, 0, 0);
+        } else if (backColor == 2) {
+            cr->set_source_rgb (1, 1, 1);
+        }
+
+        cr->set_line_width (0.);
+        cr->rectangle (x + imgAreaX, y + imgAreaY, imgAreaW, imgAreaH);
+        cr->stroke_preserve ();
+        cr->fill ();
     }
-
-    cr->set_line_width (0.);
-    cr->rectangle (x + imgAreaX, y + imgAreaY, imgAreaW, imgAreaH);
-    cr->stroke_preserve ();
-    cr->fill ();
-
 
     // draw image
     if (state == SCropImgMove || state == SCropWinResize) {
@@ -1316,7 +1325,11 @@ void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
         Glib::RefPtr<Gdk::Pixbuf> rough = iarea->getPreviewHandler()->getRoughImage (cropX, cropY, imgAreaW, imgAreaH, zoomSteps[cropZoom].zoom);
 
         if (rough) {
-            iarea->get_window()->draw_pixbuf (iarea->get_style()->get_base_gc(Gtk::STATE_NORMAL), rough, 0, 0, x + imgAreaX + imgX, y + imgAreaY + imgY, rtengine::min (rough->get_width (), imgAreaW-imgX), rtengine::min (rough->get_height (), imgAreaH-imgY), Gdk::RGB_DITHER_NORMAL, 0, 0);
+            int posX = x + imgAreaX + imgX;
+            int posY = y + imgAreaY + imgY;
+            Gdk::Cairo::set_source_pixbuf(cr, rough, posX, posY);
+            cr->rectangle(posX, posY, rtengine::min (rough->get_width (), imgAreaW-imgX), rtengine::min (rough->get_height (), imgAreaH-imgY));
+            cr->fill();
 //            if (cropHandler.cropParams.enabled)
 //                drawCrop (cr, x+imgX, y+imgY, imgW, imgH, cropX, cropY, zoomSteps[cropZoom].zoom, cropHandler.cropParams);
         }
@@ -1721,9 +1734,17 @@ void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
                     }
                 }
 
-                iarea->get_window()->draw_pixbuf (iarea->get_style()->get_base_gc(Gtk::STATE_NORMAL), tmp, 0, 0, x + imgAreaX + imgX, y + imgAreaY + imgY, rtengine::min (tmp->get_width (), imgAreaW-imgX), rtengine::min (tmp->get_height (), imgAreaH-imgY), Gdk::RGB_DITHER_NORMAL, 0, 0);
+                int posX = x + imgAreaX + imgX;
+                int posY = y + imgAreaY + imgY;
+                Gdk::Cairo::set_source_pixbuf(cr, tmp, posX, posY);
+                cr->rectangle(posX, posY, rtengine::min (tmp->get_width (), imgAreaW-imgX), rtengine::min (tmp->get_height (), imgAreaH-imgY));
+                cr->fill();
             } else {
-                iarea->get_window()->draw_pixbuf (iarea->get_style()->get_base_gc(Gtk::STATE_NORMAL), cropHandler.cropPixbuf, 0, 0, x + imgAreaX + imgX, y + imgAreaY + imgY, rtengine::min (cropHandler.cropPixbuf->get_width (), imgAreaW-imgX), rtengine::min (cropHandler.cropPixbuf->get_height (), imgAreaH-imgY), Gdk::RGB_DITHER_NORMAL, 0, 0);
+                int posX = x + imgAreaX + imgX;
+                int posY = y + imgAreaY + imgY;
+                Gdk::Cairo::set_source_pixbuf(cr, cropHandler.cropPixbuf, posX, posY);
+                cr->rectangle(posX, posY, rtengine::min (cropHandler.cropPixbuf->get_width (), imgAreaW-imgX), rtengine::min (cropHandler.cropPixbuf->get_height (), imgAreaH-imgY));
+                cr->fill();
             }
 
             if (cropHandler.cropParams.enabled) {
@@ -1803,7 +1824,11 @@ void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
             Glib::RefPtr<Gdk::Pixbuf> rough = iarea->getPreviewHandler()->getRoughImage (cropX, cropY, imgAreaW, imgAreaH, zoomSteps[cropZoom].zoom);
 
             if (rough) {
-                iarea->get_window()->draw_pixbuf (iarea->get_style()->get_base_gc(Gtk::STATE_NORMAL), rough, 0, 0, x + imgAreaX + imgX, y + imgAreaY + imgY, rtengine::min (rough->get_width (), imgAreaW-imgX), rtengine::min (rough->get_height (), imgAreaH-imgY), Gdk::RGB_DITHER_NORMAL, 0, 0);
+                int posX = x + imgAreaX + imgX;
+                int posY = y + imgAreaY + imgY;
+                Gdk::Cairo::set_source_pixbuf(cr, rough, posX, posY);
+                cr->rectangle(posX, posY, rtengine::min (rough->get_width (), imgAreaW-imgX), rtengine::min (rough->get_height (), imgAreaH-imgY));
+                cr->fill();
 
                 if (cropHandler.cropParams.enabled) {
                     drawCrop (cr, x + imgAreaX + imgX, y + imgAreaY + imgY, rough->get_width(), rough->get_height(), cropX, cropY, zoomSteps[cropZoom].zoom, cropHandler.cropParams, (this == iarea->mainCropWindow), true, cropHandler.isFullDisplay ());
@@ -1829,6 +1854,8 @@ void CropWindow::expose (Cairo::RefPtr<Cairo::Context> cr)
             drawScaledSpotRectangle (cr, iarea->getSpotWBRectSize ());
         }
     }
+
+    style->render_frame (cr, x + imgAreaX, y + imgAreaY, imgAreaW, imgAreaH);
 
     if ((state == SNormal || state == SDragPicker) && isPreviewImg && iarea->showColorPickers()) {
         for (auto colorPicker : colorPickers) {

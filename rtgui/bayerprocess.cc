@@ -29,7 +29,7 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
     method = Gtk::manage (new MyComboBoxText ());
 
     for( size_t i = 0; i < procparams::RAWParams::BayerSensor::numMethods; i++) {
-        method->append_text(procparams::RAWParams::BayerSensor::methodstring[i]);
+        method->append(procparams::RAWParams::BayerSensor::methodstring[i]);
     }
 
     method->set_active(0);
@@ -63,7 +63,6 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
 
 
     dcbOptions = Gtk::manage (new Gtk::VBox ());
-    dcbOptions->set_border_width(4);
 
     dcbIterations = Gtk::manage (new Adjuster (M("TP_RAW_DCBITERATIONS"), 0, 5, 1, 2));
     dcbIterations->setAdjusterListener (this);
@@ -79,7 +78,6 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
     pack_start( *dcbOptions, Gtk::PACK_SHRINK, 4);
 
     lmmseOptions = Gtk::manage (new Gtk::VBox ());
-    lmmseOptions->set_border_width(4);
 
     lmmseIterations = Gtk::manage (new Adjuster (M("TP_RAW_LMMSEITERATIONS"), 0, 6, 1, 2));
     lmmseIterations->setAdjusterListener (this);
@@ -292,7 +290,6 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
 
     //pack_start( *Gtk::manage( new Gtk::HSeparator()), Gtk::PACK_SHRINK, 0 );
     //allOptions = Gtk::manage (new Gtk::VBox ());
-    //allOptions->set_border_width(2);
     //allEnhance = Gtk::manage (new Gtk::CheckButton(M("TP_RAW_ALLENHANCE")));
     //allOptions->pack_start(*allEnhance);
     //pack_start( *allOptions, Gtk::PACK_SHRINK, 4);
@@ -554,7 +551,7 @@ void BayerProcess::write( rtengine::procparams::ProcParams* pp, ParamsEdited* pe
 
 void BayerProcess::setBatchMode(bool batchMode)
 {
-    method->append_text (M("GENERAL_UNCHANGED"));
+    method->append (M("GENERAL_UNCHANGED"));
     method->set_active(procparams::RAWParams::BayerSensor::numMethods); // No name
     pixelShiftMotionCorrection->append_text (M("GENERAL_UNCHANGED"));
     pixelShiftMotionCorrection->set_active (4);

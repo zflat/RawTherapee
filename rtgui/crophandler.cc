@@ -295,8 +295,6 @@ void CropHandler::getPosition (int& x, int& y)
 int createpixbufs (void* data)
 {
 
-    GThreadLock lock;
-
     CropHandlerIdleHelper* chi = static_cast<CropHandlerIdleHelper*>(data);
 
     if (chi->destroyed) {
@@ -411,7 +409,7 @@ void CropHandler::setDetailedCrop (IImage8* im, IImage8* imtrue, rtengine::procp
         cih = ah;
         cis = askip;
         chi->pending++;
-        g_idle_add (createpixbufs, chi);
+        add_idle (createpixbufs, chi);
     }
 
     cimg.unlock ();

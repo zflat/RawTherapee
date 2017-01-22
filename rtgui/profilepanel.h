@@ -29,7 +29,7 @@
 #include "guiutils.h"
 #include "rtimage.h"
 
-class ProfilePanel : public Gtk::VBox, public PParamsChangeListener, public ProfileStoreListener
+class ProfilePanel : public Gtk::Grid, public PParamsChangeListener, public ProfileStoreListener
 {
 
 private:
@@ -69,7 +69,7 @@ protected:
 
 public:
 
-    explicit ProfilePanel (bool readOnly = false);
+    explicit ProfilePanel ();
     virtual ~ProfilePanel ();
 
     void setProfileChangeListener (ProfileChangeListener* ppl)
@@ -77,7 +77,7 @@ public:
         tpc = ppl;
     }
 
-    static void init ();
+    static void init (Gtk::Window* parent);
     static void cleanup ();
     void storeCurrentValue();
     void updateProfileList ();

@@ -60,7 +60,7 @@ Options::Options ()
 
 const char *DefaultLanguage = "English (US)";
 
-inline bool Options::checkProfilePath(Glib::ustring &path)
+inline bool Options::checkProfilePath (Glib::ustring &path)
 {
     if (path.empty()) {
         return false;
@@ -77,13 +77,13 @@ inline bool Options::checkProfilePath(Glib::ustring &path)
     return !p.empty() && Glib::file_test (path + paramFileExtension, Glib::FILE_TEST_EXISTS);
 }
 
-bool Options::checkDirPath(Glib::ustring &path, Glib::ustring errString)
+bool Options::checkDirPath (Glib::ustring &path, Glib::ustring errString)
 {
     if (Glib::file_test (path, Glib::FILE_TEST_EXISTS) && Glib::file_test (path, Glib::FILE_TEST_IS_DIR)) {
         return true;
     } else {
         if (!errString.empty()) {
-            printf("%s\n", errString.c_str());
+            printf ("%s\n", errString.c_str());
         }
 
         return false;
@@ -98,22 +98,22 @@ void Options::updatePaths()
     userProfilePath = "";
     globalProfilePath = "";
 
-    if (Glib::path_is_absolute(profilePath)) {
+    if (Glib::path_is_absolute (profilePath)) {
         // absolute path
         if (!checkDirPath (profilePath, "")) {
             g_mkdir_with_parents (profilePath.c_str (), 511);
 
             if (!checkDirPath (profilePath, "")) { // had problems with mkdir_with_parents return value on OS X, just check dir again
-                printf("Error: user's profiles' directory \"%s\" creation failed\n", profilePath.c_str());
+                printf ("Error: user's profiles' directory \"%s\" creation failed\n", profilePath.c_str());
             }
         }
 
         if (checkDirPath (profilePath, "Error: the specified user's profiles' path doesn't point to a directory or doesn't exist!\n")) {
             if (multiUser) {
                 userProfilePath = profilePath;
-                tmpPath = Glib::build_filename(argv0, "profiles");
+                tmpPath = Glib::build_filename (argv0, "profiles");
 
-                if(checkDirPath (tmpPath, "Error: the global's profiles' path doesn't point to a directory or doesn't exist!\n")) {
+                if (checkDirPath (tmpPath, "Error: the global's profiles' path doesn't point to a directory or doesn't exist!\n")) {
                     if (userProfilePath != tmpPath) {
                         globalProfilePath = tmpPath;
                     }
@@ -122,40 +122,40 @@ void Options::updatePaths()
                 globalProfilePath = profilePath;
             }
         } else {
-            tmpPath = Glib::build_filename(argv0, "profiles");
+            tmpPath = Glib::build_filename (argv0, "profiles");
 
-            if(checkDirPath (tmpPath, "Error: the global's profiles' path doesn't point to a directory or doesn't exist!\n")) {
+            if (checkDirPath (tmpPath, "Error: the global's profiles' path doesn't point to a directory or doesn't exist!\n")) {
                 globalProfilePath = tmpPath;
             }
         }
     } else {
         // relative paths
         if (multiUser) {
-            tmpPath = Glib::build_filename(rtdir, profilePath);
+            tmpPath = Glib::build_filename (rtdir, profilePath);
 
             if (!checkDirPath (tmpPath, "")) {
                 g_mkdir_with_parents (tmpPath.c_str (), 511);
 
                 if (!checkDirPath (tmpPath, "")) {
-                    printf("Error: user's profiles' directory \"%s\" creation failed\n", tmpPath.c_str());
+                    printf ("Error: user's profiles' directory \"%s\" creation failed\n", tmpPath.c_str());
                 }
             }
 
-            if(checkDirPath (tmpPath, "Error: the specified user's profiles' path doesn't point to a directory!\n")) {
+            if (checkDirPath (tmpPath, "Error: the specified user's profiles' path doesn't point to a directory!\n")) {
                 userProfilePath = tmpPath;
             }
 
-            tmpPath = Glib::build_filename(argv0, "profiles");
+            tmpPath = Glib::build_filename (argv0, "profiles");
 
-            if(checkDirPath (tmpPath, "Error: the specified user's profiles' path doesn't point to a directory or doesn't exist!\n")) {
+            if (checkDirPath (tmpPath, "Error: the specified user's profiles' path doesn't point to a directory or doesn't exist!\n")) {
                 globalProfilePath = tmpPath;
             }
         } else {
             // common directory
             // directory name set in options is ignored, we use the default directory name
-            tmpPath = Glib::build_filename(argv0, "profiles");
+            tmpPath = Glib::build_filename (argv0, "profiles");
 
-            if(checkDirPath (tmpPath, "Error: no global profiles' directory found!\n")) {
+            if (checkDirPath (tmpPath, "Error: no global profiles' directory found!\n")) {
                 globalProfilePath = tmpPath;
             }
         }
@@ -232,7 +232,7 @@ Glib::ustring Options::getPreferredProfilePath()
   *@return Send back the absolute path of the given filename or "Neutral" if "Neutral" has been set to profName. Implementor will have
   *        to test for this particular value. If the absolute path is invalid (e.g. the file doesn't exist), it will return an empty string.
   */
-Glib::ustring Options::findProfilePath(Glib::ustring &profName)
+Glib::ustring Options::findProfilePath (Glib::ustring &profName)
 {
     if (profName.empty()) {
         return "";
@@ -242,41 +242,41 @@ Glib::ustring Options::findProfilePath(Glib::ustring &profName)
         return profName;
     }
 
-    Glib::ustring p = profName.substr(0, 4);
+    Glib::ustring p = profName.substr (0, 4);
 
     if (p == "${U}") {
         // the path starts by the User virtual path
         p = getUserProfilePath();
-        Glib::ustring fullPath = Glib::build_filename(p, profName.substr(5) + paramFileExtension);
+        Glib::ustring fullPath = Glib::build_filename (p, profName.substr (5) + paramFileExtension);
 
         if (!p.empty() && Glib::file_test (fullPath, Glib::FILE_TEST_EXISTS)) {
-            return Glib::path_get_dirname(fullPath);
+            return Glib::path_get_dirname (fullPath);
         }
     } else if (p == "${G}") {
         // the path starts by the User virtual path
         p = getGlobalProfilePath();
-        Glib::ustring fullPath = Glib::build_filename(p, profName.substr(5) + paramFileExtension);
+        Glib::ustring fullPath = Glib::build_filename (p, profName.substr (5) + paramFileExtension);
 
         if (!p.empty() && Glib::file_test (fullPath, Glib::FILE_TEST_EXISTS)) {
-            return Glib::path_get_dirname(fullPath);
+            return Glib::path_get_dirname (fullPath);
         }
     } else {
         // compatibility case -> convert the path to the new format
         p = getUserProfilePath();
-        Glib::ustring fullPath = Glib::build_filename(p, profName + paramFileExtension);
+        Glib::ustring fullPath = Glib::build_filename (p, profName + paramFileExtension);
 
         if (!p.empty() && Glib::file_test (fullPath, Glib::FILE_TEST_EXISTS)) {
             // update the profile path
-            profName = Glib::build_filename("${U}", profName);
-            return Glib::path_get_dirname(fullPath);
+            profName = Glib::build_filename ("${U}", profName);
+            return Glib::path_get_dirname (fullPath);
         }
 
         p = getGlobalProfilePath();
-        fullPath = Glib::build_filename(p, profName + paramFileExtension);
+        fullPath = Glib::build_filename (p, profName + paramFileExtension);
 
         if (!p.empty() && Glib::file_test (fullPath, Glib::FILE_TEST_EXISTS)) {
-            profName = Glib::build_filename("${G}", profName);
-            return Glib::path_get_dirname(fullPath);
+            profName = Glib::build_filename ("${G}", profName);
+            return Glib::path_get_dirname (fullPath);
         }
     }
 
@@ -287,8 +287,6 @@ Glib::ustring Options::findProfilePath(Glib::ustring &profName)
 void Options::setDefaults ()
 {
 
-    font = "sans, 8";
-    colorPickerFont = "sans, 8";
     windowWidth = 1200;
     windowHeight = 680;
     windowX = 0;
@@ -340,6 +338,10 @@ void Options::setDefaults ()
     browserDirPanelOpened = true;
     editorFilmStripOpened = true;
     historyPanelWidth = 330;
+    fontFamily = "default";
+    fontSize = 10;
+    CPFontFamily = "default";
+    CPFontSize = 8;
     lastScale = 5;
     panAccelFactor = 5;
     rememberZoomAndPan = true;
@@ -374,9 +376,7 @@ void Options::setDefaults ()
     languageAutoDetect = langMgr.isOSLanguageDetectSupported();
     lastSaveAsPath = "";
     overwriteOutputFile = false;        // if TRUE, existing output JPGs/PNGs are overwritten, instead of adding ..-1.jpg, -2.jpg etc.
-    theme = "25-Gray-Gray";
-    slimUI = false;
-    useSystemTheme = false;
+    theme = "RawTherapee";
     maxThumbnailHeight = 250;
     maxCacheEntries = 20000;
     thumbInterp = 1;
@@ -610,10 +610,10 @@ void Options::setDefaults ()
     rtSettings.darkFramesPath = "";
     rtSettings.flatFieldsPath = "";
 #ifdef WIN32
-    const gchar* sysRoot = g_getenv("SystemRoot");  // Returns e.g. "c:\Windows"
+    const gchar* sysRoot = g_getenv ("SystemRoot"); // Returns e.g. "c:\Windows"
 
     if (sysRoot != NULL) {
-        rtSettings.iccDirectory = Glib::ustring(sysRoot) + Glib::ustring("\\System32\\spool\\drivers\\color");
+        rtSettings.iccDirectory = Glib::ustring (sysRoot) + Glib::ustring ("\\System32\\spool\\drivers\\color");
     } else {
         rtSettings.iccDirectory = "C:\\WINDOWS\\System32\\spool\\drivers\\color";
     }
@@ -721,17 +721,17 @@ void Options::filterOutParsedExtensions ()
 
     for (unsigned int i = 0; i < parseExtensions.size(); i++)
         if (parseExtensionsEnabled[i]) {
-            parsedExtensions.push_back(parseExtensions[i].lowercase());
+            parsedExtensions.push_back (parseExtensions[i].lowercase());
         }
 }
 
 int Options::readFromFile (Glib::ustring fname)
 {
-    setlocale(LC_NUMERIC, "C"); // to set decimal point to "."
+    setlocale (LC_NUMERIC, "C"); // to set decimal point to "."
 
     Glib::KeyFile keyFile;
 
-    if( !Glib::file_test(fname, Glib::FILE_TEST_EXISTS)) {
+    if ( !Glib::file_test (fname, Glib::FILE_TEST_EXISTS)) {
         return 1;
     }
 
@@ -797,60 +797,52 @@ int Options::readFromFile (Glib::ustring fname)
                     theme           = keyFile.get_string ("General", "Theme");
                 }
 
-                if (keyFile.has_key ("General", "SlimUI")) {
-                    slimUI          = keyFile.get_boolean ("General", "SlimUI");
+                if ( keyFile.has_key ("General", "DarkFramesPath")) {
+                    rtSettings.darkFramesPath = keyFile.get_string ("General", "DarkFramesPath");
                 }
 
-                if (keyFile.has_key ("General", "UseSystemTheme")) {
-                    useSystemTheme  = keyFile.get_boolean ("General", "UseSystemTheme");
+                if ( keyFile.has_key ("General", "FlatFieldsPath")) {
+                    rtSettings.flatFieldsPath = keyFile.get_string ("General", "FlatFieldsPath");
                 }
 
-                if( keyFile.has_key ("General", "DarkFramesPath")) {
-                    rtSettings.darkFramesPath = keyFile.get_string("General", "DarkFramesPath");
-                }
-
-                if( keyFile.has_key ("General", "FlatFieldsPath")) {
-                    rtSettings.flatFieldsPath = keyFile.get_string("General", "FlatFieldsPath");
-                }
-
-                if( keyFile.has_key ("General", "Verbose")) {
+                if ( keyFile.has_key ("General", "Verbose")) {
                     rtSettings.verbose = keyFile.get_boolean ( "General", "Verbose");
                 }
 
                 if (keyFile.has_key ("General", "BotLeft")) {
-                    rtSettings.bot_left          = keyFile.get_double("General", "BotLeft");
+                    rtSettings.bot_left          = keyFile.get_double ("General", "BotLeft");
                 }
 
                 if (keyFile.has_key ("General", "TopLeft")) {
-                    rtSettings.top_left          = keyFile.get_double("General", "TopLeft");
+                    rtSettings.top_left          = keyFile.get_double ("General", "TopLeft");
                 }
 
                 if (keyFile.has_key ("General", "TopRight")) {
-                    rtSettings.top_right          = keyFile.get_double("General", "TopRight");
+                    rtSettings.top_right          = keyFile.get_double ("General", "TopRight");
                 }
 
                 if (keyFile.has_key ("General", "BotRight")) {
-                    rtSettings.bot_right          = keyFile.get_double("General", "BotRight");
+                    rtSettings.bot_right          = keyFile.get_double ("General", "BotRight");
                 }
 
                 if (keyFile.has_key ("General", "EDdetec")) {
-                    rtSettings.ed_detec          = keyFile.get_double("General", "EDdetec");
+                    rtSettings.ed_detec          = keyFile.get_double ("General", "EDdetec");
                 }
 
                 if (keyFile.has_key ("General", "EDdetecStr")) {
-                    rtSettings.ed_detecStr          = keyFile.get_double("General", "EDdetecStr");
+                    rtSettings.ed_detecStr          = keyFile.get_double ("General", "EDdetecStr");
                 }
 
                 if (keyFile.has_key ("General", "EDLow")) {
-                    rtSettings.ed_low          = keyFile.get_double("General", "EDLow");
+                    rtSettings.ed_low          = keyFile.get_double ("General", "EDLow");
                 }
 
                 if (keyFile.has_key ("General", "EDLipinfl")) {
-                    rtSettings.ed_lipinfl          = keyFile.get_double("General", "EDLipinfl");
+                    rtSettings.ed_lipinfl          = keyFile.get_double ("General", "EDLipinfl");
                 }
 
                 if (keyFile.has_key ("General", "EDLipampl")) {
-                    rtSettings.ed_lipampl          = keyFile.get_double("General", "EDLipampl");
+                    rtSettings.ed_lipampl          = keyFile.get_double ("General", "EDLipampl");
                 }
 
 
@@ -953,19 +945,19 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("Output", "AutoSuffix")) {
-                    autoSuffix                 = keyFile.get_boolean("Output", "AutoSuffix");
+                    autoSuffix                 = keyFile.get_boolean ("Output", "AutoSuffix");
                 }
 
                 if (keyFile.has_key ("Output", "ForceFormatOpts")) {
-                    forceFormatOpts            = keyFile.get_boolean("Output", "ForceFormatOpts");
+                    forceFormatOpts            = keyFile.get_boolean ("Output", "ForceFormatOpts");
                 }
 
                 if (keyFile.has_key ("Output", "SaveMethodNum")) {
-                    saveMethodNum              = keyFile.get_integer("Output", "SaveMethodNum");
+                    saveMethodNum              = keyFile.get_integer ("Output", "SaveMethodNum");
                 }
 
                 if (keyFile.has_key ("Output", "UsePathTemplate")) {
-                    saveUsePathTemplate        = keyFile.get_boolean("Output", "UsePathTemplate");
+                    saveUsePathTemplate        = keyFile.get_boolean ("Output", "UsePathTemplate");
                 }
 
                 if (keyFile.has_key ("Output", "LastSaveAsPath")) {
@@ -973,11 +965,11 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("Output", "OverwriteOutputFile")) {
-                    overwriteOutputFile    = keyFile.get_boolean("Output", "OverwriteOutputFile");
+                    overwriteOutputFile    = keyFile.get_boolean ("Output", "OverwriteOutputFile");
                 }
 
                 if (keyFile.has_key ("Output", "TunnelMetaData")) {
-                    tunnelMetaData             = keyFile.get_boolean("Output", "TunnelMetaData");
+                    tunnelMetaData             = keyFile.get_boolean ("Output", "TunnelMetaData");
                 }
             }
 
@@ -1152,7 +1144,7 @@ int Options::readFromFile (Glib::ustring fname)
                     maxRecentFolders    = keyFile.get_integer ("File Browser", "MaxRecentFolders");
                 }
 
-                recentFolders.reserve(maxRecentFolders + 10); // reserve some more than maxRecentFolders, because at runtime it stores more than that
+                recentFolders.reserve (maxRecentFolders + 10); // reserve some more than maxRecentFolders, because at runtime it stores more than that
 
                 if (keyFile.has_key ("File Browser", "RecentFolders")) {
                     recentFolders    = keyFile.get_string_list ("File Browser", "RecentFolders");
@@ -1178,23 +1170,23 @@ int Options::readFromFile (Glib::ustring fname)
                     rgbDenoiseThreadLimit      = keyFile.get_integer ("Performance", "RgbDenoiseThreadLimit");
                 }
 
-                if( keyFile.has_key ("Performance", "NRauto")) {
+                if ( keyFile.has_key ("Performance", "NRauto")) {
                     rtSettings.nrauto          = keyFile.get_double  ("Performance", "NRauto");
                 }
 
-                if( keyFile.has_key ("Performance", "NRautomax")) {
+                if ( keyFile.has_key ("Performance", "NRautomax")) {
                     rtSettings.nrautomax       = keyFile.get_double  ("Performance", "NRautomax");
                 }
 
-                if( keyFile.has_key ("Performance", "NRhigh")) {
+                if ( keyFile.has_key ("Performance", "NRhigh")) {
                     rtSettings.nrhigh          = keyFile.get_double  ("Performance", "NRhigh");
                 }
 
-                if(rtSettings.nrhigh == 0.0) { //avoid crash by division by zero in noise reduction
+                if (rtSettings.nrhigh == 0.0) { //avoid crash by division by zero in noise reduction
                     rtSettings.nrhigh = 0.45;
                 }
 
-                if( keyFile.has_key ("Performance", "NRWavlevel")) {
+                if ( keyFile.has_key ("Performance", "NRWavlevel")) {
                     rtSettings.nrwavlevel      = keyFile.get_integer ("Performance", "NRWavlevel");
                 }
 
@@ -1240,14 +1232,6 @@ int Options::readFromFile (Glib::ustring fname)
             }
 
             if (keyFile.has_group ("GUI")) {
-                if (keyFile.has_key ("GUI", "Font")) {
-                    font            = keyFile.get_string  ("GUI", "Font");
-                }
-
-                if (keyFile.has_key ("GUI", "ColorPickerFont")) {
-                    colorPickerFont = keyFile.get_string  ("GUI", "ColorPickerFont");
-                }
-
                 if (keyFile.has_key ("GUI", "WindowWidth")) {
                     windowWidth     = keyFile.get_integer ("GUI", "WindowWidth");
                 }
@@ -1285,7 +1269,7 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("GUI", "SortType")) {
-                    dirBrowserSortType       = static_cast<Gtk::SortType>(keyFile.get_integer ("GUI", "SortType"));
+                    dirBrowserSortType       = static_cast<Gtk::SortType> (keyFile.get_integer ("GUI", "SortType"));
                 }
 
                 if (keyFile.has_key ("GUI", "PreferencesWidth")) {
@@ -1330,6 +1314,22 @@ int Options::readFromFile (Glib::ustring fname)
 
                 if (keyFile.has_key ("GUI", "HistoryPanelWidth")) {
                     historyPanelWidth = keyFile.get_integer ("GUI", "HistoryPanelWidth");
+                }
+
+                if (keyFile.has_key ("GUI", "FontFamily")) {
+                    fontFamily        = keyFile.get_string  ("GUI", "FontFamily");
+                }
+
+                if (keyFile.has_key ("GUI", "FontSize")) {
+                    fontSize          = keyFile.get_integer ("GUI", "FontSize");
+                }
+
+                if (keyFile.has_key ("GUI", "CPFontFamily")) {
+                    CPFontFamily      = keyFile.get_string  ("GUI", "CPFontFamily");
+                }
+
+                if (keyFile.has_key ("GUI", "CPFontSize")) {
+                    CPFontSize        = keyFile.get_integer ("GUI", "CPFontSize");
                 }
 
                 if (keyFile.has_key ("GUI", "LastPreviewScale")) {
@@ -1482,7 +1482,7 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("Color Management", "Intent")) {
-                    rtSettings.monitorIntent   = static_cast<rtengine::RenderingIntent>(keyFile.get_integer("Color Management", "Intent"));
+                    rtSettings.monitorIntent   = static_cast<rtengine::RenderingIntent> (keyFile.get_integer ("Color Management", "Intent"));
                 }
 
                 if (keyFile.has_key ("Color Management", "MonitorBPC")) {
@@ -1490,111 +1490,111 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("Color Management", "CRI")) {
-                    rtSettings.CRI_color            = keyFile.get_integer("Color Management", "CRI");
+                    rtSettings.CRI_color            = keyFile.get_integer ("Color Management", "CRI");
                 }
 
                 if (keyFile.has_key ("Color Management", "DenoiseLabgamma")) {
-                    rtSettings.denoiselabgamma      = keyFile.get_integer("Color Management", "DenoiseLabgamma");
+                    rtSettings.denoiselabgamma      = keyFile.get_integer ("Color Management", "DenoiseLabgamma");
                 }
 
                 if (keyFile.has_key ("Color Management", "view")) {
-                    rtSettings.viewingdevice        = keyFile.get_integer("Color Management", "view");
+                    rtSettings.viewingdevice        = keyFile.get_integer ("Color Management", "view");
                 }
 
                 if (keyFile.has_key ("Color Management", "grey")) {
-                    rtSettings.viewingdevicegrey    = keyFile.get_integer("Color Management", "grey");
+                    rtSettings.viewingdevicegrey    = keyFile.get_integer ("Color Management", "grey");
                 }
 
                 if (keyFile.has_key ("Color Management", "greySc")) {
-                    rtSettings.viewinggreySc        = keyFile.get_integer("Color Management", "greySc");
+                    rtSettings.viewinggreySc        = keyFile.get_integer ("Color Management", "greySc");
                 }
 
                 if (keyFile.has_key ("Color Management", "CBDLArtif")) {
-                    rtSettings.artifact_cbdl        = keyFile.get_double("Color Management", "CBDLArtif");
+                    rtSettings.artifact_cbdl        = keyFile.get_double ("Color Management", "CBDLArtif");
                 }
 
                 if (keyFile.has_key ("Color Management", "CBDLlevel0")) {
-                    rtSettings.level0_cbdl          = keyFile.get_double("Color Management", "CBDLlevel0");
+                    rtSettings.level0_cbdl          = keyFile.get_double ("Color Management", "CBDLlevel0");
                 }
 
                 if (keyFile.has_key ("Color Management", "CBDLlevel123")) {
-                    rtSettings.level123_cbdl        = keyFile.get_double("Color Management", "CBDLlevel123");
+                    rtSettings.level123_cbdl        = keyFile.get_double ("Color Management", "CBDLlevel123");
                 }
 
 //   if (keyFile.has_key ("Color Management", "Colortoningab"))  rtSettings.colortoningab            = keyFile.get_double("Color Management", "Colortoningab");
 //   if (keyFile.has_key ("Color Management", "Decaction"))   rtSettings.decaction        = keyFile.get_double("Color Management", "Decaction");
 
                 if (keyFile.has_key ("Color Management", "WhiteBalanceSpotSize")) {
-                    whiteBalanceSpotSize      = keyFile.get_integer("Color Management", "WhiteBalanceSpotSize");
+                    whiteBalanceSpotSize      = keyFile.get_integer ("Color Management", "WhiteBalanceSpotSize");
                 }
 
-                if( keyFile.has_key ("Color Management", "GamutICC")) {
-                    rtSettings.gamutICC             = keyFile.get_boolean("Color Management", "GamutICC");
+                if ( keyFile.has_key ("Color Management", "GamutICC")) {
+                    rtSettings.gamutICC             = keyFile.get_boolean ("Color Management", "GamutICC");
                 }
 
 //   if( keyFile.has_key ("Color Management", "BWcomplement"))   rtSettings.bw_complementary     = keyFile.get_boolean("Color Management", "BWcomplement");
-                if( keyFile.has_key ("Color Management", "Ciecamfloat")) {
-                    rtSettings.ciecamfloat          = keyFile.get_boolean("Color Management", "Ciecamfloat");
+                if ( keyFile.has_key ("Color Management", "Ciecamfloat")) {
+                    rtSettings.ciecamfloat          = keyFile.get_boolean ("Color Management", "Ciecamfloat");
                 }
 
-                if( keyFile.has_key ("Color Management", "AdobeRGB")) {
-                    rtSettings.adobe                = keyFile.get_string("Color Management", "AdobeRGB");
+                if ( keyFile.has_key ("Color Management", "AdobeRGB")) {
+                    rtSettings.adobe                = keyFile.get_string ("Color Management", "AdobeRGB");
                 }
 
-                if( keyFile.has_key ("Color Management", "ProPhoto")) {
-                    rtSettings.prophoto             = keyFile.get_string("Color Management", "ProPhoto");
+                if ( keyFile.has_key ("Color Management", "ProPhoto")) {
+                    rtSettings.prophoto             = keyFile.get_string ("Color Management", "ProPhoto");
                 }
 
-                if( keyFile.has_key ("Color Management", "ProPhoto10")) {
-                    rtSettings.prophoto10           = keyFile.get_string("Color Management", "ProPhoto10");
+                if ( keyFile.has_key ("Color Management", "ProPhoto10")) {
+                    rtSettings.prophoto10           = keyFile.get_string ("Color Management", "ProPhoto10");
                 }
 
-                if( keyFile.has_key ("Color Management", "WideGamut")) {
-                    rtSettings.widegamut            = keyFile.get_string("Color Management", "WideGamut");
+                if ( keyFile.has_key ("Color Management", "WideGamut")) {
+                    rtSettings.widegamut            = keyFile.get_string ("Color Management", "WideGamut");
                 }
 
-                if( keyFile.has_key ("Color Management", "sRGB")) {
-                    rtSettings.srgb                 = keyFile.get_string("Color Management", "sRGB");
+                if ( keyFile.has_key ("Color Management", "sRGB")) {
+                    rtSettings.srgb                 = keyFile.get_string ("Color Management", "sRGB");
                 }
 
-                if( keyFile.has_key ("Color Management", "sRGB10")) {
-                    rtSettings.srgb10               = keyFile.get_string("Color Management", "sRGB10");
+                if ( keyFile.has_key ("Color Management", "sRGB10")) {
+                    rtSettings.srgb10               = keyFile.get_string ("Color Management", "sRGB10");
                 }
 
-                if( keyFile.has_key ("Color Management", "Beta")) {
-                    rtSettings.beta                 = keyFile.get_string("Color Management", "Beta");
+                if ( keyFile.has_key ("Color Management", "Beta")) {
+                    rtSettings.beta                 = keyFile.get_string ("Color Management", "Beta");
                 }
 
-                if( keyFile.has_key ("Color Management", "Best")) {
-                    rtSettings.best                 = keyFile.get_string("Color Management", "Best");
+                if ( keyFile.has_key ("Color Management", "Best")) {
+                    rtSettings.best                 = keyFile.get_string ("Color Management", "Best");
                 }
 
-                if( keyFile.has_key ("Color Management", "Rec2020")) {
-                    rtSettings.rec2020                 = keyFile.get_string("Color Management", "Rec2020");
+                if ( keyFile.has_key ("Color Management", "Rec2020")) {
+                    rtSettings.rec2020                 = keyFile.get_string ("Color Management", "Rec2020");
                 }
 
-                if( keyFile.has_key ("Color Management", "Bruce")) {
-                    rtSettings.bruce                = keyFile.get_string("Color Management", "Bruce");
+                if ( keyFile.has_key ("Color Management", "Bruce")) {
+                    rtSettings.bruce                = keyFile.get_string ("Color Management", "Bruce");
                 }
 
-                if( keyFile.has_key ("Color Management", "GamutLch")) {
-                    rtSettings.gamutLch             = keyFile.get_boolean("Color Management", "GamutLch");
+                if ( keyFile.has_key ("Color Management", "GamutLch")) {
+                    rtSettings.gamutLch             = keyFile.get_boolean ("Color Management", "GamutLch");
                 }
 
-                if( keyFile.has_key ("Color Management", "ProtectRed")) {
-                    rtSettings.protectred           = keyFile.get_integer("Color Management", "ProtectRed");
+                if ( keyFile.has_key ("Color Management", "ProtectRed")) {
+                    rtSettings.protectred           = keyFile.get_integer ("Color Management", "ProtectRed");
                 }
 
-                if( keyFile.has_key ("Color Management", "ProtectRedH")) {
-                    rtSettings.protectredh          = keyFile.get_double("Color Management", "ProtectRedH");
+                if ( keyFile.has_key ("Color Management", "ProtectRedH")) {
+                    rtSettings.protectredh          = keyFile.get_double ("Color Management", "ProtectRedH");
                 }
 
-                if( keyFile.has_key ("Color Management", "Amountchroma")) {
-                    rtSettings.amchroma            = keyFile.get_integer("Color Management", "Amountchroma");
+                if ( keyFile.has_key ("Color Management", "Amountchroma")) {
+                    rtSettings.amchroma            = keyFile.get_integer ("Color Management", "Amountchroma");
                 }
 
-                if( keyFile.has_key ("Color Management", "ClutsDirectory")) {
-                    clutsDir             = keyFile.get_string("Color Management", "ClutsDirectory");
+                if ( keyFile.has_key ("Color Management", "ClutsDirectory")) {
+                    clutsDir             = keyFile.get_string ("Color Management", "ClutsDirectory");
                 }
 
 //    if( keyFile.has_key ("Color Management", "Ciebadpixgauss")) rtSettings.ciebadpixgauss       = keyFile.get_boolean("Color Management", "Ciebadpixgauss");
@@ -1742,7 +1742,7 @@ int Options::readFromFile (Glib::ustring fname)
                 }
 
                 if (keyFile.has_key ("Fast Export", "fastexport_icm_output_intent"        )) {
-                    fastexport_icm_outputIntent           = static_cast<rtengine::RenderingIntent>(keyFile.get_integer  ("Fast Export", "fastexport_icm_output_intent"        ));
+                    fastexport_icm_outputIntent           = static_cast<rtengine::RenderingIntent> (keyFile.get_integer  ("Fast Export", "fastexport_icm_output_intent"        ));
                 }
 
                 if (keyFile.has_key ("Fast Export", "fastexport_icm_output_bpc"        )) {
@@ -1783,21 +1783,21 @@ int Options::readFromFile (Glib::ustring fname)
             }
 
             if (keyFile.has_group ("Dialogs")) {
-                safeDirGet(keyFile, "Dialogs", "LastIccDir", lastIccDir);
-                safeDirGet(keyFile, "Dialogs", "LastDarkframeDir", lastDarkframeDir);
-                safeDirGet(keyFile, "Dialogs", "LastFlatfieldDir", lastFlatfieldDir);
-                safeDirGet(keyFile, "Dialogs", "LastRgbCurvesDir", lastRgbCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastLabCurvesDir", lastLabCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastRetinexDir", lastRetinexDir);
-                safeDirGet(keyFile, "Dialogs", "LastDenoiseCurvesDir", lastDenoiseCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastWaveletCurvesDir", lastWaveletCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastPFCurvesDir", lastPFCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastHsvCurvesDir", lastHsvCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastBWCurvesDir", lastBWCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastIccDir", lastIccDir);
+                safeDirGet (keyFile, "Dialogs", "LastDarkframeDir", lastDarkframeDir);
+                safeDirGet (keyFile, "Dialogs", "LastFlatfieldDir", lastFlatfieldDir);
+                safeDirGet (keyFile, "Dialogs", "LastRgbCurvesDir", lastRgbCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastLabCurvesDir", lastLabCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastRetinexDir", lastRetinexDir);
+                safeDirGet (keyFile, "Dialogs", "LastDenoiseCurvesDir", lastDenoiseCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastWaveletCurvesDir", lastWaveletCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastPFCurvesDir", lastPFCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastHsvCurvesDir", lastHsvCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastBWCurvesDir", lastBWCurvesDir);
 
-                safeDirGet(keyFile, "Dialogs", "LastToneCurvesDir", lastToneCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastVibranceCurvesDir", lastVibranceCurvesDir);
-                safeDirGet(keyFile, "Dialogs", "LastProfilingReferenceDir", lastProfilingReferenceDir);
+                safeDirGet (keyFile, "Dialogs", "LastToneCurvesDir", lastToneCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastVibranceCurvesDir", lastVibranceCurvesDir);
+                safeDirGet (keyFile, "Dialogs", "LastProfilingReferenceDir", lastProfilingReferenceDir);
             }
 
 // --------------------------------------------------------------------------------------------------------
@@ -1808,26 +1808,30 @@ int Options::readFromFile (Glib::ustring fname)
 
         }
     } catch (Glib::Error &err) {
-        printf("Options::readFromFile / Error code %d while reading values from \"%s\":\n%s\n", err.code(), fname.c_str(), err.what().c_str());
+        if (options.rtSettings.verbose) {
+            printf ("Options::readFromFile / Error code %d while reading values from \"%s\":\n%s\n", err.code(), fname.c_str(), err.what().c_str());
+        }
     } catch (...) {
-        printf("Options::readFromFile / Unknown exception while trying to load \"%s\"!\n", fname.c_str());
+        if (options.rtSettings.verbose) {
+            printf ("Options::readFromFile / Unknown exception while trying to load \"%s\"!\n", fname.c_str());
+        }
     }
 
     return 1;
 
 }
 
-bool Options::safeDirGet(const Glib::KeyFile& keyFile, const Glib::ustring& section,
-                         const Glib::ustring& entryName, Glib::ustring& destination)
+bool Options::safeDirGet (const Glib::KeyFile& keyFile, const Glib::ustring& section,
+                          const Glib::ustring& entryName, Glib::ustring& destination)
 {
     try {
-
+    
         if (keyFile.has_key (section, entryName) && !keyFile.get_string (section, entryName).empty ()) {
             destination = keyFile.get_string (section, entryName);
             return true;
         }
 
-    } catch(Glib::KeyFileError&) {}
+    } catch (Glib::KeyFileError&) {}
 
     return false;
 }
@@ -1862,8 +1866,6 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_string  ("General", "Language", language);
         keyFile.set_boolean ("General", "LanguageAutoDetect", languageAutoDetect);
         keyFile.set_string  ("General", "Theme", theme);
-        keyFile.set_boolean ("General", "SlimUI", slimUI);
-        keyFile.set_boolean ("General", "UseSystemTheme", useSystemTheme);
         keyFile.set_string  ("General", "Version", VERSION);
         keyFile.set_string  ("General", "DarkFramesPath", rtSettings.darkFramesPath);
         keyFile.set_string  ("General", "FlatFieldsPath", rtSettings.flatFieldsPath);
@@ -1921,10 +1923,10 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_integer ("File Browser", "MaxRecentFolders", maxRecentFolders);
         {
             std::vector<Glib::ustring> temp;
-            temp.reserve(maxRecentFolders);
+            temp.reserve (maxRecentFolders);
 
-            for(unsigned int i = 0; i < std::min(recentFolders.size(), maxRecentFolders); i++) {
-                temp.push_back(recentFolders[i]);
+            for (unsigned int i = 0; i < std::min (recentFolders.size(), maxRecentFolders); i++) {
+                temp.push_back (recentFolders[i]);
             }
 
             keyFile.set_string_list ("File Browser", "RecentFolders", temp);
@@ -1989,8 +1991,6 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_string  ("Profiles", "CustomProfileBuilderPath", CPBPath);
         keyFile.set_integer ("Profiles", "CustomProfileBuilderKeys", CPBKeys);
 
-        keyFile.set_string  ("GUI", "Font", font);
-        keyFile.set_string  ("GUI", "ColorPickerFont", colorPickerFont);
         keyFile.set_integer ("GUI", "WindowWidth", windowWidth);
         keyFile.set_integer ("GUI", "WindowHeight", windowHeight);
         keyFile.set_integer ("GUI", "WindowX", windowX);
@@ -2012,6 +2012,10 @@ int Options::saveToFile (Glib::ustring fname)
         keyFile.set_boolean ("GUI", "EditorFilmStripOpened", editorFilmStripOpened);
         keyFile.set_boolean ("GUI", "BrowserDirPanelOpened", browserDirPanelOpened);
         keyFile.set_integer ("GUI", "HistoryPanelWidth", historyPanelWidth);
+        keyFile.set_string  ("GUI", "FontFamily", fontFamily);
+        keyFile.set_integer ("GUI", "FontSize", fontSize);
+        keyFile.set_string  ("GUI", "CPFontFamily", CPFontFamily);
+        keyFile.set_integer ("GUI", "CPFontSize", CPFontSize);
         keyFile.set_integer ("GUI", "LastPreviewScale", lastScale);
         keyFile.set_integer ("GUI", "PanAccelFactor", panAccelFactor);
         keyFile.set_boolean ("GUI", "RememberZoomAndPan", rememberZoomAndPan);
@@ -2162,7 +2166,7 @@ int Options::saveToFile (Glib::ustring fname)
 
     if (f == nullptr) {
         if (options.rtSettings.verbose) {
-            printf("Options::saveToFile / Error: unable to open file \"%s\" with write access!\n", fname.c_str());
+            printf ("Options::saveToFile / Error: unable to open file \"%s\" with write access!\n", fname.c_str());
         }
 
         return 1;
@@ -2181,55 +2185,55 @@ bool Options::load ()
     const gchar* path;
     Glib::ustring dPath;
 
-    path = g_getenv("RT_SETTINGS");
+    path = g_getenv ("RT_SETTINGS");
 
     if (path != nullptr) {
-        rtdir = Glib::ustring(path);
+        rtdir = Glib::ustring (path);
 
-        if (!Glib::path_is_absolute(rtdir)) {
+        if (!Glib::path_is_absolute (rtdir)) {
             return false;
         }
     } else {
 #ifdef WIN32
         WCHAR pathW[MAX_PATH] = {0};
 
-        if (SHGetSpecialFolderPathW(NULL, pathW, CSIDL_LOCAL_APPDATA, false)) {
+        if (SHGetSpecialFolderPathW (NULL, pathW, CSIDL_LOCAL_APPDATA, false)) {
             char pathA[MAX_PATH];
-            WideCharToMultiByte(CP_UTF8, 0, pathW, -1, pathA, MAX_PATH, 0, 0);
-            rtdir = Glib::build_filename(Glib::ustring(pathA), Glib::ustring(CACHEFOLDERNAME));
+            WideCharToMultiByte (CP_UTF8, 0, pathW, -1, pathA, MAX_PATH, 0, 0);
+            rtdir = Glib::build_filename (Glib::ustring (pathA), Glib::ustring (CACHEFOLDERNAME));
         }
 
 #else
-        rtdir = Glib::build_filename(Glib::ustring(g_get_user_config_dir ()), Glib::ustring(CACHEFOLDERNAME));
+        rtdir = Glib::build_filename (Glib::ustring (g_get_user_config_dir ()), Glib::ustring (CACHEFOLDERNAME));
 #endif
     }
 
     if (options.rtSettings.verbose) {
-        printf("Settings directory (rtdir) = %s\n", rtdir.c_str());
+        printf ("Settings directory (rtdir) = %s\n", rtdir.c_str());
     }
 
     // Set the cache folder in RT's base folder
-    cacheBaseDir = Glib::build_filename(argv0, "cache");
+    cacheBaseDir = Glib::build_filename (argv0, "cache");
 
     // Read the global option file (the one located in the application's base folder)
-    options.readFromFile (Glib::build_filename(argv0, "options"));
+    options.readFromFile (Glib::build_filename (argv0, "options"));
 
     // Modify the path of the cache folder to the one provided in RT_CACHE environment variable
-    path = g_getenv("RT_CACHE");
+    path = g_getenv ("RT_CACHE");
 
     if (path != nullptr) {
-        cacheBaseDir = Glib::ustring(path);
+        cacheBaseDir = Glib::ustring (path);
 
-        if (!Glib::path_is_absolute(cacheBaseDir)) {
+        if (!Glib::path_is_absolute (cacheBaseDir)) {
             return false;
         }
     }
     // No environment variable provided, so falling back to the multi user mode, is enabled
     else if (options.multiUser) {
 #ifdef WIN32
-        cacheBaseDir = Glib::build_filename(rtdir, "cache");
+        cacheBaseDir = Glib::build_filename (rtdir, "cache");
 #else
-        cacheBaseDir = Glib::build_filename(Glib::ustring(g_get_user_cache_dir()), Glib::ustring(CACHEFOLDERNAME));
+        cacheBaseDir = Glib::build_filename (Glib::ustring (g_get_user_cache_dir()), Glib::ustring (CACHEFOLDERNAME));
 #endif
     }
 
@@ -2237,12 +2241,12 @@ bool Options::load ()
     if (options.multiUser) {
         // Read the user option file (the one located somewhere in the user's home folder)
         // Those values supersets those of the global option file
-        int r = options.readFromFile (Glib::build_filename(rtdir, "options"));
+        int r = options.readFromFile (Glib::build_filename (rtdir, "options"));
 
         // If the local option file does not exist or is broken, and the local cache folder does not exist, recreate it
         if (r && !g_mkdir_with_parents (rtdir.c_str (), 511)) {
             // Save the option file
-            options.saveToFile (Glib::build_filename(rtdir, "options"));
+            options.saveToFile (Glib::build_filename (rtdir, "options"));
         }
 
 #ifdef __APPLE__
@@ -2252,7 +2256,7 @@ bool Options::load ()
     }
 
     if (options.rtSettings.verbose) {
-        printf("Cache directory (cacheBaseDir) = %s\n", cacheBaseDir.c_str());
+        printf ("Cache directory (cacheBaseDir) = %s\n", cacheBaseDir.c_str());
     }
 
     // Update profile's path and recreate it if necessary
@@ -2262,15 +2266,15 @@ bool Options::load ()
     if (options.defProfRaw.empty()) {
         options.defProfRaw = DEFPROFILE_INTERNAL;
     } else {
-        Glib::ustring tmpFName = options.findProfilePath(options.defProfRaw);
+        Glib::ustring tmpFName = options.findProfilePath (options.defProfRaw);
 
         if (!tmpFName.empty()) {
             if (options.rtSettings.verbose) {
-                printf("Raws' default profile \"%s\" found\n", options.defProfRaw.c_str());
+                printf ("Raws' default profile \"%s\" found\n", options.defProfRaw.c_str());
             }
         } else {
             if (options.rtSettings.verbose) {
-                printf("Raws' default profile \"%s\" not found or not set -> using Internal values\n", options.defProfRaw.c_str());
+                printf ("Raws' default profile \"%s\" not found or not set -> using Internal values\n", options.defProfRaw.c_str());
             }
 
             options.defProfRaw = DEFPROFILE_INTERNAL;
@@ -2281,15 +2285,15 @@ bool Options::load ()
     if (options.defProfImg.empty()) {
         options.defProfImg = DEFPROFILE_INTERNAL;
     } else {
-        Glib::ustring tmpFName = options.findProfilePath(options.defProfImg);
+        Glib::ustring tmpFName = options.findProfilePath (options.defProfImg);
 
         if (!tmpFName.empty()) {
             if (options.rtSettings.verbose) {
-                printf("Images' default profile \"%s\" found\n", options.defProfImg.c_str());
+                printf ("Images' default profile \"%s\" found\n", options.defProfImg.c_str());
             }
         } else {
             if (options.rtSettings.verbose) {
-                printf("Images' default profile \"%s\" not found or not set -> using Internal values\n", options.defProfImg.c_str());
+                printf ("Images' default profile \"%s\" not found or not set -> using Internal values\n", options.defProfImg.c_str());
             }
 
             options.defProfImg = DEFPROFILE_INTERNAL;
@@ -2321,10 +2325,10 @@ bool Options::load ()
     }
 
     if (!options.language.empty()) {
-        std::vector<Glib::ustring> langPortions = Glib::Regex::split_simple(" ", options.language);
+        std::vector<Glib::ustring> langPortions = Glib::Regex::split_simple (" ", options.language);
 
         if (langPortions.size() >= 1) {
-            languageTranslation = argv0 + "/languages/" + langPortions.at(0);
+            languageTranslation = argv0 + "/languages/" + langPortions.at (0);
         }
 
         if (langPortions.size() >= 2) {
@@ -2332,7 +2336,7 @@ bool Options::load ()
         }
     }
 
-    langMgr.load(localeTranslation, new MultiLangMgr(languageTranslation, new MultiLangMgr(defaultTranslation)));
+    langMgr.load (localeTranslation, new MultiLangMgr (languageTranslation, new MultiLangMgr (defaultTranslation)));
 
     rtengine::init (&options.rtSettings, argv0, rtdir);
 
@@ -2343,9 +2347,9 @@ void Options::save ()
 {
 
     if (!options.multiUser) {
-        options.saveToFile (Glib::build_filename(argv0, "options"));
+        options.saveToFile (Glib::build_filename (argv0, "options"));
     } else {
-        options.saveToFile (Glib::build_filename(rtdir, "options"));
+        options.saveToFile (Glib::build_filename (rtdir, "options"));
     }
 }
 
@@ -2355,7 +2359,7 @@ void Options::save ()
 bool Options::has_retained_extention (Glib::ustring fname)
 {
 
-    Glib::ustring ext = getExtension(fname).lowercase();
+    Glib::ustring ext = getExtension (fname).lowercase();
 
     if (!ext.empty()) {
         // there is an extension to the filename

@@ -39,11 +39,9 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     std::vector<double> defaultCurve;
 
     Gtk::Frame* lumaFrame = Gtk::manage (new Gtk::Frame (M("TP_DIRPYRDENOISE_LUMAFR")) );
-    lumaFrame->set_border_width(0);
     lumaFrame->set_label_align(0.025, 0.5);
 
     Gtk::VBox * lumaVBox = Gtk::manage ( new Gtk::VBox());
-    lumaVBox->set_border_width(4);
     lumaVBox->set_spacing(2);
 
 
@@ -53,8 +51,8 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     ctboxL->pack_start (*labmL, Gtk::PACK_SHRINK, 1);
 
     Lmethod = Gtk::manage (new MyComboBoxText ());
-    Lmethod->append_text (M("TP_DIRPYRDENOISE_CUR"));
-    Lmethod->append_text (M("TP_DIRPYRDENOISE_SLI"));
+    Lmethod->append (M("TP_DIRPYRDENOISE_CUR"));
+    Lmethod->append (M("TP_DIRPYRDENOISE_SLI"));
     Lmethod->set_active(0);
     Lmethodconn = Lmethod->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::LmethodChanged) );
 
@@ -80,12 +78,10 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     NoiscurveEditorG->show();
 
     Gtk::Frame* chromaFrame = Gtk::manage (new Gtk::Frame (M("TP_DIRPYRDENOISE_CHROMAFR")) );
-    chromaFrame->set_border_width(0);
     chromaFrame->set_label_align(0.025, 0.5);
 
     Gtk::VBox *chromaVBox = Gtk::manage ( new Gtk::VBox());
     chromaVBox->set_spacing(2);
-    chromaVBox->set_border_width(4);
 
     autochroma = Gtk::manage (new Gtk::CheckButton (M("TP_DIRPYRDENOISE_AUTO")));
     autochroma->set_active (true);
@@ -97,10 +93,10 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     ctboxC->set_tooltip_markup (M("TP_DIRPYRDENOISE_CTYPE_TOOLTIP"));
 
     Cmethod = Gtk::manage (new MyComboBoxText ());
-    Cmethod->append_text (M("TP_DIRPYRDENOISE_MAN"));
-    Cmethod->append_text (M("TP_DIRPYRDENOISE_AUT"));
-    Cmethod->append_text (M("TP_DIRPYRDENOISE_PON"));
-    Cmethod->append_text (M("TP_DIRPYRDENOISE_PRE"));
+    Cmethod->append (M("TP_DIRPYRDENOISE_MAN"));
+    Cmethod->append (M("TP_DIRPYRDENOISE_AUT"));
+    Cmethod->append (M("TP_DIRPYRDENOISE_PON"));
+    Cmethod->append (M("TP_DIRPYRDENOISE_PRE"));
     Cmethod->set_active(0);
     Cmethodconn = Cmethod->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::CmethodChanged) );
 
@@ -110,9 +106,9 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     ctboxC2->set_tooltip_markup (M("TP_DIRPYRDENOISE_C2TYPE_TOOLTIP"));
 
     C2method = Gtk::manage (new MyComboBoxText ());
-    C2method->append_text (M("TP_DIRPYRDENOISE_MANU"));
-    C2method->append_text (M("TP_DIRPYRDENOISE_AUTO"));
-    C2method->append_text (M("TP_DIRPYRDENOISE_PREV"));
+    C2method->append (M("TP_DIRPYRDENOISE_MANU"));
+    C2method->append (M("TP_DIRPYRDENOISE_AUTO"));
+    C2method->append (M("TP_DIRPYRDENOISE_PREV"));
     C2method->set_active(0);
     C2methodconn = C2method->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::C2methodChanged) );
 
@@ -136,8 +132,8 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     hb1->set_tooltip_markup (M("TP_DIRPYRDENOISE_METHOD_TOOLTIP"));
 
     dmethod = Gtk::manage (new MyComboBoxText ());
-    dmethod->append_text (M("TP_DIRPYRDENOISE_LAB"));
-    dmethod->append_text (M("TP_DIRPYRDENOISE_RGB"));
+    dmethod->append (M("TP_DIRPYRDENOISE_LAB"));
+    dmethod->append (M("TP_DIRPYRDENOISE_RGB"));
     dmethod->set_active(0);
     hb1->pack_end (*dmethod, Gtk::PACK_EXPAND_WIDGET, 4);
     pack_start( *hb1, Gtk::PACK_SHRINK, 4);
@@ -188,12 +184,10 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     // ---- Median FIltering ----
 
     Gtk::Frame* medianFrame = Gtk::manage (new Gtk::Frame ());
-    medianFrame->set_border_width(0);
     medianFrame->set_label_align(0.025, 0.5);
 
     Gtk::VBox *medianVBox = Gtk::manage ( new Gtk::VBox());
     medianVBox->set_spacing(2);
-    medianVBox->set_border_width(4);
 
     median = Gtk::manage (new Gtk::CheckButton (M("TP_DIRPYRDENOISE_MED") + ":"));
     median->set_active (true);
@@ -204,31 +198,31 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     hsep2->show ();
 
     methodmed = Gtk::manage (new MyComboBoxText ());
-    methodmed->append_text (M("TP_DIRPYRDENOISE_LM"));
-    methodmed->append_text (M("TP_DIRPYRDENOISE_ABM"));
-    methodmed->append_text (M("TP_DIRPYRDENOISE_LPLABM"));
-    methodmed->append_text (M("TP_DIRPYRDENOISE_LABM"));
-    methodmed->append_text (M("TP_DIRPYRDENOISE_RGBM"));
+    methodmed->append (M("TP_DIRPYRDENOISE_LM"));
+    methodmed->append (M("TP_DIRPYRDENOISE_ABM"));
+    methodmed->append (M("TP_DIRPYRDENOISE_LPLABM"));
+    methodmed->append (M("TP_DIRPYRDENOISE_LABM"));
+    methodmed->append (M("TP_DIRPYRDENOISE_RGBM"));
     methodmed->set_active (0);
     methodmed->set_tooltip_text (M("TP_DIRPYRDENOISE_METM_TOOLTIP"));
     methodmedconn = methodmed->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::methodmedChanged) );
 
     rgbmethod = Gtk::manage (new MyComboBoxText ());
-    rgbmethod->append_text (M("TP_DIRPYRDENOISE_3X3_SOFT"));
-    rgbmethod->append_text (M("TP_DIRPYRDENOISE_3X3"));
-    rgbmethod->append_text (M("TP_DIRPYRDENOISE_5X5_SOFT"));
+    rgbmethod->append (M("TP_DIRPYRDENOISE_3X3_SOFT"));
+    rgbmethod->append (M("TP_DIRPYRDENOISE_3X3"));
+    rgbmethod->append (M("TP_DIRPYRDENOISE_5X5_SOFT"));
     rgbmethod->set_active (0);
     rgbmethod->set_tooltip_text (M("TP_DIRPYRDENOISE_MET_TOOLTIP"));
     rgbmethodconn = rgbmethod->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::rgbmethodChanged) );
 
 
     medmethod = Gtk::manage (new MyComboBoxText ());
-    medmethod->append_text (M("TP_DIRPYRDENOISE_3X3_SOFT"));
-    medmethod->append_text (M("TP_DIRPYRDENOISE_3X3"));
-    medmethod->append_text (M("TP_DIRPYRDENOISE_5X5_SOFT"));
-    medmethod->append_text (M("TP_DIRPYRDENOISE_5X5"));
-    medmethod->append_text (M("TP_DIRPYRDENOISE_7X7"));
-    medmethod->append_text (M("TP_DIRPYRDENOISE_9X9"));
+    medmethod->append (M("TP_DIRPYRDENOISE_3X3_SOFT"));
+    medmethod->append (M("TP_DIRPYRDENOISE_3X3"));
+    medmethod->append (M("TP_DIRPYRDENOISE_5X5_SOFT"));
+    medmethod->append (M("TP_DIRPYRDENOISE_5X5"));
+    medmethod->append (M("TP_DIRPYRDENOISE_7X7"));
+    medmethod->append (M("TP_DIRPYRDENOISE_9X9"));
     medmethod->set_active (0);
     medmethod->set_tooltip_text (M("TP_DIRPYRDENOISE_MET_TOOLTIP"));
     medmethodconn = medmethod->signal_changed().connect ( sigc::mem_fun(*this, &DirPyrDenoise::medmethodChanged) );
@@ -254,11 +248,11 @@ DirPyrDenoise::DirPyrDenoise () : FoldableToolPanel(this, "dirpyrdenoise", M("TP
     hb11->set_tooltip_markup (M("TP_DIRPYRDENOISE_METHOD11_TOOLTIP"));
 
     smethod = Gtk::manage (new MyComboBoxText ());
-    smethod->append_text (M("TP_DIRPYRDENOISE_SHAL"));
-//  smethod->append_text (M("TP_DIRPYRDENOISE_SHBI"));
-    smethod->append_text (M("TP_DIRPYRDENOISE_SHALBI"));
-//  smethod->append_text (M("TP_DIRPYRDENOISE_SHALAL"));
-//  smethod->append_text (M("TP_DIRPYRDENOISE_SHBIBI"));
+    smethod->append (M("TP_DIRPYRDENOISE_SHAL"));
+//  smethod->append (M("TP_DIRPYRDENOISE_SHBI"));
+    smethod->append (M("TP_DIRPYRDENOISE_SHALBI"));
+//  smethod->append (M("TP_DIRPYRDENOISE_SHALAL"));
+//  smethod->append (M("TP_DIRPYRDENOISE_SHBIBI"));
     smethod->set_active(1);
     hb11->pack_start (*smethod, Gtk::PACK_EXPAND_WIDGET, 4);
     pack_start( *hb11, Gtk::PACK_SHRINK, 4);
@@ -339,7 +333,6 @@ DirPyrDenoise::~DirPyrDenoise ()
 }
 int chromaChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<DirPyrDenoise*>(data))->chromaComputed_ ();
     return 0;
 }
@@ -349,7 +342,7 @@ void DirPyrDenoise::chromaChanged (double autchroma, double autred, double autbl
 //  printf("CHROM=%f\n",nextchroma);
     nextred = autred;
     nextblue = autblue;
-    g_idle_add (chromaChangedUI, this);
+    add_idle(chromaChangedUI, this);
 }
 
 bool DirPyrDenoise::chromaComputed_ ()
@@ -365,7 +358,6 @@ bool DirPyrDenoise::chromaComputed_ ()
 }
 int TilePrevChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<DirPyrDenoise*>(data))->TilePrevComputed_ ();
     return 0;
 }
@@ -380,7 +372,7 @@ void DirPyrDenoise::noiseTilePrev (int tileX, int tileY, int prevX, int prevY, i
     nextsizeT = sizeT;
     nextsizeP = sizeP;
 
-    g_idle_add (TilePrevChangedUI, this);
+    add_idle(TilePrevChangedUI, this);
 
 
 }
@@ -433,7 +425,6 @@ void DirPyrDenoise::updatePrevLabel ()
 
 int noiseChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<DirPyrDenoise*>(data))->noiseComputed_ ();
     return 0;
 }
@@ -443,7 +434,7 @@ void DirPyrDenoise::noiseChanged (double nresid, double highresid)
 {
     nextnresid = nresid;
     nexthighresid = highresid;
-    g_idle_add (noiseChangedUI, this);
+    add_idle(noiseChangedUI, this);
 }
 
 bool DirPyrDenoise::noiseComputed_ ()
@@ -1231,14 +1222,14 @@ void DirPyrDenoise::setBatchMode (bool batchMode)
     NoiscurveEditorG->setBatchMode (batchMode);
     CCcurveEditorG->setBatchMode (batchMode);
 
-    dmethod->append_text (M("GENERAL_UNCHANGED"));
-    Lmethod->append_text (M("GENERAL_UNCHANGED"));
-    Cmethod->append_text (M("GENERAL_UNCHANGED"));
-    C2method->append_text (M("GENERAL_UNCHANGED"));
-    smethod->append_text (M("GENERAL_UNCHANGED"));
-    medmethod->append_text (M("GENERAL_UNCHANGED"));
-    methodmed->append_text (M("GENERAL_UNCHANGED"));
-    rgbmethod->append_text (M("GENERAL_UNCHANGED"));
+    dmethod->append (M("GENERAL_UNCHANGED"));
+    Lmethod->append (M("GENERAL_UNCHANGED"));
+    Cmethod->append (M("GENERAL_UNCHANGED"));
+    C2method->append (M("GENERAL_UNCHANGED"));
+    smethod->append (M("GENERAL_UNCHANGED"));
+    medmethod->append (M("GENERAL_UNCHANGED"));
+    methodmed->append (M("GENERAL_UNCHANGED"));
+    rgbmethod->append (M("GENERAL_UNCHANGED"));
 
 }
 

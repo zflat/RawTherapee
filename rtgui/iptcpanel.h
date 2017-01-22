@@ -36,12 +36,12 @@ private:
     Gtk::Entry*     captionWriter;
     Gtk::Entry*     headline;
     Gtk::Entry*     instructions;
-    Gtk::ComboBoxEntryText* keyword;
+    MyComboBoxText* keyword;
     Gtk::ListViewText*  keywords;
     Gtk::Button*    addKW;
     Gtk::Button*    delKW;
-    Gtk::ComboBoxEntryText* category;
-    Gtk::ComboBoxEntryText* suppCategory;
+    MyComboBoxText* category;
+    MyComboBoxText* suppCategory;
     Gtk::ListViewText*      suppCategories;
     Gtk::Button*    addSC;
     Gtk::Button*    delSC;

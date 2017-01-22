@@ -631,7 +631,6 @@ public:
     bool bluemed;
     bool greenhigh;
     bool bluehigh;
-    bool enacont;
     bool expcontrast;
     bool expchroma;
     bool expedge;

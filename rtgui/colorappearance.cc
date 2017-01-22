@@ -41,11 +41,9 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     Gtk::VBox *p1VBox;
 
     p1Frame = Gtk::manage (new Gtk::Frame(M("TP_COLORAPP_LABEL_SCENE")) );
-    p1Frame->set_border_width(0);
     p1Frame->set_label_align(0.025, 0.5);
 
     p1VBox = Gtk::manage ( new Gtk::VBox());
-    p1VBox->set_border_width(4);
     p1VBox->set_spacing(2);
 
     degree  = Gtk::manage (new Adjuster (M("TP_COLORAPP_CIECAT_DEGREE"),    0.,  100.,  1.,   100.));
@@ -64,14 +62,13 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     p1VBox->pack_start (*surrsource, Gtk::PACK_SHRINK);
 
     Gtk::HBox* wbmHBox = Gtk::manage (new Gtk::HBox ());
-    wbmHBox->set_border_width (0);
     wbmHBox->set_spacing (2);
     wbmHBox->set_tooltip_markup (M("TP_COLORAPP_MODEL_TOOLTIP"));
     Gtk::Label* wbmLab = Gtk::manage (new Gtk::Label (M("TP_COLORAPP_MODEL") + ":"));
     wbmHBox->pack_start (*wbmLab, Gtk::PACK_SHRINK);
     wbmodel = Gtk::manage (new MyComboBoxText ());
-    wbmodel->append_text (M("TP_COLORAPP_WBRT"));
-    wbmodel->append_text (M("TP_COLORAPP_WBCAM"));
+    wbmodel->append (M("TP_COLORAPP_WBRT"));
+    wbmodel->append (M("TP_COLORAPP_WBCAM"));
     wbmodel->set_active (0);
     wbmHBox->pack_start (*wbmodel);
     p1VBox->pack_start (*wbmHBox);
@@ -100,24 +97,21 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     Gtk::VBox *p2VBox;
 
     p2Frame = Gtk::manage (new Gtk::Frame(M("TP_COLORAPP_LABEL_CAM02")) );
-    p2Frame->set_border_width(0);
     p2Frame->set_label_align(0.025, 0.5);
 
     p2VBox = Gtk::manage ( new Gtk::VBox());
-    p2VBox->set_border_width(4);
     p2VBox->set_spacing(2);
 
     Gtk::HBox* alHBox = Gtk::manage (new Gtk::HBox ());
-    alHBox->set_border_width (0);
     alHBox->set_spacing (2);
     alHBox->set_tooltip_markup (M("TP_COLORAPP_ALGO_TOOLTIP"));
     Gtk::Label* alLabel = Gtk::manage (new Gtk::Label (M("TP_COLORAPP_ALGO") + ":"));
     alHBox->pack_start (*alLabel, Gtk::PACK_SHRINK);
     algo = Gtk::manage (new MyComboBoxText ());
-    algo->append_text (M("TP_COLORAPP_ALGO_JC"));
-    algo->append_text (M("TP_COLORAPP_ALGO_JS"));
-    algo->append_text (M("TP_COLORAPP_ALGO_QM"));
-    algo->append_text (M("TP_COLORAPP_ALGO_ALL"));
+    algo->append (M("TP_COLORAPP_ALGO_JC"));
+    algo->append (M("TP_COLORAPP_ALGO_JS"));
+    algo->append (M("TP_COLORAPP_ALGO_QM"));
+    algo->append (M("TP_COLORAPP_ALGO_ALL"));
     algo->set_active (0);
     alHBox->pack_start (*algo);
     p2VBox->pack_start (*alHBox);
@@ -229,8 +223,8 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     p2VBox->pack_start (*Gtk::manage (new  Gtk::HSeparator()), Gtk::PACK_EXPAND_WIDGET, 4);
 
     toneCurveMode = Gtk::manage (new MyComboBoxText ());
-    toneCurveMode->append_text (M("TP_COLORAPP_TCMODE_LIGHTNESS"));
-    toneCurveMode->append_text (M("TP_COLORAPP_TCMODE_BRIGHTNESS"));
+    toneCurveMode->append (M("TP_COLORAPP_TCMODE_LIGHTNESS"));
+    toneCurveMode->append (M("TP_COLORAPP_TCMODE_BRIGHTNESS"));
     toneCurveMode->set_active (0);
     toneCurveMode->set_tooltip_text(M("TP_COLORAPP_TCMODE_LABEL1"));
 
@@ -245,8 +239,8 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     tcmodeconn = toneCurveMode->signal_changed().connect( sigc::mem_fun(*this, &ColorAppearance::curveMode1Changed), true );
 
     toneCurveMode2 = Gtk::manage (new MyComboBoxText ());
-    toneCurveMode2->append_text (M("TP_COLORAPP_TCMODE_LIGHTNESS"));
-    toneCurveMode2->append_text (M("TP_COLORAPP_TCMODE_BRIGHTNESS"));
+    toneCurveMode2->append (M("TP_COLORAPP_TCMODE_LIGHTNESS"));
+    toneCurveMode2->append (M("TP_COLORAPP_TCMODE_BRIGHTNESS"));
     toneCurveMode2->set_active (0);
     toneCurveMode2->set_tooltip_text(M("TP_COLORAPP_TCMODE_LABEL2"));
 
@@ -258,9 +252,9 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     tcmode2conn = toneCurveMode2->signal_changed().connect( sigc::mem_fun(*this, &ColorAppearance::curveMode2Changed), true );
 
     toneCurveMode3 = Gtk::manage (new MyComboBoxText ());
-    toneCurveMode3->append_text (M("TP_COLORAPP_TCMODE_CHROMA"));
-    toneCurveMode3->append_text (M("TP_COLORAPP_TCMODE_SATUR"));
-    toneCurveMode3->append_text (M("TP_COLORAPP_TCMODE_COLORF"));
+    toneCurveMode3->append (M("TP_COLORAPP_TCMODE_CHROMA"));
+    toneCurveMode3->append (M("TP_COLORAPP_TCMODE_SATUR"));
+    toneCurveMode3->append (M("TP_COLORAPP_TCMODE_COLORF"));
     toneCurveMode3->set_active (0);
     toneCurveMode3->set_tooltip_text(M("TP_COLORAPP_TCMODE_LABEL3"));
 
@@ -344,11 +338,9 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     Gtk::VBox *p3VBox;
 
     p3Frame = Gtk::manage (new Gtk::Frame(M("TP_COLORAPP_LABEL_VIEWING")) ); // "Editing viewing conditions" ???
-    p3Frame->set_border_width(0);
     p3Frame->set_label_align(0.025, 0.5);
 
     p3VBox = Gtk::manage ( new Gtk::VBox());
-    p3VBox->set_border_width(4);
     p3VBox->set_spacing(2);
 
     adaplum = Gtk::manage (new Adjuster (M("TP_COLORAPP_ADAPTVIEWING"), 0.1,  1000., 0.1,   16.));
@@ -362,16 +354,15 @@ ColorAppearance::ColorAppearance () : FoldableToolPanel(this, "colorappearance",
     p3VBox->pack_start (*adaplum);
 
     Gtk::HBox* surrHBox = Gtk::manage (new Gtk::HBox ());
-    surrHBox->set_border_width (0);
     surrHBox->set_spacing (2);
     surrHBox->set_tooltip_markup(M("TP_COLORAPP_SURROUND_TOOLTIP"));
     Gtk::Label* surrLabel = Gtk::manage (new Gtk::Label (M("TP_COLORAPP_SURROUND") + ":"));
     surrHBox->pack_start (*surrLabel, Gtk::PACK_SHRINK);
     surround = Gtk::manage (new MyComboBoxText ());
-    surround->append_text (M("TP_COLORAPP_SURROUND_AVER"));
-    surround->append_text (M("TP_COLORAPP_SURROUND_DIM"));
-    surround->append_text (M("TP_COLORAPP_SURROUND_DARK"));
-    surround->append_text (M("TP_COLORAPP_SURROUND_EXDARK"));
+    surround->append (M("TP_COLORAPP_SURROUND_AVER"));
+    surround->append (M("TP_COLORAPP_SURROUND_DIM"));
+    surround->append (M("TP_COLORAPP_SURROUND_DARK"));
+    surround->append (M("TP_COLORAPP_SURROUND_EXDARK"));
     surround->set_active (1);
     surrHBox->pack_start (*surround);
     p3VBox->pack_start (*surrHBox);
@@ -1013,14 +1004,13 @@ void ColorAppearance::setDefaults (const ProcParams* defParams, const ParamsEdit
 }
 int autoCamChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<ColorAppearance*>(data))->autoCamComputed_ ();
     return 0;
 }
 void ColorAppearance::autoCamChanged (double ccam)
 {
     nextCcam = ccam;
-    g_idle_add (autoCamChangedUI, this);
+    add_idle (autoCamChangedUI, this);
 }
 
 bool ColorAppearance::autoCamComputed_ ()
@@ -1035,14 +1025,13 @@ bool ColorAppearance::autoCamComputed_ ()
 }
 int adapCamChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<ColorAppearance*>(data))->adapCamComputed_ ();
     return 0;
 }
 void ColorAppearance::adapCamChanged (double cadap)
 {
     nextCadap = cadap;
-    g_idle_add (adapCamChangedUI, this);
+    add_idle (adapCamChangedUI, this);
 }
 
 bool ColorAppearance::adapCamComputed_ ()
@@ -1287,12 +1276,12 @@ void ColorAppearance::setBatchMode (bool batchMode)
     qcontrast->showEditedCB ();
     colorh->showEditedCB ();
 
-    surround->append_text (M("GENERAL_UNCHANGED"));
-    wbmodel->append_text (M("GENERAL_UNCHANGED"));
-    algo->append_text (M("GENERAL_UNCHANGED"));
-    toneCurveMode->append_text (M("GENERAL_UNCHANGED"));
-    toneCurveMode2->append_text (M("GENERAL_UNCHANGED"));
-    toneCurveMode3->append_text (M("GENERAL_UNCHANGED"));
+    surround->append (M("GENERAL_UNCHANGED"));
+    wbmodel->append (M("GENERAL_UNCHANGED"));
+    algo->append (M("GENERAL_UNCHANGED"));
+    toneCurveMode->append (M("GENERAL_UNCHANGED"));
+    toneCurveMode2->append (M("GENERAL_UNCHANGED"));
+    toneCurveMode3->append (M("GENERAL_UNCHANGED"));
 
     curveEditorG->setBatchMode (batchMode);
     curveEditorG2->setBatchMode (batchMode);

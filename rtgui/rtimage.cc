@@ -130,7 +130,9 @@ Glib::ustring RTImage::findIconAbsolutePath (const Glib::ustring& iconName)
 
 void RTImage::setPaths (const Options& options)
 {
-    Glib::ustring iconSet;
+    // TODO: Forcing the Dark theme, so reading the icon set files is useless for now...
+
+    /*Glib::ustring iconSet;
 
     // Either use the system icon set or the one specified in the options.
     if (options.useSystemTheme) {
@@ -144,7 +146,14 @@ void RTImage::setPaths (const Options& options)
     if (!loadIconSet (iconSet)) {
         // If the preferred icon set is unavailable, fall back to the default icon set.
         loadIconSet (Glib::build_filename (argv0, "themes", "Default.iconset"));
-    }
+    }*/
+
+    imagePaths.clear ();
+
+    imagePaths.push_back (Glib::build_filename(argv0, "images", "Dark"));
+    imagePaths.push_back (Glib::build_filename(argv0, "images", "Dark", "actions"));
+    imagePaths.push_back (Glib::build_filename(argv0, "images", "Dark", "devices"));
+    imagePaths.push_back (Glib::build_filename(argv0, "images", "Dark", "places"));
 
     // The images folder is the second fallback solution.
     imagePaths.push_back (Glib::build_filename(argv0, "images"));
@@ -190,7 +199,6 @@ Cairo::RefPtr<Cairo::ImageSurface> RTImage::createFromPng (const Glib::ustring& 
         if (options.rtSettings.verbose) {
             std::cerr << "Failed to load PNG \"" << fileName << "\": " << exception.what() << std::endl;
         }
-
     }
 
     return surface;

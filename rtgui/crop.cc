@@ -189,25 +189,25 @@ Crop::Crop (): FoldableToolPanel(this, "crop", M("TP_CROP_LABEL"), false, true)
 
     // populate the combobox
     for (int i = 0; i < NumberOfCropRatios; i++) {
-        ratio->append_text (cropratio[i].label);
+        ratio->append (cropratio[i].label);
     }
 
     ratio->set_active (0);
 
-    orientation->append_text (M("GENERAL_LANDSCAPE"));
-    orientation->append_text (M("GENERAL_PORTRAIT"));
-    orientation->append_text (M("GENERAL_ASIMAGE"));
+    orientation->append (M("GENERAL_LANDSCAPE"));
+    orientation->append (M("GENERAL_PORTRAIT"));
+    orientation->append (M("GENERAL_ASIMAGE"));
     orientation->set_active (2);
 
-    guide->append_text (M("TP_CROP_GTNONE"));
-    guide->append_text (M("TP_CROP_GTFRAME"));
-    guide->append_text (M("TP_CROP_GTRULETHIRDS"));
-    guide->append_text (M("TP_CROP_GTDIAGONALS"));
-    guide->append_text (M("TP_CROP_GTHARMMEANS"));
-    guide->append_text (M("TP_CROP_GTGRID"));
-    guide->append_text (M("TP_CROP_GTTRIANGLE1"));
-    guide->append_text (M("TP_CROP_GTTRIANGLE2"));
-    guide->append_text (M("TP_CROP_GTEPASSPORT"));
+    guide->append (M("TP_CROP_GTNONE"));
+    guide->append (M("TP_CROP_GTFRAME"));
+    guide->append (M("TP_CROP_GTRULETHIRDS"));
+    guide->append (M("TP_CROP_GTDIAGONALS"));
+    guide->append (M("TP_CROP_GTHARMMEANS"));
+    guide->append (M("TP_CROP_GTGRID"));
+    guide->append (M("TP_CROP_GTTRIANGLE1"));
+    guide->append (M("TP_CROP_GTTRIANGLE2"));
+    guide->append (M("TP_CROP_GTEPASSPORT"));
     guide->set_active (0);
 
     w->set_range (1, maxw);
@@ -510,14 +510,12 @@ void Crop::enabledChanged ()
 
 int notifyListenerUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     (static_cast<Crop*>(data))->notifyListener ();
     return 0;
 }
 
 int refreshSpinsUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     RefreshSpinHelper* rsh = static_cast<RefreshSpinHelper*>(data);
     rsh->crop->refreshSpins (rsh->notify);
     delete rsh;
@@ -528,14 +526,14 @@ void Crop::hFlipCrop ()
 {
 
     nx = maxw - nx - nw;
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::vFlipCrop ()
 {
 
     ny = maxh - ny - nh;
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::rotateCrop (int deg, bool hflip, bool vflip)
@@ -575,7 +573,7 @@ void Crop::rotateCrop (int deg, bool hflip, bool vflip)
     }
 
     lastRotationDeg = deg;
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::positionChanged ()
@@ -589,7 +587,7 @@ void Crop::positionChanged ()
     int W = nw;
     int H = nh;
     cropMoved (X, Y, W, H);
-    g_idle_add (notifyListenerUI, this);
+    add_idle (notifyListenerUI, this);
 }
 
 void Crop::widthChanged ()
@@ -602,7 +600,7 @@ void Crop::widthChanged ()
     int W = (int)w->get_value ();
     int H = nh;
     cropWidth2Resized (X, Y, W, H);
-    g_idle_add (notifyListenerUI, this);
+    add_idle (notifyListenerUI, this);
 }
 
 void Crop::heightChanged ()
@@ -615,7 +613,7 @@ void Crop::heightChanged ()
     int W = nw;
     int H = (int)h->get_value ();
     cropHeight2Resized (X, Y, W, H);
-    g_idle_add (notifyListenerUI, this);
+    add_idle (notifyListenerUI, this);
 }
 
 // Fixed ratio toggle button
@@ -667,7 +665,7 @@ void Crop::adjustCropToRatio()
     }
 
     // This will save the options
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, true));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, true));
 }
 
 void Crop::refreshSize ()
@@ -747,7 +745,6 @@ struct setdimparams {
 
 int sizeChangedUI (void* data)
 {
-    GThreadLock lock; // All GUI acces from idle_add callbacks or separate thread HAVE to be protected
     setdimparams* params = static_cast<setdimparams*>(data);
     params->crop->setDimensions (params->x, params->y);
     delete params;
@@ -761,7 +758,7 @@ void Crop::sizeChanged (int x, int y, int ow, int oh)
     params->x = x;
     params->y = y;
     params->crop = this;
-    g_idle_add (sizeChangedUI, params);
+    add_idle (sizeChangedUI, params);
 }
 
 bool Crop::refreshSpins (bool notify)
@@ -825,7 +822,7 @@ void Crop::cropMoved (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 //  Glib::signal_idle().connect (sigc::mem_fun(*this, &Crop::refreshSpins));
 }
 
@@ -869,7 +866,7 @@ void Crop::cropWidth1Resized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropWidth2Resized (int &X, int &Y, int &W, int &H)
@@ -909,7 +906,7 @@ void Crop::cropWidth2Resized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropHeight1Resized (int &X, int &Y, int &W, int &H)
@@ -952,7 +949,7 @@ void Crop::cropHeight1Resized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropHeight2Resized (int &X, int &Y, int &W, int &H)
@@ -992,7 +989,7 @@ void Crop::cropHeight2Resized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropTopLeftResized (int &X, int &Y, int &W, int &H)
@@ -1034,7 +1031,7 @@ void Crop::cropTopLeftResized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropTopRightResized (int &X, int &Y, int &W, int &H)
@@ -1074,7 +1071,7 @@ void Crop::cropTopRightResized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropBottomLeftResized (int &X, int &Y, int &W, int &H)
@@ -1114,7 +1111,7 @@ void Crop::cropBottomLeftResized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropBottomRightResized (int &X, int &Y, int &W, int &H)
@@ -1151,7 +1148,7 @@ void Crop::cropBottomRightResized (int &X, int &Y, int &W, int &H)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropInit (int &x, int &y, int &w, int &h)
@@ -1269,13 +1266,13 @@ void Crop::cropResized (int &x, int &y, int& x2, int& y2)
     nw = W;
     nh = H;
 
-    g_idle_add (refreshSpinsUI, new RefreshSpinHelper (this, false));
+    add_idle (refreshSpinsUI, new RefreshSpinHelper (this, false));
 }
 
 void Crop::cropManipReady ()
 {
 
-    g_idle_add (notifyListenerUI, this);
+    add_idle (notifyListenerUI, this);
 }
 
 double Crop::getRatio ()
@@ -1308,8 +1305,8 @@ void Crop::setBatchMode (bool batchMode)
 
     ToolPanel::setBatchMode (batchMode);
 
-    ratio->append_text (M("GENERAL_UNCHANGED"));
-    orientation->append_text (M("GENERAL_UNCHANGED"));
-    guide->append_text (M("GENERAL_UNCHANGED"));
+    ratio->append (M("GENERAL_UNCHANGED"));
+    orientation->append (M("GENERAL_UNCHANGED"));
+    guide->append (M("GENERAL_UNCHANGED"));
     removeIfThere (this, ppibox);
 }

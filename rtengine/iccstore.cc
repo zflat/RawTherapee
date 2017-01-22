@@ -146,7 +146,7 @@ std::vector<Glib::ustring> getGamma ()
 
     std::vector<Glib::ustring> res;
 
-    for (unsigned int i = 0; i < sizeof(wpgamma) / sizeof(wpgamma[0]); i++) {
+    for (unsigned int i = 0; i < sizeof (wpgamma) / sizeof (wpgamma[0]); i++) {
         res.push_back (wpgamma[i]);
     }
 
@@ -158,7 +158,7 @@ std::vector<Glib::ustring> getWorkingProfiles ()
 
     std::vector<Glib::ustring> res;
 
-    for (unsigned int i = 0; i < sizeof(wpnames) / sizeof(wpnames[0]); i++) {
+    for (unsigned int i = 0; i < sizeof (wpnames) / sizeof (wpnames[0]); i++) {
         res.push_back (wpnames[i]);
     }
 
@@ -168,7 +168,7 @@ std::vector<Glib::ustring> getWorkingProfiles ()
 std::vector<Glib::ustring> ICCStore::getProfiles (const ProfileType type) const
 {
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     std::vector<Glib::ustring> res;
 
@@ -187,7 +187,7 @@ std::vector<Glib::ustring> ICCStore::getProfiles (const ProfileType type) const
 std::vector<Glib::ustring> ICCStore::getProfilesFromDir (const Glib::ustring& dirName) const
 {
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     std::vector<Glib::ustring> res;
 
@@ -211,19 +211,19 @@ cmsHPROFILE ICCStore::makeStdGammaProfile (cmsHPROFILE iprof)
     }
 
     cmsUInt32Number bytesNeeded = 0;
-    cmsSaveProfileToMem(iprof, nullptr, &bytesNeeded);
+    cmsSaveProfileToMem (iprof, nullptr, &bytesNeeded);
 
     if (bytesNeeded == 0) {
         return nullptr;
     }
 
     uint8_t *data = new uint8_t[bytesNeeded + 1];
-    cmsSaveProfileToMem(iprof, data, &bytesNeeded);
+    cmsSaveProfileToMem (iprof, data, &bytesNeeded);
     const uint8_t *p = &data[128]; // skip 128 byte header
     uint32_t tag_count;
-    memcpy(&tag_count, p, 4);
+    memcpy (&tag_count, p, 4);
     p += 4;
-    tag_count = ntohl(tag_count);
+    tag_count = ntohl (tag_count);
 
     struct icctag {
         uint32_t sig;
@@ -236,10 +236,10 @@ cmsHPROFILE ICCStore::makeStdGammaProfile (cmsHPROFILE iprof)
     int data_size = (gamma_size + 3) & ~3;
 
     for (uint32_t i = 0; i < tag_count; i++) {
-        memcpy(&tags[i], p, 12);
-        tags[i].sig = ntohl(tags[i].sig);
-        tags[i].offset = ntohl(tags[i].offset);
-        tags[i].size = ntohl(tags[i].size);
+        memcpy (&tags[i], p, 12);
+        tags[i].sig = ntohl (tags[i].sig);
+        tags[i].offset = ntohl (tags[i].offset);
+        tags[i].size = ntohl (tags[i].size);
         p += 12;
 
         if (tags[i].sig != 0x62545243 && // bTRC
@@ -252,16 +252,16 @@ cmsHPROFILE ICCStore::makeStdGammaProfile (cmsHPROFILE iprof)
 
     uint32_t sz = 128 + 4 + tag_count * 12 + data_size;
     uint8_t *nd = new uint8_t[sz];
-    memset(nd, 0, sz);
-    memcpy(nd, data, 128 + 4);
-    sz = htonl(sz);
-    memcpy(nd, &sz, 4);
+    memset (nd, 0, sz);
+    memcpy (nd, data, 128 + 4);
+    sz = htonl (sz);
+    memcpy (nd, &sz, 4);
     uint32_t offset = 128 + 4 + tag_count * 12;
     uint32_t gamma_offset = 0;
 
     for (uint32_t i = 0; i < tag_count; i++) {
         struct icctag tag;
-        tag.sig = htonl(tags[i].sig);
+        tag.sig = htonl (tags[i].sig);
 
         if (tags[i].sig == 0x62545243 || // bTRC
                 tags[i].sig == 0x67545243 || // gTRC
@@ -270,29 +270,29 @@ cmsHPROFILE ICCStore::makeStdGammaProfile (cmsHPROFILE iprof)
             if (gamma_offset == 0) {
                 gamma_offset = offset;
                 uint32_t pcurve[] = { htonl(0x63757276), htonl(0), htonl(gamma_size == 12 ? 0U : 1U) };
-                memcpy(&nd[offset], pcurve, 12);
+                memcpy (&nd[offset], pcurve, 12);
 
                 if (gamma_size == 14) {
-                    uint16_t gm = htons(gamma);
-                    memcpy(&nd[offset + 12], &gm, 2);
+                    uint16_t gm = htons (gamma);
+                    memcpy (&nd[offset + 12], &gm, 2);
                 }
 
                 offset += (gamma_size + 3) & ~3;
             }
 
-            tag.offset = htonl(gamma_offset);
-            tag.size = htonl(gamma_size);
+            tag.offset = htonl (gamma_offset);
+            tag.size = htonl (gamma_size);
         } else {
-            tag.offset = htonl(offset);
-            tag.size = htonl(tags[i].size);
-            memcpy(&nd[offset], &data[tags[i].offset], tags[i].size);
+            tag.offset = htonl (offset);
+            tag.size = htonl (tags[i].size);
+            memcpy (&nd[offset], &data[tags[i].offset], tags[i].size);
             offset += (tags[i].size + 3) & ~3;
         }
 
-        memcpy(&nd[128 + 4 + i * 12], &tag, 12);
+        memcpy (&nd[128 + 4 + i * 12], &tag, 12);
     }
 
-    cmsHPROFILE oprof = cmsOpenProfileFromMem (nd, ntohl(sz));
+    cmsHPROFILE oprof = cmsOpenProfileFromMem (nd, ntohl (sz));
     delete [] nd;
     delete [] data;
     return oprof;
@@ -310,7 +310,7 @@ ICCStore::ICCStore () :
 {
     //cmsErrorAction (LCMS_ERROR_SHOW);
 
-    int N = sizeof(wpnames) / sizeof(wpnames[0]);
+    int N = sizeof (wpnames) / sizeof (wpnames[0]);
 
     for (int i = 0; i < N; i++) {
         wProfiles[wpnames[i]] = createFromMatrix (wprofiles[i]);
@@ -677,7 +677,7 @@ bool ICCStore::outputProfileExist (const Glib::ustring& name) const
 cmsHPROFILE ICCStore::getProfile (const Glib::ustring& name) const
 {
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     const ProfileMap::const_iterator r = fileProfiles.find (name);
 
@@ -690,8 +690,8 @@ cmsHPROFILE ICCStore::getProfile (const Glib::ustring& name) const
         const cmsHPROFILE profile = content.toProfile ();
 
         if (profile) {
-            const_cast<ProfileMap&>(fileProfiles).insert(std::make_pair(name, profile));
-            const_cast<ContentMap&>(fileProfileContents).insert(std::make_pair(name, content));
+            const_cast<ProfileMap&> (fileProfiles).insert (std::make_pair (name, profile));
+            const_cast<ContentMap&> (fileProfileContents).insert (std::make_pair (name, content));
 
             return profile;
         }
@@ -705,7 +705,7 @@ cmsHPROFILE ICCStore::getStdProfile (const Glib::ustring& name) const
 
     const Glib::ustring nameUpper = name.uppercase ();
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     const ProfileMap::const_iterator r = fileStdProfiles.find (nameUpper);
 
@@ -727,18 +727,18 @@ cmsHPROFILE ICCStore::getStdProfile (const Glib::ustring& name) const
     const cmsHPROFILE profile = content.toProfile ();
 
     if (profile) {
-        const_cast<ProfileMap&>(fileStdProfiles).insert (std::make_pair (f->first, profile));
+        const_cast<ProfileMap&> (fileStdProfiles).insert (std::make_pair (f->first, profile));
     }
 
     // profile is not valid or it is now stored => remove entry from fileStdProfilesFileNames
-    const_cast<NameMap&>(fileStdProfilesFileNames).erase (f);
+    const_cast<NameMap&> (fileStdProfilesFileNames).erase (f);
     return profile;
 }
 
 ProfileContent ICCStore::getContent (const Glib::ustring& name) const
 {
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     const ContentMap::const_iterator r = fileProfileContents.find (name);
 
@@ -770,7 +770,7 @@ uint8_t ICCStore::getProofIntents (cmsHPROFILE profile) const
 void ICCStore::init (const Glib::ustring& usrICCDir, const Glib::ustring& rtICCDir)
 {
 
-    MyMutex::MyLock lock(mutex_);
+    MyMutex::MyLock lock (mutex_);
 
     // RawTherapee's profiles take precedence if a user's profile of the same name exists
     profilesDir = Glib::build_filename (rtICCDir, "output");
@@ -795,27 +795,27 @@ void ICCStore::findDefaultMonitorProfile ()
 #ifdef WIN32
     // Get current main monitor. Could be fine tuned to get the current windows monitor (multi monitor setup),
     // but problem is that we live in RTEngine with no GUI window to query around
-    HDC hDC = GetDC(NULL);
+    HDC hDC = GetDC (NULL);
 
     if (hDC != NULL) {
-        if (SetICMMode(hDC, ICM_ON)) {
+        if (SetICMMode (hDC, ICM_ON)) {
             char profileName[MAX_PATH + 1];
             DWORD profileLength = MAX_PATH;
 
-            if (GetICMProfileA(hDC, &profileLength, profileName)) {
-                defaultMonitorProfile = Glib::ustring(profileName);
-                defaultMonitorProfile = Glib::path_get_basename(defaultMonitorProfile);
-                size_t pos = defaultMonitorProfile.rfind(".");
+            if (GetICMProfileA (hDC, &profileLength, profileName)) {
+                defaultMonitorProfile = Glib::ustring (profileName);
+                defaultMonitorProfile = Glib::path_get_basename (defaultMonitorProfile);
+                size_t pos = defaultMonitorProfile.rfind (".");
 
                 if (pos != Glib::ustring::npos) {
-                    defaultMonitorProfile = defaultMonitorProfile.substr(0, pos);
+                    defaultMonitorProfile = defaultMonitorProfile.substr (0, pos);
                 }
             }
 
             // might fail if e.g. the monitor has no profile
         }
 
-        ReleaseDC(NULL, hDC);
+        ReleaseDC (NULL, hDC);
     }
 
 #else
@@ -823,7 +823,7 @@ void ICCStore::findDefaultMonitorProfile ()
 #endif
 
     if (options.rtSettings.verbose) {
-        printf("Default monitor profile is: %s\n", defaultMonitorProfile.c_str());
+        printf ("Default monitor profile is: %s\n", defaultMonitorProfile.c_str());
     }
 }
 
@@ -863,11 +863,11 @@ ProfileContent::ProfileContent (cmsHPROFILE hProfile) : data(nullptr), length(0)
 
     if (hProfile != nullptr) {
         cmsUInt32Number bytesNeeded = 0;
-        cmsSaveProfileToMem(hProfile, nullptr, &bytesNeeded);
+        cmsSaveProfileToMem (hProfile, nullptr, &bytesNeeded);
 
         if (bytesNeeded > 0) {
             data = new char[bytesNeeded + 1];
-            cmsSaveProfileToMem(hProfile, data, &bytesNeeded);
+            cmsSaveProfileToMem (hProfile, data, &bytesNeeded);
             length = (int)bytesNeeded;
         }
     }
@@ -944,9 +944,9 @@ cmsHPROFILE ICCStore::createFromMatrix (const double matrix[3][3], bool gamma, c
     }
 
     // constructing profile header
-    unsigned* oprof = new unsigned [phead[0] / sizeof(unsigned)];
+    unsigned* oprof = new unsigned [phead[0] / sizeof (unsigned)];
     memset (oprof, 0, phead[0]);
-    memcpy (oprof, phead, sizeof(phead));
+    memcpy (oprof, phead, sizeof (phead));
 
     oprof[0] = 132 + 12 * pbody[0];
 
@@ -959,14 +959,14 @@ cmsHPROFILE ICCStore::createFromMatrix (const double matrix[3][3], bool gamma, c
         oprof[0] += (pbody[i * 3 + 3] + 3) & -4;
     }
 
-    memcpy (oprof + 32, pbody, sizeof(pbody));
+    memcpy (oprof + 32, pbody, sizeof (pbody));
 
     // wtpt
-    memcpy ((char *)oprof + pbody[8] + 8, pwhite, sizeof(pwhite));
+    memcpy ((char *)oprof + pbody[8] + 8, pwhite, sizeof (pwhite));
 
     // r/g/b TRC
     for (int i = 4; i < 7; i++) {
-        memcpy ((char *)oprof + pbody[i * 3 + 2], pcurve, sizeof(pcurve));
+        memcpy ((char *)oprof + pbody[i * 3 + 2], pcurve, sizeof (pcurve));
     }
 
     // r/g/b XYZ
@@ -980,7 +980,7 @@ cmsHPROFILE ICCStore::createFromMatrix (const double matrix[3][3], bool gamma, c
 
     // convert to network byte order
     for (unsigned int i = 0; i < phead[0] / 4; i++) {
-        oprof[i] = htonl(oprof[i]);
+        oprof[i] = htonl (oprof[i]);
     }
 
     // cprt
@@ -991,7 +991,7 @@ cmsHPROFILE ICCStore::createFromMatrix (const double matrix[3][3], bool gamma, c
     strcpy ((char *)oprof + pbody[5] + 12, name.c_str());
 
 
-    cmsHPROFILE p = cmsOpenProfileFromMem (oprof, ntohl(oprof[0]));
+    cmsHPROFILE p = cmsOpenProfileFromMem (oprof, ntohl (oprof[0]));
     delete [] oprof;
     return p;
 }

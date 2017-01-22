@@ -36,6 +36,8 @@
 #include "filepanel.h"
 
 class EditorPanel;
+class MyProgressBar;
+
 struct EditorPanelIdleHelper {
     EditorPanel* epanel;
     bool destroyed;
@@ -56,7 +58,7 @@ private:
     bool realized;
 
 protected:
-    Gtk::ProgressBar  *progressLabel;
+    MyProgressBar  *progressLabel;
     Gtk::ToggleButton* info;
     Gtk::ToggleButton* hidehp;
     Gtk::ToggleButton* tbShowHideSidePanels;
@@ -65,9 +67,8 @@ protected:
     Gtk::ToggleButton* tbBeforeLock;
     //bool bAllSidePanelsVisible;
     Gtk::ToggleButton* beforeAfter;
-    Gtk::HPaned* hpanedl;
-    Gtk::HPaned* hpanedr;
-    Gtk::HBox* statusBox;
+    Gtk::Paned* hpanedl;
+    Gtk::Paned* hpanedr;
     Gtk::Image *iHistoryShow, *iHistoryHide;
     Gtk::Image *iTopPanel_1_Show, *iTopPanel_1_Hide;
     Gtk::Image *iRightPanel_1_Show, *iRightPanel_1_Hide;
@@ -124,10 +125,10 @@ protected:
     void close ();
 
     BatchQueueEntry*    createBatchQueueEntry ();
-    bool                idle_imageSaved(ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring fname, SaveFormat sf);
-    bool                idle_saveImage(ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname, SaveFormat sf);
-    bool                idle_sendToGimp( ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname);
-    bool                idle_sentToGimp(ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring filename);
+    bool                idle_imageSaved (ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring fname, SaveFormat sf);
+    bool                idle_saveImage (ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname, SaveFormat sf);
+    bool                idle_sendToGimp ( ProgressConnector<rtengine::IImage16*> *pc, Glib::ustring fname);
+    bool                idle_sentToGimp (ProgressConnector<int> *pc, rtengine::IImage16* img, Glib::ustring filename);
     int err;
 
     time_t processingStartedTime;
@@ -144,8 +145,8 @@ public:
     void open (Thumbnail* tmb, rtengine::InitialImage* isrc);
     void setAspect ();
     void on_realize ();
-    void leftPaneButtonReleased(GdkEventButton *event);
-    void rightPaneButtonReleased(GdkEventButton *event);
+    void leftPaneButtonReleased (GdkEventButton *event);
+    void rightPaneButtonReleased (GdkEventButton *event);
 
     void setParent (RTWindow* p)
     {
@@ -153,7 +154,7 @@ public:
     }
     void writeOptions();
 
-    void showTopPanel(bool show);
+    void showTopPanel (bool show);
     bool isRealized()
     {
         return realized;
