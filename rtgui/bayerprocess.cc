@@ -41,10 +41,10 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
     imageNumberBox = Gtk::manage (new Gtk::HBox ());
     imageNumberBox->pack_start (*Gtk::manage (new Gtk::Label ( M("TP_RAW_IMAGENUM") + ": ")), Gtk::PACK_SHRINK, 4);
     imageNumber = Gtk::manage (new MyComboBoxText ());
-    imageNumber->append_text("1");
-    imageNumber->append_text("2");
-    imageNumber->append_text("3");
-    imageNumber->append_text("4");
+    imageNumber->append("1");
+    imageNumber->append("2");
+    imageNumber->append("3");
+    imageNumber->append("4");
     imageNumber->set_active(0);
     imageNumberBox->set_tooltip_text(M("TP_RAW_IMAGENUM_TOOLTIP"));
     imageNumberBox->pack_end (*imageNumber, Gtk::PACK_EXPAND_WIDGET, 4);
@@ -97,9 +97,9 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
     Gtk::HBox* hb3 = Gtk::manage (new Gtk::HBox ());
     hb3->pack_start (*Gtk::manage (new Gtk::Label ( M("TP_RAW_PIXELSHIFTMOTIONMETHOD") + ": ")), Gtk::PACK_SHRINK, 4);
     pixelShiftMotionMethod = Gtk::manage (new MyComboBoxText ());
-    pixelShiftMotionMethod->append_text("Off");
-    pixelShiftMotionMethod->append_text("Automatic");
-    pixelShiftMotionMethod->append_text("Custom");
+    pixelShiftMotionMethod->append("Off");
+    pixelShiftMotionMethod->append("Automatic");
+    pixelShiftMotionMethod->append("Custom");
     pixelShiftMotionMethod->set_active(1);
     pixelShiftMotionMethod->show();
     hb3->pack_start(*pixelShiftMotionMethod);
@@ -181,12 +181,12 @@ BayerProcess::BayerProcess () : FoldableToolPanel(this, "bayerprocess", M("TP_RA
     Gtk::HBox* hb2 = Gtk::manage (new Gtk::HBox ());
     hb2->pack_start (*Gtk::manage (new Gtk::Label ( M("TP_RAW_PIXELSHIFTMOTIONCORRECTION") + ": ")), Gtk::PACK_SHRINK, 0);
     pixelShiftMotionCorrection = Gtk::manage (new MyComboBoxText ());
-    pixelShiftMotionCorrection->append_text("1x1");
-    pixelShiftMotionCorrection->append_text("1x2");
-    pixelShiftMotionCorrection->append_text("3x3");
-    pixelShiftMotionCorrection->append_text("5x5");
-    pixelShiftMotionCorrection->append_text("7x7");
-    pixelShiftMotionCorrection->append_text("3x3 new");
+    pixelShiftMotionCorrection->append("1x1");
+    pixelShiftMotionCorrection->append("1x2");
+    pixelShiftMotionCorrection->append("3x3");
+    pixelShiftMotionCorrection->append("5x5");
+    pixelShiftMotionCorrection->append("7x7");
+    pixelShiftMotionCorrection->append("3x3 new");
     pixelShiftMotionCorrection->set_active(0);
     pixelShiftMotionCorrection->show();
     hb2->pack_start(*pixelShiftMotionCorrection);
@@ -553,11 +553,11 @@ void BayerProcess::setBatchMode(bool batchMode)
 {
     method->append (M("GENERAL_UNCHANGED"));
     method->set_active(procparams::RAWParams::BayerSensor::numMethods); // No name
-    pixelShiftMotionCorrection->append_text (M("GENERAL_UNCHANGED"));
+    pixelShiftMotionCorrection->append (M("GENERAL_UNCHANGED"));
     pixelShiftMotionCorrection->set_active (4);
-    pixelShiftMotionMethod->append_text (M("GENERAL_UNCHANGED"));
+    pixelShiftMotionMethod->append (M("GENERAL_UNCHANGED"));
     pixelShiftMotionMethod->set_active (4);
-    imageNumber->append_text (M("GENERAL_UNCHANGED"));
+    imageNumber->append (M("GENERAL_UNCHANGED"));
     imageNumber->set_active(4);
     dcbOptions->hide();
     lmmseOptions->hide();
