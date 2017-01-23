@@ -36,33 +36,33 @@ using namespace rtengine::procparams;
 extern Options options;
 
 
-Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"), false, true), EditSubscriber(ET_OBJECTS), lastObject(-1), draggedPointOldAngle(-1000.),
-    expcolor(new MyExpander(true, M("TP_LOCALLAB_COFR"))),
-    expblur(new MyExpander(true, M("TP_LOCALLAB_BLUFR"))),
-    exptonemap(new MyExpander(true, M("TP_LOCALLAB_TM"))),
-    expreti(new MyExpander(true, M("TP_LOCALLAB_RETI"))),
-    expsharp(new MyExpander(true, M("TP_LOCALLAB_SHARP"))),
-    expcbdl(new MyExpander(true, M("TP_LOCALLAB_CBDL"))),
-    expdenoi(new MyExpander(true, M("TP_LOCALLAB_DENOIS")))
+Locallab::Locallab (): FoldableToolPanel (this, "locallab", M ("TP_LOCALLAB_LABEL"), false, true), EditSubscriber (ET_OBJECTS), lastObject (-1), draggedPointOldAngle (-1000.),
+    expcolor (new MyExpander (true, M ("TP_LOCALLAB_COFR"))),
+    expblur (new MyExpander (true, M ("TP_LOCALLAB_BLUFR"))),
+    exptonemap (new MyExpander (true, M ("TP_LOCALLAB_TM"))),
+    expreti (new MyExpander (true, M ("TP_LOCALLAB_RETI"))),
+    expsharp (new MyExpander (true, M ("TP_LOCALLAB_SHARP"))),
+    expcbdl (new MyExpander (true, M ("TP_LOCALLAB_CBDL"))),
+    expdenoi (new MyExpander (true, M ("TP_LOCALLAB_DENOIS")))
 
 {
-    CurveListener::setMulti(true);
+    CurveListener::setMulti (true);
     ProcParams params;
     editHBox = Gtk::manage (new Gtk::HBox());
     edit = Gtk::manage (new Gtk::ToggleButton());
     edit->add (*Gtk::manage (new RTImage ("editmodehand.png")));
-    edit->set_tooltip_text(M("EDIT_OBJECT_TOOLTIP"));
-    editConn = edit->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::editToggled) );
-    editHBox->pack_start(*edit, Gtk::PACK_SHRINK, 0);
+    edit->set_tooltip_text (M ("EDIT_OBJECT_TOOLTIP"));
+    editConn = edit->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::editToggled) );
+    editHBox->pack_start (*edit, Gtk::PACK_SHRINK, 0);
     pack_start (*editHBox, Gtk::PACK_SHRINK, 0);
     int realnbspot;
 
 
     realnbspot = options.rtSettings.nspot;
 
-    nbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NBSPOT"), 1, realnbspot, 1, 1));
+    nbspot  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NBSPOT"), 1, realnbspot, 1, 1));
 
-    if(options.rtSettings.locdelay) {
+    if (options.rtSettings.locdelay) {
 
         if (nbspot->delay < 200) {
             nbspot->delay = 200;
@@ -71,216 +71,229 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
 
     nbspot->setAdjusterListener (this);
-    nbspot->set_tooltip_text (M("TP_LOCALLAB_NBSPOT_TOOLTIP"));
+    nbspot->set_tooltip_text (M ("TP_LOCALLAB_NBSPOT_TOOLTIP"));
 
 
-    anbspot  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_ANBSPOT"), 0, 1, 1, 0));
+    anbspot  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_ANBSPOT"), 0, 1, 1, 0));
     anbspot->setAdjusterListener (this);
-    anbspot->set_tooltip_text (M("TP_LOCALLAB_ANBSPOT_TOOLTIP"));
+    anbspot->set_tooltip_text (M ("TP_LOCALLAB_ANBSPOT_TOOLTIP"));
 
 
-    Gtk::Frame* shapeFrame = Gtk::manage (new Gtk::Frame (M("TP_LOCALLAB_SHFR")) );
-    shapeFrame->set_border_width(0);
-    shapeFrame->set_label_align(0.025, 0.5);
+    Gtk::Frame* shapeFrame = Gtk::manage (new Gtk::Frame (M ("TP_LOCALLAB_SHFR")) );
+    shapeFrame->set_border_width (0);
+    shapeFrame->set_label_align (0.025, 0.5);
 
-    expcolor->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expcolor) );
-    enablecolorConn = expcolor->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expcolor) );
+    expcolor->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expcolor) );
+    enablecolorConn = expcolor->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expcolor) );
 
-    expblur->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expblur) );
-    enableblurConn = expblur->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expblur) );
+    expblur->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expblur) );
+    enableblurConn = expblur->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expblur) );
 
-    exptonemap->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), exptonemap) );
-    enabletonemapConn = exptonemap->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), exptonemap) );
+    exptonemap->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), exptonemap) );
+    enabletonemapConn = exptonemap->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), exptonemap) );
 
-    expreti->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expreti) );
-    enableretiConn = expreti->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expreti) );
+    expreti->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expreti) );
+    enableretiConn = expreti->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expreti) );
 
-    expsharp->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expsharp) );
-    enablesharpConn = expsharp->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expsharp) );
+    expsharp->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expsharp) );
+    enablesharpConn = expsharp->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expsharp) );
 
-    expcbdl->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expcbdl) );
-    enablecbdlConn = expcbdl->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expcbdl) );
+    expcbdl->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expcbdl) );
+    enablecbdlConn = expcbdl->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expcbdl) );
 
-    expdenoi->signal_button_release_event().connect_notify( sigc::bind( sigc::mem_fun(this, &Locallab::foldAllButMe), expdenoi) );
-    enabledenoiConn = expdenoi->signal_enabled_toggled().connect ( sigc::bind( sigc::mem_fun(this, &Locallab::enableToggled), expdenoi) );
+    expdenoi->signal_button_release_event().connect_notify ( sigc::bind ( sigc::mem_fun (this, &Locallab::foldAllButMe), expdenoi) );
+    enabledenoiConn = expdenoi->signal_enabled_toggled().connect ( sigc::bind ( sigc::mem_fun (this, &Locallab::enableToggled), expdenoi) );
 
     Gtk::VBox *shapeVBox = Gtk::manage ( new Gtk::VBox());
-    shapeVBox->set_spacing(2);
-    shapeVBox->set_border_width(4);
+    shapeVBox->set_spacing (2);
+    shapeVBox->set_border_width (4);
 
     ctboxS = Gtk::manage (new Gtk::HBox ());
-    Gtk::Label* labmS = Gtk::manage (new Gtk::Label (M("TP_LOCALLAB_STYPE") + ":"));
+    Gtk::Label* labmS = Gtk::manage (new Gtk::Label (M ("TP_LOCALLAB_STYPE") + ":"));
     ctboxS->pack_start (*labmS, Gtk::PACK_SHRINK, 4);
-    ctboxS->set_tooltip_markup (M("TP_LOCALLAB_STYPE_TOOLTIP"));
+    ctboxS->set_tooltip_markup (M ("TP_LOCALLAB_STYPE_TOOLTIP"));
 
     Smethod = Gtk::manage (new MyComboBoxText ());
-    Smethod->append_text (M("TP_LOCALLAB_IND"));
-    Smethod->append_text (M("TP_LOCALLAB_SYM"));
-    Smethod->append_text (M("TP_LOCALLAB_INDSL"));
-    Smethod->append_text (M("TP_LOCALLAB_SYMSL"));
-    Smethod->set_active(0);
-    Smethodconn = Smethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::SmethodChanged) );
+    Smethod->append_text (M ("TP_LOCALLAB_IND"));
+    Smethod->append_text (M ("TP_LOCALLAB_SYM"));
+    Smethod->append_text (M ("TP_LOCALLAB_INDSL"));
+    Smethod->append_text (M ("TP_LOCALLAB_SYMSL"));
+    Smethod->set_active (0);
+    Smethodconn = Smethod->signal_changed().connect ( sigc::mem_fun (*this, &Locallab::SmethodChanged) );
 
-    locX = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH"), 0, 1500, 1, 250));
+    locX = Gtk::manage (new Adjuster (M ("TP_LOCAL_WIDTH"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locX->setAdjusterListener (this);
 
-    locXL = Gtk::manage (new Adjuster (M("TP_LOCAL_WIDTH_L"), 0, 1500, 1, 250));
+    locXL = Gtk::manage (new Adjuster (M ("TP_LOCAL_WIDTH_L"), 0, 1500, 1, 250));
     //locX->set_tooltip_text (M("TP_LOCAL_WIDTH_TOOLTIP"));
     locXL->setAdjusterListener (this);
 
-    degree = Gtk::manage (new Adjuster (M("TP_LOCAL_DEGREE"), -180, 180, 1, 0));
+    degree = Gtk::manage (new Adjuster (M ("TP_LOCAL_DEGREE"), -180, 180, 1, 0));
     //degree->set_tooltip_text (M("TP_LOCAL_DEGREE_TOOLTIP"));
     degree->setAdjusterListener (this);
 
-    locY = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT"), 0, 1500, 1, 250));
+    locY = Gtk::manage (new Adjuster (M ("TP_LOCAL_HEIGHT"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locY->setAdjusterListener (this);
 
-    locYT = Gtk::manage (new Adjuster (M("TP_LOCAL_HEIGHT_T"), 0, 1500, 1, 250));
+    locYT = Gtk::manage (new Adjuster (M ("TP_LOCAL_HEIGHT_T"), 0, 1500, 1, 250));
     //locY->set_tooltip_text (M("TP_LOCAL_HEIGHT_TOOLTIP"));
     locYT->setAdjusterListener (this);
 
-    centerX = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_X"), -1000, 1000, 1, 0));
+    centerX = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CENTER_X"), -1000, 1000, 1, 0));
     //centerX->set_tooltip_text (M("TP_LOCALLAB_CENTER_X_TOOLTIP"));
     centerX->setAdjusterListener (this);
 
-    centerY = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CENTER_Y"), -1000, 1000, 1, 0));
+    centerY = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CENTER_Y"), -1000, 1000, 1, 0));
     //centerY->set_tooltip_text (M("TP_LOCALLAB_CENTER_Y_TOOLTIP"));
     centerY->setAdjusterListener (this);
 
-    circrad = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CIRCRADIUS"), 4, 100, 1, 18));
+    circrad = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CIRCRADIUS"), 4, 100, 1, 18));
     circrad->setAdjusterListener (this);
 
 
     qualityMethod = Gtk::manage (new MyComboBoxText ());
-    qualityMethod->append_text (M("TP_LOCALLAB_STD"));
-    qualityMethod->append_text (M("TP_LOCALLAB_ENH"));
-    qualityMethod->append_text (M("TP_LOCALLAB_ENHDEN"));
-    qualityMethod->set_active(0);
-    qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::qualityMethodChanged) );
-    qualityMethod->set_tooltip_markup (M("TP_LOCALLAB_METHOD_TOOLTIP"));
+    qualityMethod->append_text (M ("TP_LOCALLAB_STD"));
+    qualityMethod->append_text (M ("TP_LOCALLAB_ENH"));
+    qualityMethod->append_text (M ("TP_LOCALLAB_ENHDEN"));
+    qualityMethod->set_active (0);
+    qualityMethodConn = qualityMethod->signal_changed().connect ( sigc::mem_fun (*this, &Locallab::qualityMethodChanged) );
+    qualityMethod->set_tooltip_markup (M ("TP_LOCALLAB_METHOD_TOOLTIP"));
 
-    thres = Gtk::manage (new Adjuster (M("TP_LOCALLAB_THRES"), 1, 315, 1, 60));
+    thres = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_THRES"), 1, 315, 1, 60));
     thres->setAdjusterListener (this);
 
-    proxi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_PROXI"), 1, 8, 1, 1));
+    proxi = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_PROXI"), 1, 8, 1, 1));
     proxi->setAdjusterListener (this);
     std::vector<GradientMilestone> milestones;
     std::vector<double> defaultCurve;
     std::vector<double> defaultCurve2;
     std::vector<double> defaultCurve2rab;
     std::vector<double> defaultCurve3;
+    std::vector<double> defaultCurve4;
 
     irg   = Gtk::manage (new RTImage ("Chanmixer-RG.png"));
 
-    llCurveEditorG = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_LUM"));
+    llCurveEditorG = new CurveEditorGroup (options.lastlocalCurvesDir, M ("TP_LOCALLAB_LUM"));
     llCurveEditorG->setCurveListener (this);
 
-    rtengine::LocallabParams::getDefaultLLCurve(defaultCurve);
-    llshape = static_cast<DiagonalCurveEditor*>(llCurveEditorG->addCurve(CT_Diagonal, "L(L)"));
-    llshape->setResetCurve(DiagonalCurveType(defaultCurve.at(0)), defaultCurve);
-    llshape->setTooltip(M("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
-    milestones.push_back( GradientMilestone(0., 0., 0., 0.) );
-    milestones.push_back( GradientMilestone(1., 1., 1., 1.) );
-    llshape->setBottomBarBgGradient(milestones);
-    llshape->setLeftBarBgGradient(milestones);
+    rtengine::LocallabParams::getDefaultLLCurve (defaultCurve);
+    llshape = static_cast<DiagonalCurveEditor*> (llCurveEditorG->addCurve (CT_Diagonal, "L(L)"));
+    llshape->setResetCurve (DiagonalCurveType (defaultCurve.at (0)), defaultCurve);
+    llshape->setTooltip (M ("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
+    milestones.push_back ( GradientMilestone (0., 0., 0., 0.) );
+    milestones.push_back ( GradientMilestone (1., 1., 1., 1.) );
+    llshape->setBottomBarBgGradient (milestones);
+    llshape->setLeftBarBgGradient (milestones);
 
+    rtengine::LocallabParams::getDefaultCCCurve (defaultCurve4);
+    ccshape = static_cast<DiagonalCurveEditor*> (llCurveEditorG->addCurve (CT_Diagonal, "C(C)"));
+    ccshape->setResetCurve (DiagonalCurveType (defaultCurve4.at (0)), defaultCurve4);
+    ccshape->setTooltip (M ("TP_LOCALLAB_CURVEEDITOR_CC_TOOLTIP"));
+    milestones.push_back ( GradientMilestone (0., 0., 0., 0.) );
+    milestones.push_back ( GradientMilestone (1., 1., 1., 1.) );
+    ccshape->setBottomBarBgGradient (milestones);
+    ccshape->setLeftBarBgGradient (milestones);
 
-    rtengine::LocallabParams::getDefaultLHCurve(defaultCurve3);
+    rtengine::LocallabParams::getDefaultLHCurve (defaultCurve3);
 
-    LHshape = static_cast<FlatCurveEditor*>(llCurveEditorG->addCurve(CT_Flat, "L(H)", nullptr, false, true));
+    LHshape = static_cast<FlatCurveEditor*> (llCurveEditorG->addCurve (CT_Flat, "L(H)", nullptr, false, true));
 
-    LHshape->setIdentityValue(0.);
-    LHshape->setResetCurve(FlatCurveType(defaultCurve3.at(0)), defaultCurve3);
-    LHshape->setTooltip(M("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
-    LHshape->setCurveColorProvider(this, 1);
+    LHshape->setIdentityValue (0.);
+    LHshape->setResetCurve (FlatCurveType (defaultCurve3.at (0)), defaultCurve3);
+    LHshape->setTooltip (M ("TP_LOCALLAB_CURVEEDITOR_LL_TOOLTIP"));
+    LHshape->setCurveColorProvider (this, 1);
     milestones.clear();
 
     for (int i = 0; i < 7; i++) {
         float R, G, B;
-        float x = float(i) * (1.0f / 6.0);
-        Color::hsv2rgb01(x, 0.5f, 0.5f, R, G, B);
-        milestones.push_back( GradientMilestone(double(x), double(R), double(G), double(B)) );
+        float x = float (i) * (1.0f / 6.0);
+        Color::hsv2rgb01 (x, 0.5f, 0.5f, R, G, B);
+        milestones.push_back ( GradientMilestone (double (x), double (R), double (G), double (B)) );
     }
 
-    LHshape->setBottomBarBgGradient(milestones);
+    LHshape->setBottomBarBgGradient (milestones);
 
 
     llCurveEditorG->curveListComplete();
 
 
 
-    lightness = Gtk::manage (new Adjuster (M("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
+    lightness = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_LIGHTNESS"), -100, 100, 1, 0));
     //lightness->set_tooltip_text (M("TP_LOCALLAB_LIGHTNESS_TOOLTIP"));
     lightness->setAdjusterListener (this);
 
-    contrast = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CONTRAST"), -100, 100, 1, 0));
+    contrast = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CONTRAST"), -100, 100, 1, 0));
     //contrast->set_tooltip_text (M("TP_LOCALLAB_CONTRAST_TOOLTIP"));
     contrast->setAdjusterListener (this);
 
-    chroma = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHROMA"), -100, 150, 1, 0));
+    chroma = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CHROMA"), -100, 150, 1, 0));
     //chroma->set_tooltip_text (M("TP_LOCALLAB_CHROMA_TOOLTIP"));
     chroma->setAdjusterListener (this);
 
-    sensi = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSI"), 0, 100, 1, 19));
-    sensi->set_tooltip_text (M("TP_LOCALLAB_SENSI_TOOLTIP"));
+    sensi = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSI"), 0, 100, 1, 19));
+    sensi->set_tooltip_text (M ("TP_LOCALLAB_SENSI_TOOLTIP"));
     sensi->setAdjusterListener (this);
 
-    radius = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_RADIUS"), 0, 100, 1, 0) );
+    radius = Gtk::manage ( new Adjuster (M ("TP_LOCALLAB_RADIUS"), 0, 100, 1, 0) );
     //radius->set_tooltip_text (M("TP_LOCALLAB_RADIUS_TOOLTIP"));
     radius->setAdjusterListener (this);
-    strength = Gtk::manage ( new Adjuster (M("TP_LOCALLAB_STRENGTH"), 0, 100, 1, 0) );
+    strength = Gtk::manage ( new Adjuster (M ("TP_LOCALLAB_STRENGTH"), 0, 100, 1, 0) );
     //radius->set_tooltip_text (M("TP_LOCALLAB_RADIUS_TOOLTIP"));
     strength->setAdjusterListener (this);
 
 
-    sensibn = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIBN"), 0, 100, 1, 60));
-    sensibn->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensibn = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSIBN"), 0, 100, 1, 60));
+    sensibn->set_tooltip_text (M ("TP_LOCALLAB_SENSIH_TOOLTIP"));
     sensibn->setAdjusterListener (this);
 
-    activlum = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_ACTIV")));
+    activlum = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_ACTIV")));
     activlum->set_active (false);
-    activlumConn  = activlum->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::activlumChanged) );
+    activlumConn  = activlum->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::activlumChanged) );
 
-    transit = Gtk::manage (new Adjuster (M("TP_LOCALLAB_TRANSIT"), 5, 95, 1, 60));
-    transit->set_tooltip_text (M("TP_LOCALLAB_TRANSIT_TOOLTIP"));
+    transit = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_TRANSIT"), 5, 95, 1, 60));
+    transit->set_tooltip_text (M ("TP_LOCALLAB_TRANSIT_TOOLTIP"));
     transit->setAdjusterListener (this);
 
-    invers = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    invers = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_INVERS")));
     invers->set_active (false);
-    inversConn  = invers->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversChanged) );
+    inversConn  = invers->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::inversChanged) );
 
-    inversrad = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    curvactiv   = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_CURV")));
+    curvactiv->set_active (false);
+    curvactivConn  = curvactiv->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::curvactivChanged) );
+
+    inversrad = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_INVERS")));
     inversrad->set_active (false);
-    inversradConn  = inversrad->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversradChanged) );
+    inversradConn  = inversrad->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::inversradChanged) );
 
-    inversret = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    inversret = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_INVERS")));
     inversret->set_active (false);
-    inversretConn  = inversret->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversretChanged) );
+    inversretConn  = inversret->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::inversretChanged) );
 
 //tone mapping local
     Gtk::VBox * tmBox = Gtk::manage (new Gtk::VBox());
-    tmBox->set_border_width(4);
-    tmBox->set_spacing(2);
+    tmBox->set_border_width (4);
+    tmBox->set_spacing (2);
 
-    stren  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_STREN"), -100, 200, 1, 0));
+    stren  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_STREN"), -100, 200, 1, 0));
     stren->setAdjusterListener (this);
 
-    gamma  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_GAM"), 80, 150, 1, 100));
+    gamma  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_GAM"), 80, 150, 1, 100));
     gamma->setAdjusterListener (this);
 
-    estop  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_ESTOP"), 10, 400, 1, 140));
+    estop  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_ESTOP"), 10, 400, 1, 140));
     estop->setAdjusterListener (this);
 
-    scaltm  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SCALTM"), 1, 100, 1, 3));
+    scaltm  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SCALTM"), 1, 100, 1, 3));
     scaltm->setAdjusterListener (this);
 
-    rewei  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_REWEI"), 0, 9, 1, 0));
+    rewei  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_REWEI"), 0, 9, 1, 0));
     rewei->setAdjusterListener (this);
 
-    sensitm = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSI"), 0, 100, 1, 40));
-    sensitm->set_tooltip_text (M("TP_LOCALLAB_SENSI_TOOLTIP"));
+    sensitm = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSI"), 0, 100, 1, 40));
+    sensitm->set_tooltip_text (M ("TP_LOCALLAB_SENSI_TOOLTIP"));
     sensitm->setAdjusterListener (this);
 
 //end TM
@@ -288,48 +301,48 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
 //retinex local
     Gtk::VBox * retiBox = Gtk::manage (new Gtk::VBox());
-    retiBox->set_border_width(4);
-    retiBox->set_spacing(2);
+    retiBox->set_border_width (4);
+    retiBox->set_spacing (2);
 
     dhbox = Gtk::manage (new Gtk::HBox ());
-    labmdh = Gtk::manage (new Gtk::Label (M("TP_LOCRETI_METHOD") + ":"));
+    labmdh = Gtk::manage (new Gtk::Label (M ("TP_LOCRETI_METHOD") + ":"));
     dhbox->pack_start (*labmdh, Gtk::PACK_SHRINK, 1);
 
     retinexMethod = Gtk::manage (new MyComboBoxText ());
-//   retinexMethod->append_text (M("TP_WAVE_NONE"));
-    retinexMethod->append_text (M("TP_RETINEX_LOW"));
-    retinexMethod->append_text (M("TP_RETINEX_UNIFORM"));
-    retinexMethod->append_text (M("TP_RETINEX_HIGH"));
-    retinexMethod->set_active(0);
-    retinexMethodConn = retinexMethod->signal_changed().connect ( sigc::mem_fun(*this, &Locallab::retinexMethodChanged) );
-    retinexMethod->set_tooltip_markup (M("TP_LOCRETI_METHOD_TOOLTIP"));
+//   retinexMethod->append (M("TP_WAVE_NONE"));
+    retinexMethod->append_text (M ("TP_RETINEX_LOW"));
+    retinexMethod->append_text (M ("TP_RETINEX_UNIFORM"));
+    retinexMethod->append_text (M ("TP_RETINEX_HIGH"));
+    retinexMethod->set_active (0);
+    retinexMethodConn = retinexMethod->signal_changed().connect ( sigc::mem_fun (*this, &Locallab::retinexMethodChanged) );
+    retinexMethod->set_tooltip_markup (M ("TP_LOCRETI_METHOD_TOOLTIP"));
 
-    str  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_STR"), 0, 100, 1, 0));
+    str  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_STR"), 0, 100, 1, 0));
     str->setAdjusterListener (this);
-    neigh  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NEIGH"), 14, 150, 1, 50));
+    neigh  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NEIGH"), 14, 150, 1, 50));
     neigh->setAdjusterListener (this);
-    vart  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_VART"), 50, 500, 1, 200));
+    vart  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_VART"), 50, 500, 1, 200));
     vart->setAdjusterListener (this);
-    chrrt  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_CHRRT"), 0, 100, 1, 0));
+    chrrt  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_CHRRT"), 0, 100, 1, 0));
     chrrt->setAdjusterListener (this);
-    sensih = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIH"), 0, 100, 1, 19));
-    sensih->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensih = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSIH"), 0, 100, 1, 19));
+    sensih->set_tooltip_text (M ("TP_LOCALLAB_SENSIH_TOOLTIP"));
     sensih->setAdjusterListener (this);
-    retrab  = Gtk::manage (new Adjuster (M("TP_LOCALLAB_RETRAB"), 0, 10000, 1, 500));
+    retrab  = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_RETRAB"), 0, 10000, 1, 500));
     retrab->setAdjusterListener (this);
 
 //    std::vector<double> defaultCurve;
 
-    LocalcurveEditorgainT = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAIN"));
+    LocalcurveEditorgainT = new CurveEditorGroup (options.lastlocalCurvesDir, M ("TP_LOCALLAB_TRANSMISSIONGAIN"));
     LocalcurveEditorgainT->setCurveListener (this);
-    rtengine::LocallabParams::getDefaultLocalgainCurveT(defaultCurve2);
+    rtengine::LocallabParams::getDefaultLocalgainCurveT (defaultCurve2);
 
 
-    cTgainshape = static_cast<FlatCurveEditor*>(LocalcurveEditorgainT->addCurve(CT_Flat, "", nullptr, false, false));
+    cTgainshape = static_cast<FlatCurveEditor*> (LocalcurveEditorgainT->addCurve (CT_Flat, "", nullptr, false, false));
 
-    cTgainshape->setIdentityValue(0.);
-    cTgainshape->setResetCurve(FlatCurveType(defaultCurve2.at(0)), defaultCurve2);
-    cTgainshape->setTooltip(M("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
+    cTgainshape->setIdentityValue (0.);
+    cTgainshape->setResetCurve (FlatCurveType (defaultCurve2.at (0)), defaultCurve2);
+    cTgainshape->setTooltip (M ("TP_RETINEX_GAINTRANSMISSION_TOOLTIP"));
     /*
         cTgainshape->setCurveColorProvider(this, 1);
         milestones.clear();
@@ -344,18 +357,18 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
         cTgainshape->setBottomBarBgGradient(milestones);
     */
 
-    LocalcurveEditorgainTrab = new CurveEditorGroup (options.lastlocalCurvesDir, M("TP_LOCALLAB_TRANSMISSIONGAINRAB"));
+    LocalcurveEditorgainTrab = new CurveEditorGroup (options.lastlocalCurvesDir, M ("TP_LOCALLAB_TRANSMISSIONGAINRAB"));
     LocalcurveEditorgainTrab->setCurveListener (this);
 
-    rtengine::LocallabParams::getDefaultLocalgainCurveTrab(defaultCurve2rab);
+    rtengine::LocallabParams::getDefaultLocalgainCurveTrab (defaultCurve2rab);
 
 
-    cTgainshaperab = static_cast<FlatCurveEditor*>(LocalcurveEditorgainTrab->addCurve(CT_Flat, "", nullptr, false, false));
+    cTgainshaperab = static_cast<FlatCurveEditor*> (LocalcurveEditorgainTrab->addCurve (CT_Flat, "", nullptr, false, false));
 
 
-    cTgainshaperab->setIdentityValue(0.);
-    cTgainshaperab->setResetCurve(FlatCurveType(defaultCurve2rab.at(0)), defaultCurve2rab);
-    cTgainshaperab->setTooltip(M("TP_RETINEX_GAINTRANSMISSIONRAB_TOOLTIP"));
+    cTgainshaperab->setIdentityValue (0.);
+    cTgainshaperab->setResetCurve (FlatCurveType (defaultCurve2rab.at (0)), defaultCurve2rab);
+    cTgainshaperab->setTooltip (M ("TP_RETINEX_GAINTRANSMISSIONRAB_TOOLTIP"));
 
     LocalcurveEditorgainT->curveListComplete();
     LocalcurveEditorgainT->show();
@@ -367,9 +380,9 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
 
 // end reti
 
-    avoid = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_AVOID")));
+    avoid = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_AVOID")));
     avoid->set_active (false);
-    avoidConn  = avoid->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::avoidChanged) );
+    avoidConn  = avoid->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::avoidChanged) );
     pack_start (*nbspot);
     pack_start (*anbspot);
     anbspot->hide();//keep anbspot  - i used it to test diffrent algo...
@@ -389,89 +402,89 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     // shapeVBox->pack_start (*thres);
     // shapeVBox->pack_start (*proxi);
 
-    shapeFrame->add(*shapeVBox);
+    shapeFrame->add (*shapeVBox);
     pack_start (*shapeFrame);
 
     Gtk::VBox *colorVBox = Gtk::manage ( new Gtk::VBox());
-    colorVBox->set_spacing(2);
-    colorVBox->set_border_width(4);
+    colorVBox->set_spacing (2);
+    colorVBox->set_border_width (4);
 
     Gtk::VBox *blurrVBox = Gtk::manage ( new Gtk::VBox());
-    blurrVBox->set_spacing(2);
-    blurrVBox->set_border_width(4);
+    blurrVBox->set_spacing (2);
+    blurrVBox->set_border_width (4);
 
     Gtk::VBox *sharpVBox = Gtk::manage ( new Gtk::VBox());
-    sharpVBox->set_spacing(2);
-    sharpVBox->set_border_width(4);
+    sharpVBox->set_spacing (2);
+    sharpVBox->set_border_width (4);
 
     Gtk::VBox *cbdlVBox = Gtk::manage ( new Gtk::VBox());
-    cbdlVBox->set_spacing(2);
-    cbdlVBox->set_border_width(4);
+    cbdlVBox->set_spacing (2);
+    cbdlVBox->set_border_width (4);
 
 
-    Gtk::HBox * buttonBox1 = Gtk::manage (new Gtk::HBox(true, 10));
+    Gtk::HBox * buttonBox1 = Gtk::manage (new Gtk::HBox (true, 10));
 
-    Gtk::Button * lumacontrastMinusButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMACONTRAST_MINUS")));
-    buttonBox1->pack_start(*lumacontrastMinusButton);
-    lumacontrastMinusPressedConn = lumacontrastMinusButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumacontrastMinusPressed));
+    Gtk::Button * lumacontrastMinusButton = Gtk::manage (new Gtk::Button (M ("TP_DIRPYREQUALIZER_LUMACONTRAST_MINUS")));
+    buttonBox1->pack_start (*lumacontrastMinusButton);
+    lumacontrastMinusPressedConn = lumacontrastMinusButton->signal_pressed().connect ( sigc::mem_fun (*this, &Locallab::lumacontrastMinusPressed));
 
-    Gtk::Button * lumaneutralButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMANEUTRAL")));
-    buttonBox1->pack_start(*lumaneutralButton);
-    lumaneutralPressedConn = lumaneutralButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumaneutralPressed));
+    Gtk::Button * lumaneutralButton = Gtk::manage (new Gtk::Button (M ("TP_DIRPYREQUALIZER_LUMANEUTRAL")));
+    buttonBox1->pack_start (*lumaneutralButton);
+    lumaneutralPressedConn = lumaneutralButton->signal_pressed().connect ( sigc::mem_fun (*this, &Locallab::lumaneutralPressed));
 
-    Gtk::Button * lumacontrastPlusButton = Gtk::manage (new Gtk::Button(M("TP_DIRPYREQUALIZER_LUMACONTRAST_PLUS")));
-    buttonBox1->pack_start(*lumacontrastPlusButton);
-    lumacontrastPlusPressedConn = lumacontrastPlusButton->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::lumacontrastPlusPressed));
+    Gtk::Button * lumacontrastPlusButton = Gtk::manage (new Gtk::Button (M ("TP_DIRPYREQUALIZER_LUMACONTRAST_PLUS")));
+    buttonBox1->pack_start (*lumacontrastPlusButton);
+    lumacontrastPlusPressedConn = lumacontrastPlusButton->signal_pressed().connect ( sigc::mem_fun (*this, &Locallab::lumacontrastPlusPressed));
 
-    cbdlVBox->pack_start(*buttonBox1);
+    cbdlVBox->pack_start (*buttonBox1);
 
-    for(int i = 0; i < 5; i++) {
+    for (int i = 0; i < 5; i++) {
         Glib::ustring ss;
-        ss = Glib::ustring::format(i);
+        ss = Glib::ustring::format (i);
 
         if     (i == 0) {
-            ss += Glib::ustring::compose(" (%1)", M("TP_DIRPYREQUALIZER_LUMAFINEST"));
-        } else if(i == 4) {
-            ss += Glib::ustring::compose(" (%1)", M("TP_DIRPYREQUALIZER_LUMACOARSEST"));
+            ss += Glib::ustring::compose (" (%1)", M ("TP_DIRPYREQUALIZER_LUMAFINEST"));
+        } else if (i == 4) {
+            ss += Glib::ustring::compose (" (%1)", M ("TP_DIRPYREQUALIZER_LUMACOARSEST"));
         }
 
         multiplier[i] = Gtk::manage ( new Adjuster (ss, 0, 400, 1, 100) );
-        multiplier[i]->setAdjusterListener(this);
-        cbdlVBox->pack_start(*multiplier[i]);
+        multiplier[i]->setAdjusterListener (this);
+        cbdlVBox->pack_start (*multiplier[i]);
     }
 
     Gtk::HSeparator *separator3 = Gtk::manage (new  Gtk::HSeparator());
-    cbdlVBox->pack_start(*separator3, Gtk::PACK_SHRINK, 2);
+    cbdlVBox->pack_start (*separator3, Gtk::PACK_SHRINK, 2);
 
-    threshold = Gtk::manage ( new Adjuster (M("TP_DIRPYREQUALIZER_THRESHOLD"), 0, 100, 1, 20) );
-    threshold->setAdjusterListener(this);
-    cbdlVBox->pack_start(*threshold);
+    threshold = Gtk::manage ( new Adjuster (M ("TP_DIRPYREQUALIZER_THRESHOLD"), 0, 100, 1, 20) );
+    threshold->setAdjusterListener (this);
+    cbdlVBox->pack_start (*threshold);
 
-    sensicb = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSICB"), 0, 100, 1, 19));
-    sensicb->set_tooltip_text (M("TP_LOCALLAB_SENSIH_TOOLTIP"));
+    sensicb = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSICB"), 0, 100, 1, 19));
+    sensicb->set_tooltip_text (M ("TP_LOCALLAB_SENSIH_TOOLTIP"));
     sensicb->setAdjusterListener (this);
-    cbdlVBox->pack_start(*sensicb);
+    cbdlVBox->pack_start (*sensicb);
 
-    sharradius = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARRADIUS"), 42, 250, 1, 4));
+    sharradius = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SHARRADIUS"), 42, 250, 1, 4));
     sharradius->setAdjusterListener (this);
 
-    sharamount = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARAMOUNT"), 0, 100, 1, 75));
+    sharamount = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SHARAMOUNT"), 0, 100, 1, 75));
     sharamount->setAdjusterListener (this);
 
-    shardamping = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARDAMPING"), 0, 100, 1, 75));
+    shardamping = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SHARDAMPING"), 0, 100, 1, 75));
     shardamping->setAdjusterListener (this);
 
-    shariter = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SHARITER"), 5, 100, 1, 30));
+    shariter = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SHARITER"), 5, 100, 1, 30));
     shariter->setAdjusterListener (this);
 
 
-    sensisha = Gtk::manage (new Adjuster (M("TP_LOCALLAB_SENSIS"), 0, 100, 1, 19));
-    sensisha->set_tooltip_text (M("TP_LOCALLAB_SENSIS_TOOLTIP"));
+    sensisha = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_SENSIS"), 0, 100, 1, 19));
+    sensisha->set_tooltip_text (M ("TP_LOCALLAB_SENSIS_TOOLTIP"));
     sensisha->setAdjusterListener (this);
 
-    inverssha = Gtk::manage (new Gtk::CheckButton (M("TP_LOCALLAB_INVERS")));
+    inverssha = Gtk::manage (new Gtk::CheckButton (M ("TP_LOCALLAB_INVERS")));
     inverssha->set_active (false);
-    inversshaConn  = inverssha->signal_toggled().connect( sigc::mem_fun(*this, &Locallab::inversshaChanged) );
+    inversshaConn  = inverssha->signal_toggled().connect ( sigc::mem_fun (*this, &Locallab::inversshaChanged) );
 
     sharpVBox->pack_start (*sharradius);
     sharpVBox->pack_start (*sharamount);
@@ -481,19 +494,19 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     sharpVBox->pack_start (*inverssha);
 
     Gtk::VBox *denoisVBox = Gtk::manage ( new Gtk::VBox());
-    denoisVBox->set_spacing(2);
-    denoisVBox->set_border_width(4);
+    denoisVBox->set_spacing (2);
+    denoisVBox->set_border_width (4);
 
-    noiselumf = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISELUMFINE"), 0, 100, 1, 0));
+    noiselumf = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NOISELUMFINE"), 0, 100, 1, 0));
     noiselumf->setAdjusterListener (this);
 
-    noiselumc = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISELUMCOARSE"), 0, 100, 1, 0));
+    noiselumc = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NOISELUMCOARSE"), 0, 100, 1, 0));
     noiselumc->setAdjusterListener (this);
 
-    noisechrof = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISECHROFINE"), 0, 100, 1, 0));
+    noisechrof = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NOISECHROFINE"), 0, 100, 1, 0));
     noisechrof->setAdjusterListener (this);
 
-    noisechroc = Gtk::manage (new Adjuster (M("TP_LOCALLAB_NOISECHROCOARSE"), 0, 100, 1, 0));
+    noisechroc = Gtk::manage (new Adjuster (M ("TP_LOCALLAB_NOISECHROCOARSE"), 0, 100, 1, 0));
     noisechroc->setAdjusterListener (this);
 
     denoisVBox->pack_start (*noiselumf);
@@ -504,11 +517,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     neutrHBox1 = Gtk::manage (new Gtk::HBox ());
     neutrHBox1->set_border_width (2);
 
-    neutral1 = Gtk::manage (new Gtk::Button (M("TP_LOCALLAB_NEUTRAL")));
+    neutral1 = Gtk::manage (new Gtk::Button (M ("TP_LOCALLAB_NEUTRAL")));
     RTImage *resetImg1 = Gtk::manage (new RTImage ("gtk-undo-ltr-small.png", "gtk-undo-rtl-small.png"));
-    neutral1->set_image(*resetImg1);
-    neutral1->set_tooltip_text (M("TP_LOCALLAB_NEUTRAL_TIP"));
-    neutralconn1 = neutral1->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::neutral_pressed) );
+    neutral1->set_image (*resetImg1);
+    neutral1->set_tooltip_text (M ("TP_LOCALLAB_NEUTRAL_TIP"));
+    neutralconn1 = neutral1->signal_pressed().connect ( sigc::mem_fun (*this, &Locallab::neutral_pressed) );
     neutral1->show();
     neutrHBox1->pack_start (*neutral1);
     pack_start (*neutrHBox1);
@@ -519,14 +532,16 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     colorVBox->pack_start (*contrast);
     colorVBox->pack_start (*chroma);
     colorVBox->pack_start (*sensi);
-    colorVBox->pack_start(*llCurveEditorG, Gtk::PACK_SHRINK, 2);
+    colorVBox->pack_start (*curvactiv);
+
+    colorVBox->pack_start (*llCurveEditorG, Gtk::PACK_SHRINK, 2);
     //  colorVBox->pack_start(*llCurveEditorG2, Gtk::PACK_SHRINK, 2);
 
     colorVBox->pack_start (*invers);
 
 //    colorFrame->add(*colorVBox);
 //    pack_start (*colorFrame);
-    expcolor->add(*colorVBox);
+    expcolor->add (*colorVBox);
     pack_start (*expcolor);
 
     blurrVBox->pack_start (*radius);
@@ -535,7 +550,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     blurrVBox->pack_start (*activlum);
 
     blurrVBox->pack_start (*inversrad);
-    expblur->add(*blurrVBox);
+    expblur->add (*blurrVBox);
     pack_start (*expblur);
 
     tmBox->pack_start (*stren);
@@ -545,7 +560,7 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     tmBox->pack_start (*rewei);
     tmBox->pack_start (*sensitm);
 
-    exptonemap->add(*tmBox);
+    exptonemap->add (*tmBox);
     pack_start (*exptonemap);
 
 
@@ -557,22 +572,22 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     retiBox->pack_start (*sensih);
     retiBox->pack_start (*retrab);
 
-    retiBox->pack_start(*LocalcurveEditorgainTrab, Gtk::PACK_SHRINK, 4);
+    retiBox->pack_start (*LocalcurveEditorgainTrab, Gtk::PACK_SHRINK, 4);
 
-    retiBox->pack_start(*LocalcurveEditorgainT, Gtk::PACK_SHRINK, 4);
+    retiBox->pack_start (*LocalcurveEditorgainT, Gtk::PACK_SHRINK, 4);
     retiBox->pack_start (*inversret);
 
-    expreti->add(*retiBox);
+    expreti->add (*retiBox);
     pack_start (*expreti);
 
 
-    expsharp->add(*sharpVBox);
+    expsharp->add (*sharpVBox);
     pack_start (*expsharp);
 
-    expcbdl->add(*cbdlVBox);
+    expcbdl->add (*cbdlVBox);
     pack_start (*expcbdl);
 
-    expdenoi->add(*denoisVBox);
+    expdenoi->add (*denoisVBox);
     pack_start (*expdenoi);
 
 
@@ -582,11 +597,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     neutrHBox = Gtk::manage (new Gtk::HBox ());
     neutrHBox->set_border_width (2);
 
-    neutral = Gtk::manage (new Gtk::Button (M("TP_LOCALLAB_NEUTRAL")));
+    neutral = Gtk::manage (new Gtk::Button (M ("TP_LOCALLAB_NEUTRAL")));
     RTImage *resetImg = Gtk::manage (new RTImage ("gtk-undo-ltr-small.png", "gtk-undo-rtl-small.png"));
-    neutral->set_image(*resetImg);
-    neutral->set_tooltip_text (M("TP_LOCALLAB_NEUTRAL_TIP"));
-    neutralconn = neutral->signal_pressed().connect( sigc::mem_fun(*this, &Locallab::neutral_pressed) );
+    neutral->set_image (*resetImg);
+    neutral->set_tooltip_text (M ("TP_LOCALLAB_NEUTRAL_TIP"));
+    neutralconn = neutral->signal_pressed().connect ( sigc::mem_fun (*this, &Locallab::neutral_pressed) );
     neutral->show();
     neutrHBox->pack_start (*neutral);
     pack_start (*neutrHBox);
@@ -615,11 +630,11 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     centerCircle->radius = circrad->getValue(); //19;
     centerCircle->filled = false;
 
-    EditSubscriber::visibleGeometry.push_back( locXLine[0] );
-    EditSubscriber::visibleGeometry.push_back( locXLine[1] );
-    EditSubscriber::visibleGeometry.push_back( locYLine[0] );
-    EditSubscriber::visibleGeometry.push_back( locYLine[1] );
-    EditSubscriber::visibleGeometry.push_back( centerCircle );
+    EditSubscriber::visibleGeometry.push_back ( locXLine[0] );
+    EditSubscriber::visibleGeometry.push_back ( locXLine[1] );
+    EditSubscriber::visibleGeometry.push_back ( locYLine[0] );
+    EditSubscriber::visibleGeometry.push_back ( locYLine[1] );
+    EditSubscriber::visibleGeometry.push_back ( centerCircle );
 
     // MouseOver geometry
     locXLine[0] = new Line();
@@ -640,13 +655,13 @@ Locallab::Locallab (): FoldableToolPanel(this, "locallab", M("TP_LOCALLAB_LABEL"
     centerCircle->radius = circrad->getValue();//19;
     centerCircle->filled = true;
 
-    EditSubscriber::mouseOverGeometry.push_back( locXLine[0] );
-    EditSubscriber::mouseOverGeometry.push_back( locXLine[1] );
+    EditSubscriber::mouseOverGeometry.push_back ( locXLine[0] );
+    EditSubscriber::mouseOverGeometry.push_back ( locXLine[1] );
 
-    EditSubscriber::mouseOverGeometry.push_back( locYLine[0] );
-    EditSubscriber::mouseOverGeometry.push_back( locYLine[1] );
+    EditSubscriber::mouseOverGeometry.push_back ( locYLine[0] );
+    EditSubscriber::mouseOverGeometry.push_back ( locYLine[1] );
 
-    EditSubscriber::mouseOverGeometry.push_back( centerCircle );
+    EditSubscriber::mouseOverGeometry.push_back ( centerCircle );
 
     show_all();
 }
@@ -670,18 +685,18 @@ Locallab::~Locallab()
 void Locallab::foldAllButMe (GdkEventButton* event, MyExpander *expander)
 {
     if (event->button == 2) {
-        expcolor->set_expanded(expcolor == expander);
-        expblur->set_expanded(expblur == expander);
-        exptonemap->set_expanded(exptonemap == expander);
-        expreti->set_expanded(expreti == expander);
-        expsharp->set_expanded(expsharp == expander);
-        expcbdl->set_expanded(expcbdl == expander);
-        expdenoi->set_expanded(expdenoi == expander);
+        expcolor->set_expanded (expcolor == expander);
+        expblur->set_expanded (expblur == expander);
+        exptonemap->set_expanded (exptonemap == expander);
+        expreti->set_expanded (expreti == expander);
+        expsharp->set_expanded (expsharp == expander);
+        expcbdl->set_expanded (expcbdl == expander);
+        expdenoi->set_expanded (expdenoi == expander);
 
     }
 }
 
-void Locallab::enableToggled(MyExpander *expander)
+void Locallab::enableToggled (MyExpander *expander)
 {
     if (listener) {
         rtengine::ProcEvent event = NUMOFEVENTS;
@@ -705,17 +720,17 @@ void Locallab::enableToggled(MyExpander *expander)
         }
 
         if (expander->get_inconsistent()) {
-            listener->panelChanged (event, M("GENERAL_UNCHANGED"));
+            listener->panelChanged (event, M ("GENERAL_UNCHANGED"));
         } else if (expander->getEnabled()) {
-            listener->panelChanged (event, M("GENERAL_ENABLED"));
+            listener->panelChanged (event, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (event, M("GENERAL_DISABLED"));
+            listener->panelChanged (event, M ("GENERAL_DISABLED"));
         }
 
     }
 }
 
-void Locallab::writeOptions(std::vector<int> &tpOpen)
+void Locallab::writeOptions (std::vector<int> &tpOpen)
 {
     tpOpen.push_back (expcolor->get_expanded ());
     tpOpen.push_back (expblur->get_expanded ());
@@ -727,16 +742,16 @@ void Locallab::writeOptions(std::vector<int> &tpOpen)
 
 }
 
-void Locallab::updateToolState(std::vector<int> &tpOpen)
+void Locallab::updateToolState (std::vector<int> &tpOpen)
 {
-    if(tpOpen.size() == 7) {
-        expcolor->set_expanded(tpOpen.at(0));
-        expblur->set_expanded(tpOpen.at(1));
-        exptonemap->set_expanded(tpOpen.at(2));
-        expreti->set_expanded(tpOpen.at(3));
-        expsharp->set_expanded(tpOpen.at(4));
-        expcbdl->set_expanded(tpOpen.at(5));
-        expdenoi->set_expanded(tpOpen.at(6));
+    if (tpOpen.size() == 7) {
+        expcolor->set_expanded (tpOpen.at (0));
+        expblur->set_expanded (tpOpen.at (1));
+        exptonemap->set_expanded (tpOpen.at (2));
+        expreti->set_expanded (tpOpen.at (3));
+        expsharp->set_expanded (tpOpen.at (4));
+        expcbdl->set_expanded (tpOpen.at (5));
+        expdenoi->set_expanded (tpOpen.at (6));
 
 
     }
@@ -746,61 +761,62 @@ void Locallab::updateToolState(std::vector<int> &tpOpen)
 
 void Locallab::neutral_pressed ()
 {
-    Smethod->set_active(0);
-    locX->resetValue(false);
-    locXL->resetValue(false);
-    locY->resetValue(false);
-    locYT->resetValue(false);
-    centerX->resetValue(false);
-    centerY->resetValue(false);
-    circrad->resetValue(false);
-    qualityMethod->set_active(0);
-    thres->resetValue(false);
-    proxi->resetValue(false);
-    lightness->resetValue(false);
-    chroma->resetValue(false);
-    contrast->resetValue(false);
-    sensi->resetValue(false);
-    radius->resetValue(false);
-    strength->resetValue(false);
-    transit->resetValue(false);
-    sensibn->resetValue(false);
+    Smethod->set_active (0);
+    locX->resetValue (false);
+    locXL->resetValue (false);
+    locY->resetValue (false);
+    locYT->resetValue (false);
+    centerX->resetValue (false);
+    centerY->resetValue (false);
+    circrad->resetValue (false);
+    qualityMethod->set_active (0);
+    thres->resetValue (false);
+    proxi->resetValue (false);
+    lightness->resetValue (false);
+    chroma->resetValue (false);
+    contrast->resetValue (false);
+    sensi->resetValue (false);
+    radius->resetValue (false);
+    strength->resetValue (false);
+    transit->resetValue (false);
+    sensibn->resetValue (false);
     invers->set_active (false);
+    curvactiv->set_active (false);
     inversrad->set_active (false);
     inversret->set_active (false);
-    stren->resetValue(false);
-    gamma->resetValue(false);
-    estop->resetValue(false);
-    scaltm->resetValue(false);
-    rewei->resetValue(false);
-    sensitm->resetValue(false);
-    retinexMethod->set_active(2);
-    str->resetValue(false);
-    neigh->resetValue(false);
-    vart->resetValue(false);
-    chrrt->resetValue(false);
-    sensih->resetValue(false);
-    retrab->resetValue(false);
+    stren->resetValue (false);
+    gamma->resetValue (false);
+    estop->resetValue (false);
+    scaltm->resetValue (false);
+    rewei->resetValue (false);
+    sensitm->resetValue (false);
+    retinexMethod->set_active (2);
+    str->resetValue (false);
+    neigh->resetValue (false);
+    vart->resetValue (false);
+    chrrt->resetValue (false);
+    sensih->resetValue (false);
+    retrab->resetValue (false);
 //    cTgainshape->reset();
 //  cTgainshape->setCurve (creti);
     avoid->set_active (false);
 
-    for(int i = 0; i < 5; i++) {
-        multiplier[i]->resetValue(false);
+    for (int i = 0; i < 5; i++) {
+        multiplier[i]->resetValue (false);
     }
 
-    threshold->resetValue(false);
-    sensicb->resetValue(false);
-    sharradius->resetValue(false);
-    sharamount->resetValue(false);
-    shardamping->resetValue(false);
-    shariter->resetValue(false);
-    sensisha->resetValue(false);
+    threshold->resetValue (false);
+    sensicb->resetValue (false);
+    sharradius->resetValue (false);
+    sharamount->resetValue (false);
+    shardamping->resetValue (false);
+    shariter->resetValue (false);
+    sensisha->resetValue (false);
     inverssha->set_active (false);
-    noiselumf->resetValue(false);
-    noiselumc->resetValue(false);
-    noisechrof->resetValue(false);
-    noisechroc->resetValue(false);
+    noiselumf->resetValue (false);
+    noiselumc->resetValue (false);
+    noisechrof->resetValue (false);
+    noisechroc->resetValue (false);
 
 
 }
@@ -810,8 +826,8 @@ void Locallab::lumaneutralPressed ()
 {
 
     for (int i = 0; i < 5; i++) {
-        multiplier[i]->setValue(100);
-        adjusterChanged(multiplier[i], 100);
+        multiplier[i]->setValue (100);
+        adjusterChanged (multiplier[i], 100);
     }
 }
 
@@ -821,8 +837,8 @@ void Locallab::lumacontrastPlusPressed ()
 
     for (int i = 0; i < 5; i++) {
         float inc = (5 - i);
-        multiplier[i]->setValue(multiplier[i]->getValue() + inc);
-        adjusterChanged(multiplier[i], multiplier[i]->getValue());
+        multiplier[i]->setValue (multiplier[i]->getValue() + inc);
+        adjusterChanged (multiplier[i], multiplier[i]->getValue());
     }
 }
 
@@ -832,8 +848,8 @@ void Locallab::lumacontrastMinusPressed ()
 
     for (int i = 0; i < 5; i++) {
         float inc = - (5 - i);
-        multiplier[i]->setValue(multiplier[i]->getValue() + inc);
-        adjusterChanged(multiplier[i], multiplier[i]->getValue());
+        multiplier[i]->setValue (multiplier[i]->getValue() + inc);
+        adjusterChanged (multiplier[i], multiplier[i]->getValue());
     }
 }
 
@@ -852,7 +868,7 @@ int localChangedUI (void* data)
 {
 
     GThreadLock lock;
-    (static_cast<Locallab*>(data))->localComputed_ ();
+    (static_cast<Locallab*> (data))->localComputed_ ();
 
     return 0;
 }
@@ -861,7 +877,7 @@ int localretChangedUI (void* data)
 {
 
     GThreadLock lock;
-    (static_cast<Locallab*>(data))->localretComputed_ ();
+    (static_cast<Locallab*> (data))->localretComputed_ ();
 
     return 0;
 }
@@ -880,8 +896,8 @@ bool Locallab::localretComputed_ ()
     ImProcFunctions::strcurv_data (nextstr2, s_datc, siz);
     std::vector<double>   creti;
 
-    for(int j = 0; j < siz; j++) {
-        creti.push_back((double) (s_datc[j]) / 1000.);
+    for (int j = 0; j < siz; j++) {
+        creti.push_back ((double) (s_datc[j]) / 1000.);
     }
 
     delete [] s_datc;
@@ -894,13 +910,28 @@ bool Locallab::localretComputed_ ()
     ImProcFunctions::strcurv_data (nextll_str2, s_datcl, sizl);
     std::vector<double>   cll;
 
-    for(int j = 0; j < sizl; j++) {
-        cll.push_back((double) (s_datcl[j]) / 1000.);
+    for (int j = 0; j < sizl; j++) {
+        cll.push_back ((double) (s_datcl[j]) / 1000.);
     }
 
     delete [] s_datcl;
 
     llshape->setCurve (cll);
+
+
+    int *s_datcc;
+    s_datcc = new int[70];
+    int sizc;
+    ImProcFunctions::strcurv_data (nextcc_str2, s_datcc, sizc);
+    std::vector<double>   ccc;
+
+    for (int j = 0; j < sizc; j++) {
+        ccc.push_back ((double) (s_datcc[j]) / 1000.);
+    }
+
+    delete [] s_datcc;
+
+    ccshape->setCurve (ccc);
 
     int *s_datch;
     s_datch = new int[70];
@@ -908,8 +939,8 @@ bool Locallab::localretComputed_ ()
     ImProcFunctions::strcurv_data (nextlh_str2, s_datch, sizh);
     std::vector<double>   clh;
 
-    for(int j = 0; j < sizh; j++) {
-        clh.push_back((double) (s_datch[j]) / 1000.);
+    for (int j = 0; j < sizh; j++) {
+        clh.push_back ((double) (s_datch[j]) / 1000.);
     }
 
     delete [] s_datch;
@@ -920,27 +951,27 @@ bool Locallab::localretComputed_ ()
     enableListener ();
 
     //update all sliders by this strange process!
-    if(anbspot->getValue() == 0) {
-        anbspot->setValue(1);
+    if (anbspot->getValue() == 0) {
+        anbspot->setValue (1);
 
-        if(options.rtSettings.locdelay) {
+        if (options.rtSettings.locdelay) {
             if (anbspot->delay < 100) {
                 anbspot->delay = 100;
             }
         }
 
-        adjusterChanged(anbspot, 1);
+        adjusterChanged (anbspot, 1);
 
-    } else if(anbspot->getValue() == 1) {
-        anbspot->setValue(0);
+    } else if (anbspot->getValue() == 1) {
+        anbspot->setValue (0);
 
-        if(options.rtSettings.locdelay) {
+        if (options.rtSettings.locdelay) {
             if (anbspot->delay < 100) {
                 anbspot->delay = 100;
             }
         }
 
-        adjusterChanged(anbspot, 0);
+        adjusterChanged (anbspot, 0);
 
     }
 
@@ -948,13 +979,13 @@ bool Locallab::localretComputed_ ()
     std::vector<double>   cretirab;
     cretirab = cTgainshaperab->getCurve ();
 
-    if(cretirab.at(5) == 0.70) {
-        cretirab.at(5) = 0.9;
+    if (cretirab.at (5) == 0.70) {
+        cretirab.at (5) = 0.9;
         cTgainshaperab->setCurve (cretirab);
 
         curveChanged (cTgainshaperab);
-    } else if(cretirab.at(5) == 0.90) {
-        cretirab.at(5) = 0.7;
+    } else if (cretirab.at (5) == 0.90) {
+        cretirab.at (5) = 0.7;
         cTgainshaperab->setCurve (cretirab);
         curveChanged (cTgainshaperab);
 
@@ -968,19 +999,23 @@ bool Locallab::localretComputed_ ()
     }
 
     if (listener) {//for curve
-        listener->panelChanged (EvlocallabCTgainCurverab, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (EvlocallabCTgainCurverab, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for curve
-        listener->panelChanged (EvlocallabCTgainCurve, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (EvlocallabCTgainCurve, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for curve
-        listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (Evlocallabllshape, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for curve
-        listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (Evlocallabccshape, M ("HISTORY_CUSTOMCURVE"));
+    }
+
+    if (listener) {//for curve
+        listener->panelChanged (EvlocallabLHshape, M ("HISTORY_CUSTOMCURVE"));
     }
 
 
@@ -992,24 +1027,24 @@ bool Locallab::localComputed_ ()
     disableListener ();
 
     //size spot
-    circrad->setValue(nextdatasp[2]);
+    circrad->setValue (nextdatasp[2]);
     //center and cursor
-    locX->setValue(nextdatasp[3]);
-    locY->setValue(nextdatasp[4]);
-    locYT->setValue(nextdatasp[5]);
-    locXL->setValue(nextdatasp[6]);
-    centerX->setValue(nextdatasp[7]);
-    centerY->setValue(nextdatasp[8]);
+    locX->setValue (nextdatasp[3]);
+    locY->setValue (nextdatasp[4]);
+    locYT->setValue (nextdatasp[5]);
+    locXL->setValue (nextdatasp[6]);
+    centerX->setValue (nextdatasp[7]);
+    centerY->setValue (nextdatasp[8]);
 
     //sliders
-    lightness->setValue(nextdatasp[9]);
-    contrast->setValue(nextdatasp[10]);
-    chroma->setValue(nextdatasp[11]);
-    sensi->setValue(nextdatasp[12]);
-    transit->setValue(nextdatasp[13]);
+    lightness->setValue (nextdatasp[9]);
+    contrast->setValue (nextdatasp[10]);
+    chroma->setValue (nextdatasp[11]);
+    sensi->setValue (nextdatasp[12]);
+    transit->setValue (nextdatasp[13]);
 
     //inverse
-    if(nextdatasp[14] == 0) {
+    if (nextdatasp[14] == 0) {
         invers->set_active (false);
     } else {
         invers->set_active (true);
@@ -1027,26 +1062,26 @@ bool Locallab::localComputed_ ()
     }
 
     //sliders blurr
-    radius->setValue(nextdatasp[17]);
-    strength->setValue(nextdatasp[18]);
-    sensibn->setValue(nextdatasp[19]);
+    radius->setValue (nextdatasp[17]);
+    strength->setValue (nextdatasp[18]);
+    sensibn->setValue (nextdatasp[19]);
 
     //inverse
-    if(nextdatasp[20] == 0) {
+    if (nextdatasp[20] == 0) {
         inversrad->set_active (false);
     } else {
         inversrad->set_active (true);
     }
 
     //sliders retinex
-    str->setValue(nextdatasp[21]);
-    chrrt->setValue(nextdatasp[22]);
-    neigh->setValue(nextdatasp[23]);
-    vart->setValue(nextdatasp[24]);
-    sensih->setValue(nextdatasp[25]);
+    str->setValue (nextdatasp[21]);
+    chrrt->setValue (nextdatasp[22]);
+    neigh->setValue (nextdatasp[23]);
+    vart->setValue (nextdatasp[24]);
+    sensih->setValue (nextdatasp[25]);
 
     //inverse
-    if(nextdatasp[26] == 0) {
+    if (nextdatasp[26] == 0) {
         inversret->set_active (false);
     } else {
         inversret->set_active (true);
@@ -1062,13 +1097,13 @@ bool Locallab::localComputed_ ()
     }
 
     //sharpening
-    sharradius->setValue(nextdatasp[28]);
-    sharamount->setValue(nextdatasp[29]);
-    shardamping->setValue(nextdatasp[30]);
-    shariter->setValue(nextdatasp[31]);
-    sensisha->setValue(nextdatasp[32]);
+    sharradius->setValue (nextdatasp[28]);
+    sharamount->setValue (nextdatasp[29]);
+    shardamping->setValue (nextdatasp[30]);
+    shariter->setValue (nextdatasp[31]);
+    sensisha->setValue (nextdatasp[32]);
 
-    if(nextdatasp[33] == 0) {
+    if (nextdatasp[33] == 0) {
         inverssha->set_active (false);
     } else {
         inverssha->set_active (true);
@@ -1082,43 +1117,49 @@ bool Locallab::localComputed_ ()
         qualityMethod->set_active (2);
     }
 
-    thres->setValue(nextdatasp[35]);
-    proxi->setValue(nextdatasp[36]);
+    thres->setValue (nextdatasp[35]);
+    proxi->setValue (nextdatasp[36]);
 
     //denoise
-    noiselumf->setValue(nextdatasp[37]);
-    noiselumc->setValue(nextdatasp[38]);
-    noisechrof->setValue(nextdatasp[39]);
-    noisechroc->setValue(nextdatasp[40]);
+    noiselumf->setValue (nextdatasp[37]);
+    noiselumc->setValue (nextdatasp[38]);
+    noisechrof->setValue (nextdatasp[39]);
+    noisechroc->setValue (nextdatasp[40]);
 
     //cbdl
-    multiplier[0]->setValue(nextdatasp[41]);
-    multiplier[1]->setValue(nextdatasp[42]);
-    multiplier[2]->setValue(nextdatasp[43]);
-    multiplier[3]->setValue(nextdatasp[44]);
-    multiplier[4]->setValue(nextdatasp[45]);
-    threshold->setValue(nextdatasp[46]);
-    sensicb->setValue(nextdatasp[47]);
+    multiplier[0]->setValue (nextdatasp[41]);
+    multiplier[1]->setValue (nextdatasp[42]);
+    multiplier[2]->setValue (nextdatasp[43]);
+    multiplier[3]->setValue (nextdatasp[44]);
+    multiplier[4]->setValue (nextdatasp[45]);
+    threshold->setValue (nextdatasp[46]);
+    sensicb->setValue (nextdatasp[47]);
 
     //blur luma
-    if(nextdatasp[48] == 0) {
+    if (nextdatasp[48] == 0) {
         activlum->set_active (false);
     } else {
         activlum->set_active (true);
     }
 
 //TM
-    stren->setValue(nextdatasp[49]);
-    gamma->setValue(nextdatasp[50]);
-    estop->setValue(nextdatasp[51]);
-    scaltm->setValue(nextdatasp[52]);
-    rewei->setValue(nextdatasp[53]);
-    sensitm->setValue(nextdatasp[54]);
+    stren->setValue (nextdatasp[49]);
+    gamma->setValue (nextdatasp[50]);
+    estop->setValue (nextdatasp[51]);
+    scaltm->setValue (nextdatasp[52]);
+    rewei->setValue (nextdatasp[53]);
+    sensitm->setValue (nextdatasp[54]);
     //  usleep(10000);
 
     //Reticurv
-    retrab->setValue(nextdatasp[55]);
+    retrab->setValue (nextdatasp[55]);
 
+    //curvactiv
+    if (nextdatasp[56] == 0) {
+        curvactiv->set_active (false);
+    } else {
+        curvactiv->set_active (true);
+    }
 
     int *s_datc;
     s_datc = new int[70];
@@ -1128,8 +1169,8 @@ bool Locallab::localComputed_ ()
 
     std::vector<double>   creti;
 
-    for(int j = 0; j < siz; j++) {
-        creti.push_back((double) (s_datc[j]) / 1000.);
+    for (int j = 0; j < siz; j++) {
+        creti.push_back ((double) (s_datc[j]) / 1000.);
     }
 
     delete [] s_datc;
@@ -1145,12 +1186,28 @@ bool Locallab::localComputed_ ()
 
     std::vector<double>   cll;
 
-    for(int j = 0; j < sizl; j++) {
-        cll.push_back((double) (s_datcl[j]) / 1000.);
+    for (int j = 0; j < sizl; j++) {
+        cll.push_back ((double) (s_datcl[j]) / 1000.);
     }
 
     delete [] s_datcl;
     llshape->setCurve (cll);
+
+    //CCcurv
+    int *s_datcc;
+    s_datcc = new int[70];
+    int sizc;
+    ImProcFunctions::strcurv_data (nextcc_str, s_datcc, sizc);
+
+
+    std::vector<double>   ccc;
+
+    for (int j = 0; j < sizc; j++) {
+        ccc.push_back ((double) (s_datcc[j]) / 1000.);
+    }
+
+    delete [] s_datcc;
+    ccshape->setCurve (ccc);
 
 
     //LHcurv
@@ -1162,8 +1219,8 @@ bool Locallab::localComputed_ ()
 
     std::vector<double>   clh;
 
-    for(int j = 0; j < sizh; j++) {
-        clh.push_back((double) (s_datch[j]) / 1000.);
+    for (int j = 0; j < sizh; j++) {
+        clh.push_back ((double) (s_datch[j]) / 1000.);
     }
 
     delete [] s_datch;
@@ -1176,27 +1233,27 @@ bool Locallab::localComputed_ ()
     enableListener ();
 
     //update all sliders by this strange process!
-    if(anbspot->getValue() == 0) {
-        anbspot->setValue(1);
+    if (anbspot->getValue() == 0) {
+        anbspot->setValue (1);
 
-        if(options.rtSettings.locdelay) {
+        if (options.rtSettings.locdelay) {
             if (anbspot->delay < 100) {
                 anbspot->delay = 100;
             }
         }
 
-        adjusterChanged(anbspot, 1);
+        adjusterChanged (anbspot, 1);
 
-    } else if(anbspot->getValue() == 1) {
-        anbspot->setValue(0);
+    } else if (anbspot->getValue() == 1) {
+        anbspot->setValue (0);
 
-        if(options.rtSettings.locdelay) {
+        if (options.rtSettings.locdelay) {
             if (anbspot->delay < 100) {
                 anbspot->delay = 100;
             }
         }
 
-        adjusterChanged(anbspot, 0);
+        adjusterChanged (anbspot, 0);
 
     }
 
@@ -1205,13 +1262,13 @@ bool Locallab::localComputed_ ()
     std::vector<double>   cretirab;
     cretirab = cTgainshaperab->getCurve ();
 
-    if(cretirab.at(5) == 0.70) {
-        cretirab.at(5) = 0.9;
+    if (cretirab.at (5) == 0.70) {
+        cretirab.at (5) = 0.9;
         cTgainshaperab->setCurve (cretirab);
 
         curveChanged (cTgainshaperab);
-    } else if(cretirab.at(5) == 0.90) {
-        cretirab.at(5) = 0.7;
+    } else if (cretirab.at (5) == 0.90) {
+        cretirab.at (5) = 0.7;
         cTgainshaperab->setCurve (cretirab);
         curveChanged (cTgainshaperab);
 
@@ -1228,15 +1285,19 @@ bool Locallab::localComputed_ ()
     }
 
     if (listener) {//for curve
-        listener->panelChanged (EvlocallabCTgainCurverab, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (EvlocallabCTgainCurverab, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for inverse color
-        listener->panelChanged (Evlocallabinvers, M("GENERAL_ENABLED"));
+        listener->panelChanged (Evlocallabinvers, M ("GENERAL_ENABLED"));
+    }
+
+    if (listener) {//for curvactiv
+        listener->panelChanged (Evlocallabcurvactiv, M ("GENERAL_ENABLED"));
     }
 
     if (listener) {//for inverse blurr
-        listener->panelChanged (Evlocallabinversrad, M("GENERAL_ENABLED"));
+        listener->panelChanged (Evlocallabinversrad, M ("GENERAL_ENABLED"));
     }
 
     if (listener) {//for quality method
@@ -1245,11 +1306,11 @@ bool Locallab::localComputed_ ()
     }
 
     if (listener) {//for inverse retinex
-        listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
+        listener->panelChanged (Evlocallabinversret, M ("GENERAL_ENABLED"));
     }
 
     if (listener) {//for inverse sharpen
-        listener->panelChanged (Evlocallabinverssha, M("GENERAL_ENABLED"));
+        listener->panelChanged (Evlocallabinverssha, M ("GENERAL_ENABLED"));
     }
 
     if (listener) {//for Smethod : position of mouse cursor
@@ -1261,40 +1322,46 @@ bool Locallab::localComputed_ ()
     }
 
     if (listener) {//for curve reti
-        listener->panelChanged (EvlocallabCTgainCurve, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (EvlocallabCTgainCurve, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for curve LL
-        listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (Evlocallabllshape, M ("HISTORY_CUSTOMCURVE"));
     }
 
     if (listener) {//for curve LH
-        listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+        listener->panelChanged (EvlocallabLHshape, M ("HISTORY_CUSTOMCURVE"));
+    }
+
+    if (listener) {//for curve LH
+        listener->panelChanged (Evlocallabccshape, M ("HISTORY_CUSTOMCURVE"));
     }
 
     return false;
 }
 
-void Locallab::localChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat)
+void Locallab::localChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat)
 {
-    for(int i = 2; i < 59; i++) {//58
+    for (int i = 2; i < 60; i++) { //58
         nextdatasp[i] = datasp[i][sp];
     }
 
     nextstr = datastr;
     nextll_str = ll_str;
     nextlh_str = lh_str;
+    nextcc_str = cc_str;
 
     nextlength = maxdat;
     g_idle_add (localChangedUI, this);
 }
 
-void Locallab::localretChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat)
+void Locallab::localretChanged  (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat)
 {
     nextlength = maxdat;
     nextstr2 = datastr;
     nextll_str2 = ll_str;
     nextlh_str2 = lh_str;
+    nextcc_str2 = cc_str;
 
     g_idle_add (localretChangedUI, this);
 }
@@ -1303,13 +1370,13 @@ void Locallab::localretChanged  (int **datasp, std::string datastr, std::string 
 void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 {
     disableListener ();
-    enablecolorConn.block(true);
-    enableblurConn.block(true);
-    enabletonemapConn.block(true);
-    enableretiConn.block(true);
-    enablesharpConn.block(true);
-    enablecbdlConn.block(true);
-    enabledenoiConn.block(true);
+    enablecolorConn.block (true);
+    enableblurConn.block (true);
+    enabletonemapConn.block (true);
+    enableretiConn.block (true);
+    enablesharpConn.block (true);
+    enablecbdlConn.block (true);
+    enabledenoiConn.block (true);
 
 
     if (pedited) {
@@ -1336,7 +1403,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         noisechrof->setEditedState (pedited->locallab.noisechrof ? Edited : UnEdited);
         noisechroc->setEditedState (pedited->locallab.noisechroc ? Edited : UnEdited);
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             multiplier[i]->setEditedState (pedited->locallab.mult[i] ? Edited : UnEdited);
         }
 
@@ -1367,10 +1434,12 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         avoid->set_inconsistent (multiImage && !pedited->locallab.avoid);
         activlum->set_inconsistent (multiImage && !pedited->locallab.activlum);
         invers->set_inconsistent (multiImage && !pedited->locallab.invers);
+        curvactiv->set_inconsistent (multiImage && !pedited->locallab.curvactiv);
         inversrad->set_inconsistent (multiImage && !pedited->locallab.inversrad);
         inverssha->set_inconsistent (multiImage && !pedited->locallab.inverssha);
         cTgainshape->setUnChanged  (!pedited->locallab.localTgaincurve);
         llshape->setUnChanged  (!pedited->locallab.llcurve);
+        ccshape->setUnChanged  (!pedited->locallab.cccurve);
         LHshape->setUnChanged  (!pedited->locallab.LHcurve);
         inversret->set_inconsistent (multiImage && !pedited->locallab.inversret);
         cTgainshaperab->setUnChanged  (!pedited->locallab.localTgaincurverab);
@@ -1383,24 +1452,24 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
         expdenoi->set_inconsistent   (!pedited->locallab.expdenoi);
 
         if (!pedited->locallab.Smethod) {
-            Smethod->set_active_text(M("GENERAL_UNCHANGED"));
+            Smethod->set_active_text (M ("GENERAL_UNCHANGED"));
         }
 
         if (!pedited->locallab.retinexMethod) {
-            retinexMethod->set_active_text(M("GENERAL_UNCHANGED"));
+            retinexMethod->set_active_text (M ("GENERAL_UNCHANGED"));
         }
 
         if (!pedited->locallab.qualityMethod) {
-            qualityMethod->set_active_text(M("GENERAL_UNCHANGED"));
+            qualityMethod->set_active_text (M ("GENERAL_UNCHANGED"));
         }
 
     }
 
-    setEnabled(pp->locallab.enabled);
+    setEnabled (pp->locallab.enabled);
 
-    Smethodconn.block(true);
-    retinexMethodConn.block(true);
-    qualityMethodConn.block(true);
+    Smethodconn.block (true);
+    retinexMethodConn.block (true);
+    qualityMethodConn.block (true);
 
     avoidConn.block (true);
     avoid->set_active (pp->locallab.avoid);
@@ -1411,6 +1480,9 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     inversConn.block (true);
     invers->set_active (pp->locallab.invers);
     inversConn.block (false);
+    curvactivConn.block (true);
+    curvactiv->set_active (pp->locallab.curvactiv);
+    curvactivConn.block (false);
     inversradConn.block (true);
     inversrad->set_active (pp->locallab.inversrad);
     inversradConn.block (false);
@@ -1462,6 +1534,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     cTgainshape->setCurve (pp->locallab.localTgaincurve);
     cTgainshaperab->setCurve (pp->locallab.localTgaincurverab);
     llshape->setCurve (pp->locallab.llcurve);
+    ccshape->setCurve (pp->locallab.cccurve);
     LHshape->setCurve (pp->locallab.LHcurve);
     lastactivlum = pp->locallab.activlum;
     lastanbspot = pp->locallab.anbspot;
@@ -1478,18 +1551,20 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     expdenoi->setEnabled (pp->locallab.expdenoi);
 
     for (int i = 0; i < 5; i++) {
-        multiplier[i]->setValue(pp->locallab.mult[i]);
+        multiplier[i]->setValue (pp->locallab.mult[i]);
     }
 
-    threshold->setValue(pp->locallab.threshold);
+    threshold->setValue (pp->locallab.threshold);
 
     lastavoid = pp->locallab.avoid;
     lastinvers = pp->locallab.invers;
+    lastcurvactiv = pp->locallab.curvactiv;
     lastinversrad = pp->locallab.inversrad;
     lastinversret = pp->locallab.inversret;
     lastinverssha = pp->locallab.inverssha;
     activlumChanged();
     inversChanged();
+    curvactivChanged();
     inversradChanged();
     inversretChanged();
     inversshaChanged();
@@ -1507,7 +1582,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     }
 
     SmethodChanged();
-    Smethodconn.block(false);
+    Smethodconn.block (false);
 
     if (pp->locallab.retinexMethod == "low") {
         retinexMethod->set_active (0);
@@ -1518,7 +1593,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     }
 
     retinexMethodChanged ();
-    retinexMethodConn.block(false);
+    retinexMethodConn.block (false);
 
     if (pp->locallab.qualityMethod == "std") {
         qualityMethod->set_active (0);
@@ -1529,7 +1604,7 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
     }
 
     qualityMethodChanged ();
-    qualityMethodConn.block(false);
+    qualityMethodConn.block (false);
 
 
     anbspot->hide();
@@ -1549,18 +1624,18 @@ void Locallab::read (const ProcParams* pp, const ParamsEdited* pedited)
 
     }
 
-    enablecolorConn.block(false);
-    enableblurConn.block(false);
-    enabletonemapConn.block(false);
-    enableretiConn.block(false);
-    enablesharpConn.block(false);
-    enablecbdlConn.block(false);
-    enabledenoiConn.block(false);
+    enablecolorConn.block (false);
+    enableblurConn.block (false);
+    enabletonemapConn.block (false);
+    enableretiConn.block (false);
+    enablesharpConn.block (false);
+    enablecbdlConn.block (false);
+    enabledenoiConn.block (false);
 
     enableListener ();
 }
 
-void Locallab::updateGeometry(const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
+void Locallab::updateGeometry (const int centerX_, const int centerY_, const int circrad_, const int locY_, const double degree_, const int locX_, const int locYT_, const int locXL_, const int fullWidth, const int fullHeight)
 {
     EditDataProvider* dataProvider = getEditProvider();
 
@@ -1576,7 +1651,7 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
         imW = fullWidth;
         imH = fullHeight;
     } else {
-        dataProvider->getImageSize(imW, imH);
+        dataProvider->getImageSize (imW, imH);
 
         if (!imW || !imH) {
             return;
@@ -1585,11 +1660,11 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
 
     PolarCoord polCoord1, polCoord2, polCoord0;
     // dataProvider->getImageSize(imW, imH);
-    double decayY = (locY_) * double(imH) / 2000.;
-    double decayYT = (locYT_) * double(imH) / 2000.;
-    double decayX = (locX_) * (double(imW)) / 2000.;
-    double decayXL = (locXL_) * (double(imW)) / 2000.;
-    rtengine::Coord origin(imW / 2 + centerX_ * imW / 2000.f, imH / 2 + centerY_ * imH / 2000.f);
+    double decayY = (locY_) * double (imH) / 2000.;
+    double decayYT = (locYT_) * double (imH) / 2000.;
+    double decayX = (locX_) * (double (imW)) / 2000.;
+    double decayXL = (locXL_) * (double (imW)) / 2000.;
+    rtengine::Coord origin (imW / 2 + centerX_ * imW / 2000.f, imH / 2 + centerY_ * imH / 2000.f);
 //   printf("deX=%f dexL=%f deY=%f deyT=%f\n", decayX, decayXL, decayY, decayYT);
 
     if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
@@ -1600,50 +1675,50 @@ void Locallab::updateGeometry(const int centerX_, const int centerY_, const int 
     Line *currLine;
     Circle *currCircle;
     double decay;
-    const auto updateLine = [&](Geometry * geometry, const float radius, const float begin, const float end) {
-        const auto line = static_cast<Line*>(geometry);
-        line->begin = PolarCoord(radius, -degree_ + begin);
+    const auto updateLine = [&] (Geometry * geometry, const float radius, const float begin, const float end) {
+        const auto line = static_cast<Line*> (geometry);
+        line->begin = PolarCoord (radius, -degree_ + begin);
         line->begin += origin;
-        line->end = PolarCoord(radius, -degree_ + end);
+        line->end = PolarCoord (radius, -degree_ + end);
         line->end += origin;
     };
 
-    const auto updateLineWithDecay = [&](Geometry * geometry, const float radius, const float decal, const float offSetAngle) {
-        const auto line = static_cast<Line*>(geometry);//180
+    const auto updateLineWithDecay = [&] (Geometry * geometry, const float radius, const float decal, const float offSetAngle) {
+        const auto line = static_cast<Line*> (geometry); //180
         line->begin = PolarCoord (radius, -degree_ + decal) + PolarCoord (decay, -degree_ + offSetAngle);
         line->begin += origin;//0
         line->end = PolarCoord (radius, -degree_ + (decal - 180)) + PolarCoord (decay, -degree_ + offSetAngle);
         line->end += origin;
     };
 
-    const auto updateCircle = [&](Geometry * geometry) {
-        const auto circle = static_cast<Circle*>(geometry);
+    const auto updateCircle = [&] (Geometry * geometry) {
+        const auto circle = static_cast<Circle*> (geometry);
         circle->center = origin;
         circle->radius = circrad_;
 
     };
 
     decay = decayX;
-    updateLineWithDecay (visibleGeometry.at(0), 100., 90., 0.);
-    updateLineWithDecay (mouseOverGeometry.at(0), 100., 90., 0.);
+    updateLineWithDecay (visibleGeometry.at (0), 100., 90., 0.);
+    updateLineWithDecay (mouseOverGeometry.at (0), 100., 90., 0.);
 
     decay = decayXL;
 
-    updateLineWithDecay (visibleGeometry.at(1), 100., 90., 180.);
-    updateLineWithDecay (mouseOverGeometry.at(1), 100., 90., 180.);
+    updateLineWithDecay (visibleGeometry.at (1), 100., 90., 180.);
+    updateLineWithDecay (mouseOverGeometry.at (1), 100., 90., 180.);
 
     decay = decayYT;
-    updateLineWithDecay (visibleGeometry.at(2), 100., 180., 270.);
-    updateLineWithDecay (mouseOverGeometry.at(2), 100., 180., 270.);
+    updateLineWithDecay (visibleGeometry.at (2), 100., 180., 270.);
+    updateLineWithDecay (mouseOverGeometry.at (2), 100., 180., 270.);
 
     decay = decayY;
 
-    updateLineWithDecay (visibleGeometry.at(3), 100., 180, 90.);
-    updateLineWithDecay (mouseOverGeometry.at(3), 100., 180., 90.);
+    updateLineWithDecay (visibleGeometry.at (3), 100., 180, 90.);
+    updateLineWithDecay (mouseOverGeometry.at (3), 100., 180., 90.);
 
 
-    updateCircle (visibleGeometry.at(4));
-    updateCircle (mouseOverGeometry.at(4));
+    updateCircle (visibleGeometry.at (4));
+    updateCircle (mouseOverGeometry.at (4));
 
 
 }
@@ -1690,6 +1765,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.avoid = avoid->get_active();
     pp->locallab.activlum = activlum->get_active();
     pp->locallab.invers = invers->get_active();
+    pp->locallab.curvactiv = curvactiv->get_active();
     pp->locallab.inversrad = inversrad->get_active();
     pp->locallab.inversret = inversret->get_active();
     pp->locallab.inverssha = inverssha->get_active();
@@ -1702,6 +1778,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
     pp->locallab.localTgaincurve       = cTgainshape->getCurve ();
     pp->locallab.localTgaincurverab       = cTgainshaperab->getCurve ();
     pp->locallab.llcurve       = llshape->getCurve ();
+    pp->locallab.cccurve       = ccshape->getCurve ();
     pp->locallab.LHcurve       = LHshape->getCurve ();
     pp->locallab.expcolor      = expcolor->getEnabled();
     pp->locallab.expblur      = expblur->getEnabled();
@@ -1719,9 +1796,9 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
 
     if (pedited) {
         pedited->locallab.degree = degree->getEditedState ();
-        pedited->locallab.Smethod  = Smethod->get_active_text() != M("GENERAL_UNCHANGED");
-        pedited->locallab.retinexMethod    = retinexMethod->get_active_text() != M("GENERAL_UNCHANGED");
-        pedited->locallab.qualityMethod    = qualityMethod->get_active_text() != M("GENERAL_UNCHANGED");
+        pedited->locallab.Smethod  = Smethod->get_active_text() != M ("GENERAL_UNCHANGED");
+        pedited->locallab.retinexMethod    = retinexMethod->get_active_text() != M ("GENERAL_UNCHANGED");
+        pedited->locallab.qualityMethod    = qualityMethod->get_active_text() != M ("GENERAL_UNCHANGED");
         pedited->locallab.locY = locY->getEditedState ();
         pedited->locallab.locX = locX->getEditedState ();
         pedited->locallab.locYT = locYT->getEditedState ();
@@ -1760,6 +1837,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.enabled = !get_inconsistent();
         pedited->locallab.avoid = !avoid->get_inconsistent();
         pedited->locallab.invers = !invers->get_inconsistent();
+        pedited->locallab.curvactiv = !curvactiv->get_inconsistent();
         pedited->locallab.activlum = !activlum->get_inconsistent();
         pedited->locallab.inversret = !inversret->get_inconsistent();
         pedited->locallab.inversrad = !inversrad->get_inconsistent();
@@ -1773,6 +1851,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.localTgaincurve        = !cTgainshape->isUnChanged ();
         pedited->locallab.localTgaincurverab        = !cTgainshaperab->isUnChanged ();
         pedited->locallab.llcurve        = !llshape->isUnChanged ();
+        pedited->locallab.cccurve        = !ccshape->isUnChanged ();
         pedited->locallab.LHcurve        = !LHshape->isUnChanged ();
         pedited->locallab.expcolor     = !expcolor->get_inconsistent();
         pedited->locallab.expblur     = !expblur->get_inconsistent();
@@ -1782,7 +1861,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pedited->locallab.expcbdl     = !expcbdl->get_inconsistent();
         pedited->locallab.expdenoi     = !expdenoi->get_inconsistent();
 
-        for(int i = 0; i < 5; i++) {
+        for (int i = 0; i < 5; i++) {
             pedited->locallab.mult[i] = multiplier[i]->getEditedState();
         }
 
@@ -1817,7 +1896,7 @@ void Locallab::write (ProcParams* pp, ParamsEdited* pedited)
         pp->locallab.Smethod = "SYMSL";
     }
 
-    if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+    if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
 //   if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 1) {
         pp->locallab.locX = locX->getValue();
         pp->locallab.locY = locY->getValue();
@@ -1844,41 +1923,52 @@ void Locallab::curveChanged (CurveEditor* ce)
 
     if (listener && getEnabled()) {
         if (ce == cTgainshape) {
-            listener->panelChanged (EvlocallabCTgainCurve, M("HISTORY_CUSTOMCURVE"));
+            listener->panelChanged (EvlocallabCTgainCurve, M ("HISTORY_CUSTOMCURVE"));
             int strval = retrab->getValue();
             //update MIP
-            retrab->setValue(strval + 1);
-            adjusterChanged(retrab, strval + 1);
-            usleep(10000);//to test
-            retrab->setValue(strval);
+            retrab->setValue (strval + 1);
+            adjusterChanged (retrab, strval + 1);
+            usleep (10000); //to test
+            retrab->setValue (strval);
 
-            adjusterChanged(retrab, strval);
+            adjusterChanged (retrab, strval);
         }
 
         else if (ce == cTgainshaperab) {
-            listener->panelChanged (EvlocallabCTgainCurverab, M("HISTORY_CUSTOMCURVE"));
+            listener->panelChanged (EvlocallabCTgainCurverab, M ("HISTORY_CUSTOMCURVE"));
         } else if (ce == LHshape) {
-            listener->panelChanged (EvlocallabLHshape, M("HISTORY_CUSTOMCURVE"));
+            listener->panelChanged (EvlocallabLHshape, M ("HISTORY_CUSTOMCURVE"));
             int strval = retrab->getValue();
             //update MIP
-            retrab->setValue(strval + 1);
-            adjusterChanged(retrab, strval + 1);
-            usleep(10000);//to test
-            retrab->setValue(strval);
+            retrab->setValue (strval + 1);
+            adjusterChanged (retrab, strval + 1);
+            usleep (10000); //to test
+            retrab->setValue (strval);
 
-            adjusterChanged(retrab, strval);
+            adjusterChanged (retrab, strval);
 
 
         } else if (ce == llshape) {
-            listener->panelChanged (Evlocallabllshape, M("HISTORY_CUSTOMCURVE"));
+            listener->panelChanged (Evlocallabllshape, M ("HISTORY_CUSTOMCURVE"));
             int strval = retrab->getValue();
             //update MIP
-            retrab->setValue(strval + 1);
-            adjusterChanged(retrab, strval + 1);
-            usleep(10000);//to test
-            retrab->setValue(strval);
+            retrab->setValue (strval + 1);
+            adjusterChanged (retrab, strval + 1);
+            usleep (10000); //to test
+            retrab->setValue (strval);
 
-            adjusterChanged(retrab, strval);
+            adjusterChanged (retrab, strval);
+
+        } else if (ce == ccshape) {
+            listener->panelChanged (Evlocallabccshape, M ("HISTORY_CUSTOMCURVE"));
+            int strval = retrab->getValue();
+            //update MIP
+            retrab->setValue (strval + 1);
+            adjusterChanged (retrab, strval + 1);
+            usleep (10000); //to test
+            retrab->setValue (strval);
+
+            adjusterChanged (retrab, strval);
 
         }
 
@@ -1887,9 +1977,11 @@ void Locallab::curveChanged (CurveEditor* ce)
 
 void Locallab::retinexMethodChanged()
 {
-    retrab->hide();
-    LocalcurveEditorgainTrab->hide();
-    //  llCurveEditorG2->hide();
+    if (!batchMode) {
+
+        retrab->hide();
+        LocalcurveEditorgainTrab->hide();
+    }
 
     if (listener) {
         listener->panelChanged (EvlocallabretinexMethod, retinexMethod->get_active_text ());
@@ -1899,7 +1991,7 @@ void Locallab::retinexMethodChanged()
 void Locallab::qualityMethodChanged()
 {
     if (!batchMode) {
-        if(qualityMethod->get_active_row_number() == 0) { //STD
+        if (qualityMethod->get_active_row_number() == 0) { //STD
             proxi->hide();
             thres->hide();
         } else {//enh
@@ -1916,14 +2008,14 @@ void Locallab::qualityMethodChanged()
 void Locallab::SmethodChanged ()
 {
     if (!batchMode) {
-        if(Smethod->get_active_row_number() == 0) { //IND 0
+        if (Smethod->get_active_row_number() == 0) { //IND 0
             locX->hide();
             locXL->hide();
             locY->hide();
             locYT->hide();
             centerX->hide();
             centerY->hide();
-        } else if(Smethod->get_active_row_number() == 1) {          // 1 SYM
+        } else if (Smethod->get_active_row_number() == 1) {         // 1 SYM
             locX->hide();
             locXL->hide();
             locY->hide();
@@ -1931,7 +2023,7 @@ void Locallab::SmethodChanged ()
             centerX->hide();
             centerY->hide();
 
-        } else if(Smethod->get_active_row_number() == 2) {          //2 SYM
+        } else if (Smethod->get_active_row_number() == 2) {         //2 SYM
             locX->show();
             locXL->show();
             locY->show();
@@ -1939,7 +2031,7 @@ void Locallab::SmethodChanged ()
             centerX->show();
             centerY->show();
 
-        } else if(Smethod->get_active_row_number() == 3) {          // 3 SYM
+        } else if (Smethod->get_active_row_number() == 3) {         // 3 SYM
             locX->show();
             locXL->hide();
             locY->show();
@@ -1958,7 +2050,7 @@ void Locallab::SmethodChanged ()
     }
 
     if (listener && getEnabled()) {
-        if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+        if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
             listener->panelChanged (EvlocallabSmet, Smethod->get_active_text ());
             locXL->setValue (locX->getValue());
             locYT->setValue (locY->getValue());
@@ -1993,19 +2085,47 @@ void Locallab::inversChanged ()
         lastinvers = invers->get_active ();
     }
 
-    if(invers->get_active ()) {
+    if (invers->get_active ()) {
         sensi->hide();
         llCurveEditorG->hide();
+        curvactiv->hide();
     } else {
         sensi->show();
         llCurveEditorG->show();
+        curvactiv->show();
     }
 
     if (listener) {
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabinvers, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabinvers, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabinvers, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabinvers, M ("GENERAL_DISABLED"));
+        }
+    }
+}
+
+void Locallab::curvactivChanged ()
+{
+
+    if (batchMode) {
+        if (curvactiv->get_inconsistent()) {
+            curvactiv->set_inconsistent (false);
+            curvactivConn.block (true);
+            curvactiv->set_active (false);
+            curvactivConn.block (false);
+        } else if (lastcurvactiv) {
+            curvactiv->set_inconsistent (true);
+        }
+
+        lastcurvactiv = curvactiv->get_active ();
+    }
+
+
+    if (listener) {
+        if (getEnabled()) {
+            listener->panelChanged (Evlocallabcurvactiv, M ("GENERAL_ENABLED"));
+        } else {
+            listener->panelChanged (Evlocallabcurvactiv, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2030,9 +2150,9 @@ void Locallab::activlumChanged ()
     if (listener) {
 
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabactivlum, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabactivlum, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabactivlum, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabactivlum, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2053,7 +2173,7 @@ void Locallab::inversradChanged ()
         lastinversrad = inversrad->get_active ();
     }
 
-    if(inversrad->get_active ()) {
+    if (inversrad->get_active ()) {
         sensibn->hide();
     } else {
         sensibn->show();
@@ -2062,9 +2182,9 @@ void Locallab::inversradChanged ()
 
     if (listener) {
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabinversrad, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabinversrad, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabinversrad, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabinversrad, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2094,9 +2214,9 @@ void Locallab::inversshaChanged ()
     */
     if (listener) {
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabinverssha, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabinverssha, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabinverssha, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabinverssha, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2117,7 +2237,7 @@ void Locallab::inversretChanged ()
         lastinversret = inversret->get_active ();
     }
 
-    if(inversret->get_active ()) {
+    if (inversret->get_active ()) {
         sensih->hide();
     } else {
         sensih->show();
@@ -2126,9 +2246,9 @@ void Locallab::inversretChanged ()
 
     if (listener) {
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabinversret, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabinversret, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabinversret, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabinversret, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2180,10 +2300,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
     chrrt->setDefault (defParams->locallab.chrrt);
 
     for (int i = 0; i < 5; i++) {
-        multiplier[i]->setDefault(defParams->locallab.mult[i]);
+        multiplier[i]->setDefault (defParams->locallab.mult[i]);
     }
 
-    threshold->setDefault(defParams->locallab.threshold);
+    threshold->setDefault (defParams->locallab.threshold);
 
 
     if (pedited) {
@@ -2231,10 +2351,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         chrrt->setDefaultEditedState (pedited->locallab.chrrt ? Edited : UnEdited);
 
         for (int i = 0; i < 5; i++) {
-            multiplier[i]->setDefaultEditedState(pedited->locallab.mult[i] ? Edited : UnEdited);
+            multiplier[i]->setDefaultEditedState (pedited->locallab.mult[i] ? Edited : UnEdited);
         }
 
-        threshold->setDefaultEditedState(pedited->locallab.threshold ? Edited : UnEdited);
+        threshold->setDefaultEditedState (pedited->locallab.threshold ? Edited : UnEdited);
 
     } else {
         degree->setDefaultEditedState (Irrelevant);
@@ -2281,10 +2401,10 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
         chrrt->setDefaultEditedState (Irrelevant);
 
         for (int i = 0; i < 5; i++) {
-            multiplier[i]->setDefaultEditedState(Irrelevant);
+            multiplier[i]->setDefaultEditedState (Irrelevant);
         }
 
-        threshold->setDefaultEditedState(Irrelevant);
+        threshold->setDefaultEditedState (Irrelevant);
 
 
     }
@@ -2293,14 +2413,14 @@ void Locallab::setDefaults (const ProcParams * defParams, const ParamsEdited * p
 void Locallab::adjusterChanged (Adjuster * a, double newval)
 {
 
-    updateGeometry (int(centerX->getValue()), int(centerY->getValue()), int(circrad->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue());
+    updateGeometry (int (centerX->getValue()), int (centerY->getValue()), int (circrad->getValue()), (int)locY->getValue(), degree->getValue(), (int)locX->getValue(), (int)locYT->getValue(), (int)locXL->getValue());
     anbspot->hide();
 
     if (listener && getEnabled()) {
         if (a == degree) {
             listener->panelChanged (EvlocallabDegree, degree->getTextValue());
         } else if (a == locY) {
-            if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {  // 0 2
+            if (Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) { // 0 2
                 listener->panelChanged (EvlocallablocY, locY->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -2309,13 +2429,13 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+            else if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocY, locY->getTextValue());
                 locYT->setValue (locY->getValue());
             }
         } else if (a == locX) {
             //listener->panelChanged (EvlocallablocX, locX->getTextValue());
-            if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
+            if (Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocX, locX->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -2324,12 +2444,12 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+            else if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocX, locX->getTextValue());
                 locXL->setValue (locX->getValue());
             }
         } else if (a == locYT) {
-            if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
+            if (Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocYT, locYT->getTextValue());
             }
             /*  else if(Smethod->get_active_row_number()==2) {
@@ -2338,12 +2458,12 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
+            else if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocYT, locYT->getTextValue());
                 locYT->setValue (locY->getValue());
             }
         } else if (a == locXL) {
-            if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
+            if (Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
             }
@@ -2353,7 +2473,7 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
                     locY->setValue (locX->getValue());
                     locYT->setValue (locX->getValue());
                     }*/
-            else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+            else if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
                 listener->panelChanged (EvlocallablocXL, locXL->getTextValue());
                 locXL->setValue (locX->getValue());
             }
@@ -2433,12 +2553,12 @@ void Locallab::adjusterChanged (Adjuster * a, double newval)
             listener->panelChanged (EvlocallabCenter, Glib::ustring::compose ("X=%1\nY=%2", centerX->getTextValue(), centerY->getTextValue()));
         } else {
             listener->panelChanged (EvlocallabEqualizer,
-                                    Glib::ustring::compose("%1, %2, %3, %4, %5",
-                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[0]->getValue()),
-                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[1]->getValue()),
-                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[2]->getValue()),
-                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[3]->getValue()),
-                                            Glib::ustring::format(std::fixed, std::setprecision(0), multiplier[4]->getValue()))
+                                    Glib::ustring::compose ("%1, %2, %3, %4, %5",
+                                            Glib::ustring::format (std::fixed, std::setprecision (0), multiplier[0]->getValue()),
+                                            Glib::ustring::format (std::fixed, std::setprecision (0), multiplier[1]->getValue()),
+                                            Glib::ustring::format (std::fixed, std::setprecision (0), multiplier[2]->getValue()),
+                                            Glib::ustring::format (std::fixed, std::setprecision (0), multiplier[3]->getValue()),
+                                            Glib::ustring::format (std::fixed, std::setprecision (0), multiplier[4]->getValue()))
                                    );
 
         }
@@ -2450,11 +2570,11 @@ void Locallab::enabledChanged ()
 
     if (listener) {
         if (get_inconsistent()) {
-            listener->panelChanged (EvlocallabEnabled, M("GENERAL_UNCHANGED"));
+            listener->panelChanged (EvlocallabEnabled, M ("GENERAL_UNCHANGED"));
         } else if (getEnabled()) {
-            listener->panelChanged (EvlocallabEnabled, M("GENERAL_ENABLED"));
+            listener->panelChanged (EvlocallabEnabled, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (EvlocallabEnabled, M("GENERAL_DISABLED"));
+            listener->panelChanged (EvlocallabEnabled, M ("GENERAL_DISABLED"));
         }
     }
 }
@@ -2477,88 +2597,88 @@ void Locallab::avoidChanged ()
 
     if (listener) {
         if (getEnabled()) {
-            listener->panelChanged (Evlocallabavoid, M("GENERAL_ENABLED"));
+            listener->panelChanged (Evlocallabavoid, M ("GENERAL_ENABLED"));
         } else {
-            listener->panelChanged (Evlocallabavoid, M("GENERAL_DISABLED"));
+            listener->panelChanged (Evlocallabavoid, M ("GENERAL_DISABLED"));
         }
     }
 }
 
 void Locallab::setAdjusterBehavior (bool degreeadd, bool locYadd, bool locXadd, bool locYTadd, bool locXLadd, bool centeradd, bool lightnessadd, bool contrastadd, bool chromaadd, bool sensiadd, bool transitadd, bool radiusadd,  bool strengthadd)
 {
-    degree->setAddMode(degreeadd);
-    locY->setAddMode(locYadd);
-    locX->setAddMode(locXadd);
-    locYT->setAddMode(locYTadd);
-    locXL->setAddMode(locXLadd);
-    centerX->setAddMode(centeradd);
-    centerY->setAddMode(centeradd);
-    lightness->setAddMode(lightnessadd);
-    contrast->setAddMode(contrastadd);
-    chroma->setAddMode(chromaadd);
-    sensi->setAddMode(sensiadd);
-    transit->setAddMode(transitadd);
-    radius->setAddMode(radiusadd);
-    strength->setAddMode(strengthadd);
+    degree->setAddMode (degreeadd);
+    locY->setAddMode (locYadd);
+    locX->setAddMode (locXadd);
+    locYT->setAddMode (locYTadd);
+    locXL->setAddMode (locXLadd);
+    centerX->setAddMode (centeradd);
+    centerY->setAddMode (centeradd);
+    lightness->setAddMode (lightnessadd);
+    contrast->setAddMode (contrastadd);
+    chroma->setAddMode (chromaadd);
+    sensi->setAddMode (sensiadd);
+    transit->setAddMode (transitadd);
+    radius->setAddMode (radiusadd);
+    strength->setAddMode (strengthadd);
 
 }
 
 void Locallab::trimValues (rtengine::procparams::ProcParams * pp)
 {
-    degree->trimValue(pp->locallab.degree);
-    locY->trimValue(pp->locallab.locY);
-    locX->trimValue(pp->locallab.locX);
-    locYT->trimValue(pp->locallab.locYT);
-    locXL->trimValue(pp->locallab.locXL);
-    centerX->trimValue(pp->locallab.centerX);
-    centerY->trimValue(pp->locallab.centerY);
-    circrad->trimValue(pp->locallab.circrad);
-    thres->trimValue(pp->locallab.thres);
-    proxi->trimValue(pp->locallab.proxi);
-    lightness->trimValue(pp->locallab.lightness);
-    contrast->trimValue(pp->locallab.contrast);
-    chroma->trimValue(pp->locallab.chroma);
-    noiselumf->trimValue(pp->locallab.noiselumf);
-    noiselumc->trimValue(pp->locallab.noiselumc);
-    noisechrof->trimValue(pp->locallab.noisechrof);
-    noisechroc->trimValue(pp->locallab.noisechroc);
-    sharradius->trimValue(pp->locallab.sharradius);
-    sharamount->trimValue(pp->locallab.sharamount);
-    shardamping->trimValue(pp->locallab.shardamping);
-    shariter->trimValue(pp->locallab.shariter);
-    sensisha->trimValue(pp->locallab.sensisha);
-    sensi->trimValue(pp->locallab.sensi);
-    sensih->trimValue(pp->locallab.sensih);
-    retrab->trimValue(pp->locallab.retrab);
-    sensicb->trimValue(pp->locallab.sensicb);
-    sensibn->trimValue(pp->locallab.sensibn);
-    sensitm->trimValue(pp->locallab.sensitm);
-    radius->trimValue(pp->locallab.radius);
-    strength->trimValue(pp->locallab.strength);
-    stren->trimValue(pp->locallab.stren);
-    gamma->trimValue(pp->locallab.gamma);
-    estop->trimValue(pp->locallab.estop);
-    scaltm->trimValue(pp->locallab.scaltm);
-    rewei->trimValue(pp->locallab.rewei);
-    transit->trimValue(pp->locallab.transit);
-    str->trimValue(pp->locallab.str);
-    neigh->trimValue(pp->locallab.neigh);
-    nbspot->trimValue(pp->locallab.nbspot);
-    anbspot->trimValue(pp->locallab.anbspot);
-    vart->trimValue(pp->locallab.vart);
-    chrrt->trimValue(pp->locallab.chrrt);
+    degree->trimValue (pp->locallab.degree);
+    locY->trimValue (pp->locallab.locY);
+    locX->trimValue (pp->locallab.locX);
+    locYT->trimValue (pp->locallab.locYT);
+    locXL->trimValue (pp->locallab.locXL);
+    centerX->trimValue (pp->locallab.centerX);
+    centerY->trimValue (pp->locallab.centerY);
+    circrad->trimValue (pp->locallab.circrad);
+    thres->trimValue (pp->locallab.thres);
+    proxi->trimValue (pp->locallab.proxi);
+    lightness->trimValue (pp->locallab.lightness);
+    contrast->trimValue (pp->locallab.contrast);
+    chroma->trimValue (pp->locallab.chroma);
+    noiselumf->trimValue (pp->locallab.noiselumf);
+    noiselumc->trimValue (pp->locallab.noiselumc);
+    noisechrof->trimValue (pp->locallab.noisechrof);
+    noisechroc->trimValue (pp->locallab.noisechroc);
+    sharradius->trimValue (pp->locallab.sharradius);
+    sharamount->trimValue (pp->locallab.sharamount);
+    shardamping->trimValue (pp->locallab.shardamping);
+    shariter->trimValue (pp->locallab.shariter);
+    sensisha->trimValue (pp->locallab.sensisha);
+    sensi->trimValue (pp->locallab.sensi);
+    sensih->trimValue (pp->locallab.sensih);
+    retrab->trimValue (pp->locallab.retrab);
+    sensicb->trimValue (pp->locallab.sensicb);
+    sensibn->trimValue (pp->locallab.sensibn);
+    sensitm->trimValue (pp->locallab.sensitm);
+    radius->trimValue (pp->locallab.radius);
+    strength->trimValue (pp->locallab.strength);
+    stren->trimValue (pp->locallab.stren);
+    gamma->trimValue (pp->locallab.gamma);
+    estop->trimValue (pp->locallab.estop);
+    scaltm->trimValue (pp->locallab.scaltm);
+    rewei->trimValue (pp->locallab.rewei);
+    transit->trimValue (pp->locallab.transit);
+    str->trimValue (pp->locallab.str);
+    neigh->trimValue (pp->locallab.neigh);
+    nbspot->trimValue (pp->locallab.nbspot);
+    anbspot->trimValue (pp->locallab.anbspot);
+    vart->trimValue (pp->locallab.vart);
+    chrrt->trimValue (pp->locallab.chrrt);
 
     for (int i = 0; i < 5; i++) {
-        multiplier[i]->trimValue(pp->locallab.mult[i]);
+        multiplier[i]->trimValue (pp->locallab.mult[i]);
     }
 
-    threshold->trimValue(pp->locallab.threshold);
+    threshold->trimValue (pp->locallab.threshold);
 
 }
 
 void Locallab::setBatchMode (bool batchMode)
 {
-    removeIfThere(this, edit, false);
+    removeIfThere (this, edit, false);
     ToolPanel::setBatchMode (batchMode);
     degree->showEditedCB ();
     locY->showEditedCB ();
@@ -2596,7 +2716,7 @@ void Locallab::setBatchMode (bool batchMode)
     scaltm->showEditedCB ();
     rewei->showEditedCB ();
     transit->showEditedCB ();
-    Smethod->append_text (M("GENERAL_UNCHANGED"));
+    Smethod->append_text (M ("GENERAL_UNCHANGED"));
     str->showEditedCB ();
     neigh->showEditedCB ();
     nbspot->showEditedCB ();
@@ -2618,9 +2738,9 @@ void Locallab::setBatchMode (bool batchMode)
 
 void Locallab::setEditProvider (EditDataProvider * provider)
 {
-    EditSubscriber::setEditProvider(provider);
-    cTgainshape->setEditProvider(provider);
-    cTgainshaperab->setEditProvider(provider);
+    EditSubscriber::setEditProvider (provider);
+    cTgainshape->setEditProvider (provider);
+    cTgainshaperab->setEditProvider (provider);
 
 }
 
@@ -2644,22 +2764,22 @@ void Locallab::colorForValue (double valX, double valY, enum ColorCaller::ElemTy
 
     if (callerId == 1) {         // ch - main curve
 
-        Color::hsv2rgb01(float(valX), float(valY), 0.5f, R, G, B);
+        Color::hsv2rgb01 (float (valX), float (valY), 0.5f, R, G, B);
     } else if (callerId == 2) {  // cc - bottom bar
 
-        float value = (1.f - 0.7f) * float(valX) + 0.7f;
+        float value = (1.f - 0.7f) * float (valX) + 0.7f;
         // whole hue range
         // Y axis / from 0.15 up to 0.75 (arbitrary values; was 0.45 before)
-        Color::hsv2rgb01(float(valY), float(valX), value, R, G, B);
+        Color::hsv2rgb01 (float (valY), float (valX), value, R, G, B);
     } else if (callerId == 3) {  // lc - bottom bar
 
-        float value = (1.f - 0.7f) * float(valX) + 0.7f;
+        float value = (1.f - 0.7f) * float (valX) + 0.7f;
         // Y axis / from 0.15 up to 0.75 (arbitrary values; was 0.45 before)
-        Color::hsv2rgb01(float(valY), float(valX), value, R, G, B);
+        Color::hsv2rgb01 (float (valY), float (valX), value, R, G, B);
     } else if (callerId == 4) {  // LH - bottom bar
-        Color::hsv2rgb01(float(valX), 0.5f, float(valY), R, G, B);
+        Color::hsv2rgb01 (float (valX), 0.5f, float (valY), R, G, B);
     } else if (callerId == 5) {  // HH - bottom bar
-        float h = float((valY - 0.5) * 0.3 + valX);
+        float h = float ((valY - 0.5) * 0.3 + valX);
 
         if (h > 1.0f) {
             h -= 1.0f;
@@ -2667,17 +2787,17 @@ void Locallab::colorForValue (double valX, double valY, enum ColorCaller::ElemTy
             h += 1.0f;
         }
 
-        Color::hsv2rgb01(h, 0.5f, 0.5f, R, G, B);
+        Color::hsv2rgb01 (h, 0.5f, 0.5f, R, G, B);
     }
 
-    caller->ccRed = double(R);
-    caller->ccGreen = double(G);
-    caller->ccBlue = double(B);
+    caller->ccRed = double (R);
+    caller->ccGreen = double (G);
+    caller->ccBlue = double (B);
 }
 
 
 
-CursorShape Locallab::getCursor(int objectID)
+CursorShape Locallab::getCursor (int objectID)
 {
     switch (objectID) {
         case (2): {
@@ -2728,36 +2848,36 @@ CursorShape Locallab::getCursor(int objectID)
     }
 }
 
-bool Locallab::mouseOver(int modifierKey)
+bool Locallab::mouseOver (int modifierKey)
 {
     EditDataProvider* editProvider = getEditProvider();
 
     if (editProvider && editProvider->object != lastObject) {
         if (lastObject > -1) {
             if (lastObject == 2 || lastObject == 3) {
-                EditSubscriber::visibleGeometry.at(2)->state = Geometry::NORMAL;
-                EditSubscriber::visibleGeometry.at(3)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (2)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (3)->state = Geometry::NORMAL;
             } else if (lastObject == 0 || lastObject == 1) {
-                EditSubscriber::visibleGeometry.at(0)->state = Geometry::NORMAL;
-                EditSubscriber::visibleGeometry.at(1)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (0)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (1)->state = Geometry::NORMAL;
             }
 
             else {
-                EditSubscriber::visibleGeometry.at(lastObject)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (lastObject)->state = Geometry::NORMAL;
             }
         }
 
         if (editProvider->object > -1) {
             if (editProvider->object == 2 || editProvider->object == 3) {
-                EditSubscriber::visibleGeometry.at(2)->state = Geometry::PRELIGHT;
-                EditSubscriber::visibleGeometry.at(3)->state = Geometry::PRELIGHT;
+                EditSubscriber::visibleGeometry.at (2)->state = Geometry::PRELIGHT;
+                EditSubscriber::visibleGeometry.at (3)->state = Geometry::PRELIGHT;
             } else if (editProvider->object == 0 || editProvider->object == 1) {
-                EditSubscriber::visibleGeometry.at(0)->state = Geometry::PRELIGHT;
-                EditSubscriber::visibleGeometry.at(1)->state = Geometry::PRELIGHT;
+                EditSubscriber::visibleGeometry.at (0)->state = Geometry::PRELIGHT;
+                EditSubscriber::visibleGeometry.at (1)->state = Geometry::PRELIGHT;
             }
 
             else {
-                EditSubscriber::visibleGeometry.at(editProvider->object)->state = Geometry::PRELIGHT;
+                EditSubscriber::visibleGeometry.at (editProvider->object)->state = Geometry::PRELIGHT;
             }
         }
 
@@ -2768,7 +2888,7 @@ bool Locallab::mouseOver(int modifierKey)
     return false;
 }
 
-bool Locallab::button1Pressed(int modifierKey)
+bool Locallab::button1Pressed (int modifierKey)
 {
     if (lastObject < 0) {
         return false;
@@ -2776,15 +2896,15 @@ bool Locallab::button1Pressed(int modifierKey)
 
     EditDataProvider *provider = getEditProvider();
 
-    if (!(modifierKey & GDK_CONTROL_MASK)) {
+    if (! (modifierKey & GDK_CONTROL_MASK)) {
         // button press is valid (no modifier key)
         PolarCoord pCoord;
         //  EditDataProvider *provider = getEditProvider();
         int imW, imH;
-        provider->getImageSize(imW, imH);
+        provider->getImageSize (imW, imH);
         double halfSizeW = imW / 2.;
         double halfSizeH = imH / 2.;
-        draggedCenter.set(int(halfSizeW + halfSizeW * (centerX->getValue() / 1000.)), int(halfSizeH + halfSizeH * (centerY->getValue() / 1000.)));
+        draggedCenter.set (int (halfSizeW + halfSizeW * (centerX->getValue() / 1000.)), int (halfSizeH + halfSizeH * (centerY->getValue() / 1000.)));
 
         // trick to get the correct angle (clockwise/counter-clockwise)
         rtengine::Coord p1 = draggedCenter;
@@ -2796,19 +2916,19 @@ bool Locallab::button1Pressed(int modifierKey)
         draggedPointOldAngle = pCoord.angle;
         draggedPointAdjusterAngle = degree->getValue();
 
-        if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
+        if (Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
             if (lastObject == 2) {
                 PolarCoord draggedPoint;
                 rtengine::Coord currPos;
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
-                double verti = double(imH);
+                double verti = double (imH);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
                 draggedPoint = currPos - centerPos;
                 // compute the projected value of the dragged point
-                draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+                draggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
                 if (lastObject == 2) {
                     //draggedlocYOffset = -draggedlocYOffset;
@@ -2821,7 +2941,7 @@ bool Locallab::button1Pressed(int modifierKey)
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
 
-                double verti = double(imH);
+                double verti = double (imH);
 
                 // trick to get the correct angle (clockwise/counter-clockwise)
                 int p = centerPos.y;
@@ -2831,7 +2951,7 @@ bool Locallab::button1Pressed(int modifierKey)
 
                 // draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
-                draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+                draggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
                 if (lastObject == 3) {
                     draggedlocYOffset = -draggedlocYOffset;
@@ -2840,14 +2960,14 @@ bool Locallab::button1Pressed(int modifierKey)
 
             }
 
-        } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
+        } else if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
             if (lastObject == 2 || lastObject == 3) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
                 rtengine::Coord currPos;
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
-                double verti = double(imH);
+                double verti = double (imH);
                 // trick to get the correct angle (clockwise/counter-clockwise)
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
@@ -2856,7 +2976,7 @@ bool Locallab::button1Pressed(int modifierKey)
 
                 //    draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
-                draggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+                draggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
                 if (lastObject == 3) {
                     draggedlocYOffset = -draggedlocYOffset;
@@ -2866,7 +2986,7 @@ bool Locallab::button1Pressed(int modifierKey)
             }
         }
 
-        if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
+        if (Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
             if (lastObject == 0) {
                 // Dragging a line to change the angle
                 PolarCoord draggedPoint;
@@ -2874,7 +2994,7 @@ bool Locallab::button1Pressed(int modifierKey)
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
 
-                double horiz = double(imW);
+                double horiz = double (imW);
 
                 // trick to get the correct angle (clockwise/counter-clockwise)
                 int p = centerPos.y;
@@ -2884,8 +3004,8 @@ bool Locallab::button1Pressed(int modifierKey)
 
                 //     draggedPoint.setFromCartesian(centerPos, currPos);
                 // compute the projected value of the dragged point
-                printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
-                draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+                printf ("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
+                draggedlocXOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
                 //  if (lastObject==1)
                 //      draggedlocXOffset = -draggedlocXOffset;//-
                 draggedlocXOffset -= (locX->getValue() / 2000. * horiz);
@@ -2895,15 +3015,15 @@ bool Locallab::button1Pressed(int modifierKey)
                 rtengine::Coord currPos;
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
-                double horiz = double(imW);
+                double horiz = double (imW);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
                 draggedPoint = currPos - centerPos;
 
                 //     draggedPoint.setFromCartesian(centerPos, currPos);
-                printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
-                draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+                printf ("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
+                draggedlocXOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
                 if (lastObject == 1) {
                     draggedlocXOffset = -draggedlocXOffset;    //-
@@ -2912,22 +3032,22 @@ bool Locallab::button1Pressed(int modifierKey)
                 draggedlocXOffset -= (locXL->getValue() / 2000. * horiz);
             }
 
-        } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+        } else if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
 
             if (lastObject == 0 || lastObject == 1) {
                 PolarCoord draggedPoint;
                 rtengine::Coord currPos;
                 currPos = provider->posImage;
                 rtengine::Coord centerPos = draggedCenter;
-                double horiz = double(imW);
+                double horiz = double (imW);
                 int p = centerPos.y;
                 centerPos.y = currPos.y;
                 currPos.y = p;
                 draggedPoint = currPos - centerPos;
 
                 //    draggedPoint.setFromCartesian(centerPos, currPos);
-                printf("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
-                draggedlocXOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+                printf ("rad=%f ang=%f\n", draggedPoint.radius, draggedPoint.angle - degree->getValue());
+                draggedlocXOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
                 if (lastObject == 1) {
                     draggedlocXOffset = -draggedlocXOffset;    //-
@@ -2987,15 +3107,15 @@ bool Locallab::button1Pressed(int modifierKey)
         // this will let this class ignore further drag events
         if (lastObject > -1) { // should theoretically always be true
             if (lastObject == 2 || lastObject == 3) {
-                EditSubscriber::visibleGeometry.at(2)->state = Geometry::NORMAL;
-                EditSubscriber::visibleGeometry.at(3)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (2)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (3)->state = Geometry::NORMAL;
             }
 
             if (lastObject == 0 || lastObject == 1) {
-                EditSubscriber::visibleGeometry.at(0)->state = Geometry::NORMAL;
-                EditSubscriber::visibleGeometry.at(1)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (0)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (1)->state = Geometry::NORMAL;
             } else {
-                EditSubscriber::visibleGeometry.at(lastObject)->state = Geometry::NORMAL;
+                EditSubscriber::visibleGeometry.at (lastObject)->state = Geometry::NORMAL;
             }
         }
 
@@ -3012,30 +3132,30 @@ bool Locallab::button1Released()
     return true;
 }
 
-bool Locallab::drag1(int modifierKey)
+bool Locallab::drag1 (int modifierKey)
 {
     // compute the polar coordinate of the mouse position
     EditDataProvider *provider = getEditProvider();
     int imW, imH;
-    provider->getImageSize(imW, imH);
+    provider->getImageSize (imW, imH);
     double halfSizeW = imW / 2.;
     double halfSizeH = imH / 2.;
 
-    if(Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
+    if (Smethod->get_active_row_number() == 0  || Smethod->get_active_row_number() == 2) {
         if (lastObject == 2) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double verti = double(imH);
+            double verti = double (imH);
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
             draggedPoint = currPos - centerPos;
 
             //  draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+            double currDraggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             if (lastObject == 2) {
                 currDraggedlocYOffset -= draggedlocYOffset;
@@ -3046,8 +3166,8 @@ bool Locallab::drag1(int modifierKey)
             //  currDraggedlocYOffset = -currDraggedlocYOffset + draggedlocYOffset;
             currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
-            if (int(currDraggedlocYOffset) != locYT->getIntValue()) {
-                locYT->setValue((int(currDraggedlocYOffset)));
+            if (int (currDraggedlocYOffset) != locYT->getIntValue()) {
+                locYT->setValue ((int (currDraggedlocYOffset)));
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
@@ -3065,7 +3185,7 @@ bool Locallab::drag1(int modifierKey)
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double verti = double(imH);
+            double verti = double (imH);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
@@ -3073,7 +3193,7 @@ bool Locallab::drag1(int modifierKey)
             draggedPoint = currPos - centerPos;
 
             //  draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+            double currDraggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             //  if (lastObject==2)
             // Dragging the upper locY bar
@@ -3087,9 +3207,9 @@ bool Locallab::drag1(int modifierKey)
 
             currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
-            if (int(currDraggedlocYOffset) != locY->getIntValue()) {
+            if (int (currDraggedlocYOffset) != locY->getIntValue()) {
 
-                locY->setValue((int(currDraggedlocYOffset)));
+                locY->setValue ((int (currDraggedlocYOffset)));
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
@@ -3104,14 +3224,14 @@ bool Locallab::drag1(int modifierKey)
             }
         }
 
-    } else if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
+    } else if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
         if (lastObject == 2 || lastObject == 3) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double verti = double(imH);
+            double verti = double (imH);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
@@ -3119,7 +3239,7 @@ bool Locallab::drag1(int modifierKey)
             draggedPoint = currPos - centerPos;
 
             //   draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedlocYOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
+            double currDraggedlocYOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue()) / 180.*M_PI);
 
             if (lastObject == 2)
                 // Dragging the upper locY bar
@@ -3133,8 +3253,8 @@ bool Locallab::drag1(int modifierKey)
 
             currDraggedlocYOffset = currDraggedlocYOffset * 2000. / verti;
 
-            if (int(currDraggedlocYOffset) != locY->getIntValue()) {
-                locY->setValue((int(currDraggedlocYOffset)));
+            if (int (currDraggedlocYOffset) != locY->getIntValue()) {
+                locY->setValue ((int (currDraggedlocYOffset)));
                 //Smethod->get_active_row_number()==2
                 double centX, centY;
                 centX = centerX->getValue();
@@ -3143,7 +3263,7 @@ bool Locallab::drag1(int modifierKey)
                 updateGeometry (centX, centY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(),  locYT->getValue(), locXL->getValue());
 
                 if (listener) {
-                    if(Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
+                    if (Smethod->get_active_row_number() == 1 || Smethod->get_active_row_number() == 3) {
                         listener->panelChanged (EvlocallablocY, locY->getTextValue());
                     }
 
@@ -3157,7 +3277,7 @@ bool Locallab::drag1(int modifierKey)
 
     }
 
-    if(Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
+    if (Smethod->get_active_row_number() == 0 || Smethod->get_active_row_number() == 2) {
         //else if (lastObject==0) {
         if (lastObject == 0) {
             // Dragging the upper or lower locY bar
@@ -3165,7 +3285,7 @@ bool Locallab::drag1(int modifierKey)
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double horiz = double(imW);
+            double horiz = double (imW);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
@@ -3173,7 +3293,7 @@ bool Locallab::drag1(int modifierKey)
             draggedPoint = currPos - centerPos;
 
             //    draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+            double currDraggedStrOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
                 // Dragging the upper locY bar
@@ -3187,8 +3307,8 @@ bool Locallab::drag1(int modifierKey)
 
             currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
-            if (int(currDraggedStrOffset) != locX->getIntValue()) {
-                locX->setValue((int(currDraggedStrOffset)));
+            if (int (currDraggedStrOffset) != locX->getIntValue()) {
+                locX->setValue ((int (currDraggedStrOffset)));
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
@@ -3206,14 +3326,14 @@ bool Locallab::drag1(int modifierKey)
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double horiz = double(imW);
+            double horiz = double (imW);
             int p = centerPos.y;
             centerPos.y = currPos.y;
             currPos.y = p;
             draggedPoint = currPos - centerPos;
 
             //draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+            double currDraggedStrOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
                 // Dragging the upper locY bar
@@ -3227,8 +3347,8 @@ bool Locallab::drag1(int modifierKey)
 
             currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
-            if (int(currDraggedStrOffset) != locXL->getIntValue()) {
-                locXL->setValue((int(currDraggedStrOffset)));
+            if (int (currDraggedStrOffset) != locXL->getIntValue()) {
+                locXL->setValue ((int (currDraggedStrOffset)));
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
@@ -3242,14 +3362,14 @@ bool Locallab::drag1(int modifierKey)
             }
         }
 
-    } else if(Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
+    } else if (Smethod->get_active_row_number() == 1  || Smethod->get_active_row_number() == 3) {
         if (lastObject == 0 || lastObject == 1) {
             // Dragging the upper or lower locY bar
             PolarCoord draggedPoint;
             rtengine::Coord currPos;
             currPos = provider->posImage + provider->deltaImage;
             rtengine::Coord centerPos = draggedCenter;
-            double horiz = double(imW);
+            double horiz = double (imW);
             // trick to get the correct angle (clockwise/counter-clockwise)
             int p = centerPos.y;
             centerPos.y = currPos.y;
@@ -3257,7 +3377,7 @@ bool Locallab::drag1(int modifierKey)
             draggedPoint = currPos - centerPos;
 
             // draggedPoint.setFromCartesian(centerPos, currPos);
-            double currDraggedStrOffset = draggedPoint.radius * sin((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
+            double currDraggedStrOffset = draggedPoint.radius * sin ((draggedPoint.angle - degree->getValue() + 90.) / 180.*M_PI);
 
             if (lastObject == 0)
                 // Dragging the upper locY bar
@@ -3271,8 +3391,8 @@ bool Locallab::drag1(int modifierKey)
 
             currDraggedStrOffset = currDraggedStrOffset * 2000. / horiz;
 
-            if (int(currDraggedStrOffset) != locX->getIntValue()) {
-                locX->setValue((int(currDraggedStrOffset)));
+            if (int (currDraggedStrOffset) != locX->getIntValue()) {
+                locX->setValue ((int (currDraggedStrOffset)));
                 double centX, centY;
                 centX = centerX->getValue();
                 centY = centerY->getValue();
@@ -3368,13 +3488,13 @@ bool Locallab::drag1(int modifierKey)
         rtengine::Coord currPos;
         draggedCenter += provider->deltaPrevImage;
         currPos = draggedCenter;
-        currPos.clip(imW, imH);
-        int newCenterX = int((double(currPos.x) - halfSizeW) / halfSizeW * 1000.);
-        int newCenterY = int((double(currPos.y) - halfSizeH) / halfSizeH * 1000.);
+        currPos.clip (imW, imH);
+        int newCenterX = int ((double (currPos.x) - halfSizeW) / halfSizeW * 1000.);
+        int newCenterY = int ((double (currPos.y) - halfSizeH) / halfSizeH * 1000.);
 
         if (newCenterX != centerX->getIntValue() || newCenterY != centerY->getIntValue()) {
-            centerX->setValue(newCenterX);
-            centerY->setValue(newCenterY);
+            centerX->setValue (newCenterX);
+            centerY->setValue (newCenterY);
             updateGeometry (newCenterX, newCenterY, circrad->getValue(), locY->getValue(), degree->getValue(), locX->getValue(), locYT->getValue(), locXL->getValue());
 
             if (listener) {
@@ -3392,11 +3512,11 @@ void Locallab::switchOffEditMode ()
 {
     if (edit->get_active()) {
         // switching off the toggle button
-        bool wasBlocked = editConn.block(true);
-        edit->set_active(false);
+        bool wasBlocked = editConn.block (true);
+        edit->set_active (false);
 
         if (!wasBlocked) {
-            editConn.block(false);
+            editConn.block (false);
         }
     }
 

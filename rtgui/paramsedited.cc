@@ -341,6 +341,7 @@ void ParamsEdited::set (bool v)
     locallab.Smethod = v;
     locallab.retinexMethod = v;
     locallab.invers = v;
+    locallab.curvactiv = v;
     locallab.activlum = v;
     locallab.inversrad = v;
     locallab.inversret = v;
@@ -353,6 +354,7 @@ void ParamsEdited::set (bool v)
     locallab.localTgaincurve = v;
     locallab.localTgaincurverab = v;
     locallab.llcurve = v;
+    locallab.cccurve = v;
     locallab.LHcurve = v;
 
     for(int i = 0; i < 5; i++) {
@@ -862,6 +864,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.avoid = locallab.avoid && p.locallab.avoid == other.locallab.avoid;
         locallab.invers = locallab.invers && p.locallab.invers == other.locallab.invers;
         locallab.activlum = locallab.activlum && p.locallab.activlum == other.locallab.activlum;
+        locallab.curvactiv = locallab.curvactiv && p.locallab.curvactiv == other.locallab.curvactiv;
         locallab.inversrad = locallab.inversrad && p.locallab.inversrad == other.locallab.inversrad;
         locallab.inversret = locallab.inversret && p.locallab.inversret == other.locallab.inversret;
         locallab.inverssha = locallab.inverssha && p.locallab.inverssha == other.locallab.inverssha;
@@ -912,6 +915,7 @@ void ParamsEdited::initFrom (const std::vector<rtengine::procparams::ProcParams>
         locallab.localTgaincurve = locallab.localTgaincurve && p.locallab.localTgaincurve == other.locallab.localTgaincurve;
         locallab.localTgaincurverab = locallab.localTgaincurverab && p.locallab.localTgaincurverab == other.locallab.localTgaincurverab;
         locallab.llcurve = locallab.llcurve && p.locallab.llcurve == other.locallab.llcurve;
+        locallab.cccurve = locallab.cccurve && p.locallab.cccurve == other.locallab.cccurve;
         locallab.LHcurve = locallab.LHcurve && p.locallab.LHcurve == other.locallab.LHcurve;
         locallab.expcolor = locallab.expcolor && p.locallab.expcolor == other.locallab.expcolor;
         locallab.expblur = locallab.expblur && p.locallab.expblur == other.locallab.expblur;
@@ -2173,6 +2177,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
         toEdit.locallab.invers    = mods.locallab.invers;
     }
 
+    if (locallab.curvactiv) {
+        toEdit.locallab.curvactiv    = mods.locallab.curvactiv;
+    }
+
     if (locallab.activlum) {
         toEdit.locallab.activlum    = mods.locallab.activlum;
     }
@@ -2376,6 +2384,10 @@ void ParamsEdited::combine (rtengine::procparams::ProcParams& toEdit, const rten
 
     if (locallab.llcurve) {
         toEdit.locallab.llcurve   = mods.locallab.llcurve;
+    }
+
+    if (locallab.cccurve) {
+        toEdit.locallab.cccurve   = mods.locallab.cccurve;
     }
 
     if (locallab.LHcurve) {

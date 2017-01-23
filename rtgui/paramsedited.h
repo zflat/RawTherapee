@@ -465,12 +465,14 @@ public:
     bool vart;
     bool activlum;
     bool invers;
+    bool curvactiv;
     bool inversrad;
     bool inversret;
     bool inverssha;
     bool localTgaincurve;
     bool localTgaincurverab;
     bool llcurve;
+    bool cccurve;
     bool LHcurve;
     bool chrrt;
     bool mult[5];

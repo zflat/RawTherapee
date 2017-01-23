@@ -858,6 +858,7 @@ public:
     int    centerX;
     int    centerY;
 };
+
 /**
   * Parameters of the Local Lab
   */
@@ -916,6 +917,7 @@ public:
     Glib::ustring Smethod;
     Glib::ustring retinexMethod;
     bool    invers;
+    bool    curvactiv;
     bool    activlum;
     bool    inversrad;
     bool    inversret;
@@ -932,6 +934,7 @@ public:
     std::vector<double>   localTgaincurve;
     std::vector<double>   localTgaincurverab;
     std::vector<double> llcurve;
+    std::vector<double> cccurve;
     std::vector<double> LHcurve;
 
     double mult[5];
@@ -942,11 +945,12 @@ public:
         setDefaults();
     }
     void setDefaults();
-    void getCurves(LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab, LocLHCurve & lhCurve) const;
-    static void getDefaultLocalgainCurveT(std::vector<double> &curve);
-    static void getDefaultLocalgainCurveTrab(std::vector<double> &curve);
-    static void getDefaultLLCurve(std::vector<double> &curve);
-    static void getDefaultLHCurve(std::vector<double> &curve);
+    void getCurves (LocretigainCurve &cTgainCurve, LocretigainCurverab &cTgainCurverab, LocLHCurve & lhCurve) const;
+    static void getDefaultLocalgainCurveT (std::vector<double> &curve);
+    static void getDefaultLocalgainCurveTrab (std::vector<double> &curve);
+    static void getDefaultLLCurve (std::vector<double> &curve);
+    static void getDefaultLHCurve (std::vector<double> &curve);
+    static void getDefaultCCCurve (std::vector<double> &curve);
 
 };
 

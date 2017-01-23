@@ -799,6 +799,8 @@ void Crop::update (int todo)
         bool wavcontlutili = parent->wavcontlutili;
         bool locallutili = parent->locallutili;
         LUTf lllocalcurve2(65536, 0);
+        bool localcutili = parent->locallutili;
+        LUTf cclocalcurve2 (65536, 0);
 
         LUTu dummy;
         bool needslocal = params.locallab.enabled;
@@ -812,23 +814,23 @@ void Crop::update (int todo)
         bool tyty = false;
         int maxspot = settings->nspot + 1;
 
-        if(needslocal ) {
-            //   if(tyty ) {
+        if (needslocal ) {
+            // if (tyty ) {
             //Glib::ustring datalab2 = parent->imgsrc->getFileName() + ".mip";
             Glib::ustring pop = options.getUserProfilePath() + "/";
 
             Glib::ustring datalab;
 
-            if(options.mip == MI_opt) {
+            if (options.mip == MI_opt) {
                 datalab = pop + Glib::path_get_basename (parent->imgsrc->getFileName () + ".mip");
             }
 
-            if(options.mip == MI_prev) {
+            if (options.mip == MI_prev) {
                 datalab = parent->imgsrc->getFileName() + ".mip";
             }
 
 
-            ifstream fich(datalab, ios::in);
+            ifstream fich (datalab, ios::in);
 
             if (fich  && parent->versionmip != 0) {//to avoid crash in some cases
                 int **dataspotd;
@@ -838,8 +840,8 @@ void Crop::update (int todo)
                 bool locutili = parent->locutili;
 
 
-                for(int sp = 1; sp < maxspot; sp++) {
-                    if(sp != realspot) {
+                for (int sp = 1; sp < maxspot; sp++) {
+                    if (sp != realspot) {
 
                         params.locallab.circrad = parent->circrads[sp] ;
                         params.locallab.locX = parent->locx[sp] ;
@@ -854,13 +856,13 @@ void Crop::update (int todo)
                         params.locallab.sensi = parent->sensis[sp];
                         params.locallab.transit = parent->transits[sp];
 
-                        if(parent->inverss[sp] ==  0) {
+                        if (parent->inverss[sp] ==  0) {
                             params.locallab.invers = false;
                         } else {
                             params.locallab.invers = true;
                         }
 
-                        if(parent->smeths[sp] ==  0) {
+                        if (parent->smeths[sp] ==  0) {
                             params.locallab.Smethod = "IND" ;
                         } else if (parent->smeths[sp] ==  1) {
                             params.locallab.Smethod = "SYM" ;
@@ -874,7 +876,7 @@ void Crop::update (int todo)
                         params.locallab.strength = parent->strengths[sp];
                         params.locallab.sensibn = parent->sensibns[sp];
 
-                        if( parent->inversrads[sp] ==  0) {
+                        if ( parent->inversrads[sp] ==  0) {
                             params.locallab.inversrad = false;
                         } else {
                             params.locallab.inversrad = true;
@@ -886,13 +888,13 @@ void Crop::update (int todo)
                         params.locallab.vart = parent->varts[sp];
                         params.locallab.sensih = parent->sensihs[sp];
 
-                        if(parent->inversrets[sp] ==  0) {
+                        if (parent->inversrets[sp] ==  0) {
                             params.locallab.inversret = false;
                         } else {
                             params.locallab.inversret = true;
                         }
 
-                        if(parent->retinexs[sp] ==  0) {
+                        if (parent->retinexs[sp] ==  0) {
                             params.locallab.retinexMethod = "low" ;
                         } else if (parent->retinexs[sp] ==  1) {
                             params.locallab.retinexMethod = "uni" ;
@@ -906,13 +908,13 @@ void Crop::update (int todo)
                         params.locallab.shariter = parent->shariters[sp];
                         params.locallab.sensisha = parent->sensishas[sp];
 
-                        if(parent->inversshas[sp] ==  0) {
+                        if (parent->inversshas[sp] ==  0) {
                             params.locallab.inverssha = false;
                         } else {
                             params.locallab.inverssha = true;
                         }
 
-                        if(parent->qualitys[sp] ==  0) {
+                        if (parent->qualitys[sp] ==  0) {
                             params.locallab.qualityMethod = "std" ;
                         } else if (parent->qualitys[sp] ==  1) {
                             params.locallab.qualityMethod = "enh" ;
@@ -935,7 +937,7 @@ void Crop::update (int todo)
                         params.locallab.threshold = parent->thresholds[sp];
                         params.locallab.sensicb = parent->sensicbs[sp];
 
-                        if(parent->activlums[sp] ==  0) {
+                        if (parent->activlums[sp] ==  0) {
                             params.locallab.activlum = false;
                         } else {
                             params.locallab.activlum = true;
@@ -949,10 +951,16 @@ void Crop::update (int todo)
                         params.locallab.sensitm = parent->sensitms[sp];
                         params.locallab.retrab = parent->retrabs[sp];
 
+                        if (parent->curvactivs[sp] ==  0) {
+                            params.locallab.curvactiv = false;
+                        } else {
+                            params.locallab.curvactiv = true;
+                        }
+
                         std::vector<double>   cretie;
 
-                        for(int j = 0; j < parent->sizeretics[sp]; j++) {
-                            cretie.push_back((double) (parent->reticurvs[sp * 500 + j]) / 1000.);
+                        for (int j = 0; j < parent->sizeretics[sp]; j++) {
+                            cretie.push_back ((double) (parent->reticurvs[sp * 500 + j]) / 1000.);
                         }
 
                         params.locallab.localTgaincurve.clear();
@@ -960,35 +968,47 @@ void Crop::update (int todo)
 
                         std::vector<double>   llc;
 
-                        for(int j = 0; j < parent->sizellcs[sp]; j++) {
-                            llc.push_back((double) (parent->llcurvs[sp * 500 + j]) / 1000.);
+                        for (int j = 0; j < parent->sizellcs[sp]; j++) {
+                            llc.push_back ((double) (parent->llcurvs[sp * 500 + j]) / 1000.);
                         }
 
                         params.locallab.llcurve.clear();
                         params.locallab.llcurve = llc;
 
+                        std::vector<double>   ccc;
+
+                        for (int j = 0; j < parent->sizecccs[sp]; j++) {
+                            ccc.push_back ((double) (parent->cccurvs[sp * 500 + j]) / 1000.);
+                        }
+
+                        params.locallab.cccurve.clear();
+                        params.locallab.cccurve = ccc;
+
                         std::vector<double>   lhc;
 
-                        for(int j = 0; j < parent->sizelhcs[sp]; j++) {
-                            lhc.push_back((double) (parent->lhcurvs[sp * 500 + j]) / 1000.);
+                        for (int j = 0; j < parent->sizelhcs[sp]; j++) {
+                            lhc.push_back ((double) (parent->lhcurvs[sp * 500 + j]) / 1000.);
                         }
 
                         params.locallab.LHcurve.clear();
                         params.locallab.LHcurve = lhc;
 
-                        params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
+                        params.locallab.getCurves (locRETgainCurve, locRETgainCurverab, loclhCurve);
                         locallutili = false;
-                        CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve2, sca);
+                        CurveFactory::curveLocal (locallutili, params.locallab.llcurve, lllocalcurve2, sca);
+                        localcutili = false;
+                        CurveFactory::curveCCLocal (localcutili, params.locallab.cccurve, cclocalcurve2, sca);
 
                         params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                         params.locallab.chromaref = parent->chromarefs[sp];
                         params.locallab.lumaref = parent->lumarefs[sp];
 
-                        parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                        parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS (parent->fw, skip), SKIPS (parent->fh, skip), parent->fw, parent->fh, locutili, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, cclocalcurve2, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                         lllocalcurve2.clear();
+                        cclocalcurve2.clear();
 
-                        if(skip <= 2) {
-                            usleep(settings->cropsleep);    //wait to avoid crash when crop 100% and move window
+                        if (skip <= 2) {
+                            usleep (settings->cropsleep);   //wait to avoid crash when crop 100% and move window
                         }
                     }
                 }
@@ -1014,7 +1034,7 @@ void Crop::update (int todo)
                 parent->sensis[sp] = params.locallab.sensi = parent->sensis[0];
                 parent->transits[sp] = params.locallab.transit = parent->transits[0];
 
-                if(parent->inverss[0] ==  0) {
+                if (parent->inverss[0] ==  0) {
                     params.locallab.invers = false;
                     parent->inverss[sp] = 0;
 
@@ -1024,7 +1044,7 @@ void Crop::update (int todo)
 
                 }
 
-                if(parent->smeths[0] ==  0) {
+                if (parent->smeths[0] ==  0) {
                     params.locallab.Smethod = "IND" ;
                     parent->smeths[sp] = 0;
 
@@ -1051,7 +1071,7 @@ void Crop::update (int todo)
                 parent->strengths[sp] = params.locallab.strength;
                 parent->sensibns[sp] = params.locallab.sensibn;
 
-                if( parent->inversrads[0] ==  0) {
+                if ( parent->inversrads[0] ==  0) {
                     params.locallab.inversrad = false;
                     parent->inversrads[sp] =  0;
                 } else {
@@ -1065,7 +1085,7 @@ void Crop::update (int todo)
                 parent->varts[sp] = params.locallab.vart = parent->varts[0];
                 parent->sensihs[sp] = params.locallab.sensih = parent->sensihs[0];
 
-                if(parent->inversrets[0] ==  0) {
+                if (parent->inversrets[0] ==  0) {
                     params.locallab.inversret = false;
                     parent->inversrets[sp] =  0;
                 } else {
@@ -1074,7 +1094,7 @@ void Crop::update (int todo)
 
                 }
 
-                if(parent->retinexs[sp] ==  0) {
+                if (parent->retinexs[sp] ==  0) {
                     params.locallab.retinexMethod = "low" ;
                     parent->retinexs[sp] =  0;
                 } else if (parent->retinexs[sp] ==  1) {
@@ -1094,7 +1114,7 @@ void Crop::update (int todo)
                 parent->shariters[sp] = params.locallab.shariter = parent->shariters[0];
                 parent->sensishas[sp] = params.locallab.sensisha = parent->sensishas[0];
 
-                if(parent->inversshas[0] ==  0) {
+                if (parent->inversshas[0] ==  0) {
                     params.locallab.inverssha = false;
                     parent->inversshas[sp] =  0;
                 } else {
@@ -1103,7 +1123,7 @@ void Crop::update (int todo)
 
                 }
 
-                if(parent->qualitys[sp] ==  0) {
+                if (parent->qualitys[sp] ==  0) {
                     params.locallab.qualityMethod = "std" ;
                     parent->qualitys[sp] =  0;
                 } else if (parent->qualitys[sp] ==  1) {
@@ -1129,7 +1149,7 @@ void Crop::update (int todo)
                 parent->thresholds[sp] = params.locallab.threshold = parent->thresholds[0];
                 parent->sensicbs[sp] = params.locallab.sensicb = parent->sensicbs[0];
 
-                if(parent->activlums[0] ==  0) {
+                if (parent->activlums[0] ==  0) {
                     params.locallab.activlum = false;
                     parent->activlums[sp] =  0;
                 } else {
@@ -1146,10 +1166,20 @@ void Crop::update (int todo)
                 parent->sensitms[sp] = params.locallab.sensitm = parent->sensitms[0];
                 parent->retrabs[sp] = params.locallab.retrab = parent->retrabs[0];
 
+                if (parent->curvactivs[0] ==  0) {
+                    params.locallab.curvactiv = false;
+                    parent->curvactivs[sp] = 0;
+
+                } else {
+                    params.locallab.curvactiv = true;
+                    parent->curvactivs[sp] = 1;
+
+                }
+
                 std::vector<double>   ccret;
 
-                for(int j = 0; j < parent->sizeretics[sp]; j++) {
-                    ccret.push_back((double) (parent->reticurvs[0 * 500 + j]) / 1000.);
+                for (int j = 0; j < parent->sizeretics[sp]; j++) {
+                    ccret.push_back ((double) (parent->reticurvs[0 * 500 + j]) / 1000.);
                     parent->reticurvs[sp * 500 + j] = parent->reticurvs[0 * 500 + j];
                 }
 
@@ -1158,36 +1188,49 @@ void Crop::update (int todo)
 
                 std::vector<double>   llcL;
 
-                for(int j = 0; j < parent->sizellcs[sp]; j++) {
-                    llcL.push_back((double) (parent->llcurvs[0 * 500 + j]) / 1000.);
+                for (int j = 0; j < parent->sizellcs[sp]; j++) {
+                    llcL.push_back ((double) (parent->llcurvs[0 * 500 + j]) / 1000.);
                     parent->llcurvs[sp * 500 + j] = parent->llcurvs[0 * 500 + j] ;
                 }
 
                 params.locallab.llcurve.clear();
                 params.locallab.llcurve = llcL;
 
+                std::vector<double>   cccL;
+
+                for (int j = 0; j < parent->sizecccs[sp]; j++) {
+                    cccL.push_back ((double) (parent->cccurvs[0 * 500 + j]) / 1000.);
+                    parent->cccurvs[sp * 500 + j] = parent->cccurvs[0 * 500 + j] ;
+                }
+
+                params.locallab.cccurve.clear();
+                params.locallab.cccurve = cccL;
+
                 std::vector<double>   lhcL;
 
-                for(int j = 0; j < parent->sizelhcs[sp]; j++) {
-                    lhcL.push_back((double) (parent->lhcurvs[0 * 500 + j]) / 1000.);
+                for (int j = 0; j < parent->sizelhcs[sp]; j++) {
+                    lhcL.push_back ((double) (parent->lhcurvs[0 * 500 + j]) / 1000.);
                     parent->lhcurvs[sp * 500 + j] = parent->lhcurvs[0 * 500 + j] ;
                 }
 
                 params.locallab.LHcurve.clear();
                 params.locallab.LHcurve = lhcL;
 
-                params.locallab.getCurves(locRETgainCurve, locRETgainCurverab, loclhCurve);
+                params.locallab.getCurves (locRETgainCurve, locRETgainCurverab, loclhCurve);
                 locallutili = false;
+                localcutili = false;
 
-                CurveFactory::curveLocal(locallutili, params.locallab.llcurve, lllocalcurve2, sca);// skip == 1 ? 1 : 16);
+                CurveFactory::curveLocal (locallutili, params.locallab.llcurve, lllocalcurve2, sca); // skip == 1 ? 1 : 16);
+                CurveFactory::curveCCLocal (localcutili, params.locallab.cccurve, cclocalcurve2, sca); // skip == 1 ? 1 : 16);
 
 
                 params.locallab.hueref = (parent->huerefs[sp]) / 100.f;
                 params.locallab.chromaref = parent->chromarefs[sp];
                 params.locallab.lumaref = parent->lumarefs[sp];
 
-                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS(parent->fw, skip), SKIPS(parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
+                parent->ipf.Lab_Local (1, sp, (float**)shbuffer, labnCrop, labnCrop, trafx / skip, trafy / skip, cropx / skip, cropy / skip, SKIPS (parent->fw, skip), SKIPS (parent->fh, skip), parent->getFullWidth(), parent->getFullHeight(), locutili2, skip,  locRETgainCurve, locallutili, lllocalcurve2, loclhCurve, cclocalcurve2, params.locallab.hueref, params.locallab.chromaref, params.locallab.lumaref);
                 lllocalcurve2.clear();
+                cclocalcurve2.clear();
 
 
             }

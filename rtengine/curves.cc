@@ -416,7 +416,7 @@ void CurveFactory::curveLocal (bool & locallutili, const std::vector<double>& cu
     std::unique_ptr<DiagonalCurve> dCurve;
 
     if (!curvePoints.empty() && curvePoints[0] != 0) {
-        dCurve = std::unique_ptr<DiagonalCurve>(new DiagonalCurve(curvePoints, CURVES_MIN_POLY_POINTS / skip));
+        dCurve = std::unique_ptr<DiagonalCurve> (new DiagonalCurve (curvePoints, CURVES_MIN_POLY_POINTS / skip));
 
         if (dCurve && !dCurve->isIdentity()) {
             needed = true;
@@ -424,7 +424,26 @@ void CurveFactory::curveLocal (bool & locallutili, const std::vector<double>& cu
         }
     }
 
-    fillCurveArray(dCurve.get(), LocalLCurve, skip, needed);
+    fillCurveArray (dCurve.get(), LocalLCurve, skip, needed);
+    //LocalLCurve.dump("wav");
+
+}
+
+void CurveFactory::curveCCLocal (bool & localcutili, const std::vector<double>& curvePoints, LUTf & LocalCCurve, int skip)
+{
+    bool needed = false;
+    std::unique_ptr<DiagonalCurve> dCurve;
+
+    if (!curvePoints.empty() && curvePoints[0] != 0) {
+        dCurve = std::unique_ptr<DiagonalCurve> (new DiagonalCurve (curvePoints, CURVES_MIN_POLY_POINTS / skip));
+
+        if (dCurve && !dCurve->isIdentity()) {
+            needed = true;
+            localcutili = true;
+        }
+    }
+
+    fillCurveArray (dCurve.get(), LocalCCurve, skip, needed);
     //LocalLCurve.dump("wav");
 
 }

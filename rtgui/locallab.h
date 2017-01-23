@@ -24,7 +24,7 @@ class Locallab : public ToolParamBlock, public AdjusterListener, public Foldable
 private:
     int lastObject;
     void foldAllButMe (GdkEventButton* event, MyExpander *expander);
-    void enableToggled(MyExpander *expander);
+    void enableToggled (MyExpander *expander);
 
 protected:
 //   Gtk::CheckButton* enabled;
@@ -97,6 +97,7 @@ protected:
     sigc::connection  Smethodconn;
     Gtk::HBox* ctboxS;
     Gtk::CheckButton* invers;
+    Gtk::CheckButton* curvactiv;
     Gtk::CheckButton* inversrad;
     Gtk::CheckButton* inversret;
     Gtk::CheckButton* activlum;
@@ -118,10 +119,11 @@ protected:
     FlatCurveEditor* cTgainshaperab;
     CurveEditorGroup* llCurveEditorG;
     DiagonalCurveEditor* llshape;
+    DiagonalCurveEditor* ccshape;
     Gtk::Image* irg;
     FlatCurveEditor* LHshape;
 
-    int nextdatasp[59];
+    int nextdatasp[60];
     int nextlength;
     std::string nextstr;
     std::string nextstr2;
@@ -129,6 +131,8 @@ protected:
     std::string nextll_str2;
     std::string nextlh_str;
     std::string nextlh_str2;
+    std::string nextcc_str;
+    std::string nextcc_str2;
 
     double draggedPointOldAngle;
     double draggedPointAdjusterAngle;
@@ -138,9 +142,9 @@ protected:
     double draggedlocYTOffset;
     double draggedlocXLOffset;
     rtengine::Coord draggedCenter;
-    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivlum, lastinverssha;
+    bool lastavoid, lastinvers, lastinversrad, lastinversret, lastactivlum, lastinverssha, lastcurvactiv;
     int lastanbspot;
-    sigc::connection  editConn, avoidConn, inversConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn, neutralconn, neutralconn1;
+    sigc::connection  editConn, avoidConn, inversConn, curvactivConn, activlumConn, inversradConn, inversretConn, inversshaConn, retinexMethodConn, qualityMethodConn, neutralconn, neutralconn1;
 
     void editToggled ();
 
@@ -167,13 +171,14 @@ public:
     void avoidChanged ();
     void activlumChanged ();
     void inversChanged ();
+    void curvactivChanged ();
     void inversradChanged ();
     void inversretChanged ();
     void inversshaChanged ();
     void curveChanged (CurveEditor* ce);
     void autoOpenCurve ();
-    void localChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat);
-    void localretChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, int sp, int maxdat);
+    void localChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat);
+    void localretChanged           (int **datasp, std::string datastr, std::string ll_str, std::string lh_str, std::string cc_str, int sp, int maxdat);
     bool localComputed_         ();
     bool localretComputed_         ();
     void setEditProvider (EditDataProvider* provider);
@@ -186,11 +191,11 @@ public:
     virtual void colorForValue (double valX, double valY, enum ColorCaller::ElemType elemType, int callerId, ColorCaller* caller);
 
     // EditSubscriber interface
-    CursorShape getCursor(int objectID);
-    bool mouseOver(int modifierKey);
-    bool button1Pressed(int modifierKey);
+    CursorShape getCursor (int objectID);
+    bool mouseOver (int modifierKey);
+    bool button1Pressed (int modifierKey);
     bool button1Released();
-    bool drag1(int modifierKey);
+    bool drag1 (int modifierKey);
     void switchOffEditMode ();
 };
 
