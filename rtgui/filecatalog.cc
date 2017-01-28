@@ -1760,14 +1760,11 @@ void FileCatalog::winDirChanged ()
 void FileCatalog::on_dir_changed (const Glib::RefPtr<Gio::File>& file, const Glib::RefPtr<Gio::File>& other_file, Gio::FileMonitorEvent event_type, bool internal)
 {
 
-    if (options.has_retained_extention(file->get_parse_name())
+    if (!delayReparse && options.has_retained_extention(file->get_parse_name())
             && (event_type == Gio::FILE_MONITOR_EVENT_CREATED || event_type == Gio::FILE_MONITOR_EVENT_DELETED || event_type == Gio::FILE_MONITOR_EVENT_CHANGED)) {
-        if (!internal) {
-            GThreadLock lock;
-            reparseDirectory ();
-        } else {
-            reparseDirectory ();
-        }
+      delayReparse = true;
+      sigc::slot<bool> mySlot = sigc::bind(sigc::mem_fun(*this, &FileCatalog::throttleReparse), internal);
+      Glib::signal_timeout().connect(mySlot, 150);
     }
 }
 

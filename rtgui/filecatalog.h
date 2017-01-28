@@ -155,6 +155,8 @@ private:
     std::set<Glib::ustring> editedFiles;
     guint modifierKey; // any modifiers held when rank button was pressed
 
+    bool delayReparse = false;
+
 #ifndef _WIN32
     Glib::RefPtr<Gio::FileMonitor> dirMonitor;
 #else
@@ -307,6 +309,15 @@ public:
 #else
     void winDirChanged ();
 #endif
+
+    bool throttleReparse(bool internal) { 
+      if(!internal) {
+        GThreadLock lock;
+      }
+      delayReparse = false;
+      reparseDirectory();
+      return false;
+    }
 
 };
 
